@@ -1,0 +1,136 @@
+{
+  "name": "mineadmin/mineadmin",
+  "type": "project",
+  "keywords": [
+    "mineadmin",
+    "swoole",
+    "hyperf",
+    "crud",
+    "fast",
+    "developer",
+    "admin",
+    "app store"
+  ],
+  "homepage": "https://www.mineadmin.com/",
+  "description": "Quickly build a background management system for web applications",
+  "license": "Apache-2.0",
+  "require": {
+    "php": ">=8.1",
+    "ext-fileinfo": "*",
+    "ext-json": "*",
+    "ext-openssl": "*",
+    "ext-pdo": "*",
+    "ext-pdo_mysql": "*",
+    "ext-redis": "*",
+    "ext-swoole": ">=5.0",
+    "friendsofhyperf/tinker": "^3.1",
+    "hyperf/async-queue": "3.1.*",
+    "hyperf/cache": "3.1.*",
+    "hyperf/carbon": "^3.1",
+    "hyperf/command": "3.1.*",
+    "hyperf/config": "3.1.*",
+    "hyperf/constants": "3.1.*",
+    "hyperf/context": "3.1.*",
+    "hyperf/contract": "3.1.*",
+    "hyperf/coroutine": "3.1.*",
+    "hyperf/crontab": "~3.1",
+    "hyperf/database": "3.1.*",
+    "hyperf/database-pgsql": "*",
+    "hyperf/db-connection": "3.1.*",
+    "hyperf/di": "3.1.*",
+    "hyperf/dispatcher": "3.1.*",
+    "hyperf/engine": "^2.0",
+    "hyperf/event": "3.1.*",
+    "hyperf/exception-handler": "3.1.*",
+    "hyperf/framework": "3.1.*",
+    "hyperf/guzzle": "^3.1",
+    "hyperf/helper": "~3.1",
+    "hyperf/http-server": "3.1.*",
+    "hyperf/logger": "3.1.*",
+    "hyperf/model-cache": "3.1.*",
+    "hyperf/paginator": "~3.1",
+    "hyperf/polyfill-coroutine": "3.1.*",
+    "hyperf/pool": "3.1.*",
+    "hyperf/process": "3.1.*",
+    "hyperf/redis": "3.1.*",
+    "hyperf/server": "3.1.*",
+    "hyperf/utils": "3.1.*",
+    "hyperf/validation": "~3.1",
+    "hyperf/websocket-server": "^3.1",
+    "mineadmin/access": "~3.0",
+    "mineadmin/app-store": "~3.0",
+    "mineadmin/auth-jwt": "~3.0",
+    "mineadmin/core": "~3.0",
+    "mineadmin/jwt": "~3.0",
+    "mineadmin/support": "~3.0",
+    "mineadmin/swagger": "~3.0",
+    "mineadmin/upload": "~3.0"
+  },
+  "require-dev": {
+    "doctrine/dbal": "^3.6",
+    "fakerphp/faker": "^1.23",
+    "friendsofphp/php-cs-fixer": "^3.0",
+    "hyperf/devtool": "3.1.*",
+    "hyperf/ide-helper": "3.1.*",
+    "hyperf/testing": "3.1.*",
+    "hyperf/watcher": "3.1.*",
+    "mockery/mockery": "^1.0",
+    "phpstan/phpstan": "^2.1",
+    "swoole/ide-helper": "^6.0",
+    "zircote/swagger-php": "4.10.6"
+  },
+  "suggest": {
+    "ext-openssl": "Required to use HTTPS.",
+    "ext-json": "Required to use JSON.",
+    "ext-pdo": "Required to use MySQL Client.",
+    "ext-pdo_mysql": "Required to use MySQL Client.",
+    "ext-redis": "Required to use Redis Client."
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "HyperfTests\\": "./tests/"
+    }
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "config": {
+    "optimize-autoloader": true,
+    "sort-packages": true
+  },
+  "extra": {
+    "branch-alias": {
+      "dev-master": "3.0-dev"
+    }
+  },
+  "scripts": {
+    "post-root-package-install": [
+      "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+    ],
+    "post-autoload-dump": [
+      "rm -rf runtime/container"
+    ],
+    "test": [
+      "co-phpunit --prepend tests/bootstrap.php --group=migrations --colors=always",
+      "co-phpunit --prepend tests/bootstrap.php --exclude-group=migrations"
+    ],
+    "coverage": [
+      "co-phpunit --prepend tests/bootstrap.php --group=migrations --colors=always --coverage-xml tests/coverage",
+      "co-phpunit --prepend tests/bootstrap.php --exclude-group=migrations --colors=always --coverage-xml tests/coverage"
+    ],
+    "cs-fix": "php-cs-fixer fix $1",
+    "analyse": "phpstan analyse --memory-limit 500M -l 5 -c phpstan.neon.dist ./app ./config",
+    "start": [
+      "Composer\\Config::disableProcessTimeout",
+      "php bin/hyperf.php start"
+    ],
+    "dev": [
+      "Composer\\Config::disableProcessTimeout",
+      "php bin/hyperf.php server:watch"
+    ]
+  }
+}

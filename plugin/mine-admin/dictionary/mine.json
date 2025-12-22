@@ -1,0 +1,24 @@
+{
+    "name": "mine-admin/dictionary",
+    "version": "1.0.2",
+    "type": "mixed",
+    "description": "MineAdmin dictionary system plugin",
+    "homepage": "https://www.mineadmin.com",
+    "author": [
+        {
+            "name": "MineAdmin"
+        }
+    ],
+    "composer": {
+        "require": {
+        },
+        "psr-4": {
+            "Plugin\\MineAdmin\\Dictionary\\": "src"
+        },
+        "installScript": "Plugin\\MineAdmin\\Dictionary\\InstallScript",
+        "uninstallScript": "Plugin\\MineAdmin\\Dictionary\\UninstallScript",
+        "config": "Plugin\\MineAdmin\\Dictionary\\ConfigProvider"
+    },
+    "package": {
+    }
+}

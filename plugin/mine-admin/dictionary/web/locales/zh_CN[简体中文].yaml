@@ -1,0 +1,35 @@
+dictionary:
+  menu:
+    dictionary: 数据字典
+    typeList: 字典分类列表
+    typeSave: 字典分类新增
+    typeUpdate: 字典分类更新
+    typeDelete: 字典分类删除
+    list: 字典列表
+    save: 字典新增
+    update: 字典更新
+  i18nScope:
+    global: 全局范围
+    local: 本文件范围
+  errorInfo:
+    noSelectType: 请先选择字典分类
+  typeCrud:
+    add: 新增字典分类
+    update: 修改字典分类
+    delete: 删除字典分类
+  dicType:
+    name: 分类名称
+    code: 分类编码
+    remark: 备注
+    status: 状态
+  dic:
+    typeName: 所属类型
+    label: 字典标签
+    i18n: 国际化
+    i18n_scope: 国际化范围
+    value: 字典值
+    color: 文字颜色
+    code: 字典编码
+    sort: 排序
+    status: 状态
+    remark: 备注信息
