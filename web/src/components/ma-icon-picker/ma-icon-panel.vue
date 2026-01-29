@@ -133,7 +133,7 @@ handleTabChange(currentName.value)
     </template>
     <div class="pagination">
       <el-pagination
-        v-model:current-page="currentPage"
+        :current-page="currentPage"
         :total="validIcons.length"
         :page-size="pageSize"
         background

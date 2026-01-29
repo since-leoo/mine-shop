@@ -182,3 +182,9 @@ dictionary:
     self: Personal data permissions
     customDept: Custom department selection data permissions
     customFunc: Custom function data permissions
+plugin:
+  systemMessage:
+    title: Message Management
+    list: Message List
+    statistics: Message Statistics
+    settings: Message Settings

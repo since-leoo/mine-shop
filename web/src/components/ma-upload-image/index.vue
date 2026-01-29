@@ -162,7 +162,8 @@ watch(
     }
 
     if (isArray(val)) {
-      fileList.value = val.map((item: string) => {
+      const safeList = val.filter((item: any) => typeof item === 'string' && item)
+      fileList.value = safeList.map((item: string) => {
         return {
           name: item.split('/').pop() as string,
           url: item,

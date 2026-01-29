@@ -1,108 +1,110 @@
 <template>
   <div class="message-notification-badge">
-    <a-badge 
-      :count="unreadCount" 
-      :show-zero="false"
-      :overflow-count="99"
-      @click="handleClick"
+    <el-badge 
+      :value="unreadCount" 
+      :hidden="unreadCount === 0"
+      :max="99"
     >
-      <slot>
-        <a-button 
-          type="text" 
-          :icon="BellOutlined"
-          class="notification-button"
-          :class="{ 'has-unread': hasUnread }"
-        />
-      </slot>
-    </a-badge>
+      <el-button 
+        text
+        circle
+        class="notification-button"
+        :class="{ 'has-unread': hasUnread }"
+        @click="handleClick"
+      >
+        <el-icon :size="20"><Bell /></el-icon>
+      </el-button>
+    </el-badge>
     
     <!-- 通知弹窗 -->
-    <a-dropdown 
-      v-model:open="dropdownVisible"
-      :trigger="['click']"
-      placement="bottomRight"
-      overlay-class-name="message-notification-dropdown"
+    <el-popover
+      v-model:visible="dropdownVisible"
+      placement="bottom-end"
+      :width="360"
+      trigger="click"
+      popper-class="message-notification-popover"
     >
-      <template #overlay>
-        <div class="notification-panel">
-          <div class="panel-header">
-            <div class="header-title">
-              <span>消息通知</span>
-              <a-badge :count="unreadCount" :show-zero="false" />
-            </div>
-            <div class="header-actions">
-              <a-button 
-                type="link" 
-                size="small" 
-                @click="markAllAsRead"
-                :disabled="!hasUnread"
-              >
-                全部已读
-              </a-button>
-              <a-button 
-                type="link" 
-                size="small" 
-                @click="goToMessageCenter"
-              >
-                查看全部
-              </a-button>
-            </div>
+      <template #reference>
+        <span></span>
+      </template>
+      
+      <div class="notification-panel">
+        <div class="panel-header">
+          <div class="header-title">
+            <span>消息通知</span>
+            <el-badge :value="unreadCount" :hidden="unreadCount === 0" />
+          </div>
+          <div class="header-actions">
+            <el-button 
+              type="primary" 
+              link 
+              size="small" 
+              @click="markAllAsRead"
+              :disabled="!hasUnread"
+            >
+              全部已读
+            </el-button>
+            <el-button 
+              type="primary" 
+              link 
+              size="small" 
+              @click="goToMessageCenter"
+            >
+              查看全部
+            </el-button>
+          </div>
+        </div>
+        
+        <div class="panel-content">
+          <div v-if="loading" class="loading-container">
+            <el-skeleton :rows="3" animated />
           </div>
           
-          <div class="panel-content">
-            <div v-if="loading" class="loading-container">
-              <a-spin />
-            </div>
-            
-            <div v-else-if="recentMessages.length === 0" class="empty-container">
-              <a-empty 
-                description="暂无新消息" 
-                :image="Empty.PRESENTED_IMAGE_SIMPLE"
-              />
-            </div>
-            
-            <div v-else class="messages-list">
-              <div 
-                v-for="msg in recentMessages" 
-                :key="msg.id"
-                class="message-item"
-                :class="{ 'unread': !msg.is_read }"
-                @click="viewMessage(msg)"
-              >
-                <div class="message-content">
-                  <div class="message-title">{{ msg.message.title }}</div>
-                  <div class="message-preview">{{ getMessagePreview(msg.message.content) }}</div>
-                  <div class="message-meta">
-                    <a-tag :color="getTypeColor(msg.message.type)" size="small">
-                      {{ getTypeLabel(msg.message.type) }}
-                    </a-tag>
-                    <span class="time">{{ formatTime(msg.created_at) }}</span>
-                  </div>
+          <el-empty 
+            v-else-if="recentMessages.length === 0" 
+            description="暂无新消息"
+            :image-size="80"
+          />
+          
+          <div v-else class="messages-list">
+            <div 
+              v-for="msg in recentMessages" 
+              :key="msg.id"
+              class="message-item"
+              :class="{ 'unread': !msg.is_read }"
+              @click="viewMessage(msg)"
+            >
+              <div class="message-content">
+                <div class="message-title">{{ msg.message.title }}</div>
+                <div class="message-preview">{{ getMessagePreview(msg.message.content) }}</div>
+                <div class="message-meta">
+                  <el-tag :type="getTypeTagType(msg.message.type)" size="small">
+                    {{ getTypeLabel(msg.message.type) }}
+                  </el-tag>
+                  <span class="time">{{ formatTime(msg.created_at) }}</span>
                 </div>
-                <div class="message-actions">
-                  <a-button 
-                    type="text" 
-                    size="small"
-                    @click.stop="markAsRead(msg)"
-                    v-if="!msg.is_read"
-                  >
-                    标记已读
-                  </a-button>
-                </div>
+              </div>
+              <div class="message-actions">
+                <el-button 
+                  text 
+                  size="small"
+                  @click.stop="markAsRead(msg)"
+                  v-if="!msg.is_read"
+                >
+                  标记已读
+                </el-button>
               </div>
             </div>
           </div>
-          
-          <div class="panel-footer" v-if="recentMessages.length > 0">
-            <a-button type="link" @click="goToMessageCenter" block>
-              查看更多消息
-            </a-button>
-          </div>
         </div>
-      </template>
-      
-      <span></span>
-    </a-dropdown>
+        
+        <div class="panel-footer" v-if="recentMessages.length > 0">
+          <el-button type="primary" link @click="goToMessageCenter">
+            查看更多消息
+          </el-button>
+        </div>
+      </div>
+    </el-popover>
   </div>
 </template>
 
@@ -110,8 +112,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessageStore } from '../store/message'
-import { message, Empty } from 'ant-design-vue'
-import { BellOutlined } from '@ant-design/icons-vue'
+import { ElMessage } from 'element-plus'
+import { Bell } from '@element-plus/icons-vue'
 import type { UserMessage } from '../api/message'
 import dayjs from 'dayjs'
 
@@ -145,22 +147,22 @@ const messageStore = useMessageStore()
 const loading = ref(false)
 const dropdownVisible = ref(false)
 const recentMessages = ref<UserMessage[]>([])
-const refreshTimer = ref<NodeJS.Timeout | null>(null)
+const refreshTimer = ref<ReturnType<typeof setInterval> | null>(null)
 
 // 计算属性
 const unreadCount = computed(() => messageStore.unreadCount)
 const hasUnread = computed(() => unreadCount.value > 0)
 
-// 获取消息类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
+// 获取消息类型 Tag 类型
+const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: '',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取消息类型标签
@@ -249,9 +251,9 @@ const markAsRead = async (msg: UserMessage) => {
       recentMessages.value[index].is_read = true
     }
     
-    message.success('已标记为已读')
+    ElMessage.success('已标记为已读')
   } catch (error) {
-    message.error('操作失败')
+    ElMessage.error('操作失败')
   }
 }
 
@@ -265,9 +267,9 @@ const markAllAsRead = async () => {
       msg.is_read = true
     })
     
-    message.success('所有消息已标记为已读')
+    ElMessage.success('所有消息已标记为已读')
   } catch (error) {
-    message.error('操作失败')
+    ElMessage.error('操作失败')
   }
 }
 
@@ -336,26 +338,21 @@ defineExpose({
 }
 
 .notification-button:hover {
-  background: #f0f0f0;
+  background: var(--el-fill-color);
 }
 
 .notification-button.has-unread {
-  color: #1890ff;
+  color: var(--el-color-primary);
 }
 
 .notification-panel {
-  width: 360px;
-  max-height: 480px;
-  background: #fff;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  overflow: hidden;
+  margin: -12px;
 }
 
 .panel-header {
   padding: 12px 16px;
-  border-bottom: 1px solid #f0f0f0;
-  background: #fafafa;
+  border-bottom: 1px solid var(--el-border-color-light);
+  background: var(--el-fill-color-light);
 }
 
 .header-title {
@@ -377,14 +374,7 @@ defineExpose({
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 120px;
-}
-
-.empty-container {
-  padding: 24px;
+  padding: 16px;
 }
 
 .messages-list {
@@ -401,12 +391,12 @@ defineExpose({
 }
 
 .message-item:hover {
-  background: #f5f5f5;
+  background: var(--el-fill-color-light);
 }
 
 .message-item.unread {
-  background: #f6ffed;
-  border-left-color: #52c41a;
+  background: var(--el-color-success-light-9);
+  border-left-color: var(--el-color-success);
 }
 
 .message-content {
@@ -424,7 +414,7 @@ defineExpose({
 
 .message-preview {
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-secondary);
   margin-bottom: 6px;
   line-height: 1.4;
   display: -webkit-box;
@@ -441,7 +431,7 @@ defineExpose({
 
 .time {
   font-size: 11px;
-  color: #999;
+  color: var(--el-text-color-placeholder);
 }
 
 .message-actions {
@@ -450,15 +440,14 @@ defineExpose({
 
 .panel-footer {
   padding: 8px;
-  border-top: 1px solid #f0f0f0;
-  background: #fafafa;
+  border-top: 1px solid var(--el-border-color-light);
+  background: var(--el-fill-color-light);
+  text-align: center;
 }
 </style>
 
 <style>
-.message-notification-dropdown .ant-dropdown-menu {
-  padding: 0;
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.message-notification-popover {
+  padding: 0 !important;
 }
 </style>

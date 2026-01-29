@@ -67,34 +67,34 @@ export interface TemplateValidationResult {
 export const templateApi = {
   // 获取模板列表
   getList(params: TemplateListParams = {}) {
-    return http.get('/admin/system-message/template/index', { params })
+    return http.get('/plugin/admin/system-message/template/index', { params })
   },
 
   // 获取模板详情
   getDetail(id: number) {
-    return http.get(`/admin/system-message/template/read/${id}`)
+    return http.get(`/plugin/admin/system-message/template/read/${id}`)
   },
 
   // 创建模板
   create(data: CreateTemplateData) {
-    return http.post('/admin/system-message/template/save', data)
+    return http.post('/plugin/admin/system-message/template/save', data)
   },
 
   // 更新模板
   update(id: number, data: UpdateTemplateData) {
-    return http.put(`/admin/system-message/template/update/${id}`, data)
+    return http.put(`/plugin/admin/system-message/template/update/${id}`, data)
   },
 
   // 删除模板
   delete(id: number) {
-    return http.delete('/admin/system-message/template/delete', {
+    return http.delete('/plugin/admin/system-message/template/delete', {
       data: { ids: [id] }
     })
   },
 
   // 预览模板
   preview(id: number, variables: Record<string, any> = {}): Promise<TemplatePreviewData> {
-    return http.post('/admin/system-message/template/preview', {
+    return http.post('/plugin/admin/system-message/template/preview', {
       id,
       variables
     })
@@ -102,7 +102,7 @@ export const templateApi = {
 
   // 渲染模板
   render(id: number, variables: Record<string, any> = {}) {
-    return http.post('/admin/system-message/template/render', {
+    return http.post('/plugin/admin/system-message/template/render', {
       id,
       variables
     })
@@ -110,7 +110,7 @@ export const templateApi = {
 
   // 验证模板变量
   validateVariables(id: number, variables: Record<string, any>): Promise<TemplateValidationResult> {
-    return http.post('/admin/system-message/template/validateVariables', {
+    return http.post('/plugin/admin/system-message/template/validateVariables', {
       id,
       variables
     })
@@ -118,12 +118,12 @@ export const templateApi = {
 
   // 获取模板变量
   getVariables(id: number): Promise<string[]> {
-    return http.get(`/admin/system-message/template/getVariables/${id}`)
+    return http.get(`/plugin/admin/system-message/template/getVariables/${id}`)
   },
 
   // 复制模板
   duplicate(id: number, name?: string) {
-    return http.post('/admin/system-message/template/copy', {
+    return http.post('/plugin/admin/system-message/template/copy', {
       id,
       name
     })
@@ -131,58 +131,58 @@ export const templateApi = {
 
   // 激活/停用模板
   toggleActive(id: number) {
-    return http.put('/admin/system-message/template/changeStatus', {
+    return http.put('/plugin/admin/system-message/template/changeStatus', {
       id
     })
   },
 
   // 批量删除模板
   batchDelete(ids: number[]) {
-    return http.delete('/admin/system-message/template/delete', {
+    return http.delete('/plugin/admin/system-message/template/delete', {
       data: { ids }
     })
   },
 
   // 搜索模板
   search(keyword: string, params: Omit<TemplateListParams, 'keyword'> = {}) {
-    return http.get('/admin/system-message/template/search', {
+    return http.get('/plugin/admin/system-message/template/search', {
       params: { keyword, ...params }
     })
   },
 
   // 获取模板分类
   getCategories() {
-    return http.get('/admin/system-message/template/categories')
+    return http.get('/plugin/admin/system-message/template/categories')
   },
 
   // 获取活跃模板
   getActiveTemplates(type?: string) {
-    return http.get('/admin/system-message/template/active', {
+    return http.get('/plugin/admin/system-message/template/active', {
       params: type ? { type } : {}
     })
   },
 
   // 导入模板
   import(templates: CreateTemplateData[]) {
-    return http.post('/admin/system-message/template/import', {
+    return http.post('/plugin/admin/system-message/template/import', {
       templates
     })
   },
 
   // 导出模板
   export(ids: number[] = []) {
-    return http.post('/admin/system-message/template/export', {
+    return http.post('/plugin/admin/system-message/template/export', {
       ids
     })
   },
 
   // 获取模板统计
   getStatistics() {
-    return http.get('/admin/system-message/template/statistics')
+    return http.get('/plugin/admin/system-message/template/statistics')
   },
 
   // 获取模板类型列表
   getTemplateTypes() {
-    return http.get('/admin/system-message/template/types')
+    return http.get('/plugin/admin/system-message/template/types')
   }
 }

@@ -1,0 +1,50 @@
+mallMenu:
+  mall:
+    index: Mall Management
+    category: Category Management
+    categoryList: Category List
+    categoryRead: Category Detail
+    categoryCreate: Create Category
+    categoryUpdate: Update Category
+    categoryDelete: Delete Category
+    brand: Brand Management
+    brandList: Brand List
+    brandRead: Brand Detail
+    brandCreate: Create Brand
+    brandUpdate: Update Brand
+    brandDelete: Delete Brand
+    product: Product Management
+    productList: Product List
+    productRead: Product Detail
+    productCreate: Create Product
+    productUpdate: Update Product
+    productDelete: Delete Product
+    seckill: Flash Sale Management
+    seckillSession: Session Management
+    seckillProduct: Product Configuration
+    seckillActivityList: Activity List
+    seckillActivityRead: Activity Detail
+    seckillActivityCreate: Create Activity
+    seckillActivityUpdate: Update Activity
+    seckillActivityDelete: Delete Activity
+    seckillSessionList: Session List
+    seckillSessionRead: Session Detail
+    seckillSessionCreate: Create Session
+    seckillSessionUpdate: Update Session
+    seckillSessionDelete: Delete Session
+    seckillProductList: Product List
+    seckillProductRead: Product Detail
+    seckillProductCreate: Add Product
+    seckillProductUpdate: Update Product
+    seckillProductDelete: Remove Product
+    groupBuy: Group Buy Management
+    groupBuyList: Group Buy List
+    groupBuyRead: Group Buy Detail
+    groupBuyCreate: Create Group Buy
+    groupBuyUpdate: Update Group Buy
+    groupBuyDelete: Delete Group Buy
+    order: Order Management
+    orderList: Order List
+    orderRead: Order Detail
+    orderCreate: Create Order
+    orderUpdate: Update Order

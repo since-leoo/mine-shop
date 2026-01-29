@@ -27,6 +27,8 @@
     "@mineadmin/table": "^1.0.37",
     "@vueuse/core": "^12.8.2",
     "@vueuse/integrations": "^12.8.2",
+    "@wangeditor/editor": "^5.1.23",
+    "@wangeditor/editor-for-vue": "^5.1.12",
     "animate.css": "^4.1.1",
     "axios": "^1.13.2",
     "dayjs": "^1.11.19",

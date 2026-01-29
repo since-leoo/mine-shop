@@ -5,14 +5,17 @@
       <p class="settings-desc">管理您的消息通知偏好设置</p>
     </div>
 
-    <a-spin :spinning="preferenceStore.loading">
+    <el-skeleton :loading="preferenceStore.loading" animated :rows="10">
       <div class="settings-content" v-if="preference">
         <!-- 通知渠道设置 -->
-        <a-card title="通知渠道" class="settings-card">
-          <template #extra>
-            <a-button @click="resetChannelPreferences" size="small">
-              重置默认
-            </a-button>
+        <el-card class="settings-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>通知渠道</span>
+              <el-button size="small" @click="resetChannelPreferences">
+                重置默认
+              </el-button>
+            </div>
           </template>
           
           <div class="channel-settings">
@@ -23,20 +26,23 @@
                 </div>
                 <div class="channel-desc">{{ getChannelDescription(channel) }}</div>
               </div>
-              <a-switch 
-                v-model:checked="preference.channel_preferences[channel]"
-                @change="updateChannelPreference(channel, $event)"
+              <el-switch 
+                v-model="preference.channel_preferences[channel]"
+                @change="(val: boolean) => updateChannelPreference(channel, val)"
               />
             </div>
           </div>
-        </a-card>
+        </el-card>
 
         <!-- 消息类型设置 -->
-        <a-card title="消息类型" class="settings-card">
-          <template #extra>
-            <a-button @click="resetTypePreferences" size="small">
-              重置默认
-            </a-button>
+        <el-card class="settings-card" shadow="never">
+          <template #header>
+            <div class="card-header">
+              <span>消息类型</span>
+              <el-button size="small" @click="resetTypePreferences">
+                重置默认
+              </el-button>
+            </div>
           </template>
           
           <div class="type-settings">
@@ -47,16 +53,19 @@
                 </div>
                 <div class="type-desc">{{ getTypeDescription(type) }}</div>
               </div>
-              <a-switch 
-                v-model:checked="preference.type_preferences[type]"
-                @change="updateTypePreference(type, $event)"
+              <el-switch 
+                v-model="preference.type_preferences[type]"
+                @change="(val: boolean) => updateTypePreference(type, val)"
               />
             </div>
           </div>
-        </a-card>
+        </el-card>
 
         <!-- 免打扰设置 -->
-        <a-card title="免打扰时间" class="settings-card">
+        <el-card class="settings-card" shadow="never">
+          <template #header>
+            <span>免打扰时间</span>
+          </template>
           <div class="dnd-settings">
             <div class="dnd-enable">
               <div class="setting-item">
@@ -64,92 +73,96 @@
                   <div class="setting-name">启用免打扰</div>
                   <div class="setting-desc">在指定时间段内不接收通知</div>
                 </div>
-                <a-switch 
-                  v-model:checked="preference.do_not_disturb_enabled"
+                <el-switch 
+                  v-model="preference.do_not_disturb_enabled"
                   @change="updateDoNotDisturbEnabled"
                 />
               </div>
             </div>
             
             <div class="dnd-time" v-if="preference.do_not_disturb_enabled">
-              <a-row :gutter="16">
-                <a-col :span="12">
+              <el-row :gutter="16">
+                <el-col :span="12">
                   <div class="time-setting">
                     <label>开始时间</label>
-                    <a-time-picker
-                      v-model:value="dndStartTime"
+                    <el-time-picker
+                      v-model="dndStartTime"
                       format="HH:mm"
                       @change="updateDoNotDisturbTime"
                       style="width: 100%"
                     />
                   </div>
-                </a-col>
-                <a-col :span="12">
+                </el-col>
+                <el-col :span="12">
                   <div class="time-setting">
                     <label>结束时间</label>
-                    <a-time-picker
-                      v-model:value="dndEndTime"
+                    <el-time-picker
+                      v-model="dndEndTime"
                       format="HH:mm"
                       @change="updateDoNotDisturbTime"
                       style="width: 100%"
                     />
                   </div>
-                </a-col>
-              </a-row>
+                </el-col>
+              </el-row>
               
               <div class="dnd-status" v-if="preferenceStore.isDoNotDisturbActive">
-                <a-alert
-                  message="免打扰模式已激活"
+                <el-alert
+                  title="免打扰模式已激活"
                   description="当前时间在免打扰时间段内，您不会收到通知"
                   type="info"
                   show-icon
+                  :closable="false"
                 />
               </div>
             </div>
           </div>
-        </a-card>
+        </el-card>
 
         <!-- 优先级过滤 -->
-        <a-card title="优先级过滤" class="settings-card">
+        <el-card class="settings-card" shadow="never">
+          <template #header>
+            <span>优先级过滤</span>
+          </template>
           <div class="priority-settings">
             <div class="setting-item">
               <div class="setting-info">
                 <div class="setting-name">最小优先级</div>
                 <div class="setting-desc">只接收指定优先级及以上的消息通知</div>
               </div>
-              <a-select
-                v-model:value="preference.min_priority"
+              <el-select
+                v-model="preference.min_priority"
                 style="width: 120px"
                 @change="updateMinPriority"
               >
-                <a-select-option :value="1">低</a-select-option>
-                <a-select-option :value="2">较低</a-select-option>
-                <a-select-option :value="3">中等</a-select-option>
-                <a-select-option :value="4">较高</a-select-option>
-                <a-select-option :value="5">高</a-select-option>
-              </a-select>
+                <el-option :value="1" label="低" />
+                <el-option :value="2" label="较低" />
+                <el-option :value="3" label="中等" />
+                <el-option :value="4" label="较高" />
+                <el-option :value="5" label="高" />
+              </el-select>
             </div>
           </div>
-        </a-card>
+        </el-card>
 
         <!-- 操作按钮 -->
         <div class="settings-actions">
-          <a-button type="primary" @click="saveAllSettings" :loading="saving">
+          <el-button type="primary" @click="saveAllSettings" :loading="saving">
             保存设置
-          </a-button>
-          <a-button @click="resetAllSettings" :loading="resetting">
+          </el-button>
+          <el-button @click="resetAllSettings" :loading="resetting">
             重置所有设置
-          </a-button>
+          </el-button>
         </div>
       </div>
-    </a-spin>
+    </el-skeleton>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { usePreferenceStore } from '../store/preference'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
 import type { Dayjs } from 'dayjs'
 
@@ -158,17 +171,16 @@ const saving = ref(false)
 const resetting = ref(false)
 
 // 计算属性
-const preference = computed(() => preferenceStore.preference)
+const preference = computed(() => preferenceStore.preference || preferenceStore.defaults)
 
 // 免打扰时间
-const dndStartTime = ref<Dayjs>()
-const dndEndTime = ref<Dayjs>()
+const dndStartTime = ref<Date>()
+const dndEndTime = ref<Date>()
 
 // 渠道描述
 const getChannelDescription = (channel: string) => {
   const descriptions: Record<string, string> = {
-    socketio: '实时网页通知，即时接收消息',
-    websocket: '实时网页通知（备用方式）',
+    database: '站内信通知，登录后可查看',
     email: '发送邮件通知到您的邮箱',
     sms: '发送短信通知到您的手机',
     push: '推送通知到您的设备'
@@ -194,9 +206,9 @@ const updateChannelPreference = async (channel: string, enabled: boolean) => {
     await preferenceStore.actions.updateChannelPreferences({
       [channel]: enabled
     })
-    message.success('设置已更新')
+    ElMessage.success('设置已更新')
   } catch (error) {
-    message.error('更新失败')
+    ElMessage.error('更新失败')
     // 回滚状态
     if (preference.value) {
       preference.value.channel_preferences[channel as keyof typeof preference.value.channel_preferences] = !enabled
@@ -210,9 +222,9 @@ const updateTypePreference = async (type: string, enabled: boolean) => {
     await preferenceStore.actions.updateTypePreferences({
       [type]: enabled
     })
-    message.success('设置已更新')
+    ElMessage.success('设置已更新')
   } catch (error) {
-    message.error('更新失败')
+    ElMessage.error('更新失败')
     // 回滚状态
     if (preference.value) {
       preference.value.type_preferences[type as keyof typeof preference.value.type_preferences] = !enabled
@@ -224,9 +236,9 @@ const updateTypePreference = async (type: string, enabled: boolean) => {
 const updateDoNotDisturbEnabled = async (enabled: boolean) => {
   try {
     await preferenceStore.actions.toggleDoNotDisturb(enabled)
-    message.success('设置已更新')
+    ElMessage.success('设置已更新')
   } catch (error) {
-    message.error('更新失败')
+    ElMessage.error('更新失败')
     // 回滚状态
     if (preference.value) {
       preference.value.do_not_disturb_enabled = !enabled
@@ -238,8 +250,8 @@ const updateDoNotDisturbEnabled = async (enabled: boolean) => {
 const updateDoNotDisturbTime = async () => {
   if (!dndStartTime.value || !dndEndTime.value || !preference.value) return
   
-  const startTime = dndStartTime.value.format('HH:mm:ss')
-  const endTime = dndEndTime.value.format('HH:mm:ss')
+  const startTime = dayjs(dndStartTime.value).format('HH:mm:ss')
+  const endTime = dayjs(dndEndTime.value).format('HH:mm:ss')
   
   try {
     await preferenceStore.actions.setDoNotDisturbTime(
@@ -247,9 +259,9 @@ const updateDoNotDisturbTime = async () => {
       endTime,
       preference.value.do_not_disturb_enabled
     )
-    message.success('免打扰时间已更新')
+    ElMessage.success('免打扰时间已更新')
   } catch (error) {
-    message.error('更新失败')
+    ElMessage.error('更新失败')
   }
 }
 
@@ -257,9 +269,9 @@ const updateDoNotDisturbTime = async () => {
 const updateMinPriority = async (priority: number) => {
   try {
     await preferenceStore.actions.setMinPriority(priority)
-    message.success('优先级设置已更新')
+    ElMessage.success('优先级设置已更新')
   } catch (error) {
-    message.error('更新失败')
+    ElMessage.error('更新失败')
   }
 }
 
@@ -271,9 +283,9 @@ const resetChannelPreferences = async () => {
     await preferenceStore.actions.updateChannelPreferences(
       preferenceStore.defaults.channel_preferences
     )
-    message.success('渠道设置已重置')
+    ElMessage.success('渠道设置已重置')
   } catch (error) {
-    message.error('重置失败')
+    ElMessage.error('重置失败')
   }
 }
 
@@ -285,9 +297,9 @@ const resetTypePreferences = async () => {
     await preferenceStore.actions.updateTypePreferences(
       preferenceStore.defaults.type_preferences
     )
-    message.success('消息类型设置已重置')
+    ElMessage.success('消息类型设置已重置')
   } catch (error) {
-    message.error('重置失败')
+    ElMessage.error('重置失败')
   }
 }
 
@@ -298,9 +310,9 @@ const saveAllSettings = async () => {
   saving.value = true
   try {
     await preferenceStore.actions.update(preference.value)
-    message.success('所有设置已保存')
+    ElMessage.success('所有设置已保存')
   } catch (error) {
-    message.error('保存失败')
+    ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
@@ -311,10 +323,10 @@ const resetAllSettings = async () => {
   resetting.value = true
   try {
     await preferenceStore.actions.reset()
-    message.success('所有设置已重置为默认值')
+    ElMessage.success('所有设置已重置为默认值')
     initTimeValues()
   } catch (error) {
-    message.error('重置失败')
+    ElMessage.error('重置失败')
   } finally {
     resetting.value = false
   }
@@ -323,8 +335,8 @@ const resetAllSettings = async () => {
 // 初始化时间值
 const initTimeValues = () => {
   if (preference.value) {
-    dndStartTime.value = dayjs(preference.value.do_not_disturb_start, 'HH:mm:ss')
-    dndEndTime.value = dayjs(preference.value.do_not_disturb_end, 'HH:mm:ss')
+    dndStartTime.value = dayjs(preference.value.do_not_disturb_start, 'HH:mm:ss').toDate()
+    dndEndTime.value = dayjs(preference.value.do_not_disturb_end, 'HH:mm:ss').toDate()
   }
 }
 
@@ -338,8 +350,8 @@ onMounted(async () => {
 <style scoped>
 .notification-settings {
   padding: 24px;
-  background: #f5f5f5;
-  min-height: 100vh;
+  background: var(--el-bg-color-page);
+  min-height: 100%;
 }
 
 .settings-header {
@@ -354,16 +366,22 @@ onMounted(async () => {
 
 .settings-desc {
   margin: 0;
-  color: #666;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
 .settings-content {
-  max-width: 800px;
+  max-width: 100%;
 }
 
 .settings-card {
   margin-bottom: 24px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .channel-settings,
@@ -379,7 +397,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 
@@ -397,7 +415,7 @@ onMounted(async () => {
 .channel-desc,
 .type-desc {
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-secondary);
 }
 
 .dnd-settings {
@@ -411,7 +429,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: center;
   padding: 16px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 
@@ -426,12 +444,12 @@ onMounted(async () => {
 
 .setting-desc {
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-secondary);
 }
 
 .dnd-time {
   padding: 16px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 

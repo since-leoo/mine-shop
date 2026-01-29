@@ -313,10 +313,18 @@ export const usePreferenceStore = defineStore('notification-preference', () => {
 
   // 初始化
   const init = async () => {
-    await Promise.all([
-      actions.get(),
-      actions.getDefaults()
-    ])
+    try {
+      await Promise.all([
+        actions.get().catch(err => {
+          console.error('Failed to get preference:', err)
+        }),
+        actions.getDefaults().catch(err => {
+          console.error('Failed to get defaults:', err)
+        })
+      ])
+    } catch (error) {
+      console.error('Failed to init preference store:', error)
+    }
   }
 
   const reset = () => {

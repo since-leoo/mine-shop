@@ -1,5 +1,8 @@
 /**
  * 系统消息插件入口文件
+ * 
+ * @description 系统消息通知管理插件
+ * 菜单由后端数据库管理，前端只需要注册插件配置
  */
 import type { App } from 'vue'
 import type { Plugin } from '#/global'
@@ -18,118 +21,8 @@ const pluginConfig: Plugin.PluginConfig = {
       order: 100
     },
   },
-  views: [
-    // 用户端路由
-    {
-      name: 'MessageCenter',
-      path: '/message-center',
-      meta: {
-        title: '消息中心',
-        icon: 'material-symbols:message',
-        type: 'M'
-      },
-      component: () => import('./views/MessageCenter.vue')
-    },
-    {
-      name: 'MessageList',
-      path: '/message-center/list',
-      meta: { title: '消息列表', hidden: true },
-      component: () => import('./views/MessageList.vue')
-    },
-    {
-      name: 'MessageDetail',
-      path: '/message-center/detail/:id',
-      meta: { title: '消息详情', hidden: true },
-      component: () => import('./views/MessageDetail.vue')
-    },
-    {
-      name: 'NotificationSettings',
-      path: '/message-center/settings',
-      meta: { title: '通知设置', hidden: true },
-      component: () => import('./views/NotificationSettings.vue')
-    },
-    
-    // 管理端路由 - 与后台菜单路径匹配
-    {
-      name: 'AdminMessageList',
-      path: '/admin/system-message/list',
-      meta: {
-        title: '消息列表',
-        permission: 'system-message:list'
-      },
-      component: () => import('./views/admin/AdminMessageList.vue')
-    },
-    {
-      name: 'AdminMessageStatistics',
-      path: '/admin/system-message/statistics',
-      meta: {
-        title: '消息统计',
-        permission: 'system-message:dashboard'
-      },
-      component: () => import('./views/admin/AdminDashboard.vue')
-    },
-    {
-      name: 'AdminMessageSettings',
-      path: '/admin/system-message/settings',
-      meta: {
-        title: '消息设置',
-        permission: 'system-message:settings'
-      },
-      component: () => import('./views/NotificationSettings.vue')
-    },
-    
-    // 隐藏的按钮级路由（不显示在菜单中）
-    {
-      name: 'AdminMessageCreate',
-      path: '/admin/system-message/create',
-      meta: {
-        title: '创建消息',
-        hidden: true,
-        permission: 'system-message:create'
-      },
-      component: () => import('./views/admin/AdminMessageForm.vue')
-    },
-    {
-      name: 'AdminMessageEdit',
-      path: '/admin/system-message/edit/:id',
-      meta: {
-        title: '编辑消息',
-        hidden: true,
-        permission: 'system-message:update'
-      },
-      component: () => import('./views/admin/AdminMessageForm.vue')
-    },
-    {
-      name: 'AdminTemplateList',
-      path: '/admin/system-message/template',
-      meta: {
-        title: '模板管理',
-        hidden: true,
-        permission: 'system-message:template:list'
-      },
-      component: () => import('./views/admin/AdminTemplateList.vue')
-    },
-    {
-      name: 'AdminTemplateCreate',
-      path: '/admin/system-message/template/create',
-      meta: {
-        title: '创建模板',
-        hidden: true,
-        permission: 'system-message:template:create'
-      },
-      component: () => import('./views/admin/AdminTemplateForm.vue')
-    },
-    {
-      name: 'AdminTemplateEdit',
-      path: '/admin/system-message/template/edit/:id',
-      meta: {
-        title: '编辑模板',
-        hidden: true,
-        permission: 'system-message:template:update'
-      },
-      component: () => import('./views/admin/AdminTemplateForm.vue')
-    }
-  ],
+  // 菜单由后端数据库管理，组件通过 pluginViews glob 自动加载
+  // 无需在此定义 views，后端 menu 表的 component 字段会自动匹配
 }
 
 export default pluginConfig

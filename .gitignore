@@ -22,3 +22,5 @@ public
 *.lock
 storage/swagger/http.json
 storage/uploads
+./kiro
+.qoder

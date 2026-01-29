@@ -5,178 +5,187 @@
         <h2>模板管理</h2>
       </div>
       <div class="header-right">
-        <a-button type="primary" @click="createTemplate">
+        <el-button type="primary" @click="createTemplate">
           创建模板
-        </a-button>
+        </el-button>
       </div>
     </div>
 
     <!-- 筛选栏 -->
     <div class="filter-bar">
       <div class="filter-left">
-        <a-select
-          v-model:value="filters.type"
+        <el-select
+          v-model="filters.type"
           placeholder="模板类型"
           style="width: 120px"
-          allowClear
+          clearable
           @change="handleFilterChange"
         >
-          <a-select-option value="system">系统模板</a-select-option>
-          <a-select-option value="announcement">公告模板</a-select-option>
-          <a-select-option value="alert">警报模板</a-select-option>
-          <a-select-option value="reminder">提醒模板</a-select-option>
-          <a-select-option value="marketing">营销模板</a-select-option>
-        </a-select>
+          <el-option value="system" label="系统模板" />
+          <el-option value="announcement" label="公告模板" />
+          <el-option value="alert" label="警报模板" />
+          <el-option value="reminder" label="提醒模板" />
+          <el-option value="marketing" label="营销模板" />
+        </el-select>
         
-        <a-select
-          v-model:value="filters.status"
+        <el-select
+          v-model="filters.status"
           placeholder="模板状态"
           style="width: 120px"
-          allowClear
+          clearable
           @change="handleFilterChange"
         >
-          <a-select-option value="active">启用</a-select-option>
-          <a-select-option value="inactive">禁用</a-select-option>
-        </a-select>
+          <el-option value="active" label="启用" />
+          <el-option value="inactive" label="禁用" />
+        </el-select>
       </div>
       
       <div class="filter-right">
-        <a-input-search
-          v-model:value="searchKeyword"
+        <el-input
+          v-model="searchKeyword"
           placeholder="搜索模板名称或内容"
           style="width: 250px"
-          @search="handleSearch"
-          allowClear
-        />
+          clearable
+          @keyup.enter="handleSearch(searchKeyword)"
+        >
+          <template #append>
+            <el-button @click="handleSearch(searchKeyword)">搜索</el-button>
+          </template>
+        </el-input>
       </div>
     </div>
 
     <!-- 批量操作栏 -->
     <div class="batch-actions" v-if="selectedRowKeys.length > 0">
       <span>已选择 {{ selectedRowKeys.length }} 项</span>
-      <a-button @click="batchEnable" :loading="batchLoading">
+      <el-button @click="batchEnable" :loading="batchLoading">
         批量启用
-      </a-button>
-      <a-button @click="batchDisable" :loading="batchLoading">
+      </el-button>
+      <el-button @click="batchDisable" :loading="batchLoading">
         批量禁用
-      </a-button>
-      <a-button @click="batchDelete" :loading="batchLoading" danger>
+      </el-button>
+      <el-button @click="batchDelete" :loading="batchLoading" type="danger">
         批量删除
-      </a-button>
-      <a-button @click="clearSelection">取消选择</a-button>
+      </el-button>
+      <el-button @click="clearSelection">取消选择</el-button>
     </div>
 
     <!-- 模板列表 -->
-    <a-table
-      :columns="columns"
-      :data-source="templateStore.templates"
-      :loading="templateStore.loading"
-      :pagination="paginationConfig"
-      :row-selection="rowSelection"
+    <el-table
+      :data="templateStore.templates"
+      v-loading="templateStore.loading"
+      @selection-change="handleSelectionChange"
       row-key="id"
-      @change="handleTableChange"
     >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'name'">
+      <el-table-column type="selection" width="55" />
+      
+      <el-table-column label="模板信息" min-width="300">
+        <template #default="{ row }">
           <div class="template-name-cell">
             <div class="name-content">
-              <a @click="editTemplate(record)" class="name-link">
-                {{ record.name }}
+              <a @click="editTemplate(row)" class="name-link">
+                {{ row.name }}
               </a>
-              <a-tag :color="getTypeColor(record.type)" size="small">
-                {{ getTypeLabel(record.type) }}
-              </a-tag>
+              <el-tag :type="getTypeTagType(row.type)" size="small">
+                {{ getTypeLabel(row.type) }}
+              </el-tag>
             </div>
             <div class="template-meta">
-              <span class="description">{{ record.description }}</span>
-              <span class="time">{{ formatTime(record.created_at) }}</span>
+              <span class="description">{{ row.description }}</span>
+              <span class="time">{{ formatTime(row.created_at) }}</span>
             </div>
           </div>
         </template>
-        
-        <template v-if="column.key === 'variables'">
+      </el-table-column>
+      
+      <el-table-column label="模板变量" min-width="200">
+        <template #default="{ row }">
           <div class="variables-cell">
-            <a-tag 
-              v-for="variable in getTemplateVariables(record.content)" 
+            <el-tag 
+              v-for="variable in getTemplateVariables(row.content)" 
               :key="variable"
               size="small"
-              color="blue"
+              type="primary"
+              class="variable-tag"
             >
               {{ variable }}
-            </a-tag>
-            <span v-if="getTemplateVariables(record.content).length === 0" class="text-muted">
+            </el-tag>
+            <span v-if="getTemplateVariables(row.content).length === 0" class="text-muted">
               无变量
             </span>
           </div>
         </template>
-        
-        <template v-if="column.key === 'usage_count'">
-          <a-statistic 
-            :value="record.usage_count || 0" 
-            :value-style="{ fontSize: '14px' }"
+      </el-table-column>
+      
+      <el-table-column label="使用次数" width="100">
+        <template #default="{ row }">
+          <el-statistic :value="row.usage_count || 0" />
+        </template>
+      </el-table-column>
+      
+      <el-table-column label="状态" width="80">
+        <template #default="{ row }">
+          <el-switch
+            :model-value="row.status === 'active'"
+            @change="toggleStatus(row)"
+            :loading="row.statusLoading"
           />
         </template>
-        
-        <template v-if="column.key === 'status'">
-          <a-switch
-            :checked="record.status === 'active'"
-            @change="toggleStatus(record)"
-            :loading="record.statusLoading"
-          />
-        </template>
-        
-        <template v-if="column.key === 'action'">
-          <a-space>
-            <a-button 
-              type="link" 
-              size="small" 
-              @click="previewTemplate(record)"
-            >
-              预览
-            </a-button>
-            <a-button 
-              type="link" 
-              size="small" 
-              @click="editTemplate(record)"
-            >
-              编辑
-            </a-button>
-            <a-button 
-              type="link" 
-              size="small" 
-              @click="duplicateTemplate(record)"
-            >
-              复制
-            </a-button>
-            <a-popconfirm
-              title="确定要删除这个模板吗？"
-              @confirm="deleteTemplate(record)"
-            >
-              <a-button type="link" size="small" danger>
+      </el-table-column>
+      
+      <el-table-column label="操作" width="200">
+        <template #default="{ row }">
+          <el-button type="primary" link size="small" @click="showPreview(row)">
+            预览
+          </el-button>
+          <el-button type="primary" link size="small" @click="editTemplate(row)">
+            编辑
+          </el-button>
+          <el-button type="primary" link size="small" @click="duplicateTemplate(row)">
+            复制
+          </el-button>
+          <el-popconfirm
+            title="确定要删除这个模板吗？"
+            @confirm="deleteTemplate(row)"
+          >
+            <template #reference>
+              <el-button type="danger" link size="small">
                 删除
-              </a-button>
-            </a-popconfirm>
-          </a-space>
+              </el-button>
+            </template>
+          </el-popconfirm>
         </template>
-      </template>
-    </a-table>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页 -->
+    <div class="pagination-wrapper">
+      <el-pagination
+        v-model:current-page="templateStore.currentPage"
+        v-model:page-size="templateStore.pageSize"
+        :total="templateStore.total"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 模板预览弹窗 -->
-    <a-modal
-      v-model:open="previewVisible"
+    <el-dialog
+      v-model="previewVisible"
       title="模板预览"
-      :footer="null"
       width="800px"
     >
-      <div v-if="previewTemplate">
+      <div v-if="previewTemplateData">
         <div class="preview-header">
-          <h3>{{ previewTemplate.name }}</h3>
-          <a-tag :color="getTypeColor(previewTemplate.type)">
-            {{ getTypeLabel(previewTemplate.type) }}
-          </a-tag>
+          <h3>{{ previewTemplateData.name }}</h3>
+          <el-tag :type="getTypeTagType(previewTemplateData.type)">
+            {{ getTypeLabel(previewTemplateData.type) }}
+          </el-tag>
         </div>
         
-        <a-divider />
+        <el-divider />
         
         <div class="preview-variables" v-if="previewVariables.length > 0">
           <h4>模板变量</h4>
@@ -187,10 +196,10 @@
               class="variable-input"
             >
               <label>{{ variable }}</label>
-              <a-input 
-                v-model:value="previewValues[variable]"
+              <el-input 
+                v-model="previewValues[variable]"
                 :placeholder="`请输入 ${variable} 的值`"
-                @change="updatePreview"
+                @input="updatePreview"
               />
             </div>
           </div>
@@ -201,15 +210,15 @@
           <div class="content-preview" v-html="previewContent"></div>
         </div>
       </div>
-    </a-modal>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTemplateStore } from '../../store/template'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
 import type { MessageTemplate, TemplateListParams } from '../../api/template'
 import dayjs from 'dayjs'
 
@@ -228,68 +237,21 @@ const batchLoading = ref(false)
 
 // 预览相关
 const previewVisible = ref(false)
-const previewTemplate = ref<MessageTemplate | null>(null)
+const previewTemplateData = ref<MessageTemplate | null>(null)
 const previewVariables = ref<string[]>([])
 const previewValues = ref<Record<string, string>>({})
 const previewContent = ref('')
 
-// 表格列配置
-const columns = [
-  {
-    title: '模板信息',
-    key: 'name',
-    width: '35%'
-  },
-  {
-    title: '模板变量',
-    key: 'variables',
-    width: '25%'
-  },
-  {
-    title: '使用次数',
-    key: 'usage_count',
-    width: '100px'
-  },
-  {
-    title: '状态',
-    key: 'status',
-    width: '80px'
-  },
-  {
-    title: '操作',
-    key: 'action',
-    width: '200px'
+// 获取模板类型标签类型
+const getTypeTagType = (type: string) => {
+  const types: Record<string, '' | 'success' | 'warning' | 'danger' | 'info'> = {
+    system: '',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-]
-
-// 行选择配置
-const rowSelection = {
-  selectedRowKeys: selectedRowKeys,
-  onChange: (keys: number[]) => {
-    selectedRowKeys.value = keys
-  }
-}
-
-// 分页配置
-const paginationConfig = computed(() => ({
-  current: templateStore.currentPage,
-  pageSize: templateStore.pageSize,
-  total: templateStore.total,
-  showSizeChanger: true,
-  showQuickJumper: true,
-  showTotal: (total: number) => `共 ${total} 条记录`
-}))
-
-// 获取模板类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
-  }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取模板类型标签
@@ -315,6 +277,11 @@ const getTemplateVariables = (content: string): string[] => {
   return matches ? [...new Set(matches.map(m => m.replace(/[{}]/g, '')))] : []
 }
 
+// 处理选择变化
+const handleSelectionChange = (selection: MessageTemplate[]) => {
+  selectedRowKeys.value = selection.map(item => item.id)
+}
+
 // 处理筛选变化
 const handleFilterChange = () => {
   templateStore.setPage(1)
@@ -330,10 +297,15 @@ const handleSearch = (keyword: string) => {
   }
 }
 
-// 处理表格变化
-const handleTableChange = (pagination: any) => {
-  templateStore.setPage(pagination.current)
-  templateStore.setPageSize(pagination.pageSize)
+// 处理分页大小变化
+const handleSizeChange = (size: number) => {
+  templateStore.setPageSize(size)
+  loadTemplates()
+}
+
+// 处理页码变化
+const handleCurrentChange = (page: number) => {
+  templateStore.setPage(page)
   loadTemplates()
 }
 
@@ -342,7 +314,7 @@ const loadTemplates = async () => {
   try {
     await templateStore.actions.getList(filters)
   } catch (error) {
-    message.error('加载模板列表失败')
+    ElMessage.error('加载模板列表失败')
   }
 }
 
@@ -363,7 +335,7 @@ const duplicateTemplate = (record: MessageTemplate) => {
 
 // 预览模板
 const showPreview = (record: MessageTemplate) => {
-  previewTemplate.value = record
+  previewTemplateData.value = record
   previewVariables.value = getTemplateVariables(record.content)
   previewValues.value = {}
   
@@ -378,9 +350,9 @@ const showPreview = (record: MessageTemplate) => {
 
 // 更新预览内容
 const updatePreview = () => {
-  if (!previewTemplate.value) return
+  if (!previewTemplateData.value) return
   
-  let content = previewTemplate.value.content
+  let content = previewTemplateData.value.content
   Object.entries(previewValues.value).forEach(([key, value]) => {
     const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
     content = content.replace(regex, value || `[${key}]`)
@@ -396,9 +368,9 @@ const toggleStatus = async (record: MessageTemplate) => {
     const newStatus = record.status === 'active' ? 'inactive' : 'active'
     await templateStore.actions.updateStatus(record.id, newStatus)
     record.status = newStatus
-    message.success(`模板已${newStatus === 'active' ? '启用' : '禁用'}`)
+    ElMessage.success(`模板已${newStatus === 'active' ? '启用' : '禁用'}`)
   } catch (error) {
-    message.error('状态更新失败')
+    ElMessage.error('状态更新失败')
   } finally {
     record.statusLoading = false
   }
@@ -408,9 +380,9 @@ const toggleStatus = async (record: MessageTemplate) => {
 const deleteTemplate = async (record: MessageTemplate) => {
   try {
     await templateStore.actions.delete(record.id)
-    message.success('删除成功')
+    ElMessage.success('删除成功')
   } catch (error) {
-    message.error('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 
@@ -424,11 +396,11 @@ const batchEnable = async () => {
       templateStore.actions.updateStatus(id, 'active')
     )
     await Promise.all(promises)
-    message.success(`已启用 ${selectedRowKeys.value.length} 个模板`)
+    ElMessage.success(`已启用 ${selectedRowKeys.value.length} 个模板`)
     clearSelection()
     await loadTemplates()
   } catch (error) {
-    message.error('批量启用失败')
+    ElMessage.error('批量启用失败')
   } finally {
     batchLoading.value = false
   }
@@ -444,11 +416,11 @@ const batchDisable = async () => {
       templateStore.actions.updateStatus(id, 'inactive')
     )
     await Promise.all(promises)
-    message.success(`已禁用 ${selectedRowKeys.value.length} 个模板`)
+    ElMessage.success(`已禁用 ${selectedRowKeys.value.length} 个模板`)
     clearSelection()
     await loadTemplates()
   } catch (error) {
-    message.error('批量禁用失败')
+    ElMessage.error('批量禁用失败')
   } finally {
     batchLoading.value = false
   }
@@ -461,10 +433,10 @@ const batchDelete = async () => {
   batchLoading.value = true
   try {
     await templateStore.actions.batchDelete(selectedRowKeys.value)
-    message.success(`已删除 ${selectedRowKeys.value.length} 个模板`)
+    ElMessage.success(`已删除 ${selectedRowKeys.value.length} 个模板`)
     clearSelection()
   } catch (error) {
-    message.error('批量删除失败')
+    ElMessage.error('批量删除失败')
   } finally {
     batchLoading.value = false
   }
@@ -522,8 +494,8 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: #e6f7ff;
-  border: 1px solid #91d5ff;
+  background: #ecf5ff;
+  border: 1px solid #b3d8ff;
   border-radius: 6px;
 }
 
@@ -540,7 +512,7 @@ onMounted(() => {
 
 .name-link {
   flex: 1;
-  color: #1890ff;
+  color: #409eff;
   text-decoration: none;
   font-weight: 500;
 }
@@ -572,9 +544,19 @@ onMounted(() => {
   gap: 4px;
 }
 
+.variable-tag {
+  margin-right: 4px;
+}
+
 .text-muted {
   color: #999;
   font-style: italic;
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 
 .preview-header {

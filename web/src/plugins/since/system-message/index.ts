@@ -1,5 +1,8 @@
 /**
  * 系统消息插件入口文件
+ * 
+ * @description 系统消息通知管理插件
+ * 菜单由后端数据库管理，前端只需要注册插件配置
  */
 import type { App } from 'vue'
 import type { Plugin } from '#/global'
@@ -18,36 +21,8 @@ const pluginConfig: Plugin.PluginConfig = {
       order: 100
     },
   },
-  views: [
-    // 管理端路由 - 与后台菜单路径匹配
-    {
-      name: 'AdminMessageList',
-      path: '/admin/system-message/list',
-      meta: {
-        title: '消息列表',
-        permission: 'system-message:list'
-      },
-      component: () => import('./views/admin/AdminMessageList.vue')
-    },
-    {
-      name: 'AdminMessageStatistics',
-      path: '/admin/system-message/statistics',
-      meta: {
-        title: '消息统计',
-        permission: 'system-message:dashboard'
-      },
-      component: () => import('./views/admin/AdminDashboard.vue')
-    },
-    {
-      name: 'AdminMessageSettings',
-      path: '/admin/system-message/settings',
-      meta: {
-        title: '消息设置',
-        permission: 'system-message:settings'
-      },
-      component: () => import('./views/NotificationSettings.vue')
-    }
-  ],
+  // 菜单由后端数据库管理，组件通过 pluginViews glob 自动加载
+  // 无需在此定义 views，后端 menu 表的 component 字段会自动匹配
 }
 
 export default pluginConfig

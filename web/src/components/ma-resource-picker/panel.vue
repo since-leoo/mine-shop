@@ -549,9 +549,9 @@ onUnmounted(() => {
           </template>
         </el-tag>
         <el-pagination
-          v-model:current-page="queryParams.page" :disabled="loading" :total="total"
+          :current-page="queryParams.page" :disabled="loading" :total="total"
           :page-size="queryParams.page_size" background layout="prev, pager, next" :pager-count="5"
-          @change="(p: number) => {
+          @current-change="(p: number) => {
             queryParams.page = p
             getResourceList(queryParams)
           }"

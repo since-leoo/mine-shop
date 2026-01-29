@@ -1,27 +1,27 @@
 <template>
   <div class="message-detail">
     <div class="detail-header">
-      <a-button @click="goBack" type="text" class="back-btn">
-        <template #icon>
-          <ArrowLeftOutlined />
-        </template>
+      <el-button @click="goBack" text class="back-btn">
+        <el-icon><ArrowLeft /></el-icon>
         返回
-      </a-button>
+      </el-button>
       
       <div class="header-actions" v-if="userMessage">
-        <a-button 
+        <el-button 
           @click="markAsRead" 
           v-if="!userMessage.is_read"
           type="primary"
         >
           标记已读
-        </a-button>
-        <a-popconfirm
+        </el-button>
+        <el-popconfirm
           title="确定要删除这条消息吗？"
           @confirm="deleteMessage"
         >
-          <a-button danger>删除</a-button>
-        </a-popconfirm>
+          <template #reference>
+            <el-button type="danger">删除</el-button>
+          </template>
+        </el-popconfirm>
       </div>
     </div>
 
@@ -29,20 +29,20 @@
       <div class="message-header">
         <h1 class="message-title">{{ userMessage.message.title }}</h1>
         <div class="message-meta">
-          <a-tag :color="getTypeColor(userMessage.message.type)">
+          <el-tag :type="getTypeTagType(userMessage.message.type)">
             {{ getTypeLabel(userMessage.message.type) }}
-          </a-tag>
+          </el-tag>
           <span class="priority" :class="`priority-${userMessage.message.priority}`">
             {{ getPriorityLabel(userMessage.message.priority) }}
           </span>
           <span class="time">{{ formatTime(userMessage.created_at) }}</span>
-          <a-tag :color="userMessage.is_read ? 'green' : 'orange'">
+          <el-tag :type="userMessage.is_read ? 'success' : 'warning'">
             {{ userMessage.is_read ? '已读' : '未读' }}
-          </a-tag>
+          </el-tag>
         </div>
       </div>
 
-      <a-divider />
+      <el-divider />
 
       <div class="message-content">
         <div class="content-body" v-html="formatContent(userMessage.message.content)"></div>
@@ -50,19 +50,19 @@
         <!-- 附加数据 -->
         <div class="extra-data" v-if="userMessage.message.extra_data">
           <h3>附加信息</h3>
-          <a-descriptions :column="2" size="small">
-            <a-descriptions-item 
+          <el-descriptions :column="2" size="small" border>
+            <el-descriptions-item 
               v-for="(value, key) in userMessage.message.extra_data" 
               :key="key"
-              :label="key"
+              :label="String(key)"
             >
               {{ value }}
-            </a-descriptions-item>
-          </a-descriptions>
+            </el-descriptions-item>
+          </el-descriptions>
         </div>
       </div>
 
-      <a-divider />
+      <el-divider />
 
       <div class="message-footer">
         <div class="read-info" v-if="userMessage.is_read && userMessage.read_at">
@@ -73,19 +73,19 @@
     </div>
 
     <div class="loading-container" v-else-if="loading">
-      <a-spin size="large" />
+      <el-skeleton :rows="10" animated />
     </div>
 
     <div class="error-container" v-else>
-      <a-result
-        status="404"
+      <el-result
+        icon="warning"
         title="消息不存在"
         sub-title="您访问的消息可能已被删除或不存在"
       >
         <template #extra>
-          <a-button type="primary" @click="goBack">返回列表</a-button>
+          <el-button type="primary" @click="goBack">返回列表</el-button>
         </template>
-      </a-result>
+      </el-result>
     </div>
   </div>
 </template>
@@ -94,8 +94,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessageStore } from '../store/message'
-import { message } from 'ant-design-vue'
-import { ArrowLeftOutlined } from '@ant-design/icons-vue'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
 import type { UserMessage } from '../api/message'
 import dayjs from 'dayjs'
 
@@ -106,16 +106,16 @@ const messageStore = useMessageStore()
 const userMessage = ref<UserMessage | null>(null)
 const loading = ref(false)
 
-// 获取消息类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
+// 获取消息类型 Tag 类型
+const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: '',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取消息类型标签
@@ -166,9 +166,9 @@ const markAsRead = async () => {
     await messageStore.userActions.markAsRead(userMessage.value.message_id)
     userMessage.value.is_read = true
     userMessage.value.read_at = new Date().toISOString()
-    message.success('已标记为已读')
+    ElMessage.success('已标记为已读')
   } catch (error) {
-    message.error('操作失败')
+    ElMessage.error('操作失败')
   }
 }
 
@@ -178,10 +178,10 @@ const deleteMessage = async () => {
   
   try {
     await messageStore.userActions.delete(userMessage.value.message_id)
-    message.success('删除成功')
+    ElMessage.success('删除成功')
     goBack()
   } catch (error) {
-    message.error('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 
@@ -210,7 +210,7 @@ onMounted(() => {
 <style scoped>
 .message-detail {
   background: #fff;
-  min-height: 100vh;
+  min-height: 100%;
 }
 
 .detail-header {
@@ -218,7 +218,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 16px 24px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
 .back-btn {
@@ -245,7 +245,7 @@ onMounted(() => {
   font-size: 24px;
   font-weight: 600;
   margin: 0 0 12px 0;
-  color: #262626;
+  color: var(--el-text-color-primary);
 }
 
 .message-meta {
@@ -262,14 +262,14 @@ onMounted(() => {
   font-weight: 500;
 }
 
-.priority-1 { background: #f6ffed; color: #52c41a; }
-.priority-2 { background: #fff7e6; color: #fa8c16; }
-.priority-3 { background: #e6f7ff; color: #1890ff; }
-.priority-4 { background: #fff2e8; color: #fa541c; }
-.priority-5 { background: #fff1f0; color: #f5222d; }
+.priority-1 { background: var(--el-color-success-light-9); color: var(--el-color-success); }
+.priority-2 { background: var(--el-color-warning-light-9); color: var(--el-color-warning); }
+.priority-3 { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+.priority-4 { background: var(--el-color-warning-light-7); color: var(--el-color-warning-dark-2); }
+.priority-5 { background: var(--el-color-danger-light-9); color: var(--el-color-danger); }
 
 .time {
-  color: #666;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
@@ -279,7 +279,7 @@ onMounted(() => {
 
 .content-body {
   font-size: 16px;
-  color: #262626;
+  color: var(--el-text-color-primary);
   margin-bottom: 24px;
   white-space: pre-wrap;
 }
@@ -287,24 +287,24 @@ onMounted(() => {
 .extra-data {
   margin-top: 24px;
   padding: 16px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 
 .extra-data h3 {
   margin: 0 0 12px 0;
   font-size: 16px;
-  color: #262626;
+  color: var(--el-text-color-primary);
 }
 
 .message-footer {
   margin-top: 24px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--el-border-color-light);
 }
 
 .read-info {
-  color: #666;
+  color: var(--el-text-color-secondary);
   font-size: 14px;
 }
 
@@ -313,14 +313,11 @@ onMounted(() => {
 }
 
 .read-time {
-  color: #52c41a;
+  color: var(--el-color-success);
 }
 
 .loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 400px;
+  padding: 48px 24px;
 }
 
 .error-container {

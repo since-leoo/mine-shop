@@ -3,141 +3,164 @@
     <!-- 筛选栏 -->
     <div class="filter-bar">
       <div class="filter-left">
-        <a-radio-group v-model:value="filters.is_read" @change="handleFilterChange">
-          <a-radio-button :value="undefined">全部</a-radio-button>
-          <a-radio-button :value="false">未读</a-radio-button>
-          <a-radio-button :value="true">已读</a-radio-button>
-        </a-radio-group>
+        <el-radio-group v-model="filters.is_read" @change="handleFilterChange">
+          <el-radio-button :value="undefined">全部</el-radio-button>
+          <el-radio-button :value="false">未读</el-radio-button>
+          <el-radio-button :value="true">已读</el-radio-button>
+        </el-radio-group>
         
-        <a-select
-          v-model:value="filters.type"
+        <el-select
+          v-model="filters.type"
           placeholder="消息类型"
           style="width: 120px"
-          allowClear
+          clearable
           @change="handleFilterChange"
         >
-          <a-select-option value="system">系统消息</a-select-option>
-          <a-select-option value="announcement">公告</a-select-option>
-          <a-select-option value="alert">警报</a-select-option>
-          <a-select-option value="reminder">提醒</a-select-option>
-          <a-select-option value="marketing">营销</a-select-option>
-        </a-select>
+          <el-option value="system" label="系统消息" />
+          <el-option value="announcement" label="公告" />
+          <el-option value="alert" label="警报" />
+          <el-option value="reminder" label="提醒" />
+          <el-option value="marketing" label="营销" />
+        </el-select>
         
-        <a-select
-          v-model:value="filters.priority"
+        <el-select
+          v-model="filters.priority"
           placeholder="优先级"
           style="width: 100px"
-          allowClear
+          clearable
           @change="handleFilterChange"
         >
-          <a-select-option :value="5">高</a-select-option>
-          <a-select-option :value="4">较高</a-select-option>
-          <a-select-option :value="3">中等</a-select-option>
-          <a-select-option :value="2">较低</a-select-option>
-          <a-select-option :value="1">低</a-select-option>
-        </a-select>
+          <el-option :value="5" label="高" />
+          <el-option :value="4" label="较高" />
+          <el-option :value="3" label="中等" />
+          <el-option :value="2" label="较低" />
+          <el-option :value="1" label="低" />
+        </el-select>
       </div>
       
       <div class="filter-right">
-        <a-input-search
-          v-model:value="searchKeyword"
+        <el-input
+          v-model="searchKeyword"
           placeholder="搜索消息"
           style="width: 200px"
-          @search="handleSearch"
-          allowClear
-        />
+          clearable
+          @keyup.enter="handleSearch"
+        >
+          <template #append>
+            <el-button @click="handleSearch">
+              <el-icon><Search /></el-icon>
+            </el-button>
+          </template>
+        </el-input>
       </div>
     </div>
 
     <!-- 批量操作栏 -->
-    <div class="batch-actions" v-if="selectedRowKeys.length > 0">
-      <span>已选择 {{ selectedRowKeys.length }} 项</span>
-      <a-button @click="batchMarkAsRead" :loading="batchLoading">
+    <div class="batch-actions" v-if="selectedRows.length > 0">
+      <span>已选择 {{ selectedRows.length }} 项</span>
+      <el-button @click="batchMarkAsRead" :loading="batchLoading">
         批量已读
-      </a-button>
-      <a-button @click="batchDelete" :loading="batchLoading" danger>
+      </el-button>
+      <el-button @click="batchDelete" :loading="batchLoading" type="danger">
         批量删除
-      </a-button>
-      <a-button @click="clearSelection">取消选择</a-button>
+      </el-button>
+      <el-button @click="clearSelection">取消选择</el-button>
     </div>
 
     <!-- 消息列表 -->
-    <a-table
-      :columns="columns"
-      :data-source="messageStore.userMessages"
-      :loading="messageStore.loading"
-      :pagination="paginationConfig"
-      :row-selection="rowSelection"
+    <el-table
+      ref="tableRef"
+      :data="messageStore.userMessages"
+      v-loading="messageStore.loading"
+      @selection-change="handleSelectionChange"
       row-key="id"
-      @change="handleTableChange"
+      style="width: 100%"
     >
-      <template #bodyCell="{ column, record }">
-        <template v-if="column.key === 'title'">
-          <div class="message-title" :class="{ 'unread': !record.is_read }">
+      <el-table-column type="selection" width="55" />
+      
+      <el-table-column label="消息内容" min-width="300">
+        <template #default="{ row }">
+          <div class="message-title" :class="{ 'unread': !row.is_read }">
             <div class="title-content">
-              <span class="title-text" @click="viewMessage(record)">
-                {{ record.message.title }}
+              <span class="title-text" @click="viewMessage(row)">
+                {{ row.message.title }}
               </span>
-              <a-tag 
-                :color="getTypeColor(record.message.type)" 
+              <el-tag 
+                :type="getTypeTagType(row.message.type)" 
                 size="small"
               >
-                {{ getTypeLabel(record.message.type) }}
-              </a-tag>
+                {{ getTypeLabel(row.message.type) }}
+              </el-tag>
             </div>
             <div class="message-meta">
-              <span class="priority" :class="`priority-${record.message.priority}`">
-                {{ getPriorityLabel(record.message.priority) }}
+              <span class="priority" :class="`priority-${row.message.priority}`">
+                {{ getPriorityLabel(row.message.priority) }}
               </span>
-              <span class="time">{{ formatTime(record.created_at) }}</span>
+              <span class="time">{{ formatTime(row.created_at) }}</span>
             </div>
           </div>
         </template>
-        
-        <template v-if="column.key === 'status'">
-          <a-tag :color="record.is_read ? 'green' : 'orange'">
-            {{ record.is_read ? '已读' : '未读' }}
-          </a-tag>
+      </el-table-column>
+      
+      <el-table-column label="状态" width="100">
+        <template #default="{ row }">
+          <el-tag :type="row.is_read ? 'success' : 'warning'">
+            {{ row.is_read ? '已读' : '未读' }}
+          </el-tag>
         </template>
-        
-        <template v-if="column.key === 'action'">
-          <a-space>
-            <a-button 
-              type="link" 
-              size="small" 
-              @click="viewMessage(record)"
-            >
-              查看
-            </a-button>
-            <a-button 
-              type="link" 
-              size="small" 
-              @click="markAsRead(record)"
-              v-if="!record.is_read"
-            >
-              标记已读
-            </a-button>
-            <a-popconfirm
-              title="确定要删除这条消息吗？"
-              @confirm="deleteMessage(record)"
-            >
-              <a-button type="link" size="small" danger>
+      </el-table-column>
+      
+      <el-table-column label="操作" width="180" fixed="right">
+        <template #default="{ row }">
+          <el-button type="primary" link size="small" @click="viewMessage(row)">
+            查看
+          </el-button>
+          <el-button 
+            type="primary" 
+            link 
+            size="small" 
+            @click="markAsRead(row)"
+            v-if="!row.is_read"
+          >
+            标记已读
+          </el-button>
+          <el-popconfirm
+            title="确定要删除这条消息吗？"
+            @confirm="deleteMessage(row)"
+          >
+            <template #reference>
+              <el-button type="danger" link size="small">
                 删除
-              </a-button>
-            </a-popconfirm>
-          </a-space>
+              </el-button>
+            </template>
+          </el-popconfirm>
         </template>
-      </template>
-    </a-table>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页 -->
+    <div class="pagination-wrapper">
+      <el-pagination
+        v-model:current-page="currentPage"
+        v-model:page-size="pageSize"
+        :page-sizes="[10, 20, 50, 100]"
+        :total="messageStore.total"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessageStore } from '../store/message'
-import { message } from 'ant-design-vue'
+import { ElMessage } from 'element-plus'
+import { Search } from '@element-plus/icons-vue'
 import type { UserMessage, UserMessageListParams } from '../api/message'
+import type { TableInstance } from 'element-plus'
 import dayjs from 'dayjs'
 
 const router = useRouter()
@@ -151,56 +174,22 @@ const filters = reactive<UserMessageListParams>({
 })
 
 const searchKeyword = ref('')
-const selectedRowKeys = ref<number[]>([])
+const selectedRows = ref<UserMessage[]>([])
 const batchLoading = ref(false)
+const tableRef = ref<TableInstance>()
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-// 表格列配置
-const columns = [
-  {
-    title: '消息内容',
-    key: 'title',
-    width: '60%'
-  },
-  {
-    title: '状态',
-    key: 'status',
-    width: '100px'
-  },
-  {
-    title: '操作',
-    key: 'action',
-    width: '150px'
+// 获取消息类型 Tag 类型
+const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: '',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-]
-
-// 行选择配置
-const rowSelection = {
-  selectedRowKeys: selectedRowKeys,
-  onChange: (keys: number[]) => {
-    selectedRowKeys.value = keys
-  }
-}
-
-// 分页配置
-const paginationConfig = computed(() => ({
-  current: messageStore.currentPage,
-  pageSize: messageStore.pageSize,
-  total: messageStore.total,
-  showSizeChanger: true,
-  showQuickJumper: true,
-  showTotal: (total: number) => `共 ${total} 条记录`
-}))
-
-// 获取消息类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
-  }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取消息类型标签
@@ -234,23 +223,35 @@ const formatTime = (time: string) => {
 
 // 处理筛选变化
 const handleFilterChange = () => {
-  messageStore.setPage(1)
+  currentPage.value = 1
   loadMessages()
 }
 
 // 处理搜索
-const handleSearch = (keyword: string) => {
-  if (keyword.trim()) {
-    messageStore.userActions.search(keyword, filters)
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    messageStore.userActions.search(searchKeyword.value, filters)
   } else {
     loadMessages()
   }
 }
 
-// 处理表格变化
-const handleTableChange = (pagination: any) => {
-  messageStore.setPage(pagination.current)
-  messageStore.setPageSize(pagination.pageSize)
+// 处理选择变化
+const handleSelectionChange = (rows: UserMessage[]) => {
+  selectedRows.value = rows
+}
+
+// 处理分页大小变化
+const handleSizeChange = (size: number) => {
+  pageSize.value = size
+  messageStore.setPageSize(size)
+  loadMessages()
+}
+
+// 处理页码变化
+const handleCurrentChange = (page: number) => {
+  currentPage.value = page
+  messageStore.setPage(page)
   loadMessages()
 }
 
@@ -259,7 +260,7 @@ const loadMessages = async () => {
   try {
     await messageStore.userActions.getList(filters)
   } catch (error) {
-    message.error('加载消息列表失败')
+    ElMessage.error('加载消息列表失败')
   }
 }
 
@@ -272,9 +273,9 @@ const viewMessage = (record: UserMessage) => {
 const markAsRead = async (record: UserMessage) => {
   try {
     await messageStore.userActions.markAsRead(record.message_id)
-    message.success('已标记为已读')
+    ElMessage.success('已标记为已读')
   } catch (error) {
-    message.error('操作失败')
+    ElMessage.error('操作失败')
   }
 }
 
@@ -282,28 +283,24 @@ const markAsRead = async (record: UserMessage) => {
 const deleteMessage = async (record: UserMessage) => {
   try {
     await messageStore.userActions.delete(record.message_id)
-    message.success('删除成功')
+    ElMessage.success('删除成功')
   } catch (error) {
-    message.error('删除失败')
+    ElMessage.error('删除失败')
   }
 }
 
 // 批量标记已读
 const batchMarkAsRead = async () => {
-  if (selectedRowKeys.value.length === 0) return
+  if (selectedRows.value.length === 0) return
   
   batchLoading.value = true
   try {
-    const messageIds = selectedRowKeys.value.map(id => {
-      const userMessage = messageStore.userMessages.find(msg => msg.id === id)
-      return userMessage?.message_id
-    }).filter(Boolean) as number[]
-    
+    const messageIds = selectedRows.value.map(row => row.message_id)
     await messageStore.userActions.batchMarkAsRead(messageIds)
-    message.success(`已标记 ${messageIds.length} 条消息为已读`)
+    ElMessage.success(`已标记 ${messageIds.length} 条消息为已读`)
     clearSelection()
   } catch (error) {
-    message.error('批量操作失败')
+    ElMessage.error('批量操作失败')
   } finally {
     batchLoading.value = false
   }
@@ -311,20 +308,16 @@ const batchMarkAsRead = async () => {
 
 // 批量删除
 const batchDelete = async () => {
-  if (selectedRowKeys.value.length === 0) return
+  if (selectedRows.value.length === 0) return
   
   batchLoading.value = true
   try {
-    const messageIds = selectedRowKeys.value.map(id => {
-      const userMessage = messageStore.userMessages.find(msg => msg.id === id)
-      return userMessage?.message_id
-    }).filter(Boolean) as number[]
-    
+    const messageIds = selectedRows.value.map(row => row.message_id)
     await messageStore.userActions.batchDelete(messageIds)
-    message.success(`已删除 ${messageIds.length} 条消息`)
+    ElMessage.success(`已删除 ${messageIds.length} 条消息`)
     clearSelection()
   } catch (error) {
-    message.error('批量删除失败')
+    ElMessage.error('批量删除失败')
   } finally {
     batchLoading.value = false
   }
@@ -332,7 +325,8 @@ const batchDelete = async () => {
 
 // 清除选择
 const clearSelection = () => {
-  selectedRowKeys.value = []
+  tableRef.value?.clearSelection()
+  selectedRows.value = []
 }
 
 // 初始化
@@ -352,7 +346,7 @@ onMounted(() => {
   align-items: center;
   margin-bottom: 16px;
   padding: 16px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 
@@ -368,8 +362,8 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 16px;
   padding: 12px 16px;
-  background: #e6f7ff;
-  border: 1px solid #91d5ff;
+  background: var(--el-color-primary-light-9);
+  border: 1px solid var(--el-color-primary-light-5);
   border-radius: 6px;
 }
 
@@ -390,7 +384,8 @@ onMounted(() => {
 
 .title-text {
   flex: 1;
-  color: #1890ff;
+  color: var(--el-color-primary);
+  cursor: pointer;
 }
 
 .title-text:hover {
@@ -402,7 +397,7 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   font-size: 12px;
-  color: #666;
+  color: var(--el-text-color-secondary);
 }
 
 .priority {
@@ -411,13 +406,19 @@ onMounted(() => {
   font-size: 11px;
 }
 
-.priority-1 { background: #f6ffed; color: #52c41a; }
-.priority-2 { background: #fff7e6; color: #fa8c16; }
-.priority-3 { background: #e6f7ff; color: #1890ff; }
-.priority-4 { background: #fff2e8; color: #fa541c; }
-.priority-5 { background: #fff1f0; color: #f5222d; }
+.priority-1 { background: var(--el-color-success-light-9); color: var(--el-color-success); }
+.priority-2 { background: var(--el-color-warning-light-9); color: var(--el-color-warning); }
+.priority-3 { background: var(--el-color-primary-light-9); color: var(--el-color-primary); }
+.priority-4 { background: var(--el-color-warning-light-7); color: var(--el-color-warning-dark-2); }
+.priority-5 { background: var(--el-color-danger-light-9); color: var(--el-color-danger); }
 
 .time {
-  color: #999;
+  color: var(--el-text-color-secondary);
+}
+
+.pagination-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
 }
 </style>

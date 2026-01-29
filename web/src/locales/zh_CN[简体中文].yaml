@@ -182,3 +182,16 @@ dictionary:
     self: 本人数据权限
     customDept: 自选部门数据权限
     customFunc: 自定义函数数据权限
+plugin:
+  systemMessage:
+    title: 消息管理
+    list: 消息列表
+    statistics: 消息统计
+    settings: 消息设置
+  mall:
+    title: 商城管理
+    categories: 分类管理
+    brands: 品牌管理
+    products: 商品管理
+    orders: 订单管理
+    members: 会员管理

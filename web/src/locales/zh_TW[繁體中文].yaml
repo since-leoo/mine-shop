@@ -182,3 +182,9 @@ dictionary:
     self: 本人數據權限
     customDept: 自選部門數據權限
     customFunc: 自定義數據權限
+plugin:
+  systemMessage:
+    title: 消息管理
+    list: 消息列表
+    statistics: 消息統計
+    settings: 消息設置
