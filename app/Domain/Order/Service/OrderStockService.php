@@ -1,0 +1,144 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Order\Service;
+
+use Hyperf\Redis\Redis;
+use Hyperf\Redis\RedisFactory;
+use Hyperf\Stringable\Str;
+use RuntimeException;
+
+final class OrderStockService
+{
+    private const STOCK_HASH_KEY = 'mall:stock:sku';
+
+    private const DEDUCT_SCRIPT = <<<'LUA'
+local stockKey = KEYS[1]
+for i = 1, #ARGV, 2 do
+    local field = ARGV[i]
+    local quantity = tonumber(ARGV[i + 1])
+    local current = tonumber(redis.call('HGET', stockKey, field) or '-1')
+    if current < quantity then
+        return 0
+    end
+end
+for i = 1, #ARGV, 2 do
+    local field = ARGV[i]
+    local quantity = tonumber(ARGV[i + 1])
+    redis.call('HINCRBY', stockKey, field, -quantity)
+end
+return 1
+LUA;
+
+    public function __construct(
+        private readonly RedisFactory $redisFactory,
+        private readonly int $lockTtl = 3000,
+        private readonly int $lockRetry = 5
+    ) {}
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array<string, string>
+     */
+    public function acquireLocks(array $items): array
+    {
+        $locks = [];
+        foreach (array_keys($this->normalizeItems($items)) as $skuId) {
+            $lockKey = sprintf('mall:stock:lock:%d', $skuId);
+            $token = Str::uuid()->toString();
+            $acquired = false;
+            for ($i = 0; $i < $this->lockRetry; ++$i) {
+                $acquired = (bool) $this->redis()->set($lockKey, $token, ['NX', 'PX' => $this->lockTtl]);
+                if ($acquired) {
+                    break;
+                }
+                usleep(50_000);
+            }
+            if (! $acquired) {
+                $this->releaseLocks($locks);
+                throw new RuntimeException('库存繁忙，请稍后重试');
+            }
+            $locks[$lockKey] = $token;
+        }
+
+        return $locks;
+    }
+
+    /**
+     * @param array<string, string> $locks
+     */
+    public function releaseLocks(array $locks): void
+    {
+        if ($locks === []) {
+            return;
+        }
+
+        $script = <<<'LUA'
+if redis.call('GET', KEYS[1]) == ARGV[1] then
+    return redis.call('DEL', KEYS[1])
+end
+return 0
+LUA;
+
+        foreach ($locks as $key => $token) {
+            $this->redis()->eval($script, [$key], [$token]);
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     */
+    public function reserve(array $items): void
+    {
+        $normalized = $this->normalizeItems($items);
+        if ($normalized === []) {
+            throw new RuntimeException('没有可扣减的商品');
+        }
+
+        $args = [];
+        foreach ($normalized as $skuId => $quantity) {
+            $args[] = (string) $skuId;
+            $args[] = (string) $quantity;
+        }
+
+        $result = $this->redis()->eval(self::DEDUCT_SCRIPT, [self::STOCK_HASH_KEY], $args);
+        if ((int) $result !== 1) {
+            throw new RuntimeException('库存不足或商品已下架');
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     */
+    public function rollback(array $items): void
+    {
+        $normalized = $this->normalizeItems($items);
+        foreach ($normalized as $skuId => $quantity) {
+            $this->redis()->hIncrBy(self::STOCK_HASH_KEY, (string) $skuId, $quantity);
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array<int, int>
+     */
+    private function normalizeItems(array $items): array
+    {
+        $result = [];
+        foreach ($items as $item) {
+            $skuId = (int) ($item['sku_id'] ?? 0);
+            $quantity = (int) ($item['quantity'] ?? 0);
+            if ($skuId <= 0 || $quantity <= 0) {
+                continue;
+            }
+            $result[$skuId] = ($result[$skuId] ?? 0) + $quantity;
+        }
+        return $result;
+    }
+
+    private function redis(): Redis
+    {
+        return $this->redisFactory->get('default');
+    }
+}
