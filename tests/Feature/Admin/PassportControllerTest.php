@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
-use App\Http\Common\ResultCode;
-use App\Model\Enums\User\Type;
-use App\Model\Permission\User;
+use App\Domain\Auth\Enum\Type;
+use App\Infrastructure\Model\Permission\User;
+use App\Interface\Common\ResultCode;
 use Hyperf\Collection\Arr;
 use Hyperf\Stringable\Str;
 use HyperfTests\HttpTestCase;

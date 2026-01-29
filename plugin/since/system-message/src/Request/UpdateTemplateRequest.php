@@ -85,6 +85,7 @@ class UpdateTemplateRequest extends FormRequest
 
     /**
      * Configure the validator instance.
+     * @param mixed $validator
      */
     public function withValidator($validator): void
     {
@@ -104,9 +105,9 @@ class UpdateTemplateRequest extends FormRequest
             if ((isset($data['title_template']) || isset($data['content_template'])) && isset($data['variables'])) {
                 $titleTemplate = $data['title_template'] ?? '';
                 $contentTemplate = $data['content_template'] ?? '';
-                
+
                 // 如果只更新了其中一个模板，需要获取另一个模板的内容
-                if (!isset($data['title_template']) || !isset($data['content_template'])) {
+                if (! isset($data['title_template']) || ! isset($data['content_template'])) {
                     $templateId = $this->route('id');
                     $existingTemplate = MessageTemplate::find($templateId);
                     if ($existingTemplate) {
@@ -123,11 +124,11 @@ class UpdateTemplateRequest extends FormRequest
                 $missingVariables = array_diff($allVariables, $providedVariables);
                 $extraVariables = array_diff($providedVariables, $allVariables);
 
-                if (!empty($missingVariables)) {
+                if (! empty($missingVariables)) {
                     $validator->errors()->add('variables', '缺少模板变量: ' . implode(', ', $missingVariables));
                 }
 
-                if (!empty($extraVariables)) {
+                if (! empty($extraVariables)) {
                     $validator->errors()->add('variables', '多余的模板变量: ' . implode(', ', $extraVariables));
                 }
             }
@@ -135,7 +136,8 @@ class UpdateTemplateRequest extends FormRequest
     }
 
     /**
-     * 验证模板语法
+     * 验证模板语法.
+     * @param mixed $validator
      */
     protected function validateTemplateSyntax($validator, string $template, string $field): void
     {
@@ -143,18 +145,18 @@ class UpdateTemplateRequest extends FormRequest
             // 检查变量语法 {{variable}}
             $pattern = '/\{\{([^}]+)\}\}/';
             preg_match_all($pattern, $template, $matches);
-            
+
             // 检查变量名是否合法
             foreach ($matches[1] as $variable) {
                 $variable = trim($variable);
-                if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
+                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
                     $validator->errors()->add($field, "无效的变量名: {$variable}");
                 }
             }
 
             // 检查括号是否匹配
-            $openCount = substr_count($template, '{{');
-            $closeCount = substr_count($template, '}}');
+            $openCount = mb_substr_count($template, '{{');
+            $closeCount = mb_substr_count($template, '}}');
             if ($openCount !== $closeCount) {
                 $validator->errors()->add($field, '模板语法错误: 括号不匹配');
             }
@@ -164,13 +166,13 @@ class UpdateTemplateRequest extends FormRequest
     }
 
     /**
-     * 提取模板变量
+     * 提取模板变量.
      */
     protected function extractVariables(string $template): array
     {
         $pattern = '/\{\{([^}]+)\}\}/';
         preg_match_all($pattern, $template, $matches);
-        
+
         return array_map('trim', $matches[1]);
     }
 }

@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Library\DataPermission;
 
-use App\Library\DataPermission\Aspects\DataScopeAspect;
-use App\Library\DataPermission\Attribute\DataScope;
-use App\Library\DataPermission\Context as DataPermissionContext;
-use App\Library\DataPermission\Factory;
-use App\Library\DataPermission\ScopeType;
-use App\Model\Permission\User;
+use App\Infrastructure\Library\DataPermission\Aspects\DataScopeAspect;
+use App\Infrastructure\Library\DataPermission\Attribute\DataScope;
+use App\Infrastructure\Library\DataPermission\Context as DataPermissionContext;
+use App\Infrastructure\Library\DataPermission\Factory;
+use App\Infrastructure\Library\DataPermission\ScopeType;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\Context\Context;
 use Hyperf\Database\Query\Builder;
 use Hyperf\Di\Aop\AnnotationMetadata;

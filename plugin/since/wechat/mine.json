@@ -1,0 +1,25 @@
+{
+    "name": "since/wechat",
+    "version": "1.0.0",
+    "type": "mixed",
+    "description": "微信组件",
+    "author": [
+        {
+            "name": "feat"
+        }
+    ],
+    "composer": {
+        "require": {
+            "w7corp/easywechat" : "^6.5"
+        },
+        "psr-4": {
+            "Plugin\\Wechat\\": "./src"
+        },
+        "installScript": "Plugin\\Wechat\\InstallScript",
+        "uninstallScript": "Plugin\\Wechat\\UninstallScript",
+        "config": "Plugin\\Wechat\\ConfigProvider"
+    },
+    "package": {
+        "dependencies": []
+    }
+}

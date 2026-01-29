@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Model;
 
-use App\Model\Permission\User;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Relations\BelongsTo;
@@ -42,6 +42,26 @@ use Hyperf\DbConnection\Model\Model;
 class MessageTemplate extends Model
 {
     use SoftDeletes;
+
+    /**
+     * 消息类型常量.
+     */
+    public const TYPE_SYSTEM = 'system';
+
+    public const TYPE_ANNOUNCEMENT = 'announcement';
+
+    public const TYPE_ALERT = 'alert';
+
+    public const TYPE_REMINDER = 'reminder';
+
+    /**
+     * 内容格式常量.
+     */
+    public const FORMAT_TEXT = 'text';
+
+    public const FORMAT_HTML = 'html';
+
+    public const FORMAT_MARKDOWN = 'markdown';
 
     /**
      * The table associated with the model.
@@ -79,22 +99,7 @@ class MessageTemplate extends Model
     ];
 
     /**
-     * 消息类型常量
-     */
-    public const TYPE_SYSTEM = 'system';
-    public const TYPE_ANNOUNCEMENT = 'announcement';
-    public const TYPE_ALERT = 'alert';
-    public const TYPE_REMINDER = 'reminder';
-
-    /**
-     * 内容格式常量
-     */
-    public const FORMAT_TEXT = 'text';
-    public const FORMAT_HTML = 'html';
-    public const FORMAT_MARKDOWN = 'markdown';
-
-    /**
-     * 创建者关联
+     * 创建者关联.
      */
     public function creator(): BelongsTo
     {
@@ -102,7 +107,7 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 更新者关联
+     * 更新者关联.
      */
     public function updater(): BelongsTo
     {
@@ -110,7 +115,7 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 使用此模板的消息关联
+     * 使用此模板的消息关联.
      */
     public function messages(): HasMany
     {
@@ -132,19 +137,6 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 渲染字符串
-     */
-    protected function renderString(string $template, array $variables): string
-    {
-        $pattern = config('system_message.template.variable_pattern', '/\{\{(\w+)\}\}/');
-        
-        return preg_replace_callback($pattern, function ($matches) use ($variables) {
-            $variableName = $matches[1];
-            return $variables[$variableName] ?? $matches[0];
-        }, $template);
-    }
-
-    /**
      * 预览模板
      */
     public function preview(array $variables = []): array
@@ -152,68 +144,52 @@ class MessageTemplate extends Model
         // 为预览提供默认变量值
         $defaultVariables = $this->getDefaultVariables();
         $mergedVariables = array_merge($defaultVariables, $variables);
-        
+
         return $this->render($mergedVariables);
     }
 
     /**
-     * 获取默认变量值（用于预览）
-     */
-    protected function getDefaultVariables(): array
-    {
-        $defaults = [];
-        
-        if (is_array($this->variables)) {
-            foreach ($this->variables as $variable) {
-                $defaults[$variable] = "[{$variable}]";
-            }
-        }
-        
-        return $defaults;
-    }
-
-    /**
-     * 验证模板变量
+     * 验证模板变量.
      */
     public function validateVariables(array $variables): array
     {
         $errors = [];
         $requiredVariables = $this->getRequiredVariables();
-        
+
         foreach ($requiredVariables as $variable) {
-            if (!isset($variables[$variable]) || $variables[$variable] === '') {
+            if (! isset($variables[$variable]) || $variables[$variable] === '') {
                 $errors[] = "缺少必需变量: {$variable}";
             }
         }
-        
+
         return $errors;
     }
 
     /**
-     * 获取模板中的必需变量
+     * 获取模板中的必需变量.
      */
     public function getRequiredVariables(): array
     {
         $pattern = config('system_message.template.variable_pattern', '/\{\{(\w+)\}\}/');
         $variables = [];
-        
+
         // 从标题中提取变量
         preg_match_all($pattern, $this->title, $titleMatches);
-        if (!empty($titleMatches[1])) {
+        if (! empty($titleMatches[1])) {
             $variables = array_merge($variables, $titleMatches[1]);
         }
-        
+
         // 从内容中提取变量
         preg_match_all($pattern, $this->content, $contentMatches);
-        if (!empty($contentMatches[1])) {
+        if (! empty($contentMatches[1])) {
             $variables = array_merge($variables, $contentMatches[1]);
         }
-        
+
         return array_unique($variables);
     }
 
     /**
-     * 更新模板变量列表
+     * 更新模板变量列表.
      */
     public function updateVariables(): bool
     {
@@ -222,11 +198,11 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 检查模板是否可用
+     * 检查模板是否可用.
      */
     public function isAvailable(): bool
     {
-        return $this->is_active && !$this->trashed();
+        return $this->is_active && ! $this->trashed();
     }
 
     /**
@@ -251,8 +227,8 @@ class MessageTemplate extends Model
     public function getUsageStats(): array
     {
         $totalUsage = $this->messages()->count();
-        $recentUsage = $this->messages()->where('created_at', '>=', now()->subDays(30))->count();
-        
+        $recentUsage = $this->messages()->where('created_at', '>=', Carbon::now()->subDays(30))->count();
+
         return [
             'total_usage' => $totalUsage,
             'recent_usage' => $recentUsage,
@@ -261,7 +237,7 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 获取所有消息类型
+     * 获取所有消息类型.
      */
     public static function getTypes(): array
     {
@@ -274,7 +250,7 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 获取所有内容格式
+     * 获取所有内容格式.
      */
     public static function getFormats(): array
     {
@@ -286,7 +262,8 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 作用域：按类型筛选
+     * 作用域：按类型筛选.
+     * @param mixed $query
      */
     public function scopeOfType($query, string $type)
     {
@@ -294,7 +271,8 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 作用域：按格式筛选
+     * 作用域：按格式筛选.
+     * @param mixed $query
      */
     public function scopeOfFormat($query, string $format)
     {
@@ -303,6 +281,7 @@ class MessageTemplate extends Model
 
     /**
      * 作用域：启用的模板
+     * @param mixed $query
      */
     public function scopeActive($query)
     {
@@ -311,6 +290,7 @@ class MessageTemplate extends Model
 
     /**
      * 作用域：禁用的模板
+     * @param mixed $query
      */
     public function scopeInactive($query)
     {
@@ -318,7 +298,8 @@ class MessageTemplate extends Model
     }
 
     /**
-     * 作用域：按创建者筛选
+     * 作用域：按创建者筛选.
+     * @param mixed $query
      */
     public function scopeByCreator($query, int $creatorId)
     {
@@ -327,14 +308,16 @@ class MessageTemplate extends Model
 
     /**
      * 作用域：最近创建的模板
+     * @param mixed $query
      */
     public function scopeRecent($query, int $days = 7)
     {
-        return $query->where('created_at', '>=', now()->subDays($days));
+        return $query->where('created_at', '>=', Carbon::now()->subDays($days));
     }
 
     /**
-     * 作用域：按名称搜索
+     * 作用域：按名称搜索.
+     * @param mixed $query
      */
     public function scopeSearchByName($query, string $name)
     {
@@ -356,13 +339,42 @@ class MessageTemplate extends Model
     /**
      * 复制模板
      */
-    public function duplicate(string $newName = null): static
+    public function duplicate(?string $newName = null): static
     {
         $newTemplate = $this->replicate();
         $newTemplate->name = $newName ?: $this->name . ' (副本)';
         $newTemplate->is_active = false; // 新复制的模板默认禁用
         $newTemplate->save();
-        
+
         return $newTemplate;
+    }
+
+    /**
+     * 渲染字符串.
+     */
+    protected function renderString(string $template, array $variables): string
+    {
+        $pattern = config('system_message.template.variable_pattern', '/\{\{(\w+)\}\}/');
+
+        return preg_replace_callback($pattern, static function ($matches) use ($variables) {
+            $variableName = $matches[1];
+            return $variables[$variableName] ?? $matches[0];
+        }, $template);
+    }
+
+    /**
+     * 获取默认变量值（用于预览）.
+     */
+    protected function getDefaultVariables(): array
+    {
+        $defaults = [];
+
+        if (\is_array($this->variables)) {
+            foreach ($this->variables as $variable) {
+                $defaults[$variable] = "[{$variable}]";
+            }
+        }
+
+        return $defaults;
     }
 }

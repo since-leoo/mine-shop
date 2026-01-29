@@ -3,194 +3,183 @@
     <div class="dashboard-header">
       <h1>消息管理仪表板</h1>
       <div class="header-actions">
-        <a-button type="primary" @click="$router.push('/admin/message/create')">
-          创建消息
-        </a-button>
-        <a-button @click="refreshData" :loading="loading">
+        <el-button type="primary" @click="$router.push('/admin/system-message/list')">
+          消息列表
+        </el-button>
+        <el-button @click="refreshData" :loading="loading">
           刷新数据
-        </a-button>
+        </el-button>
       </div>
     </div>
 
     <!-- 统计卡片 -->
     <div class="stats-cards">
-      <a-row :gutter="16">
-        <a-col :span="6">
-          <a-card>
-            <a-statistic
-              title="总消息数"
-              :value="statistics.total_messages"
-              :loading="loading"
-            >
+      <el-row :gutter="16">
+        <el-col :span="6">
+          <el-card shadow="hover">
+            <el-statistic title="总消息数" :value="statistics.total_messages">
               <template #prefix>
-                <MessageOutlined />
+                <el-icon><Message /></el-icon>
               </template>
-            </a-statistic>
-          </a-card>
-        </a-col>
-        <a-col :span="6">
-          <a-card>
-            <a-statistic
-              title="今日发送"
-              :value="statistics.today_sent"
-              :loading="loading"
-            >
+            </el-statistic>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover">
+            <el-statistic title="今日发送" :value="statistics.today_sent">
               <template #prefix>
-                <SendOutlined />
+                <el-icon><Promotion /></el-icon>
               </template>
-            </a-statistic>
-          </a-card>
-        </a-col>
-        <a-col :span="6">
-          <a-card>
-            <a-statistic
-              title="未读消息"
-              :value="statistics.unread_count"
-              :loading="loading"
-            >
+            </el-statistic>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover">
+            <el-statistic title="未读消息" :value="statistics.unread_count">
               <template #prefix>
-                <BellOutlined />
+                <el-icon><Bell /></el-icon>
               </template>
-            </a-statistic>
-          </a-card>
-        </a-col>
-        <a-col :span="6">
-          <a-card>
-            <a-statistic
-              title="活跃用户"
-              :value="statistics.active_users"
-              :loading="loading"
-            >
+            </el-statistic>
+          </el-card>
+        </el-col>
+        <el-col :span="6">
+          <el-card shadow="hover">
+            <el-statistic title="活跃用户" :value="statistics.active_users">
               <template #prefix>
-                <UserOutlined />
+                <el-icon><User /></el-icon>
               </template>
-            </a-statistic>
-          </a-card>
-        </a-col>
-      </a-row>
+            </el-statistic>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 图表区域 -->
     <div class="charts-section">
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-card title="消息发送趋势" class="chart-card">
+      <el-row :gutter="16">
+        <el-col :span="12">
+          <el-card class="chart-card" shadow="hover">
+            <template #header>
+              <span>消息发送趋势</span>
+            </template>
             <div ref="messageChartRef" class="chart-container"></div>
-          </a-card>
-        </a-col>
-        <a-col :span="12">
-          <a-card title="消息类型分布" class="chart-card">
+          </el-card>
+        </el-col>
+        <el-col :span="12">
+          <el-card class="chart-card" shadow="hover">
+            <template #header>
+              <span>消息类型分布</span>
+            </template>
             <div ref="typeChartRef" class="chart-container"></div>
-          </a-card>
-        </a-col>
-      </a-row>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
 
     <!-- 最近活动 -->
     <div class="recent-section">
-      <a-row :gutter="16">
-        <a-col :span="12">
-          <a-card title="最近消息" class="recent-card">
-            <template #extra>
-              <a-button type="link" @click="$router.push('/admin/message')">
-                查看全部
-              </a-button>
+      <el-row :gutter="16">
+        <el-col :span="12">
+          <el-card class="recent-card" shadow="hover">
+            <template #header>
+              <div class="card-header">
+                <span>最近消息</span>
+                <el-button type="primary" link @click="$router.push('/admin/message')">
+                  查看全部
+                </el-button>
+              </div>
             </template>
             
-            <a-list
-              :data-source="recentMessages"
-              :loading="loading"
-              size="small"
-            >
-              <template #renderItem="{ item }">
-                <a-list-item>
-                  <a-list-item-meta>
-                    <template #title>
-                      <a @click="viewMessage(item)">{{ item.title }}</a>
-                    </template>
-                    <template #description>
-                      <div class="message-meta">
-                        <a-tag :color="getTypeColor(item.type)" size="small">
-                          {{ getTypeLabel(item.type) }}
-                        </a-tag>
-                        <span class="time">{{ formatTime(item.created_at) }}</span>
-                      </div>
-                    </template>
-                  </a-list-item-meta>
-                  <template #actions>
-                    <a-tag :color="getStatusColor(item.status)">
-                      {{ getStatusLabel(item.status) }}
-                    </a-tag>
-                  </template>
-                </a-list-item>
-              </template>
-            </a-list>
-          </a-card>
-        </a-col>
+            <el-skeleton :loading="loading" animated :rows="5">
+              <div class="message-list" v-if="recentMessages.length > 0">
+                <div 
+                  v-for="item in recentMessages" 
+                  :key="item.id"
+                  class="message-item"
+                  @click="viewMessage(item)"
+                >
+                  <div class="message-info">
+                    <div class="message-title">{{ item.title }}</div>
+                    <div class="message-meta">
+                      <el-tag :type="getTypeTagType(item.type)" size="small">
+                        {{ getTypeLabel(item.type) }}
+                      </el-tag>
+                      <span class="time">{{ formatTime(item.created_at) }}</span>
+                    </div>
+                  </div>
+                  <el-tag :type="getStatusTagType(item.status)" size="small">
+                    {{ getStatusLabel(item.status) }}
+                  </el-tag>
+                </div>
+              </div>
+              <el-empty v-else description="暂无消息" :image-size="80" />
+            </el-skeleton>
+          </el-card>
+        </el-col>
         
-        <a-col :span="12">
-          <a-card title="系统状态" class="status-card">
+        <el-col :span="12">
+          <el-card class="status-card" shadow="hover">
+            <template #header>
+              <span>系统状态</span>
+            </template>
             <div class="status-items">
               <div class="status-item">
                 <div class="status-label">消息队列</div>
                 <div class="status-value">
-                  <a-badge 
-                    :status="queueStatus.status" 
-                    :text="queueStatus.text"
-                  />
+                  <el-tag :type="queueStatus.type">
+                    {{ queueStatus.text }}
+                  </el-tag>
                 </div>
               </div>
               
               <div class="status-item">
-                <div class="status-label">WebSocket连接</div>
+                <div class="status-label">数据库服务</div>
                 <div class="status-value">
-                  <a-badge 
-                    :status="websocketStatus.status" 
-                    :text="websocketStatus.text"
-                  />
+                  <el-tag :type="databaseStatus.type">
+                    {{ databaseStatus.text }}
+                  </el-tag>
                 </div>
               </div>
               
               <div class="status-item">
                 <div class="status-label">邮件服务</div>
                 <div class="status-value">
-                  <a-badge 
-                    :status="emailStatus.status" 
-                    :text="emailStatus.text"
-                  />
+                  <el-tag :type="emailStatus.type">
+                    {{ emailStatus.text }}
+                  </el-tag>
                 </div>
               </div>
               
               <div class="status-item">
                 <div class="status-label">短信服务</div>
                 <div class="status-value">
-                  <a-badge 
-                    :status="smsStatus.status" 
-                    :text="smsStatus.text"
-                  />
+                  <el-tag :type="smsStatus.type">
+                    {{ smsStatus.text }}
+                  </el-tag>
                 </div>
               </div>
             </div>
-          </a-card>
-        </a-col>
-      </a-row>
+          </el-card>
+        </el-col>
+      </el-row>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMessageStore } from '../../store/message'
-import { message } from 'ant-design-vue'
-import { 
-  MessageOutlined, 
-  SendOutlined, 
-  BellOutlined, 
-  UserOutlined 
-} from '@ant-design/icons-vue'
-import type { Message } from '../../api/message'
+import { ElMessage } from 'element-plus'
+import { Message, Promotion, Bell, User } from '@element-plus/icons-vue'
+import type { Message as MessageType } from '../../api/message'
 import dayjs from 'dayjs'
+import * as echarts from 'echarts'
+
+// 定义组件名称，用于缓存
+defineOptions({
+  name: 'AdminDashboard'
+})
 
 const router = useRouter()
 const messageStore = useMessageStore()
@@ -204,26 +193,44 @@ const statistics = ref({
   active_users: 0
 })
 
-const recentMessages = ref<Message[]>([])
+const recentMessages = ref<MessageType[]>([])
 const messageChartRef = ref<HTMLElement>()
 const typeChartRef = ref<HTMLElement>()
 
-// 系统状态
-const queueStatus = ref({ status: 'processing', text: '正常运行' })
-const websocketStatus = ref({ status: 'success', text: '已连接' })
-const emailStatus = ref({ status: 'success', text: '正常' })
-const smsStatus = ref({ status: 'warning', text: '部分异常' })
+// ECharts 实例
+let messageChart: echarts.ECharts | null = null
+let typeChart: echarts.ECharts | null = null
 
-// 获取消息类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
+// 图表数据
+const trendData = ref({
+  dates: [] as string[],
+  values: [] as number[]
+})
+
+const typeDistribution = ref([
+  { name: '系统消息', value: 0 },
+  { name: '公告', value: 0 },
+  { name: '警报', value: 0 },
+  { name: '提醒', value: 0 },
+  { name: '营销', value: 0 }
+])
+
+// 系统状态 - 使用 'primary' 替代空字符串
+const queueStatus = ref({ type: 'success' as 'primary' | 'success' | 'warning' | 'danger' | 'info', text: '正常运行' })
+const databaseStatus = ref({ type: 'success' as 'primary' | 'success' | 'warning' | 'danger' | 'info', text: '正常' })
+const emailStatus = ref({ type: 'success' as 'primary' | 'success' | 'warning' | 'danger' | 'info', text: '正常' })
+const smsStatus = ref({ type: 'warning' as 'primary' | 'success' | 'warning' | 'danger' | 'info', text: '部分异常' })
+
+// 获取消息类型 Tag 类型
+const getTypeTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: 'primary',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取消息类型标签
@@ -238,16 +245,16 @@ const getTypeLabel = (type: string) => {
   return labels[type] || type
 }
 
-// 获取状态颜色
-const getStatusColor = (status: string) => {
-  const colors: Record<string, string> = {
-    draft: 'default',
-    scheduled: 'orange',
-    sending: 'processing',
+// 获取状态 Tag 类型
+const getStatusTagType = (status: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+    draft: 'info',
+    scheduled: 'warning',
+    sending: 'primary',
     sent: 'success',
-    failed: 'error'
+    failed: 'danger'
   }
-  return colors[status] || 'default'
+  return types[status] || 'info'
 }
 
 // 获取状态标签
@@ -268,15 +275,36 @@ const formatTime = (time: string) => {
 }
 
 // 查看消息详情
-const viewMessage = (msg: Message) => {
+const viewMessage = (msg: MessageType) => {
   router.push(`/admin/message/${msg.id}`)
 }
 
 // 加载统计数据
 const loadStatistics = async () => {
   try {
-    const response = await messageStore.adminActions.getStatistics()
-    statistics.value = response.data
+    // 模拟数据，实际应该从 API 获取
+    // 当没有数据时，统计值为0，图表仍然会显示
+    statistics.value = {
+      total_messages: 0,
+      today_sent: 0,
+      unread_count: 0,
+      active_users: 0
+    }
+    
+    // 趋势数据 - 即使没有数据也生成日期
+    trendData.value = {
+      dates: Array.from({ length: 7 }, (_, i) => dayjs().subtract(6 - i, 'day').format('MM-DD')),
+      values: Array(7).fill(0)
+    }
+    
+    // 类型分布数据 - 初始化为0
+    typeDistribution.value = [
+      { name: '系统消息', value: 0 },
+      { name: '公告', value: 0 },
+      { name: '警报', value: 0 },
+      { name: '提醒', value: 0 },
+      { name: '营销', value: 0 }
+    ]
   } catch (error) {
     console.error('Failed to load statistics:', error)
   }
@@ -285,17 +313,249 @@ const loadStatistics = async () => {
 // 加载最近消息
 const loadRecentMessages = async () => {
   try {
-    const response = await messageStore.adminActions.getRecent(7, 10)
-    recentMessages.value = response.data
+    // 模拟数据，实际应该从 API 获取
+    // 当没有数据时返回空数组
+    recentMessages.value = []
   } catch (error) {
     console.error('Failed to load recent messages:', error)
   }
 }
 
 // 初始化图表
-const initCharts = () => {
-  // 这里可以集成 ECharts 或其他图表库
-  // 暂时留空，等待具体图表库的集成
+const initCharts = async () => {
+  await nextTick()
+  
+  // 初始化消息趋势图
+  if (messageChartRef.value) {
+    messageChart = echarts.init(messageChartRef.value)
+    updateMessageChart()
+  }
+  
+  // 初始化类型分布图
+  if (typeChartRef.value) {
+    typeChart = echarts.init(typeChartRef.value)
+    updateTypeChart()
+  }
+  
+  // 监听窗口大小变化
+  window.addEventListener('resize', handleResize)
+}
+
+// 更新消息趋势图
+const updateMessageChart = () => {
+  if (!messageChart) return
+  
+  // 生成最近7天的日期
+  const dates = trendData.value.dates.length > 0 
+    ? trendData.value.dates 
+    : Array.from({ length: 7 }, (_, i) => dayjs().subtract(6 - i, 'day').format('MM-DD'))
+  
+  const values = trendData.value.values.length > 0 
+    ? trendData.value.values 
+    : Array(7).fill(0)
+  
+  const option: echarts.EChartsOption = {
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '3%',
+      top: '10%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLine: {
+        lineStyle: {
+          color: '#ddd'
+        }
+      },
+      axisLabel: {
+        color: '#666'
+      }
+    },
+    yAxis: {
+      type: 'value',
+      minInterval: 1,
+      axisLine: {
+        show: false
+      },
+      axisTick: {
+        show: false
+      },
+      axisLabel: {
+        color: '#666'
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#eee'
+        }
+      }
+    },
+    series: [
+      {
+        name: '发送数量',
+        type: 'bar',
+        data: values,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: '#409EFF' },
+            { offset: 1, color: '#79bbff' }
+          ]),
+          borderRadius: [4, 4, 0, 0]
+        },
+        emphasis: {
+          itemStyle: {
+            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+              { offset: 0, color: '#337ecc' },
+              { offset: 1, color: '#409EFF' }
+            ])
+          }
+        },
+        barWidth: '60%'
+      }
+    ]
+  }
+  
+  // 如果没有数据，显示空状态提示
+  if (values.every(v => v === 0)) {
+    option.graphic = {
+      type: 'text',
+      left: 'center',
+      top: 'middle',
+      style: {
+        text: '暂无数据',
+        fontSize: 14,
+        fill: '#999'
+      }
+    }
+  }
+  
+  messageChart.setOption(option)
+}
+
+// 更新类型分布图
+const updateTypeChart = () => {
+  if (!typeChart) return
+  
+  const data = typeDistribution.value
+  const hasData = data.some(item => item.value > 0)
+  
+  const option: echarts.EChartsOption = {
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      right: '5%',
+      top: 'center',
+      itemWidth: 12,
+      itemHeight: 12,
+      textStyle: {
+        color: '#666'
+      }
+    },
+    series: [
+      {
+        name: '消息类型',
+        type: 'pie',
+        radius: ['40%', '70%'],
+        center: ['40%', '50%'],
+        avoidLabelOverlap: false,
+        itemStyle: {
+          borderRadius: 6,
+          borderColor: '#fff',
+          borderWidth: 2
+        },
+        label: {
+          show: false,
+          position: 'center'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: 16,
+            fontWeight: 'bold'
+          }
+        },
+        labelLine: {
+          show: false
+        },
+        data: hasData ? data : [
+          { name: '系统消息', value: 1 },
+          { name: '公告', value: 1 },
+          { name: '警报', value: 1 },
+          { name: '提醒', value: 1 },
+          { name: '营销', value: 1 }
+        ],
+        color: ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399']
+      }
+    ]
+  }
+  
+  // 如果没有数据，显示空状态提示并使用灰色
+  if (!hasData) {
+    option.series = [{
+      name: '消息类型',
+      type: 'pie',
+      radius: ['40%', '70%'],
+      center: ['40%', '50%'],
+      avoidLabelOverlap: false,
+      itemStyle: {
+        borderRadius: 6,
+        borderColor: '#fff',
+        borderWidth: 2,
+        color: '#e0e0e0'
+      },
+      label: {
+        show: false
+      },
+      emphasis: {
+        disabled: true
+      },
+      labelLine: {
+        show: false
+      },
+      data: [{ name: '暂无数据', value: 1 }]
+    }]
+    option.graphic = {
+      type: 'text',
+      left: '35%',
+      top: 'middle',
+      style: {
+        text: '暂无数据',
+        fontSize: 14,
+        fill: '#999'
+      }
+    }
+    option.legend = {
+      show: false
+    }
+  }
+  
+  typeChart.setOption(option)
+}
+
+// 处理窗口大小变化
+const handleResize = () => {
+  messageChart?.resize()
+  typeChart?.resize()
+}
+
+// 销毁图表
+const destroyCharts = () => {
+  window.removeEventListener('resize', handleResize)
+  messageChart?.dispose()
+  typeChart?.dispose()
+  messageChart = null
+  typeChart = null
 }
 
 // 刷新数据
@@ -306,16 +566,19 @@ const refreshData = async () => {
       loadStatistics(),
       loadRecentMessages()
     ])
-    message.success('数据已刷新')
+    // 更新图表
+    updateMessageChart()
+    updateTypeChart()
+    ElMessage.success('数据已刷新')
   } catch (error) {
-    message.error('刷新失败')
+    ElMessage.error('刷新失败')
   } finally {
     loading.value = false
   }
 }
 
 // 定时刷新
-let refreshTimer: NodeJS.Timeout | null = null
+let refreshTimer: ReturnType<typeof setInterval> | null = null
 
 const startAutoRefresh = () => {
   refreshTimer = setInterval(() => {
@@ -339,14 +602,15 @@ onMounted(async () => {
 
 onUnmounted(() => {
   stopAutoRefresh()
+  destroyCharts()
 })
 </script>
 
 <style scoped>
 .admin-dashboard {
   padding: 24px;
-  background: #f5f5f5;
-  min-height: 100vh;
+  background: var(--el-bg-color-page);
+  min-height: 100%;
 }
 
 .dashboard-header {
@@ -392,6 +656,42 @@ onUnmounted(() => {
   height: 400px;
 }
 
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.message-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.message-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--el-fill-color-light);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.message-item:hover {
+  background: var(--el-fill-color);
+}
+
+.message-info {
+  flex: 1;
+}
+
+.message-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
 .message-meta {
   display: flex;
   align-items: center;
@@ -399,7 +699,7 @@ onUnmounted(() => {
 }
 
 .time {
-  color: #999;
+  color: var(--el-text-color-secondary);
   font-size: 12px;
 }
 
@@ -418,7 +718,7 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   padding: 12px;
-  background: #fafafa;
+  background: var(--el-fill-color-light);
   border-radius: 6px;
 }
 

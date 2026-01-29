@@ -9,12 +9,12 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Model\Permission\Menu;
-use App\Model\Permission\Meta;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Seeders\Seeder;
 use Hyperf\DbConnection\Db;
 
-class MenuDictionarySeeder20241130153940 extends Seeder
+class menu_dictionary_seeder_20241130153940 extends Seeder
 {
     public const BASE_DATA = [
         'name' => '',
@@ -138,7 +138,7 @@ class MenuDictionarySeeder20241130153940 extends Seeder
             if (isset($v['children'])) {
                 unset($_v['children']);
             }
-            if(empty($_v['parent_id'])) {
+            if (empty($_v['parent_id'])) {
                 $_v['parent_id'] = $parent_id;
             }
             $menu = Menu::create(array_merge(self::BASE_DATA, $_v));

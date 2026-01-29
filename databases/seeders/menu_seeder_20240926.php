@@ -9,8 +9,8 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Model\Permission\Menu;
-use App\Model\Permission\Meta;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Seeders\Seeder;
 use Hyperf\DbConnection\Db;
 
@@ -348,6 +348,493 @@ class MenuSeeder20240926 extends Seeder
                                     'title' => '删除用户操作日志',
                                     'i18n' => 'baseMenu.log.userOperationLogDelete',
                                     'type' => 'B',
+                                ]),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            [
+                'name' => 'mall',
+                'path' => '/mall',
+                'meta' => new Meta([
+                    'title' => '商城管理',
+                    'i18n' => 'mallMenu.mall.index',
+                    'icon' => 'ph:shopping-cart',
+                    'type' => 'M',
+                    'hidden' => 0,
+                    'componentPath' => 'modules/',
+                    'componentSuffix' => '.vue',
+                    'breadcrumbEnable' => 1,
+                    'copyright' => 1,
+                    'cache' => 1,
+                    'affix' => 0,
+                ]),
+                'children' => [
+                    [
+                        'name' => 'mall:category',
+                        'path' => '/mall/category',
+                        'component' => 'mall/views/category/index',
+                        'meta' => new Meta([
+                            'title' => '分类管理',
+                            'i18n' => 'mallMenu.mall.category',
+                            'icon' => 'ph:list-bullets',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'product:category:list',
+                                'meta' => new Meta([
+                                    'title' => '分类列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.categoryList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:category:read',
+                                'meta' => new Meta([
+                                    'title' => '分类详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.categoryRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:category:create',
+                                'meta' => new Meta([
+                                    'title' => '分类新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.categoryCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:category:update',
+                                'meta' => new Meta([
+                                    'title' => '分类编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.categoryUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:category:delete',
+                                'meta' => new Meta([
+                                    'title' => '分类删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.categoryDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:brand',
+                        'path' => '/mall/brand',
+                        'component' => 'mall/views/brand/index',
+                        'meta' => new Meta([
+                            'title' => '品牌管理',
+                            'i18n' => 'mallMenu.mall.brand',
+                            'icon' => 'ph:tag',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'product:brand:list',
+                                'meta' => new Meta([
+                                    'title' => '品牌列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.brandList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:brand:read',
+                                'meta' => new Meta([
+                                    'title' => '品牌详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.brandRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:brand:create',
+                                'meta' => new Meta([
+                                    'title' => '品牌新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.brandCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:brand:update',
+                                'meta' => new Meta([
+                                    'title' => '品牌编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.brandUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:brand:delete',
+                                'meta' => new Meta([
+                                    'title' => '品牌删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.brandDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:product',
+                        'path' => '/mall/product',
+                        'component' => 'mall/views/product/index',
+                        'meta' => new Meta([
+                            'title' => '商品管理',
+                            'i18n' => 'mallMenu.mall.product',
+                            'icon' => 'ph:package',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'product:product:list',
+                                'meta' => new Meta([
+                                    'title' => '商品列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.productList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:product:read',
+                                'meta' => new Meta([
+                                    'title' => '商品详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.productRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:product:create',
+                                'meta' => new Meta([
+                                    'title' => '商品新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.productCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:product:update',
+                                'meta' => new Meta([
+                                    'title' => '商品编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.productUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'product:product:delete',
+                                'meta' => new Meta([
+                                    'title' => '商品删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.productDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:seckill',
+                        'path' => '/mall/seckill',
+                        'component' => 'mall/views/seckill/index',
+                        'meta' => new Meta([
+                            'title' => '秒杀管理',
+                            'i18n' => 'mallMenu.mall.seckill',
+                            'icon' => 'ph:alarm',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'seckill:activity:list',
+                                'meta' => new Meta([
+                                    'title' => '活动列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillActivityList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:activity:read',
+                                'meta' => new Meta([
+                                    'title' => '活动详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillActivityRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:activity:create',
+                                'meta' => new Meta([
+                                    'title' => '活动新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillActivityCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:activity:update',
+                                'meta' => new Meta([
+                                    'title' => '活动编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillActivityUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:activity:delete',
+                                'meta' => new Meta([
+                                    'title' => '活动删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillActivityDelete',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:session:list',
+                                'meta' => new Meta([
+                                    'title' => '场次列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillSessionList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:session:read',
+                                'meta' => new Meta([
+                                    'title' => '场次详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillSessionRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:session:create',
+                                'meta' => new Meta([
+                                    'title' => '场次新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillSessionCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:session:update',
+                                'meta' => new Meta([
+                                    'title' => '场次编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillSessionUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:session:delete',
+                                'meta' => new Meta([
+                                    'title' => '场次删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillSessionDelete',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:product:list',
+                                'meta' => new Meta([
+                                    'title' => '商品列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillProductList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:product:read',
+                                'meta' => new Meta([
+                                    'title' => '商品详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillProductRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:product:create',
+                                'meta' => new Meta([
+                                    'title' => '商品新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillProductCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:product:update',
+                                'meta' => new Meta([
+                                    'title' => '商品编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillProductUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'seckill:product:delete',
+                                'meta' => new Meta([
+                                    'title' => '商品删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.seckillProductDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:seckill:session',
+                        'path' => '/mall/seckill/sessions',
+                        'component' => 'mall/views/seckill/sessions/index',
+                        'meta' => new Meta([
+                            'title' => '场次管理',
+                            'i18n' => 'mallMenu.mall.seckillSession',
+                            'icon' => 'ph:clock',
+                            'hidden' => 1,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 0,
+                            'affix' => 0,
+                        ]),
+                    ],
+                    [
+                        'name' => 'mall:seckill:product',
+                        'path' => '/mall/seckill/products',
+                        'component' => 'mall/views/seckill/products/index',
+                        'meta' => new Meta([
+                            'title' => '商品配置',
+                            'i18n' => 'mallMenu.mall.seckillProduct',
+                            'icon' => 'ph:package',
+                            'hidden' => 1,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 0,
+                            'affix' => 0,
+                        ]),
+                    ],
+                    [
+                        'name' => 'mall:group_buy',
+                        'path' => '/mall/group-buy',
+                        'component' => 'mall/views/group-buy/index',
+                        'meta' => new Meta([
+                            'title' => '团购管理',
+                            'i18n' => 'mallMenu.mall.groupBuy',
+                            'icon' => 'ph:users',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'promotion:group_buy:list',
+                                'meta' => new Meta([
+                                    'title' => '团购列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.groupBuyList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'promotion:group_buy:read',
+                                'meta' => new Meta([
+                                    'title' => '团购详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.groupBuyRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'promotion:group_buy:create',
+                                'meta' => new Meta([
+                                    'title' => '团购新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.groupBuyCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'promotion:group_buy:update',
+                                'meta' => new Meta([
+                                    'title' => '团购编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.groupBuyUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'promotion:group_buy:delete',
+                                'meta' => new Meta([
+                                    'title' => '团购删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.groupBuyDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:order',
+                        'path' => '/mall/order',
+                        'component' => 'mall/views/order/index',
+                        'meta' => new Meta([
+                            'title' => '订单管理',
+                            'i18n' => 'mallMenu.mall.order',
+                            'icon' => 'ph:receipt',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'order:order:list',
+                                'meta' => new Meta([
+                                    'title' => '订单列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.orderList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'order:order:read',
+                                'meta' => new Meta([
+                                    'title' => '订单详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.orderRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'order:order:create',
+                                'meta' => new Meta([
+                                    'title' => '订单新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.orderCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'order:order:update',
+                                'meta' => new Meta([
+                                    'title' => '订单更新',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.orderUpdate',
                                 ]),
                             ],
                         ],

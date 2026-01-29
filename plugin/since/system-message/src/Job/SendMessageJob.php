@@ -40,7 +40,7 @@ class SendMessageJob extends Job
         try {
             // 获取消息
             $message = Message::find($this->messageId);
-            if (!$message) {
+            if (! $message) {
                 $logger->warning('Message not found for notification job', [
                     'message_id' => $this->messageId,
                     'user_id' => $this->userId,
@@ -73,7 +73,7 @@ class SendMessageJob extends Job
     }
 
     /**
-     * 任务失败时的处理
+     * 任务失败时的处理.
      */
     public function failed(\Throwable $e): void
     {
@@ -95,10 +95,10 @@ class SendMessageJob extends Job
     }
 
     /**
-     * 获取任务的唯一标识
+     * 获取任务的唯一标识.
      */
     public function getJobId(): string
     {
-        return sprintf('send_message_%d_%d_%s', $this->messageId, $this->userId, $this->channel);
+        return \sprintf('send_message_%d_%d_%s', $this->messageId, $this->userId, $this->channel);
     }
 }

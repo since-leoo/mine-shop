@@ -12,13 +12,17 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Model;
 
-use App\Model\Permission\User;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\Database\Model\SoftDeletes;
 use Hyperf\DbConnection\Model\Model;
+use Plugin\Since\SystemMessage\Enum\MessageChannel;
+use Plugin\Since\SystemMessage\Enum\MessageStatus;
+use Plugin\Since\SystemMessage\Enum\MessageType;
+use Plugin\Since\SystemMessage\Enum\RecipientType;
 
 /**
  * @property int $id 消息ID，主键
@@ -98,39 +102,7 @@ class Message extends Model
     ];
 
     /**
-     * 消息类型常量
-     */
-    public const TYPE_SYSTEM = 'system';
-    public const TYPE_ANNOUNCEMENT = 'announcement';
-    public const TYPE_ALERT = 'alert';
-    public const TYPE_REMINDER = 'reminder';
-
-    /**
-     * 收件人类型常量
-     */
-    public const RECIPIENT_ALL = 'all';
-    public const RECIPIENT_ROLE = 'role';
-    public const RECIPIENT_USER = 'user';
-
-    /**
-     * 消息状态常量
-     */
-    public const STATUS_DRAFT = 'draft';
-    public const STATUS_SCHEDULED = 'scheduled';
-    public const STATUS_SENDING = 'sending';
-    public const STATUS_SENT = 'sent';
-    public const STATUS_FAILED = 'failed';
-
-    /**
-     * 传递渠道常量
-     */
-    public const CHANNEL_WEBSOCKET = 'websocket';
-    public const CHANNEL_EMAIL = 'email';
-    public const CHANNEL_SMS = 'sms';
-    public const CHANNEL_MINIAPP = 'miniapp';
-
-    /**
-     * 发送者关联
+     * 发送者关联.
      */
     public function sender(): BelongsTo
     {
@@ -138,7 +110,7 @@ class Message extends Model
     }
 
     /**
-     * 消息模板关联
+     * 消息模板关联.
      */
     public function template(): BelongsTo
     {
@@ -146,7 +118,7 @@ class Message extends Model
     }
 
     /**
-     * 用户消息关联
+     * 用户消息关联.
      */
     public function userMessages(): HasMany
     {
@@ -154,7 +126,7 @@ class Message extends Model
     }
 
     /**
-     * 传递日志关联
+     * 传递日志关联.
      */
     public function deliveryLogs(): HasMany
     {
@@ -162,30 +134,29 @@ class Message extends Model
     }
 
     /**
-     * 获取收件人列表
+     * 获取收件人列表.
      */
     public function getRecipients(): Collection
     {
         switch ($this->recipient_type) {
-            case self::RECIPIENT_ALL:
+            case RecipientType::ALL->value:
                 return User::where('status', 1)->get();
-            
-            case self::RECIPIENT_ROLE:
+            case RecipientType::ROLE->value:
                 if (empty($this->recipient_ids)) {
                     return collect();
                 }
                 return User::whereHas('roles', function ($query) {
                     $query->whereIn('id', $this->recipient_ids);
                 })->where('status', 1)->get();
-            
-            case self::RECIPIENT_USER:
+
+            case RecipientType::USER->value:
                 if (empty($this->recipient_ids)) {
                     return collect();
                 }
                 return User::whereIn('id', $this->recipient_ids)
                     ->where('status', 1)
                     ->get();
-            
+
             default:
                 return collect();
         }
@@ -196,7 +167,11 @@ class Message extends Model
      */
     public function canSend(): bool
     {
-        return in_array($this->status, [self::STATUS_DRAFT, self::STATUS_SCHEDULED, self::STATUS_FAILED]);
+        return \in_array($this->status, [
+            MessageStatus::DRAFT->value,
+            MessageStatus::SCHEDULED->value,
+            MessageStatus::FAILED->value,
+        ], true);
     }
 
     /**
@@ -204,7 +179,7 @@ class Message extends Model
      */
     public function isSent(): bool
     {
-        return $this->status === self::STATUS_SENT;
+        return $this->status === MessageStatus::SENT->value;
     }
 
     /**
@@ -212,15 +187,15 @@ class Message extends Model
      */
     public function isSending(): bool
     {
-        return $this->status === self::STATUS_SENDING;
+        return $this->status === MessageStatus::SENDING->value;
     }
 
     /**
-     * 检查消息是否已调度
+     * 检查消息是否已调度.
      */
     public function isScheduled(): bool
     {
-        return $this->status === self::STATUS_SCHEDULED && $this->scheduled_at && $this->scheduled_at->isFuture();
+        return $this->status === MessageStatus::SCHEDULED->value && $this->scheduled_at && $this->scheduled_at->isFuture();
     }
 
     /**
@@ -228,11 +203,11 @@ class Message extends Model
      */
     public function shouldSend(): bool
     {
-        if ($this->status !== self::STATUS_SCHEDULED) {
+        if ($this->status !== MessageStatus::SCHEDULED->value) {
             return false;
         }
 
-        if (!$this->scheduled_at) {
+        if (! $this->scheduled_at) {
             return true;
         }
 
@@ -240,7 +215,7 @@ class Message extends Model
     }
 
     /**
-     * 获取消息的已读用户数量
+     * 获取消息的已读用户数量.
      */
     public function getReadCount(): int
     {
@@ -248,7 +223,7 @@ class Message extends Model
     }
 
     /**
-     * 获取消息的未读用户数量
+     * 获取消息的未读用户数量.
      */
     public function getUnreadCount(): int
     {
@@ -256,7 +231,7 @@ class Message extends Model
     }
 
     /**
-     * 获取消息的总接收用户数量
+     * 获取消息的总接收用户数量.
      */
     public function getTotalRecipientCount(): int
     {
@@ -264,7 +239,7 @@ class Message extends Model
     }
 
     /**
-     * 获取消息的传递成功率
+     * 获取消息的传递成功率.
      */
     public function getDeliverySuccessRate(): float
     {
@@ -278,11 +253,11 @@ class Message extends Model
     }
 
     /**
-     * 标记消息为发送中
+     * 标记消息为发送中.
      */
     public function markAsSending(): bool
     {
-        return $this->update(['status' => self::STATUS_SENDING]);
+        return $this->update(['status' => MessageStatus::SENDING->value]);
     }
 
     /**
@@ -291,42 +266,33 @@ class Message extends Model
     public function markAsSent(): bool
     {
         return $this->update([
-            'status' => self::STATUS_SENT,
-            'sent_at' => now(),
+            'status' => MessageStatus::SENT->value,
+            'sent_at' => Carbon::now(),
         ]);
     }
 
     /**
-     * 标记消息为发送失败
+     * 标记消息为发送失败.
      */
     public function markAsFailed(): bool
     {
-        return $this->update(['status' => self::STATUS_FAILED]);
+        return $this->update(['status' => MessageStatus::FAILED->value]);
     }
 
     /**
-     * 获取所有消息类型
+     * 获取所有消息类型.
      */
     public static function getTypes(): array
     {
-        return [
-            self::TYPE_SYSTEM => '系统消息',
-            self::TYPE_ANNOUNCEMENT => '公告',
-            self::TYPE_ALERT => '警报',
-            self::TYPE_REMINDER => '提醒',
-        ];
+        return MessageType::toArray();
     }
 
     /**
-     * 获取所有收件人类型
+     * 获取所有收件人类型.
      */
     public static function getRecipientTypes(): array
     {
-        return [
-            self::RECIPIENT_ALL => '所有用户',
-            self::RECIPIENT_ROLE => '指定角色',
-            self::RECIPIENT_USER => '指定用户',
-        ];
+        return RecipientType::toArray();
     }
 
     /**
@@ -334,30 +300,20 @@ class Message extends Model
      */
     public static function getStatuses(): array
     {
-        return [
-            self::STATUS_DRAFT => '草稿',
-            self::STATUS_SCHEDULED => '已调度',
-            self::STATUS_SENDING => '发送中',
-            self::STATUS_SENT => '已发送',
-            self::STATUS_FAILED => '发送失败',
-        ];
+        return MessageStatus::toArray();
     }
 
     /**
-     * 获取所有传递渠道
+     * 获取所有传递渠道.
      */
     public static function getChannels(): array
     {
-        return [
-            self::CHANNEL_WEBSOCKET => 'WebSocket',
-            self::CHANNEL_EMAIL => '邮件',
-            self::CHANNEL_SMS => '短信',
-            self::CHANNEL_MINIAPP => '小程序',
-        ];
+        return MessageChannel::toArray();
     }
 
     /**
-     * 作用域：按类型筛选
+     * 作用域：按类型筛选.
+     * @param mixed $query
      */
     public function scopeOfType($query, string $type)
     {
@@ -365,7 +321,8 @@ class Message extends Model
     }
 
     /**
-     * 作用域：按状态筛选
+     * 作用域：按状态筛选.
+     * @param mixed $query
      */
     public function scopeOfStatus($query, string $status)
     {
@@ -373,7 +330,8 @@ class Message extends Model
     }
 
     /**
-     * 作用域：按发送者筛选
+     * 作用域：按发送者筛选.
+     * @param mixed $query
      */
     public function scopeBySender($query, int $senderId)
     {
@@ -381,22 +339,24 @@ class Message extends Model
     }
 
     /**
-     * 作用域：需要发送的消息
+     * 作用域：需要发送的消息.
+     * @param mixed $query
      */
     public function scopePendingSend($query)
     {
-        return $query->where('status', self::STATUS_SCHEDULED)
-            ->where(function ($q) {
+        return $query->where('status', MessageStatus::SCHEDULED->value)
+            ->where(static function ($q) {
                 $q->whereNull('scheduled_at')
-                    ->orWhere('scheduled_at', '<=', now());
+                    ->orWhere('scheduled_at', '<=', Carbon::now());
             });
     }
 
     /**
-     * 作用域：最近的消息
+     * 作用域：最近的消息.
+     * @param mixed $query
      */
     public function scopeRecent($query, int $days = 7)
     {
-        return $query->where('created_at', '>=', now()->subDays($days));
+        return $query->where('created_at', '>=', Carbon::now()->subDays($days));
     }
 }

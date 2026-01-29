@@ -42,7 +42,7 @@ class UpdateMessageRequest extends FormRequest
             'recipient_ids' => ['sometimes', 'array'],
             'recipient_ids.*' => ['integer', 'min:1'],
             'channels' => ['sometimes', 'array'],
-            'channels.*' => ['string', 'in:socketio,websocket,email,sms,push'],
+            'channels.*' => ['string', 'in:database,email,sms,push,miniapp'],
             'scheduled_at' => ['nullable', 'date', 'after:now'],
             'template_id' => ['nullable', 'integer', 'exists:message_templates,id'],
             'template_variables' => ['nullable', 'array'],
@@ -99,16 +99,17 @@ class UpdateMessageRequest extends FormRequest
 
     /**
      * Configure the validator instance.
+     * @param mixed $validator
      */
     public function withValidator($validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(static function ($validator) {
             $data = $validator->getData();
 
             // 验证收件人ID是否必需
-            if (isset($data['recipient_type']) && 
-                $data['recipient_type'] !== Message::RECIPIENT_ALL && 
-                empty($data['recipient_ids'])) {
+            if (isset($data['recipient_type'])
+                && $data['recipient_type'] !== Message::RECIPIENT_ALL
+                && empty($data['recipient_ids'])) {
                 $validator->errors()->add('recipient_ids', '当收件人类型不是"所有用户"时，必须指定收件人ID');
             }
         });

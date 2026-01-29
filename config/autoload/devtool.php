@@ -23,10 +23,10 @@ return [
             'namespace' => 'App\Aspect',
         ],
         'command' => [
-            'namespace' => 'App\Command',
+            'namespace' => 'App\Infrastructure\Command\System',
         ],
         'controller' => [
-            'namespace' => 'App\Http\Controller',
+            'namespace' => 'App\Interface\Admin\Controller',
         ],
         'job' => [
             'namespace' => 'App\Job',
@@ -35,7 +35,7 @@ return [
             'namespace' => 'App\Listener',
         ],
         'middleware' => [
-            'namespace' => 'App\Middleware',
+            'namespace' => 'App\Interface\Common\Middleware',
         ],
         'Process' => [
             'namespace' => 'App\Processes',

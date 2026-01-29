@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Model;
 
-use App\Model\Permission\User;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
@@ -32,14 +32,14 @@ use Hyperf\DbConnection\Model\Model;
 class UserMessage extends Model
 {
     /**
-     * The table associated with the model.
-     */
-    protected ?string $table = 'user_messages';
-
-    /**
      * Indicates if the model should be timestamped.
      */
     public bool $timestamps = false;
+
+    /**
+     * The table associated with the model.
+     */
+    protected ?string $table = 'user_messages';
 
     /**
      * The attributes that are mass assignable.
@@ -68,7 +68,7 @@ class UserMessage extends Model
     ];
 
     /**
-     * 用户关联
+     * 用户关联.
      */
     public function user(): BelongsTo
     {
@@ -76,7 +76,7 @@ class UserMessage extends Model
     }
 
     /**
-     * 消息关联
+     * 消息关联.
      */
     public function message(): BelongsTo
     {
@@ -84,7 +84,7 @@ class UserMessage extends Model
     }
 
     /**
-     * 标记为已读
+     * 标记为已读.
      */
     public function markAsRead(): bool
     {
@@ -94,16 +94,16 @@ class UserMessage extends Model
 
         return $this->update([
             'is_read' => true,
-            'read_at' => now(),
+            'read_at' => Carbon::now(),
         ]);
     }
 
     /**
-     * 标记为未读
+     * 标记为未读.
      */
     public function markAsUnread(): bool
     {
-        if (!$this->is_read) {
+        if (! $this->is_read) {
             return true;
         }
 
@@ -114,7 +114,7 @@ class UserMessage extends Model
     }
 
     /**
-     * 软删除消息
+     * 软删除消息.
      */
     public function softDelete(): bool
     {
@@ -124,16 +124,16 @@ class UserMessage extends Model
 
         return $this->update([
             'is_deleted' => true,
-            'deleted_at' => now(),
+            'deleted_at' => Carbon::now(),
         ]);
     }
 
     /**
-     * 恢复删除的消息
+     * 恢复删除的消息.
      */
     public function restore(): bool
     {
-        if (!$this->is_deleted) {
+        if (! $this->is_deleted) {
             return true;
         }
 
@@ -144,7 +144,7 @@ class UserMessage extends Model
     }
 
     /**
-     * 检查消息是否已读
+     * 检查消息是否已读.
      */
     public function isRead(): bool
     {
@@ -152,15 +152,15 @@ class UserMessage extends Model
     }
 
     /**
-     * 检查消息是否未读
+     * 检查消息是否未读.
      */
     public function isUnread(): bool
     {
-        return !$this->is_read;
+        return ! $this->is_read;
     }
 
     /**
-     * 检查消息是否已删除
+     * 检查消息是否已删除.
      */
     public function isDeleted(): bool
     {
@@ -168,7 +168,7 @@ class UserMessage extends Model
     }
 
     /**
-     * 获取阅读状态文本
+     * 获取阅读状态文本.
      */
     public function getReadStatusText(): string
     {
@@ -176,7 +176,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：按用户筛选
+     * 作用域：按用户筛选.
+     * @param mixed $query
      */
     public function scopeForUser($query, int $userId)
     {
@@ -184,7 +185,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：按消息筛选
+     * 作用域：按消息筛选.
+     * @param mixed $query
      */
     public function scopeForMessage($query, int $messageId)
     {
@@ -192,7 +194,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：已读消息
+     * 作用域：已读消息.
+     * @param mixed $query
      */
     public function scopeRead($query)
     {
@@ -200,7 +203,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：未读消息
+     * 作用域：未读消息.
+     * @param mixed $query
      */
     public function scopeUnread($query)
     {
@@ -208,7 +212,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：未删除的消息
+     * 作用域：未删除的消息.
+     * @param mixed $query
      */
     public function scopeNotDeleted($query)
     {
@@ -216,7 +221,8 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：已删除的消息
+     * 作用域：已删除的消息.
+     * @param mixed $query
      */
     public function scopeDeleted($query)
     {
@@ -224,15 +230,16 @@ class UserMessage extends Model
     }
 
     /**
-     * 作用域：最近的消息
+     * 作用域：最近的消息.
+     * @param mixed $query
      */
     public function scopeRecent($query, int $days = 7)
     {
-        return $query->where('created_at', '>=', now()->subDays($days));
+        return $query->where('created_at', '>=', Carbon::now()->subDays($days));
     }
 
     /**
-     * 批量标记为已读
+     * 批量标记为已读.
      */
     public static function batchMarkAsRead(int $userId, array $messageIds): int
     {
@@ -241,12 +248,12 @@ class UserMessage extends Model
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
-                'read_at' => now(),
+                'read_at' => Carbon::now(),
             ]);
     }
 
     /**
-     * 批量软删除
+     * 批量软删除.
      */
     public static function batchSoftDelete(int $userId, array $messageIds): int
     {
@@ -255,12 +262,12 @@ class UserMessage extends Model
             ->where('is_deleted', false)
             ->update([
                 'is_deleted' => true,
-                'deleted_at' => now(),
+                'deleted_at' => Carbon::now(),
             ]);
     }
 
     /**
-     * 获取用户的未读消息数量
+     * 获取用户的未读消息数量.
      */
     public static function getUnreadCount(int $userId): int
     {

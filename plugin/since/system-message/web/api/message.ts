@@ -80,39 +80,39 @@ export interface UpdateMessageData extends Partial<CreateMessageData> {}
 export const messageAdminApi = {
   // 获取消息列表
   getList(params: MessageListParams = {}) {
-    return http.get('/admin/system-message/index', { params })
+    return http.get('/plugin/admin/system-message/index', { params })
   },
 
   // 获取消息详情
   getDetail(id: number) {
-    return http.get(`/admin/system-message/read/${id}`)
+    return http.get(`/plugin/admin/system-message/read/${id}`)
   },
 
   // 创建消息
   create(data: CreateMessageData) {
-    return http.post('/admin/system-message/save', data)
+    return http.post('/plugin/admin/system-message/save', data)
   },
 
   // 更新消息
   update(id: number, data: UpdateMessageData) {
-    return http.put(`/admin/system-message/update/${id}`, data)
+    return http.put(`/plugin/admin/system-message/update/${id}`, data)
   },
 
   // 删除消息
   delete(id: number) {
-    return http.delete('/admin/system-message/delete', {
+    return http.delete('/plugin/admin/system-message/delete', {
       data: { ids: [id] }
     })
   },
 
   // 发送消息
   send(id: number) {
-    return http.post('/admin/system-message/send', { id })
+    return http.post('/plugin/admin/system-message/send', { id })
   },
 
   // 调度消息
   schedule(id: number, scheduledAt: string) {
-    return http.post('/admin/system-message/schedule', {
+    return http.post('/plugin/admin/system-message/schedule', {
       id,
       scheduled_at: scheduledAt
     })
@@ -120,38 +120,38 @@ export const messageAdminApi = {
 
   // 批量删除消息
   batchDelete(ids: number[]) {
-    return http.delete('/admin/system-message/delete', {
+    return http.delete('/plugin/admin/system-message/delete', {
       data: { ids }
     })
   },
 
   // 批量发送消息
   batchSend(ids: number[]) {
-    return http.post('/admin/system-message/batchSend', { ids })
+    return http.post('/plugin/admin/system-message/batchSend', { ids })
   },
 
   // 搜索消息
   search(keyword: string, params: Omit<MessageListParams, 'keyword'> = {}) {
-    return http.get('/admin/system-message/search', {
+    return http.get('/plugin/admin/system-message/search', {
       params: { keyword, ...params }
     })
   },
 
   // 获取消息统计
   getStatistics() {
-    return http.get('/admin/system-message/statistics')
+    return http.get('/plugin/admin/system-message/statistics')
   },
 
   // 获取热门消息
   getPopular(limit = 10) {
-    return http.get('/admin/system-message/popular', {
+    return http.get('/plugin/admin/system-message/popular', {
       params: { limit }
     })
   },
 
   // 获取最近消息
   getRecent(days = 7, limit = 20) {
-    return http.get('/admin/system-message/recent', {
+    return http.get('/plugin/admin/system-message/recent', {
       params: { days, limit }
     })
   }
@@ -161,56 +161,56 @@ export const messageAdminApi = {
 export const messageUserApi = {
   // 获取用户消息列表
   getList(params: UserMessageListParams = {}) {
-    return http.get('/system-message/user/index', { params })
+    return http.get('/plugin/api/system-message/user/index', { params })
   },
 
   // 获取消息详情
   getDetail(messageId: number) {
-    return http.get(`/system-message/user/read/${messageId}`)
+    return http.get(`/plugin/api/system-message/user/read/${messageId}`)
   },
 
   // 标记消息为已读
   markAsRead(messageId: number) {
-    return http.put(`/system-message/user/markRead/${messageId}`)
+    return http.put(`/plugin/api/system-message/user/markRead/${messageId}`)
   },
 
   // 批量标记消息为已读
   batchMarkAsRead(messageIds: number[]) {
-    return http.put('/system-message/user/batchMarkRead', {
+    return http.put('/plugin/api/system-message/user/batchMarkRead', {
       message_ids: messageIds
     })
   },
 
   // 标记所有消息为已读
   markAllAsRead() {
-    return http.put('/system-message/user/markAllRead')
+    return http.put('/plugin/api/system-message/user/markAllRead')
   },
 
   // 删除用户消息
   delete(messageId: number) {
-    return http.delete(`/system-message/user/delete/${messageId}`)
+    return http.delete(`/plugin/api/system-message/user/delete/${messageId}`)
   },
 
   // 批量删除用户消息
   batchDelete(messageIds: number[]) {
-    return http.delete('/system-message/user/batchDelete', {
+    return http.delete('/plugin/api/system-message/user/batchDelete', {
       data: { message_ids: messageIds }
     })
   },
 
   // 获取未读消息数量
   getUnreadCount() {
-    return http.get('/system-message/user/unreadCount')
+    return http.get('/plugin/api/system-message/user/unreadCount')
   },
 
   // 获取消息类型统计
   getTypeStats() {
-    return http.get('/system-message/user/typeStats')
+    return http.get('/plugin/api/system-message/user/typeStats')
   },
 
   // 搜索用户消息
   search(keyword: string, params: Omit<UserMessageListParams, 'keyword'> = {}) {
-    return http.get('/system-message/user/search', {
+    return http.get('/plugin/api/system-message/user/search', {
       params: { keyword, ...params }
     })
   }
@@ -220,11 +220,11 @@ export const messageUserApi = {
 export const messagePublicApi = {
   // 获取消息类型列表
   getMessageTypes() {
-    return http.get('/api/system-message/public/message-types')
+    return http.get('/plugin/api/system-message/public/message-types')
   },
 
   // 获取收件人类型列表
   getRecipientTypes() {
-    return http.get('/api/system-message/public/recipient-types')
+    return http.get('/plugin/api/system-message/public/recipient-types')
   }
 }

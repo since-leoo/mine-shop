@@ -12,32 +12,29 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Controller\User;
 
-use App\Http\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
-use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
+use Hyperf\HttpServer\Annotation\PutMapping;
 use Plugin\Since\SystemMessage\Controller\AbstractController;
 use Plugin\Since\SystemMessage\Service\MessageService;
-use Psr\Http\Message\ResponseInterface;
 
-#[Controller(prefix: "system-message/user")]
+#[Controller(prefix: 'plugin/api/system-message/user')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 class UserMessageController extends AbstractController
 {
+    #[Inject]
     protected MessageService $messageService;
 
-    public function __construct(MessageService $messageService)
-    {
-        $this->messageService = $messageService;
-    }
-
     /**
-     * 获取用户消息列表
+     * 获取用户消息列表.
      */
-    #[GetMapping("index")]
-    public function index(): ResponseInterface
+    #[GetMapping('index')]
+    public function index(): Result
     {
         $filters = [
             'is_read' => $this->request->input('is_read'),
@@ -49,7 +46,7 @@ class UserMessageController extends AbstractController
 
         $page = (int) $this->request->input('page', 1);
         $pageSize = (int) $this->request->input('page_size', 20);
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         $result = $this->messageService->getUserMessages($userId, $filters, $page, $pageSize);
 
@@ -57,17 +54,17 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 获取消息详情
+     * 获取消息详情.
      */
-    #[GetMapping("read/{messageId}")]
-    public function read(int $messageId): ResponseInterface
+    #[GetMapping('read/{messageId}')]
+    public function read(int $messageId): Result
     {
-        $userId = user()->getId();
-        
+        $userId = $this->currentUser->id();
+
         try {
             $message = $this->messageService->getUserMessage($userId, $messageId);
 
-            if (!$message) {
+            if (! $message) {
                 return $this->error('消息不存在', 404);
             }
 
@@ -78,17 +75,17 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 标记消息为已读
+     * 标记消息为已读.
      */
-    #[PutMapping("markRead/{messageId}")]
-    public function markAsRead(int $messageId): ResponseInterface
+    #[PutMapping('markRead/{messageId}')]
+    public function markAsRead(int $messageId): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $result = $this->messageService->markAsRead($userId, $messageId);
 
-            if (!$result) {
+            if (! $result) {
                 return $this->error('消息不存在或已读', 404);
             }
 
@@ -99,15 +96,15 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 批量标记消息为已读
+     * 批量标记消息为已读.
      */
-    #[PutMapping("batchMarkRead")]
-    public function batchMarkAsRead(): ResponseInterface
+    #[PutMapping('batchMarkRead')]
+    public function batchMarkAsRead(): Result
     {
         $messageIds = $this->request->input('message_ids', []);
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
-        if (empty($messageIds) || !is_array($messageIds)) {
+        if (empty($messageIds) || ! \is_array($messageIds)) {
             return $this->error('请选择要标记的消息');
         }
 
@@ -116,7 +113,7 @@ class UserMessageController extends AbstractController
 
             return $this->success([
                 'marked' => $result,
-                'total' => count($messageIds),
+                'total' => \count($messageIds),
             ], '批量标记完成');
         } catch (\Throwable $e) {
             return $this->error('批量操作失败：' . $e->getMessage());
@@ -124,12 +121,12 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 标记所有消息为已读
+     * 标记所有消息为已读.
      */
-    #[PutMapping("markAllRead")]
-    public function markAllAsRead(): ResponseInterface
+    #[PutMapping('markAllRead')]
+    public function markAllAsRead(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $result = $this->messageService->markAllAsRead($userId);
@@ -143,17 +140,17 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 删除用户消息
+     * 删除用户消息.
      */
-    #[DeleteMapping("delete/{messageId}")]
-    public function delete(int $messageId): ResponseInterface
+    #[DeleteMapping('delete/{messageId}')]
+    public function delete(int $messageId): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $result = $this->messageService->deleteUserMessage($userId, $messageId);
 
-            if (!$result) {
+            if (! $result) {
                 return $this->error('消息不存在', 404);
             }
 
@@ -164,15 +161,15 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 批量删除用户消息
+     * 批量删除用户消息.
      */
-    #[DeleteMapping("batchDelete")]
-    public function batchDelete(): ResponseInterface
+    #[DeleteMapping('batchDelete')]
+    public function batchDelete(): Result
     {
         $messageIds = $this->request->input('message_ids', []);
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
-        if (empty($messageIds) || !is_array($messageIds)) {
+        if (empty($messageIds) || ! \is_array($messageIds)) {
             return $this->error('请选择要删除的消息');
         }
 
@@ -181,7 +178,7 @@ class UserMessageController extends AbstractController
 
             return $this->success([
                 'deleted' => $result,
-                'total' => count($messageIds),
+                'total' => \count($messageIds),
             ], '批量删除完成');
         } catch (\Throwable $e) {
             return $this->error('批量删除失败：' . $e->getMessage());
@@ -189,12 +186,12 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 获取未读消息数量
+     * 获取未读消息数量.
      */
-    #[GetMapping("unreadCount")]
-    public function getUnreadCount(): ResponseInterface
+    #[GetMapping('unreadCount')]
+    public function getUnreadCount(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $count = $this->messageService->getUnreadCount($userId);
@@ -208,10 +205,10 @@ class UserMessageController extends AbstractController
     /**
      * 获取消息类型统计
      */
-    #[GetMapping("typeStats")]
-    public function getTypeStats(): ResponseInterface
+    #[GetMapping('typeStats')]
+    public function getTypeStats(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $stats = $this->messageService->getUserMessageTypeStats($userId);
@@ -223,14 +220,14 @@ class UserMessageController extends AbstractController
     }
 
     /**
-     * 搜索用户消息
+     * 搜索用户消息.
      */
-    #[GetMapping("search")]
-    public function search(): ResponseInterface
+    #[GetMapping('search')]
+    public function search(): Result
     {
         $keyword = $this->request->input('keyword', '');
-        $userId = user()->getId();
-        
+        $userId = $this->currentUser->id();
+
         if (empty($keyword)) {
             return $this->error('搜索关键词不能为空');
         }

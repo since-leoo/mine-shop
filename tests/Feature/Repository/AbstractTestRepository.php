@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Repository\IRepository;
+use App\Infrastructure\Abstract\IRepository;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Model\Model;

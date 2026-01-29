@@ -9,6 +9,9 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+
+use App\Domain\Product\Listener\ProductSkuStockListener;
+use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 use Mine\Core\Subscriber\BootApplicationSubscriber;
 use Mine\Core\Subscriber\DbQueryExecutedSubscriber;
@@ -34,4 +37,8 @@ return [
     QueueHandleSubscriber::class,
     // 注册新的 Blueprint 宏
     RegisterBlueprintListener::class,
+    // 商品库存同步
+    ProductSkuStockListener::class,
+    // 订单状态消息推送
+    OrderStatusNotifyListener::class,
 ];

@@ -14,9 +14,11 @@ namespace HyperfTests;
 
 use Faker\Factory;
 use Faker\Generator;
+use Hyperf\Context\ApplicationContext;
 use Hyperf\Testing\Client;
 use Hyperf\Testing\Concerns\RunTestsInCoroutine;
 use PHPUnit\Framework\TestCase;
+use Psr\SimpleCache\CacheInterface;
 
 /**
  * Class HttpTestCase.
@@ -41,6 +43,18 @@ abstract class HttpTestCase extends TestCase
     {
         parent::__construct($name);
         $this->client = make(Client::class);
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        if (ApplicationContext::hasContainer()) {
+            try {
+                ApplicationContext::getContainer()->get(CacheInterface::class)->clear();
+            } catch (\Throwable) {
+                // 测试环境没有 Redis 时直接跳过
+            }
+        }
     }
 
     public function __call($name, $arguments)

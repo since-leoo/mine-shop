@@ -1,13 +1,23 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+
 namespace Plugin\MineAdmin\Dictionary\Http\Controller;
 
-use App\Http\Admin\Controller\AbstractController;
-use App\Http\Admin\Middleware\PermissionMiddleware;
-use App\Http\Common\Middleware\AccessTokenMiddleware;
-use App\Http\Common\Middleware\OperationMiddleware;
-use App\Http\Common\Result;
-use App\Http\CurrentUser;
+use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Common\CurrentUser;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Middleware\OperationMiddleware;
+use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\Swagger\Annotation as OA;
 use Hyperf\Swagger\Annotation\Delete;
@@ -18,7 +28,6 @@ use Mine\Access\Attribute\Permission;
 use Mine\Swagger\Attributes\ResultResponse;
 use Plugin\MineAdmin\Dictionary\Http\Request\DictionaryTypeRequest as Request;
 use Plugin\MineAdmin\Dictionary\Service\DictionaryTypeService as Service;
-
 
 #[OA\Tag('字典分类')]
 #[OA\HyperfServer('http')]

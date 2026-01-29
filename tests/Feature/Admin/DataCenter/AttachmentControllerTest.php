@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\DataCenter;
 
-use App\Http\Common\ResultCode;
-use App\Model\Attachment;
+use App\Infrastructure\Model\Attachment\Attachment;
+use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Hyperf\Collection\Arr;
 use Hyperf\Database\Model\ModelNotFoundException;

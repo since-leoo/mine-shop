@@ -12,39 +12,37 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Controller\Admin;
 
-use App\Http\Admin\Middleware\PermissionMiddleware;
-use App\Http\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
+use Carbon\Carbon;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
 use Mine\Access\Attribute\Permission;
 use Plugin\Since\SystemMessage\Controller\AbstractController;
 use Plugin\Since\SystemMessage\Request\CreateMessageRequest;
 use Plugin\Since\SystemMessage\Request\UpdateMessageRequest;
 use Plugin\Since\SystemMessage\Service\MessageService;
-use Psr\Http\Message\ResponseInterface;
 
-#[Controller(prefix: "admin/system-message")]
+#[Controller(prefix: 'plugin/admin/system-message')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 #[Middleware(middleware: PermissionMiddleware::class, priority: 99)]
 class MessageController extends AbstractController
 {
+    #[Inject]
     protected MessageService $messageService;
 
-    public function __construct(MessageService $messageService)
-    {
-        $this->messageService = $messageService;
-    }
-
     /**
-     * 获取消息列表
+     * 获取消息列表.
      */
-    #[GetMapping("index")]
-    #[Permission(code: "system-message:index")]
-    public function index(): ResponseInterface
+    #[GetMapping('index')]
+    #[Permission(code: 'system-message:index')]
+    public function index(): Result
     {
         $filters = [
             'type' => $this->request->input('type'),
@@ -65,15 +63,15 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 获取消息详情
+     * 获取消息详情.
      */
-    #[GetMapping("read/{id}")]
-    #[Permission(code: "system-message:read")]
-    public function read(int $id): ResponseInterface
+    #[GetMapping('read/{id}')]
+    #[Permission(code: 'system-message:read')]
+    public function read(int $id): Result
     {
         $message = $this->messageService->getRepository()->findById($id);
 
-        if (!$message) {
+        if (! $message) {
             return $this->error('消息不存在', 404);
         }
 
@@ -81,16 +79,16 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 创建消息
+     * 创建消息.
      */
-    #[PostMapping("save")]
-    #[Permission(code: "system-message:save")]
-    public function save(CreateMessageRequest $request): ResponseInterface
+    #[PostMapping('save')]
+    #[Permission(code: 'system-message:save')]
+    public function save(CreateMessageRequest $request): Result
     {
         $data = $request->validated();
-        
+
         // 添加发送者信息
-        $data['sender_id'] = user()->getId();
+        $data['sender_id'] = $this->currentUser->user()->id;
 
         $message = $this->messageService->create($data);
 
@@ -98,11 +96,11 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 更新消息
+     * 更新消息.
      */
-    #[PutMapping("update/{id}")]
-    #[Permission(code: "system-message:update")]
-    public function update(int $id, UpdateMessageRequest $request): ResponseInterface
+    #[PutMapping('update/{id}')]
+    #[Permission(code: 'system-message:update')]
+    public function update(int $id, UpdateMessageRequest $request): Result
     {
         $data = $request->validated();
 
@@ -112,11 +110,11 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 删除消息
+     * 删除消息.
      */
-    #[DeleteMapping("delete")]
-    #[Permission(code: "system-message:delete")]
-    public function delete(): ResponseInterface
+    #[DeleteMapping('delete')]
+    #[Permission(code: 'system-message:delete')]
+    public function delete(): Result
     {
         $ids = $this->request->input('ids', []);
 
@@ -130,12 +128,12 @@ class MessageController extends AbstractController
         foreach ((array) $ids as $id) {
             try {
                 if ($this->messageService->delete($id)) {
-                    $deleted++;
+                    ++$deleted;
                 } else {
-                    $failed++;
+                    ++$failed;
                 }
             } catch (\Throwable $e) {
-                $failed++;
+                ++$failed;
             }
         }
 
@@ -146,15 +144,15 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 发送消息
+     * 发送消息.
      */
-    #[PostMapping("send")]
-    #[Permission(code: "system-message:send")]
-    public function send(): ResponseInterface
+    #[PostMapping('send')]
+    #[Permission(code: 'system-message:send')]
+    public function send(): Result
     {
         $id = $this->request->input('id');
-        
-        if (!$id) {
+
+        if (! $id) {
             return $this->error('消息ID不能为空');
         }
 
@@ -168,21 +166,21 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 调度消息
+     * 调度消息.
      */
-    #[PostMapping("schedule")]
-    #[Permission(code: "system-message:schedule")]
-    public function schedule(): ResponseInterface
+    #[PostMapping('schedule')]
+    #[Permission(code: 'system-message:schedule')]
+    public function schedule(): Result
     {
         $id = $this->request->input('id');
         $scheduledAt = $this->request->input('scheduled_at');
-        
-        if (!$id || !$scheduledAt) {
+
+        if (! $id || ! $scheduledAt) {
             return $this->error('消息ID和调度时间不能为空');
         }
 
         try {
-            $result = $this->messageService->schedule($id, \Carbon\Carbon::parse($scheduledAt));
+            $result = $this->messageService->schedule($id, Carbon::parse($scheduledAt));
 
             return $this->success(['result' => $result], '消息调度成功');
         } catch (\Throwable $e) {
@@ -191,15 +189,15 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 批量发送消息
+     * 批量发送消息.
      */
-    #[PostMapping("batchSend")]
-    #[Permission(code: "system-message:batchSend")]
-    public function batchSend(): ResponseInterface
+    #[PostMapping('batchSend')]
+    #[Permission(code: 'system-message:batchSend')]
+    public function batchSend(): Result
     {
         $ids = $this->request->input('ids', []);
 
-        if (empty($ids) || !is_array($ids)) {
+        if (empty($ids) || ! \is_array($ids)) {
             return $this->error('请选择要发送的消息');
         }
 
@@ -209,12 +207,12 @@ class MessageController extends AbstractController
         foreach ($ids as $id) {
             try {
                 if ($this->messageService->send($id)) {
-                    $sent++;
+                    ++$sent;
                 } else {
-                    $failed++;
+                    ++$failed;
                 }
             } catch (\Throwable $e) {
-                $failed++;
+                ++$failed;
             }
         }
 
@@ -225,14 +223,14 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 搜索消息
+     * 搜索消息.
      */
-    #[GetMapping("search")]
-    #[Permission(code: "system-message:index")]
-    public function search(): ResponseInterface
+    #[GetMapping('search')]
+    #[Permission(code: 'system-message:index')]
+    public function search(): Result
     {
         $keyword = $this->request->input('keyword', '');
-        
+
         if (empty($keyword)) {
             return $this->error('搜索关键词不能为空');
         }
@@ -253,9 +251,9 @@ class MessageController extends AbstractController
     /**
      * 获取消息统计
      */
-    #[GetMapping("statistics")]
-    #[Permission(code: "system-message:statistics")]
-    public function statistics(): ResponseInterface
+    #[GetMapping('statistics')]
+    #[Permission(code: 'system-message:statistics')]
+    public function statistics(): Result
     {
         $stats = $this->messageService->getStatistics();
 
@@ -263,11 +261,11 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 获取热门消息
+     * 获取热门消息.
      */
-    #[GetMapping("popular")]
-    #[Permission(code: "system-message:index")]
-    public function popular(): ResponseInterface
+    #[GetMapping('popular')]
+    #[Permission(code: 'system-message:index')]
+    public function popular(): Result
     {
         $limit = (int) $this->request->input('limit', 10);
         $messages = $this->messageService->getRepository()->getPopularMessages($limit);
@@ -276,15 +274,15 @@ class MessageController extends AbstractController
     }
 
     /**
-     * 获取最近消息
+     * 获取最近消息.
      */
-    #[GetMapping("recent")]
-    #[Permission(code: "system-message:index")]
-    public function recent(): ResponseInterface
+    #[GetMapping('recent')]
+    #[Permission(code: 'system-message:index')]
+    public function recent(): Result
     {
         $days = (int) $this->request->input('days', 7);
         $limit = (int) $this->request->input('limit', 20);
-        
+
         $messages = $this->messageService->getRepository()->getRecentMessages($days, $limit);
 
         return $this->success($messages);

@@ -20,7 +20,6 @@
   "homepage": "https://github.com/since/system-message",
   "license": "Apache-2.0",
   "package": {
-    "dependencies": {}
   },
   "composer": {
     "require": {},

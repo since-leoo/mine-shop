@@ -12,39 +12,36 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Controller\Admin;
 
-use App\Http\Admin\Middleware\PermissionMiddleware;
-use App\Http\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
 use Mine\Access\Attribute\Permission;
 use Plugin\Since\SystemMessage\Controller\AbstractController;
 use Plugin\Since\SystemMessage\Request\CreateTemplateRequest;
 use Plugin\Since\SystemMessage\Request\UpdateTemplateRequest;
 use Plugin\Since\SystemMessage\Service\TemplateService;
-use Psr\Http\Message\ResponseInterface;
 
-#[Controller(prefix: "admin/system-message/template")]
+#[Controller(prefix: 'plugin/admin/system-message/template')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 #[Middleware(middleware: PermissionMiddleware::class, priority: 99)]
 class TemplateController extends AbstractController
 {
+    #[Inject]
     protected TemplateService $templateService;
 
-    public function __construct(TemplateService $templateService)
-    {
-        $this->templateService = $templateService;
-    }
-
     /**
-     * 获取模板列表
+     * 获取模板列表.
      */
-    #[GetMapping("index")]
-    #[Permission(code: "system-message-template:index")]
-    public function index(): ResponseInterface
+    #[GetMapping('index')]
+    #[Permission(code: 'system-message-template:index')]
+    public function index(): Result
     {
         $filters = [
             'type' => $this->request->input('type'),
@@ -56,7 +53,7 @@ class TemplateController extends AbstractController
         ];
 
         // 移除空值
-        $filters = array_filter($filters, function ($value) {
+        $filters = array_filter($filters, static function ($value) {
             return $value !== null && $value !== '';
         });
 
@@ -69,15 +66,15 @@ class TemplateController extends AbstractController
     }
 
     /**
-     * 获取模板详情
+     * 获取模板详情.
      */
-    #[GetMapping("read/{id}")]
-    #[Permission(code: "system-message-template:read")]
-    public function read(int $id): ResponseInterface
+    #[GetMapping('read/{id}')]
+    #[Permission(code: 'system-message-template:read')]
+    public function read(int $id): Result
     {
         $template = $this->templateService->getById($id);
 
-        if (!$template) {
+        if (! $template) {
             return $this->error('模板不存在', 404);
         }
 
@@ -87,14 +84,14 @@ class TemplateController extends AbstractController
     /**
      * 创建模板
      */
-    #[PostMapping("save")]
-    #[Permission(code: "system-message-template:save")]
-    public function save(CreateTemplateRequest $request): ResponseInterface
+    #[PostMapping('save')]
+    #[Permission(code: 'system-message-template:save')]
+    public function save(CreateTemplateRequest $request): Result
     {
         $data = $request->validated();
-        
+
         // 添加创建者信息
-        $data['created_by'] = user()->getId();
+        $data['created_by'] = $this->currentUser->user()->id;
 
         $template = $this->templateService->create($data);
 
@@ -104,9 +101,9 @@ class TemplateController extends AbstractController
     /**
      * 更新模板
      */
-    #[PutMapping("update/{id}")]
-    #[Permission(code: "system-message-template:update")]
-    public function update(int $id, UpdateTemplateRequest $request): ResponseInterface
+    #[PutMapping('update/{id}')]
+    #[Permission(code: 'system-message-template:update')]
+    public function update(int $id, UpdateTemplateRequest $request): Result
     {
         $data = $request->validated();
 
@@ -122,9 +119,9 @@ class TemplateController extends AbstractController
     /**
      * 删除模板
      */
-    #[DeleteMapping("delete")]
-    #[Permission(code: "system-message-template:delete")]
-    public function delete(): ResponseInterface
+    #[DeleteMapping('delete')]
+    #[Permission(code: 'system-message-template:delete')]
+    public function delete(): Result
     {
         $ids = $this->request->input('ids', []);
 
@@ -137,7 +134,7 @@ class TemplateController extends AbstractController
 
             return $this->success([
                 'deleted' => $deleted,
-                'failed' => count((array) $ids) - $deleted,
+                'failed' => \count((array) $ids) - $deleted,
             ], '删除操作完成');
         } catch (\InvalidArgumentException $e) {
             return $this->error($e->getMessage());
@@ -147,14 +144,14 @@ class TemplateController extends AbstractController
     /**
      * 预览模板
      */
-    #[PostMapping("preview")]
-    #[Permission(code: "system-message-template:read")]
-    public function preview(): ResponseInterface
+    #[PostMapping('preview')]
+    #[Permission(code: 'system-message-template:read')]
+    public function preview(): Result
     {
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
 
-        if (!$id) {
+        if (! $id) {
             return $this->error('模板ID不能为空');
         }
 
@@ -170,14 +167,14 @@ class TemplateController extends AbstractController
     /**
      * 渲染模板
      */
-    #[PostMapping("render")]
-    #[Permission(code: "system-message-template:read")]
-    public function render(): ResponseInterface
+    #[PostMapping('render')]
+    #[Permission(code: 'system-message-template:read')]
+    public function render(): Result
     {
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
 
-        if (!$id) {
+        if (! $id) {
             return $this->error('模板ID不能为空');
         }
 
@@ -191,16 +188,16 @@ class TemplateController extends AbstractController
     }
 
     /**
-     * 验证模板变量
+     * 验证模板变量.
      */
-    #[PostMapping("validateVariables")]
-    #[Permission(code: "system-message-template:read")]
-    public function validateVariables(): ResponseInterface
+    #[PostMapping('validateVariables')]
+    #[Permission(code: 'system-message-template:read')]
+    public function validateVariables(): Result
     {
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
 
-        if (!$id) {
+        if (! $id) {
             return $this->error('模板ID不能为空');
         }
 
@@ -214,11 +211,11 @@ class TemplateController extends AbstractController
     }
 
     /**
-     * 获取模板变量
+     * 获取模板变量.
      */
-    #[GetMapping("getVariables/{id}")]
-    #[Permission(code: "system-message-template:read")]
-    public function getVariables(int $id): ResponseInterface
+    #[GetMapping('getVariables/{id}')]
+    #[Permission(code: 'system-message-template:read')]
+    public function getVariables(int $id): Result
     {
         try {
             $variables = $this->templateService->getVariables($id);
@@ -232,14 +229,14 @@ class TemplateController extends AbstractController
     /**
      * 复制模板
      */
-    #[PostMapping("copy")]
-    #[Permission(code: "system-message-template:save")]
-    public function copy(): ResponseInterface
+    #[PostMapping('copy')]
+    #[Permission(code: 'system-message-template:save')]
+    public function copy(): Result
     {
         $id = $this->request->input('id');
         $newName = $this->request->input('name');
 
-        if (!$id) {
+        if (! $id) {
             return $this->error('模板ID不能为空');
         }
 
@@ -255,13 +252,13 @@ class TemplateController extends AbstractController
     /**
      * 更新模板状态
      */
-    #[PutMapping("changeStatus")]
-    #[Permission(code: "system-message-template:update")]
-    public function changeStatus(): ResponseInterface
+    #[PutMapping('changeStatus')]
+    #[Permission(code: 'system-message-template:update')]
+    public function changeStatus(): Result
     {
         $id = $this->request->input('id');
 
-        if (!$id) {
+        if (! $id) {
             return $this->error('模板ID不能为空');
         }
 
@@ -277,12 +274,12 @@ class TemplateController extends AbstractController
     /**
      * 搜索模板
      */
-    #[GetMapping("search")]
-    #[Permission(code: "system-message-template:index")]
-    public function search(): ResponseInterface
+    #[GetMapping('search')]
+    #[Permission(code: 'system-message-template:index')]
+    public function search(): Result
     {
         $keyword = $this->request->input('keyword', '');
-        
+
         if (empty($keyword)) {
             return $this->error('搜索关键词不能为空');
         }
@@ -294,7 +291,7 @@ class TemplateController extends AbstractController
         ];
 
         // 移除空值
-        $filters = array_filter($filters, function ($value) {
+        $filters = array_filter($filters, static function ($value) {
             return $value !== null && $value !== '';
         });
 
@@ -307,11 +304,11 @@ class TemplateController extends AbstractController
     }
 
     /**
-     * 获取模板分类
+     * 获取模板分类.
      */
-    #[GetMapping("categories")]
-    #[Permission(code: "system-message-template:index")]
-    public function getCategories(): ResponseInterface
+    #[GetMapping('categories')]
+    #[Permission(code: 'system-message-template:index')]
+    public function getCategories(): Result
     {
         $categories = $this->templateService->getCategories();
 
@@ -321,9 +318,9 @@ class TemplateController extends AbstractController
     /**
      * 获取活跃模板
      */
-    #[GetMapping("active")]
-    #[Permission(code: "system-message-template:index")]
-    public function getActiveTemplates(): ResponseInterface
+    #[GetMapping('active')]
+    #[Permission(code: 'system-message-template:index')]
+    public function getActiveTemplates(): Result
     {
         $type = $this->request->input('type');
         $templates = $this->templateService->getActiveTemplates($type);
@@ -334,13 +331,13 @@ class TemplateController extends AbstractController
     /**
      * 导入模板
      */
-    #[PostMapping("import")]
-    #[Permission(code: "system-message-template:import")]
-    public function import(): ResponseInterface
+    #[PostMapping('import')]
+    #[Permission(code: 'system-message-template:import')]
+    public function import(): Result
     {
         $templates = $this->request->input('templates', []);
 
-        if (empty($templates) || !is_array($templates)) {
+        if (empty($templates) || ! \is_array($templates)) {
             return $this->error('模板数据不能为空');
         }
 
@@ -352,9 +349,9 @@ class TemplateController extends AbstractController
     /**
      * 导出模板
      */
-    #[PostMapping("export")]
-    #[Permission(code: "system-message-template:export")]
-    public function export(): ResponseInterface
+    #[PostMapping('export')]
+    #[Permission(code: 'system-message-template:export')]
+    public function export(): Result
     {
         $ids = $this->request->input('ids', []);
         $templates = $this->templateService->export($ids);

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-use App\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Menu;
 use Hyperf\Database\Seeders\Seeder;
 
 class UserDept20250310 extends Seeder

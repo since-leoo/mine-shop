@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
-use App\Http\Common\ResultCode;
+use App\Interface\Common\ResultCode;
 use Hyperf\Collection\Arr;
 use Hyperf\Database\Model\ModelNotFoundException;
 use Hyperf\DbConnection\Model\Model;
@@ -25,6 +25,9 @@ class CrudControllerCase extends ControllerCase
         $result = $this->get($uri);
         $this->assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
         $result = $this->get($uri, ['token' => $token]);
+        if ($result['code'] !== ResultCode::FORBIDDEN->value) {
+            throw new \RuntimeException(var_export($result, true));
+        }
         $this->assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->assertFalse($this->hasPermissions($roleCode));
         $this->assertTrue($this->addPermissions($roleCode));
@@ -43,10 +46,18 @@ class CrudControllerCase extends ControllerCase
     {
         $token = $this->token;
         $result = $this->post($uri);
-        $this->assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
+        $this->assertFalse($this->hasPermissions($roleCode));
+        $this->assertTrue($this->addPermissions($roleCode));
+        $this->assertTrue($this->hasPermissions($roleCode));
         $result = $this->post($uri, [], ['Authorization' => 'Bearer ' . $token]);
         $this->assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->deletePermissions($roleCode);
+        $this->assertFalse($this->hasPermissions($roleCode));
         $result = $this->post($uri, $fillable, ['Authorization' => 'Bearer ' . $token]);
+        if ($result['code'] !== ResultCode::FORBIDDEN->value) {
+            throw new \RuntimeException(var_export($result, true));
+        }
         $this->assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->assertFalse($this->hasPermissions($roleCode));
         $this->assertTrue($this->addPermissions($roleCode));
@@ -55,6 +66,9 @@ class CrudControllerCase extends ControllerCase
         $this->assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions($roleCode);
         $result = $this->post($uri, $fillable, ['Authorization' => 'Bearer ' . $token]);
+        if ($result['code'] !== ResultCode::FORBIDDEN->value) {
+            throw new \RuntimeException(var_export($result, true));
+        }
         $this->assertSame($result['code'], ResultCode::FORBIDDEN->value);
         try {
             $entity = $model::query()->where($fillable)->first();
@@ -72,9 +86,9 @@ class CrudControllerCase extends ControllerCase
                 $this->assertSame(rtrim((string) $entity->{$key}), $fillable[$key]);
             } elseif (\is_object($entity->{$key})) {
                 $v = $entity->{$key};
-                if ($v instanceof Model) {
-                    foreach ($v->getFillable() as $vKey) {
-                        $this->assertSame($v->{$vKey}, $fillable[$key][$vKey]);
+                if ($v instanceof Model && \is_array($fillable[$key])) {
+                    foreach ($fillable[$key] as $vKey => $expected) {
+                        $this->assertSame($v->{$vKey}, $expected);
                     }
                 }
             } else {
@@ -88,10 +102,18 @@ class CrudControllerCase extends ControllerCase
     {
         $token = $this->token;
         $result = $this->put($uri . $entity->getKey());
-        $this->assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
+        $this->assertFalse($this->hasPermissions($roleCode));
+        $this->assertTrue($this->addPermissions($roleCode));
+        $this->assertTrue($this->hasPermissions($roleCode));
         $result = $this->put($uri . $entity->id, [], ['Authorization' => 'Bearer ' . $token]);
         $this->assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->deletePermissions($roleCode);
+        $this->assertFalse($this->hasPermissions($roleCode));
         $result = $this->put($uri . $entity->getKey(), $fillable, ['Authorization' => 'Bearer ' . $token]);
+        if ($result['code'] !== ResultCode::FORBIDDEN->value) {
+            throw new \RuntimeException(var_export($result, true));
+        }
         $this->assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->assertFalse($this->hasPermissions($roleCode));
         $this->assertTrue($this->addPermissions($roleCode));
@@ -100,6 +122,9 @@ class CrudControllerCase extends ControllerCase
         $this->assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions($roleCode);
         $result = $this->put($uri . $entity->getKey(), $fillable, ['Authorization' => 'Bearer ' . $token]);
+        if ($result['code'] !== ResultCode::FORBIDDEN->value) {
+            throw new \RuntimeException(var_export($result, true));
+        }
         $this->assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $entity->refresh();
         foreach (array_keys($fillable) as $key) {
@@ -107,9 +132,9 @@ class CrudControllerCase extends ControllerCase
                 $this->assertSame(rtrim((string) $entity->{$key}), $fillable[$key]);
             } elseif (\is_object($entity->{$key})) {
                 $v = $entity->{$key};
-                if ($v instanceof Model) {
-                    foreach ($v->getFillable() as $vKey) {
-                        $this->assertSame($v->{$vKey}, $fillable[$key][$vKey]);
+                if ($v instanceof Model && \is_array($fillable[$key])) {
+                    foreach ($fillable[$key] as $vKey => $expected) {
+                        $this->assertSame($v->{$vKey}, $expected);
                     }
                 }
             } else {

@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Schema\Schema;
@@ -37,7 +36,7 @@ class CreateMessageDeliveryLogsTable extends Migration
             $table->timestamp('sent_at')->nullable()->comment('发送时间');
             $table->timestamp('delivered_at')->nullable()->comment('送达时间');
             $table->timestamps();
-            
+
             // 索引
             $table->index('message_id', 'idx_message_id');
             $table->index('user_id', 'idx_user_id');
@@ -49,7 +48,7 @@ class CreateMessageDeliveryLogsTable extends Migration
             $table->index('sent_at', 'idx_sent_at');
             $table->index('delivered_at', 'idx_delivered_at');
             $table->index('created_at', 'idx_created_at');
-            
+
             // 外键约束
             // $table->foreign('message_id')->references('id')->on('system_messages')->onDelete('cascade');
             // $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');

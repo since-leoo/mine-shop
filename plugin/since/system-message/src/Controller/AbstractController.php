@@ -12,12 +12,19 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Controller;
 
-use App\Http\Common\Controller\AbstractController as BaseController;
+use App\Interface\Common\Controller\AbstractController as BaseController;
+use App\Interface\Common\CurrentUser;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 abstract class AbstractController extends BaseController
 {
-    public function __construct(
-        protected RequestInterface $request
-    ) {}
+    protected RequestInterface $request;
+
+    protected CurrentUser $currentUser;
+
+    public function __construct(CurrentUser $currentUser, RequestInterface $request)
+    {
+        $this->currentUser = $currentUser;
+        $this->request = $request;
+    }
 }

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Model\Enums\User\Status;
-use App\Model\Permission\Meta;
-use App\Repository\Permission\MenuRepository;
+use App\Domain\Auth\Enum\Status;
+use App\Domain\Permission\Repository\MenuRepository;
+use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Collection\Collection;
 use Hyperf\DbConnection\Model\Model;
 use Hyperf\Stringable\Str;

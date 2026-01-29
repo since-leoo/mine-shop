@@ -17,12 +17,12 @@ use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Db;
-use Plugin\Since\SystemMessage\Event\MessageCreated;
-use Plugin\Since\SystemMessage\Event\MessageDeleted;
+use Plugin\Since\SystemMessage\Enum\MessageChannel;
+use Plugin\Since\SystemMessage\Enum\MessageStatus;
+use Plugin\Since\SystemMessage\Enum\MessageType;
+use Plugin\Since\SystemMessage\Enum\RecipientType;
 use Plugin\Since\SystemMessage\Event\MessageSendFailed;
-use Plugin\Since\SystemMessage\Event\MessageSending;
 use Plugin\Since\SystemMessage\Event\MessageSent;
-use Plugin\Since\SystemMessage\Event\MessageUpdated;
 use Plugin\Since\SystemMessage\Job\SendMessageJob;
 use Plugin\Since\SystemMessage\Model\Message;
 use Plugin\Since\SystemMessage\Model\UserMessage;
@@ -32,47 +32,45 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 class MessageService
 {
     protected MessageRepository $repository;
+
     protected NotificationService $notificationService;
-    protected EventDispatcherInterface $eventDispatcher;
+
     protected DriverFactory $queueDriverFactory;
+
+    private ?EventDispatcherInterface $eventDispatcher = null;
 
     public function __construct(
         MessageRepository $repository,
         NotificationService $notificationService,
-        EventDispatcherInterface $eventDispatcher,
         DriverFactory $queueDriverFactory
     ) {
         $this->repository = $repository;
         $this->notificationService = $notificationService;
-        $this->eventDispatcher = $eventDispatcher;
         $this->queueDriverFactory = $queueDriverFactory;
     }
 
     /**
-     * 创建消息
+     * 创建消息.
      */
     public function create(array $data): Message
     {
         try {
             // 验证数据
             $this->validateMessageData($data);
-            
+
             // 设置默认值
             $data = $this->setDefaultValues($data);
-            
+
             // 创建消息
             $message = $this->repository->create($data);
-            
-            // 触发事件
-            $this->eventDispatcher->dispatch(new MessageCreated($message));
-            
+
             system_message_logger()->info('Message created', [
                 'message_id' => $message->id,
                 'title' => $message->title,
                 'type' => $message->type,
                 'recipient_type' => $message->recipient_type,
             ]);
-            
+
             return $message;
         } catch (\Throwable $e) {
             system_message_logger()->error('Failed to create message', [
@@ -84,22 +82,19 @@ class MessageService
     }
 
     /**
-     * 发送消息
+     * 发送消息.
      */
     public function send(int $messageId): bool
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (!$message) {
+            if (! $message) {
                 throw new \InvalidArgumentException("Message not found: {$messageId}");
             }
 
-            if (!$message->canSend()) {
+            if (! $message->canSend()) {
                 throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
             }
-
-            // 触发发送前事件
-            $this->eventDispatcher->dispatch(new MessageSending($message));
 
             // 标记为发送中
             $message->markAsSending();
@@ -120,7 +115,7 @@ class MessageService
             $message->markAsSent();
 
             // 触发发送后事件
-            $this->eventDispatcher->dispatch(new MessageSent($message));
+            $this->getEventDispatcher()->dispatch(new MessageSent($message));
 
             system_message_logger()->info('Message sent', [
                 'message_id' => $message->id,
@@ -132,7 +127,7 @@ class MessageService
             // 标记为发送失败
             if (isset($message)) {
                 $message->markAsFailed();
-                $this->eventDispatcher->dispatch(new MessageSendFailed($message, $e->getMessage()));
+                $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage()));
             }
 
             system_message_logger()->error('Failed to send message', [
@@ -145,12 +140,12 @@ class MessageService
     }
 
     /**
-     * 调度消息
+     * 调度消息.
      */
     public function schedule(int $messageId, Carbon $scheduledAt): bool
     {
         $message = $this->repository->findById($messageId);
-        if (!$message) {
+        if (! $message) {
             throw new \InvalidArgumentException("Message not found: {$messageId}");
         }
 
@@ -161,15 +156,7 @@ class MessageService
     }
 
     /**
-     * 获取用户消息
-     */
-    public function getByUser(int $userId, array $filters = []): Collection
-    {
-        return $this->repository->getByUser($userId, $filters);
-    }
-
-    /**
-     * 获取用户消息（分页）
+     * 获取用户消息（分页）.
      */
     public function getUserMessages(int $userId, array $filters = [], int $page = 1, int $pageSize = 20): array
     {
@@ -177,15 +164,26 @@ class MessageService
     }
 
     /**
-     * 标记消息为已读
+     * 获取单个用户消息.
      */
-    public function markAsRead(int $messageId, int $userId): bool
+    public function getUserMessage(int $userId, int $messageId): ?UserMessage
+    {
+        return UserMessage::where('user_id', $userId)
+            ->where('message_id', $messageId)
+            ->with('message')
+            ->first();
+    }
+
+    /**
+     * 标记消息为已读.
+     */
+    public function markAsRead(int $userId, int $messageId): bool
     {
         $userMessage = UserMessage::where('message_id', $messageId)
             ->where('user_id', $userId)
             ->first();
 
-        if (!$userMessage) {
+        if (! $userMessage) {
             return false;
         }
 
@@ -193,15 +191,28 @@ class MessageService
     }
 
     /**
-     * 批量标记消息为已读
+     * 批量标记消息为已读.
      */
-    public function batchMarkAsRead(array $messageIds, int $userId): int
+    public function batchMarkAsRead(int $userId, array $messageIds): int
     {
         return UserMessage::batchMarkAsRead($userId, $messageIds);
     }
 
     /**
-     * 删除用户消息
+     * 标记所有消息为已读.
+     */
+    public function markAllAsRead(int $userId): int
+    {
+        return UserMessage::where('user_id', $userId)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => Carbon::now(),
+            ]);
+    }
+
+    /**
+     * 删除用户消息.
      */
     public function deleteUserMessage(int $messageId, int $userId): bool
     {
@@ -209,7 +220,7 @@ class MessageService
             ->where('user_id', $userId)
             ->first();
 
-        if (!$userMessage) {
+        if (! $userMessage) {
             return false;
         }
 
@@ -217,7 +228,7 @@ class MessageService
     }
 
     /**
-     * 批量删除用户消息
+     * 批量删除用户消息.
      */
     public function batchDeleteUserMessages(array $messageIds, int $userId): int
     {
@@ -225,7 +236,66 @@ class MessageService
     }
 
     /**
-     * 获取用户未读消息数量
+     * 获取用户消息类型统计
+     */
+    public function getUserMessageTypeStats(int $userId): array
+    {
+        $stats = UserMessage::where('user_id', $userId)
+            ->where('is_deleted', false)
+            ->join('messages', 'user_messages.message_id', '=', 'messages.id')
+            ->selectRaw('messages.type, COUNT(*) as total, SUM(CASE WHEN user_messages.is_read = 0 THEN 1 ELSE 0 END) as unread')
+            ->groupBy('messages.type')
+            ->get();
+
+        return $stats->toArray();
+    }
+
+    /**
+     * 搜索用户消息.
+     */
+    public function searchUserMessages(int $userId, string $keyword, array $filters = [], int $page = 1, int $pageSize = 20): array
+    {
+        $query = UserMessage::where('user_id', $userId)
+            ->where('is_deleted', false)
+            ->whereHas('message', static function ($q) use ($keyword) {
+                $q->where('title', 'like', "%{$keyword}%")
+                    ->orWhere('content', 'like', "%{$keyword}%");
+            })
+            ->with('message');
+
+        // 应用过滤条件
+        if (isset($filters['is_read']) && $filters['is_read'] !== null) {
+            $query->where('is_read', (bool) $filters['is_read']);
+        }
+
+        if (! empty($filters['type'])) {
+            $query->whereHas('message', static function ($q) use ($filters) {
+                $q->where('type', $filters['type']);
+            });
+        }
+
+        if (! empty($filters['priority'])) {
+            $query->whereHas('message', static function ($q) use ($filters) {
+                $q->where('priority', '>=', $filters['priority']);
+            });
+        }
+
+        $total = $query->count();
+        $data = $query->orderBy('created_at', 'desc')
+            ->offset(($page - 1) * $pageSize)
+            ->limit($pageSize)
+            ->get();
+
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'page_size' => $pageSize,
+        ];
+    }
+
+    /**
+     * 获取用户未读消息数量.
      */
     public function getUnreadCount(int $userId): int
     {
@@ -233,13 +303,13 @@ class MessageService
     }
 
     /**
-     * 更新消息
+     * 更新消息.
      */
     public function update(int $messageId, array $data): Message
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (!$message) {
+            if (! $message) {
                 throw new \InvalidArgumentException("Message not found: {$messageId}");
             }
 
@@ -256,11 +326,6 @@ class MessageService
 
             // 更新消息
             $message->update($data);
-
-            // 触发事件
-            if (!empty($changes)) {
-                $this->eventDispatcher->dispatch(new MessageUpdated($message, $changes));
-            }
 
             system_message_logger()->info('Message updated', [
                 'message_id' => $message->id,
@@ -279,21 +344,18 @@ class MessageService
     }
 
     /**
-     * 删除消息
+     * 删除消息.
      */
     public function delete(int $messageId): bool
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (!$message) {
+            if (! $message) {
                 return false;
             }
 
             // 软删除消息
             $result = $message->delete();
-
-            // 触发事件
-            $this->eventDispatcher->dispatch(new MessageDeleted($message));
 
             system_message_logger()->info('Message deleted', [
                 'message_id' => $message->id,
@@ -318,7 +380,7 @@ class MessageService
     }
 
     /**
-     * 处理调度消息
+     * 处理调度消息.
      */
     public function processScheduledMessages(): int
     {
@@ -328,7 +390,7 @@ class MessageService
         foreach ($messages as $message) {
             try {
                 $this->send($message->id);
-                $processed++;
+                ++$processed;
             } catch (\Throwable $e) {
                 system_message_logger()->error('Failed to process scheduled message', [
                     'message_id' => $message->id,
@@ -341,7 +403,7 @@ class MessageService
     }
 
     /**
-     * 获取仓库实例
+     * 获取仓库实例.
      */
     public function getRepository(): MessageRepository
     {
@@ -349,12 +411,12 @@ class MessageService
     }
 
     /**
-     * 清理过期消息
+     * 清理过期消息.
      */
     public function cleanupExpiredMessages(): int
     {
         $retentionDays = config('system_message.message.retention_days', 90);
-        $expiredDate = now()->subDays($retentionDays);
+        $expiredDate = Carbon::now()->subDays($retentionDays);
 
         return Message::where('created_at', '<', $expiredDate)
             ->whereNull('deleted_at')
@@ -362,7 +424,7 @@ class MessageService
     }
 
     /**
-     * 验证消息数据
+     * 验证消息数据.
      */
     protected function validateMessageData(array $data): void
     {
@@ -386,18 +448,18 @@ class MessageService
         }
 
         // 验证消息类型
-        if (isset($data['type']) && !in_array($data['type'], array_keys(Message::getTypes()))) {
+        if (isset($data['type']) && ! \in_array($data['type'], MessageType::values(), true)) {
             throw new \InvalidArgumentException("Invalid message type: {$data['type']}");
         }
 
         // 验证收件人类型
-        if (isset($data['recipient_type']) && !in_array($data['recipient_type'], array_keys(Message::getRecipientTypes()))) {
+        if (isset($data['recipient_type']) && ! \in_array($data['recipient_type'], RecipientType::values(), true)) {
             throw new \InvalidArgumentException("Invalid recipient type: {$data['recipient_type']}");
         }
 
         // 验证优先级
         if (isset($data['priority']) && ($data['priority'] < 1 || $data['priority'] > 5)) {
-            throw new \InvalidArgumentException("Priority must be between 1 and 5");
+            throw new \InvalidArgumentException('Priority must be between 1 and 5');
         }
     }
 
@@ -407,23 +469,23 @@ class MessageService
     protected function setDefaultValues(array $data): array
     {
         $defaults = [
-            'type' => Message::TYPE_SYSTEM,
+            'type' => MessageType::SYSTEM->value,
             'priority' => config('system_message.message.default_priority', 1),
-            'recipient_type' => Message::RECIPIENT_ALL,
-            'status' => Message::STATUS_DRAFT,
-            'channels' => ['socketio', 'websocket'],
+            'recipient_type' => RecipientType::ALL->value,
+            'status' => MessageStatus::DRAFT->value,
+            'channels' => MessageChannel::defaults(),
         ];
 
         return array_merge($defaults, $data);
     }
 
     /**
-     * 创建用户消息关联
+     * 创建用户消息关联.
      */
     protected function createUserMessages(Message $message, Collection $recipients): void
     {
         $userMessages = [];
-        $now = now();
+        $now = Carbon::now();
 
         foreach ($recipients as $user) {
             $userMessages[] = [
@@ -436,7 +498,7 @@ class MessageService
         }
 
         // 批量插入
-        if (!empty($userMessages)) {
+        if (! empty($userMessages)) {
             Db::table('user_messages')->insert($userMessages);
         }
     }
@@ -446,8 +508,16 @@ class MessageService
      */
     protected function queueNotifications(Message $message, Collection $recipients): void
     {
-        $channels = $message->channels ?? ['websocket'];
-        $driver = $this->queueDriverFactory->get('system_message');
+        $channels = $message->channels ?? ['database'];
+
+        // 使用配置的队列通道，如果不存在则使用默认通道
+        $queueChannel = config('system_message.queue.channel', 'default');
+        try {
+            $driver = $this->queueDriverFactory->get($queueChannel);
+        } catch (\Throwable $e) {
+            // 如果配置的队列不存在，回退到默认队列
+            $driver = $this->queueDriverFactory->get('default');
+        }
 
         foreach ($recipients as $user) {
             foreach ($channels as $channel) {
@@ -455,5 +525,17 @@ class MessageService
                 $driver->push($job);
             }
         }
+    }
+
+    /**
+     * 懒加载获取 EventDispatcher
+     * 避免在 Listener 注册阶段产生循环依赖.
+     */
+    private function getEventDispatcher(): EventDispatcherInterface
+    {
+        if ($this->eventDispatcher === null) {
+            $this->eventDispatcher = ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
+        }
+        return $this->eventDispatcher;
     }
 }

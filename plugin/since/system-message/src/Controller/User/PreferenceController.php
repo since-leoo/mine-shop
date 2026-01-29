@@ -12,38 +12,41 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Controller\User;
 
-use App\Http\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
-use Hyperf\HttpServer\Annotation\Middleware;
 use Plugin\Since\SystemMessage\Controller\AbstractController;
 use Plugin\Since\SystemMessage\Request\UpdatePreferenceRequest;
 use Plugin\Since\SystemMessage\Service\NotificationService;
-use Psr\Http\Message\ResponseInterface;
 
-#[Controller(prefix: "system-message/preference")]
+#[Controller(prefix: 'plugin/api/system-message/preference')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 class PreferenceController extends AbstractController
 {
+    #[Inject]
     protected NotificationService $notificationService;
 
-    public function __construct(NotificationService $notificationService)
-    {
-        $this->notificationService = $notificationService;
-    }
-
     /**
-     * 获取用户通知偏好设置
+     * 获取用户通知偏好设置.
      */
-    #[GetMapping("index")]
-    public function index(): ResponseInterface
+    #[GetMapping('index')]
+    public function index(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $preference = $this->notificationService->getUserPreference($userId);
+
+            // 如果用户没有偏好设置，返回默认值
+            if (! $preference) {
+                $preference = $this->notificationService->getDefaultPreferences();
+                $preference['user_id'] = $userId;
+            }
 
             return $this->success($preference);
         } catch (\Throwable $e) {
@@ -52,12 +55,12 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 更新用户通知偏好设置
+     * 更新用户通知偏好设置.
      */
-    #[PutMapping("update")]
-    public function update(UpdatePreferenceRequest $request): ResponseInterface
+    #[PutMapping('update')]
+    public function update(UpdatePreferenceRequest $request): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $data = $request->validated();
 
         try {
@@ -72,10 +75,10 @@ class PreferenceController extends AbstractController
     /**
      * 重置用户通知偏好设置为默认值
      */
-    #[PostMapping("reset")]
-    public function reset(): ResponseInterface
+    #[PostMapping('reset')]
+    public function reset(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $preference = $this->notificationService->resetUserPreference($userId);
@@ -87,10 +90,10 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 获取默认通知偏好设置
+     * 获取默认通知偏好设置.
      */
-    #[GetMapping("defaults")]
-    public function getDefaults(): ResponseInterface
+    #[GetMapping('defaults')]
+    public function getDefaults(): Result
     {
         try {
             $defaults = $this->notificationService->getDefaultPreferences();
@@ -102,15 +105,15 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 更新渠道偏好设置
+     * 更新渠道偏好设置.
      */
-    #[PutMapping("updateChannels")]
-    public function updateChannelPreferences(): ResponseInterface
+    #[PutMapping('updateChannels')]
+    public function updateChannelPreferences(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $channels = $this->request->input('channels', []);
 
-        if (empty($channels) || !is_array($channels)) {
+        if (empty($channels) || ! \is_array($channels)) {
             return $this->error('渠道设置不能为空');
         }
 
@@ -124,15 +127,15 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 更新消息类型偏好设置
+     * 更新消息类型偏好设置.
      */
-    #[PutMapping("updateTypes")]
-    public function updateTypePreferences(): ResponseInterface
+    #[PutMapping('updateTypes')]
+    public function updateTypePreferences(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $types = $this->request->input('types', []);
 
-        if (empty($types) || !is_array($types)) {
+        if (empty($types) || ! \is_array($types)) {
             return $this->error('消息类型设置不能为空');
         }
 
@@ -146,17 +149,17 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 设置免打扰时间
+     * 设置免打扰时间.
      */
-    #[PutMapping("setDoNotDisturbTime")]
-    public function setDoNotDisturbTime(): ResponseInterface
+    #[PutMapping('setDoNotDisturbTime')]
+    public function setDoNotDisturbTime(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $startTime = $this->request->input('start_time');
         $endTime = $this->request->input('end_time');
         $enabled = (bool) $this->request->input('enabled', true);
 
-        if (!$startTime || !$endTime) {
+        if (! $startTime || ! $endTime) {
             return $this->error('开始时间和结束时间不能为空');
         }
 
@@ -170,12 +173,12 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 启用/禁用免打扰
+     * 启用/禁用免打扰.
      */
-    #[PutMapping("toggleDoNotDisturb")]
-    public function toggleDoNotDisturb(): ResponseInterface
+    #[PutMapping('toggleDoNotDisturb')]
+    public function toggleDoNotDisturb(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $enabled = (bool) $this->request->input('enabled');
 
         try {
@@ -188,12 +191,12 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 设置最小优先级
+     * 设置最小优先级.
      */
-    #[PutMapping("setMinPriority")]
-    public function setMinPriority(): ResponseInterface
+    #[PutMapping('setMinPriority')]
+    public function setMinPriority(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
         $priority = (int) $this->request->input('priority');
 
         if ($priority < 1 || $priority > 5) {
@@ -210,12 +213,12 @@ class PreferenceController extends AbstractController
     }
 
     /**
-     * 检查是否在免打扰时间内
+     * 检查是否在免打扰时间内.
      */
-    #[GetMapping("checkDoNotDisturb")]
-    public function checkDoNotDisturb(): ResponseInterface
+    #[GetMapping('checkDoNotDisturb')]
+    public function checkDoNotDisturb(): Result
     {
-        $userId = user()->getId();
+        $userId = $this->currentUser->id();
 
         try {
             $isActive = $this->notificationService->isDoNotDisturbActive($userId);

@@ -10,10 +10,10 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-use App\Library\DataPermission\Context;
-use App\Library\DataPermission\ScopeType;
-use App\Model\DataPermission\Policy;
-use App\Model\Permission\User;
+use App\Infrastructure\Library\DataPermission\Context;
+use App\Infrastructure\Library\DataPermission\ScopeType;
+use App\Infrastructure\Model\DataPermission\Policy;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\Database\Query\Builder;
 
 return [

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Model;
 
-use App\Model\Permission\User;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
@@ -35,6 +35,28 @@ use Hyperf\DbConnection\Model\Model;
  */
 class MessageDeliveryLog extends Model
 {
+    /**
+     * 传递渠道常量.
+     */
+    public const CHANNEL_WEBSOCKET = 'websocket';
+
+    public const CHANNEL_EMAIL = 'email';
+
+    public const CHANNEL_SMS = 'sms';
+
+    public const CHANNEL_MINIAPP = 'miniapp';
+
+    /**
+     * 传递状态常量.
+     */
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_SENT = 'sent';
+
+    public const STATUS_DELIVERED = 'delivered';
+
+    public const STATUS_FAILED = 'failed';
+
     /**
      * The table associated with the model.
      */
@@ -71,23 +93,7 @@ class MessageDeliveryLog extends Model
     ];
 
     /**
-     * 传递渠道常量
-     */
-    public const CHANNEL_WEBSOCKET = 'websocket';
-    public const CHANNEL_EMAIL = 'email';
-    public const CHANNEL_SMS = 'sms';
-    public const CHANNEL_MINIAPP = 'miniapp';
-
-    /**
-     * 传递状态常量
-     */
-    public const STATUS_PENDING = 'pending';
-    public const STATUS_SENT = 'sent';
-    public const STATUS_DELIVERED = 'delivered';
-    public const STATUS_FAILED = 'failed';
-
-    /**
-     * 消息关联
+     * 消息关联.
      */
     public function message(): BelongsTo
     {
@@ -95,7 +101,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 用户关联
+     * 用户关联.
      */
     public function user(): BelongsTo
     {
@@ -109,25 +115,25 @@ class MessageDeliveryLog extends Model
     {
         return $this->update([
             'status' => self::STATUS_SENT,
-            'sent_at' => now(),
+            'sent_at' => Carbon::now(),
         ]);
     }
 
     /**
-     * 标记为已送达
+     * 标记为已送达.
      */
     public function markAsDelivered(): bool
     {
         return $this->update([
             'status' => self::STATUS_DELIVERED,
-            'delivered_at' => now(),
+            'delivered_at' => Carbon::now(),
         ]);
     }
 
     /**
-     * 标记为失败
+     * 标记为失败.
      */
-    public function markAsFailed(string $errorMessage = null): bool
+    public function markAsFailed(?string $errorMessage = null): bool
     {
         return $this->update([
             'status' => self::STATUS_FAILED,
@@ -136,7 +142,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 增加尝试次数
+     * 增加尝试次数.
      */
     public function incrementAttempt(): bool
     {
@@ -148,11 +154,11 @@ class MessageDeliveryLog extends Model
      */
     public function isSuccessful(): bool
     {
-        return in_array($this->status, [self::STATUS_SENT, self::STATUS_DELIVERED]);
+        return \in_array($this->status, [self::STATUS_SENT, self::STATUS_DELIVERED], true);
     }
 
     /**
-     * 检查是否失败
+     * 检查是否失败.
      */
     public function isFailed(): bool
     {
@@ -160,7 +166,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 检查是否待处理
+     * 检查是否待处理.
      */
     public function isPending(): bool
     {
@@ -168,7 +174,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 检查是否可以重试
+     * 检查是否可以重试.
      */
     public function canRetry(): bool
     {
@@ -177,11 +183,11 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 获取传递耗时（秒）
+     * 获取传递耗时（秒）.
      */
     public function getDeliveryDuration(): ?int
     {
-        if (!$this->sent_at || !$this->delivered_at) {
+        if (! $this->sent_at || ! $this->delivered_at) {
             return null;
         }
 
@@ -189,11 +195,11 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 获取处理耗时（秒）
+     * 获取处理耗时（秒）.
      */
     public function getProcessingDuration(): ?int
     {
-        if (!$this->created_at || !$this->sent_at) {
+        if (! $this->created_at || ! $this->sent_at) {
             return null;
         }
 
@@ -201,18 +207,20 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 设置元数据
+     * 设置元数据.
+     * @param mixed $value
      */
     public function setMetadata(string $key, $value): bool
     {
         $metadata = $this->metadata ?? [];
         $metadata[$key] = $value;
-        
+
         return $this->update(['metadata' => $metadata]);
     }
 
     /**
-     * 获取元数据
+     * 获取元数据.
+     * @param null|mixed $default
      */
     public function getMetadata(string $key, $default = null)
     {
@@ -220,7 +228,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 获取状态文本
+     * 获取状态文本.
      */
     public function getStatusText(): string
     {
@@ -234,7 +242,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 获取渠道文本
+     * 获取渠道文本.
      */
     public function getChannelText(): string
     {
@@ -248,7 +256,7 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 获取所有传递渠道
+     * 获取所有传递渠道.
      */
     public static function getChannels(): array
     {
@@ -274,7 +282,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：按消息筛选
+     * 作用域：按消息筛选.
+     * @param mixed $query
      */
     public function scopeForMessage($query, int $messageId)
     {
@@ -282,7 +291,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：按用户筛选
+     * 作用域：按用户筛选.
+     * @param mixed $query
      */
     public function scopeForUser($query, int $userId)
     {
@@ -290,7 +300,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：按渠道筛选
+     * 作用域：按渠道筛选.
+     * @param mixed $query
      */
     public function scopeForChannel($query, string $channel)
     {
@@ -298,7 +309,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：按状态筛选
+     * 作用域：按状态筛选.
+     * @param mixed $query
      */
     public function scopeWithStatus($query, string $status)
     {
@@ -306,7 +318,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：成功的传递
+     * 作用域：成功的传递.
+     * @param mixed $query
      */
     public function scopeSuccessful($query)
     {
@@ -314,7 +327,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：失败的传递
+     * 作用域：失败的传递.
+     * @param mixed $query
      */
     public function scopeFailed($query)
     {
@@ -322,7 +336,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：待处理的传递
+     * 作用域：待处理的传递.
+     * @param mixed $query
      */
     public function scopePending($query)
     {
@@ -330,7 +345,8 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：可重试的传递
+     * 作用域：可重试的传递.
+     * @param mixed $query
      */
     public function scopeCanRetry($query)
     {
@@ -340,29 +356,30 @@ class MessageDeliveryLog extends Model
     }
 
     /**
-     * 作用域：最近的日志
+     * 作用域：最近的日志.
+     * @param mixed $query
      */
     public function scopeRecent($query, int $days = 7)
     {
-        return $query->where('created_at', '>=', now()->subDays($days));
+        return $query->where('created_at', '>=', Carbon::now()->subDays($days));
     }
 
     /**
      * 获取传递统计
      */
-    public static function getDeliveryStats(int $messageId = null): array
+    public static function getDeliveryStats(?int $messageId = null): array
     {
         $query = static::query();
-        
+
         if ($messageId) {
             $query->where('message_id', $messageId);
         }
-        
+
         $total = $query->count();
         $successful = $query->clone()->successful()->count();
         $failed = $query->clone()->failed()->count();
         $pending = $query->clone()->pending()->count();
-        
+
         return [
             'total' => $total,
             'successful' => $successful,
@@ -381,13 +398,13 @@ class MessageDeliveryLog extends Model
             ->groupBy(['channel', 'status'])
             ->get()
             ->groupBy('channel')
-            ->map(function ($logs) {
+            ->map(static function ($logs) {
                 $stats = ['total' => 0, 'successful' => 0, 'failed' => 0, 'pending' => 0];
-                
+
                 foreach ($logs as $log) {
                     $stats['total'] += $log->count;
-                    
-                    if (in_array($log->status, [self::STATUS_SENT, self::STATUS_DELIVERED])) {
+
+                    if (\in_array($log->status, [self::STATUS_SENT, self::STATUS_DELIVERED], true)) {
                         $stats['successful'] += $log->count;
                     } elseif ($log->status === self::STATUS_FAILED) {
                         $stats['failed'] += $log->count;
@@ -395,11 +412,11 @@ class MessageDeliveryLog extends Model
                         $stats['pending'] += $log->count;
                     }
                 }
-                
-                $stats['success_rate'] = $stats['total'] > 0 
-                    ? round(($stats['successful'] / $stats['total']) * 100, 2) 
+
+                $stats['success_rate'] = $stats['total'] > 0
+                    ? round(($stats['successful'] / $stats['total']) * 100, 2)
                     : 0;
-                
+
                 return $stats;
             })
             ->toArray();

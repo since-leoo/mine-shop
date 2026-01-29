@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
-use App\Model\Permission\User;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\Collection\Arr;
 use Hyperf\Stringable\Str;
 use Hyperf\Testing\Assert;

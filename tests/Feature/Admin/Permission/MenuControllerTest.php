@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\Permission;
 
-use App\Model\Permission\Menu;
-use App\Model\Permission\Meta;
+use App\Infrastructure\Model\Permission\Menu;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\CrudControllerCase;
 
@@ -35,7 +34,7 @@ final class MenuControllerTest extends CrudControllerCase
             'name' => Str::random(10),
             'component' => Str::random(10),
             'redirect' => Str::random(10),
-            'status' => rand(0, 1),
+            'status' => rand(1, 2),
             'sort' => rand(1, 100),
             'remark' => Str::random(10),
             'path' => Str::random(10),
@@ -53,7 +52,7 @@ final class MenuControllerTest extends CrudControllerCase
             'component' => Str::random(10),
             'redirect' => Str::random(10),
             'is_hidden' => rand(0, 1),
-            'status' => rand(0, 1),
+            'status' => rand(1, 2),
             'sort' => rand(1, 100),
             'remark' => Str::random(10),
             'meta' => $this->generatorMeta(),
@@ -63,7 +62,7 @@ final class MenuControllerTest extends CrudControllerCase
             'name' => Str::random(10),
             'component' => Str::random(10),
             'redirect' => Str::random(10),
-            'status' => rand(0, 1),
+            'status' => rand(1, 2),
             'sort' => rand(1, 100),
             'remark' => Str::random(10),
             'meta' => $this->generatorMeta(),
@@ -78,7 +77,7 @@ final class MenuControllerTest extends CrudControllerCase
             'name' => Str::random(10),
             'component' => Str::random(10),
             'redirect' => Str::random(10),
-            'status' => rand(0, 1),
+            'status' => rand(1, 2),
             'sort' => rand(1, 100),
             'remark' => Str::random(10),
             'meta' => $this->generatorMeta(),
@@ -86,18 +85,18 @@ final class MenuControllerTest extends CrudControllerCase
         $this->caseDelete('/admin/menu', $entity, 'permission:menu:delete', true);
     }
 
-    protected function generatorMeta()
+    protected function generatorMeta(): array
     {
-        return new Meta([
+        return [
             'title' => Str::random(10),
             'i18n' => Str::random(10),
             'badge' => Str::random(10),
             'icon' => Str::random(10),
-            'affix' => rand(0, 1),
-            'hidden' => rand(0, 1),
+            'affix' => (bool) rand(0, 1),
+            'hidden' => (bool) rand(0, 1),
             'type' => Str::random(10),
-            'cache' => rand(0, 1),
+            'cache' => (bool) rand(0, 1),
             'link' => Str::random(10),
-        ]);
+        ];
     }
 }

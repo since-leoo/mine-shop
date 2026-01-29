@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\Permission;
 
-use App\Http\Common\ResultCode;
-use App\Model\Permission\Menu;
-use App\Model\Permission\Role;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Role;
+use App\Interface\Common\ResultCode;
 use Hyperf\Database\Model\ModelNotFoundException;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
@@ -27,23 +27,21 @@ final class RoleControllerTest extends ControllerCase
 {
     public function testPageList(): void
     {
-        $token = $this->token;
         $result = $this->get('/admin/role/list');
         self::assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
-        $result = $this->get('/admin/role/list', ['token' => $token]);
+        $result = $this->get('/admin/role/list', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->forAddPermission('permission:role:index');
-        $result = $this->get('/admin/role/list', ['token' => $token]);
+        $result = $this->get('/admin/role/list', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions('permission:role:index');
-        $result = $this->get('/admin/role/list', ['token' => $token]);
+        $result = $this->get('/admin/role/list', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
     }
 
     public function testCreate(): void
     {
-        $token = $this->token;
-        $attribute = [
+        $attributes = [
             'name',
             'code',
             'sort',
@@ -51,9 +49,16 @@ final class RoleControllerTest extends ControllerCase
             'remark',
         ];
         $result = $this->post('/admin/role');
+        self::assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
+        $this->forAddPermission('permission:role:save');
+        foreach ($attributes as $attribute) {
+            $result = $this->post('/admin/role', [$attribute => ''], $this->authHeader());
+            self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        }
+        $result = $this->post('/admin/role', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
-        $result = $this->post('/admin/role', [], ['Authorization' => 'Bearer ' . $token]);
-        self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->deletePermissions('permission:role:save');
+        self::assertFalse($this->hasPermissions('permission:role:save'));
         $fill = [
             'name' => Str::random(10),
             'code' => Str::random(10),
@@ -61,17 +66,17 @@ final class RoleControllerTest extends ControllerCase
             'status' => rand(1, 2),
             'remark' => Str::random(),
         ];
-        $result = $this->post('/admin/role', $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->post('/admin/role', $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->forAddPermission('permission:role:save');
-        $result = $this->post('/admin/role', $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->post('/admin/role', $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions('permission:role:save');
-        $result = $this->post('/admin/role', $fill, ['Authorization' => 'Bearer ' . $token]);
-        self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $result = $this->post('/admin/role', $fill, $this->authHeader());
+        self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $oldCode = $fill['code'];
         $fill['code'] = Str::random(10);
-        $result = $this->post('/admin/role', $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->post('/admin/role', $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $entity = Role::query()->where('code', $oldCode)->first();
         self::assertNotNull($entity);
@@ -85,7 +90,6 @@ final class RoleControllerTest extends ControllerCase
 
     public function testSave(): void
     {
-        $token = $this->token;
         $entity = Role::create([
             'name' => Str::random(10),
             'code' => Str::random(10),
@@ -94,9 +98,12 @@ final class RoleControllerTest extends ControllerCase
             'remark' => Str::random(),
         ]);
         $result = $this->put('/admin/role/' . $entity->id);
+        self::assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
+        $this->forAddPermission('permission:role:update');
+        $result = $this->put('/admin/role/' . $entity->id, [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
-        $result = $this->put('/admin/role/' . $entity->id, [], ['Authorization' => 'Bearer ' . $token]);
-        self::assertSame($result['code'], ResultCode::UNPROCESSABLE_ENTITY->value);
+        $this->deletePermissions('permission:role:update');
+        self::assertFalse($this->hasPermissions('permission:role:update'));
         $fill = [
             'name' => Str::random(10),
             'code' => Str::random(10),
@@ -104,13 +111,13 @@ final class RoleControllerTest extends ControllerCase
             'status' => rand(1, 2),
             'remark' => Str::random(),
         ];
-        $result = $this->put('/admin/role/' . $entity->id, $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put('/admin/role/' . $entity->id, $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->forAddPermission('permission:role:update');
-        $result = $this->put('/admin/role/' . $entity->id, $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put('/admin/role/' . $entity->id, $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions('permission:role:update');
-        $result = $this->put('/admin/role/' . $entity->id, $fill, ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put('/admin/role/' . $entity->id, $fill, $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $entity->refresh();
         self::assertSame($entity->name, $fill['name']);
@@ -122,7 +129,6 @@ final class RoleControllerTest extends ControllerCase
 
     public function testDelete(): void
     {
-        $token = $this->token;
         $entity = Role::create([
             'name' => Str::random(10),
             'code' => Str::random(10),
@@ -132,13 +138,13 @@ final class RoleControllerTest extends ControllerCase
         ]);
         $result = $this->delete('/admin/role');
         self::assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
-        $result = $this->delete('/admin/role', [], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->delete('/admin/role', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->forAddPermission('permission:role:delete');
-        $result = $this->delete('/admin/role', [$entity->id], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->delete('/admin/role', [$entity->id], $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $this->deletePermissions('permission:role:delete');
-        $result = $this->delete('/admin/role', [$entity->id], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->delete('/admin/role', [$entity->id], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->expectException(ModelNotFoundException::class);
         $entity->refresh();
@@ -198,19 +204,18 @@ final class RoleControllerTest extends ControllerCase
             'status' => rand(1, 2),
             'remark' => Str::random(),
         ]);
-        $token = $this->token;
         $uri = '/admin/role/' . $role->id . '/permissions';
         $result = $this->put($uri);
         self::assertSame($result['code'], ResultCode::UNAUTHORIZED->value);
-        $result = $this->put($uri, [], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put($uri, [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
-        $result = $this->put($uri, ['permissions' => $names], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put($uri, ['permissions' => $names], $this->authHeader());
         self::assertSame($result['code'], ResultCode::FORBIDDEN->value);
         $this->forAddPermission('permission:role:setMenu');
         $this->forAddPermission('permission:role:getMenu');
-        $result = $this->put($uri, ['permissions' => $names], ['Authorization' => 'Bearer ' . $token]);
+        $result = $this->put($uri, ['permissions' => $names], $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
-        $result = $this->get('/admin/role/' . $role->id . '/permissions', ['token' => $token]);
+        $result = $this->get('/admin/role/' . $role->id . '/permissions', [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $role->forceDelete();
         Menu::query()->whereIn('name', $names)->forceDelete();

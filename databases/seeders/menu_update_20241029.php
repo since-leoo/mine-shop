@@ -9,8 +9,8 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Model\Permission\Menu;
-use App\Model\Permission\Meta;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Seeders\Seeder;
 use Hyperf\DbConnection\Db;
 

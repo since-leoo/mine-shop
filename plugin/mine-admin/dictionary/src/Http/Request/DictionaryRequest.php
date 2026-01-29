@@ -1,13 +1,21 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+
 namespace Plugin\MineAdmin\Dictionary\Http\Request;
 
 use Hyperf\Validation\Request\FormRequest;
 
-
 class DictionaryRequest extends FormRequest
 {
-
     public function authorize(): bool
     {
         return true;
@@ -15,12 +23,12 @@ class DictionaryRequest extends FormRequest
 
     public function rules(): array
     {
-        return [                                            
-            'type_id' => 'required',                            
-            'label' => 'required',                                                                                    
-            'value' => 'required',                                                        
-            'code' => 'required',                            
-            'sort' => 'required',                            
+        return [
+            'type_id' => 'required',
+            'label' => 'required',
+            'value' => 'required',
+            'code' => 'required',
+            'sort' => 'required',
             'status' => 'required',
             'color' => '',
             'i18n' => '',
@@ -49,5 +57,4 @@ class DictionaryRequest extends FormRequest
             'updated_at' => '更新时间',
         ];
     }
-
 }

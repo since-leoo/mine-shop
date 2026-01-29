@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
-use App\Model\Enums\User\Status;
-use App\Model\Permission\Menu;
-use App\Model\Permission\Role;
-use App\Model\Permission\User;
+use App\Domain\Auth\Enum\Status;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Role;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\DbConnection\Db;
 use Hyperf\Stringable\Str;
 use HyperfTests\HttpTestCase;
@@ -35,6 +35,7 @@ abstract class ControllerCase extends HttpTestCase
 
     protected function setUp(): void
     {
+        parent::setUp();
         User::truncate();
         Role::truncate();
         Db::table('user_belongs_role')->truncate();
@@ -49,6 +50,7 @@ abstract class ControllerCase extends HttpTestCase
     {
         $this->user->forceDelete();
         $this->role->forceDelete();
+        parent::tearDown();
     }
 
     public function addPermissions(string ...$permission): bool
@@ -97,6 +99,11 @@ abstract class ControllerCase extends HttpTestCase
             $this->role->menus()->detach($entity);
         }
         return true;
+    }
+
+    protected function authHeader(?string $token = null): array
+    {
+        return ['Authorization' => 'Bearer ' . ($token ?? $this->token)];
     }
 
     private function generatorRole(): Role

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Model\UserOperationLog;
-use App\Repository\Logstash\UserOperationLogRepository;
+use App\Infrastructure\Model\System\UserOperationLog;
+use App\Domain\Logstash\Repository\UserOperationLogRepository;
 use Faker\Provider\Internet;
 use Hyperf\Collection\Collection;
 use Hyperf\DbConnection\Model\Model;

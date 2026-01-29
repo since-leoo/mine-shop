@@ -42,6 +42,22 @@ return [
             RegisteredClaims::ISSUER => (string) env('APP_NAME'),
         ],
     ],
+    'api' => [
+        'driver' => Jwt::class,
+        'key' => InMemory::base64Encoded(env('JWT_SECRET')),
+        'alg' => new Sha256(),
+        'ttl' => (int) env('JWT_TTL', 3600),
+        'refresh_ttl' => (int) env('JWT_REFRESH_TTL', 7200),
+        'blacklist' => [
+            'enable' => true,
+            'prefix' => 'jwt_blacklist',
+            'connection' => 'default',
+            'ttl' => (int) env('JWT_BLACKLIST_TTL', 7201),
+        ],
+        'claims' => [
+            RegisteredClaims::ISSUER => (string) env('APP_NAME'),
+        ],
+    ],
     // 在你想要使用不同的场景时，可以在这里添加配置.可以填一个。其他会使用默认配置
     'application' => [
         // jwt 配置 https://lcobucci-jwt.readthedocs.io/en/latest/

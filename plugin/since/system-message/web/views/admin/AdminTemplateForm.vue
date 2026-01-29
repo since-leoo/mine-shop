@@ -2,96 +2,94 @@
   <div class="admin-template-form">
     <div class="form-header">
       <div class="header-left">
-        <a-button @click="goBack" type="text" class="back-btn">
-          <template #icon>
-            <ArrowLeftOutlined />
-          </template>
+        <el-button @click="goBack" text class="back-btn">
+          <el-icon><ArrowLeft /></el-icon>
           返回
-        </a-button>
+        </el-button>
         <h2>{{ isEdit ? '编辑模板' : '创建模板' }}</h2>
       </div>
       <div class="header-right">
-        <a-button @click="previewTemplate" :disabled="!canPreview">
+        <el-button @click="previewTemplate" :disabled="!canPreview">
           预览模板
-        </a-button>
-        <a-button @click="saveTemplate" :loading="saving">
+        </el-button>
+        <el-button @click="saveTemplate" :loading="saving">
           保存模板
-        </a-button>
+        </el-button>
       </div>
     </div>
 
-    <a-form
+    <el-form
       :model="formData"
       :rules="rules"
       ref="formRef"
-      layout="vertical"
+      label-position="top"
       class="template-form"
     >
-      <a-row :gutter="24">
-        <a-col :span="16">
+      <el-row :gutter="24">
+        <el-col :span="16">
           <!-- 基本信息 -->
-          <a-card title="基本信息" class="form-card">
-            <a-form-item label="模板名称" name="name" required>
-              <a-input 
-                v-model:value="formData.name" 
+          <el-card header="基本信息" class="form-card">
+            <el-form-item label="模板名称" prop="name" required>
+              <el-input 
+                v-model="formData.name" 
                 placeholder="请输入模板名称"
                 maxlength="100"
-                show-count
+                show-word-limit
               />
-            </a-form-item>
+            </el-form-item>
 
-            <a-form-item label="模板描述" name="description">
-              <a-textarea 
-                v-model:value="formData.description" 
+            <el-form-item label="模板描述" prop="description">
+              <el-input 
+                v-model="formData.description" 
+                type="textarea"
                 placeholder="请输入模板描述"
                 :rows="3"
                 maxlength="500"
-                show-count
+                show-word-limit
               />
-            </a-form-item>
+            </el-form-item>
 
-            <a-form-item label="模板类型" name="type" required>
-              <a-select v-model:value="formData.type" placeholder="选择模板类型">
-                <a-select-option value="system">系统模板</a-select-option>
-                <a-select-option value="announcement">公告模板</a-select-option>
-                <a-select-option value="alert">警报模板</a-select-option>
-                <a-select-option value="reminder">提醒模板</a-select-option>
-                <a-select-option value="marketing">营销模板</a-select-option>
-              </a-select>
-            </a-form-item>
+            <el-form-item label="模板类型" prop="type" required>
+              <el-select v-model="formData.type" placeholder="选择模板类型">
+                <el-option value="system" label="系统模板" />
+                <el-option value="announcement" label="公告模板" />
+                <el-option value="alert" label="警报模板" />
+                <el-option value="reminder" label="提醒模板" />
+                <el-option value="marketing" label="营销模板" />
+              </el-select>
+            </el-form-item>
 
-            <a-form-item label="模板状态" name="status">
-              <a-radio-group v-model:value="formData.status">
-                <a-radio value="active">启用</a-radio>
-                <a-radio value="inactive">禁用</a-radio>
-              </a-radio-group>
-            </a-form-item>
-          </a-card>
+            <el-form-item label="模板状态" prop="status">
+              <el-radio-group v-model="formData.status">
+                <el-radio value="active">启用</el-radio>
+                <el-radio value="inactive">禁用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-card>
 
           <!-- 模板内容 -->
-          <a-card title="模板内容" class="form-card">
-            <a-form-item label="模板内容" name="content" required>
+          <el-card header="模板内容" class="form-card">
+            <el-form-item label="模板内容" prop="content" required>
               <div class="content-editor">
                 <div class="editor-toolbar">
-                  <a-space>
-                    <a-button @click="insertVariable" size="small">
-                      插入变量
-                    </a-button>
-                    <a-button @click="formatContent" size="small">
-                      格式化
-                    </a-button>
-                    <a-button @click="clearContent" size="small">
-                      清空内容
-                    </a-button>
-                  </a-space>
+                  <el-button @click="insertVariable" size="small">
+                    插入变量
+                  </el-button>
+                  <el-button @click="formatContent" size="small">
+                    格式化
+                  </el-button>
+                  <el-button @click="clearContent" size="small">
+                    清空内容
+                  </el-button>
                 </div>
                 
-                <a-textarea 
-                  v-model:value="formData.content" 
+                <el-input 
+                  v-model="formData.content" 
+                  type="textarea"
                   placeholder="请输入模板内容，使用 {{变量名}} 格式插入变量"
                   :rows="12"
                   class="content-textarea"
-                  @change="analyzeVariables"
+                  @input="analyzeVariables"
                 />
                 
                 <div class="content-help">
@@ -103,23 +101,23 @@
                   </div>
                 </div>
               </div>
-            </a-form-item>
-          </a-card>
+            </el-form-item>
+          </el-card>
 
           <!-- 变量管理 -->
-          <a-card title="模板变量" class="form-card">
+          <el-card header="模板变量" class="form-card">
             <div class="variables-section">
               <div class="variables-detected" v-if="detectedVariables.length > 0">
                 <h4>检测到的变量</h4>
                 <div class="variables-list">
-                  <a-tag 
+                  <el-tag 
                     v-for="variable in detectedVariables" 
                     :key="variable"
-                    color="blue"
+                    type="primary"
                     class="variable-tag"
                   >
                     {{ variable }}
-                  </a-tag>
+                  </el-tag>
                 </div>
               </div>
               
@@ -132,8 +130,8 @@
                     class="variable-desc-item"
                   >
                     <label>{{ variable }}</label>
-                    <a-input 
-                      v-model:value="variableDescriptions[variable]"
+                    <el-input 
+                      v-model="variableDescriptions[variable]"
                       placeholder="请输入变量说明"
                     />
                   </div>
@@ -142,29 +140,29 @@
                 <div class="common-variables">
                   <h4>常用变量</h4>
                   <div class="common-vars-list">
-                    <a-tag 
+                    <el-tag 
                       v-for="commonVar in commonVariables" 
                       :key="commonVar.name"
                       @click="insertCommonVariable(commonVar.name)"
                       class="common-var-tag"
                     >
                       {{ commonVar.name }} - {{ commonVar.description }}
-                    </a-tag>
+                    </el-tag>
                   </div>
                 </div>
               </div>
             </div>
-          </a-card>
-        </a-col>
+          </el-card>
+        </el-col>
 
-        <a-col :span="8">
+        <el-col :span="8">
           <!-- 预览区域 -->
-          <a-card title="实时预览" class="form-card preview-card">
+          <el-card header="实时预览" class="form-card preview-card">
             <div class="preview-section">
               <div class="preview-controls">
-                <a-button @click="refreshPreview" size="small" type="primary">
+                <el-button @click="refreshPreview" size="small" type="primary">
                   刷新预览
-                </a-button>
+                </el-button>
               </div>
               
               <div class="preview-variables" v-if="detectedVariables.length > 0">
@@ -176,10 +174,10 @@
                     class="preview-var-item"
                   >
                     <label>{{ variable }}</label>
-                    <a-input 
-                      v-model:value="previewValues[variable]"
+                    <el-input 
+                      v-model="previewValues[variable]"
                       size="small"
-                      @change="updatePreview"
+                      @input="updatePreview"
                     />
                   </div>
                 </div>
@@ -190,26 +188,26 @@
                 <div class="content-preview" v-html="previewContent"></div>
               </div>
             </div>
-          </a-card>
+          </el-card>
 
           <!-- 使用统计 -->
-          <a-card title="使用统计" class="form-card" v-if="isEdit">
+          <el-card header="使用统计" class="form-card" v-if="isEdit">
             <div class="usage-stats">
-              <a-statistic
+              <el-statistic
                 title="使用次数"
                 :value="formData.usage_count || 0"
                 class="stat-item"
               />
-              <a-statistic
+              <el-statistic
                 title="最后使用"
                 :value="formData.last_used_at ? formatTime(formData.last_used_at) : '从未使用'"
                 class="stat-item"
               />
             </div>
-          </a-card>
+          </el-card>
 
           <!-- 操作历史 -->
-          <a-card title="操作历史" class="form-card" v-if="isEdit">
+          <el-card header="操作历史" class="form-card" v-if="isEdit">
             <div class="history-list">
               <div class="history-item">
                 <div class="history-action">创建模板</div>
@@ -220,55 +218,57 @@
                 <div class="history-time">{{ formatTime(formData.updated_at) }}</div>
               </div>
             </div>
-          </a-card>
-        </a-col>
-      </a-row>
-    </a-form>
+          </el-card>
+        </el-col>
+      </el-row>
+    </el-form>
 
     <!-- 变量插入弹窗 -->
-    <a-modal
-      v-model:open="variableModalVisible"
+    <el-dialog
+      v-model="variableModalVisible"
       title="插入变量"
-      @ok="confirmInsertVariable"
-      @cancel="variableModalVisible = false"
+      width="400px"
     >
-      <a-form layout="vertical">
-        <a-form-item label="变量名称">
-          <a-input 
-            v-model:value="newVariableName" 
+      <el-form label-position="top">
+        <el-form-item label="变量名称">
+          <el-input 
+            v-model="newVariableName" 
             placeholder="请输入变量名称"
             @keyup.enter="confirmInsertVariable"
           />
-        </a-form-item>
-        <a-form-item label="变量说明">
-          <a-input 
-            v-model:value="newVariableDesc" 
+        </el-form-item>
+        <el-form-item label="变量说明">
+          <el-input 
+            v-model="newVariableDesc" 
             placeholder="请输入变量说明（可选）"
           />
-        </a-form-item>
-      </a-form>
-    </a-modal>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="variableModalVisible = false">取消</el-button>
+        <el-button type="primary" @click="confirmInsertVariable">确定</el-button>
+      </template>
+    </el-dialog>
 
     <!-- 模板预览弹窗 -->
-    <a-modal
-      v-model:open="previewModalVisible"
+    <el-dialog
+      v-model="previewModalVisible"
       title="模板预览"
-      :footer="null"
       width="800px"
     >
       <div class="modal-preview">
         <div class="preview-header">
           <h3>{{ formData.name || '未命名模板' }}</h3>
-          <a-tag :color="getTypeColor(formData.type)">
+          <el-tag :type="getTypeTagType(formData.type)">
             {{ getTypeLabel(formData.type) }}
-          </a-tag>
+          </el-tag>
         </div>
         
-        <a-divider />
+        <el-divider />
         
         <div class="modal-preview-content" v-html="previewContent"></div>
       </div>
-    </a-modal>
+    </el-dialog>
   </div>
 </template>
 
@@ -276,9 +276,9 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useTemplateStore } from '../../store/template'
-import { message } from 'ant-design-vue'
-import { ArrowLeftOutlined } from '@ant-design/icons-vue'
-import type { CreateTemplateData, UpdateTemplateData } from '../../api/template'
+import { ElMessage } from 'element-plus'
+import { ArrowLeft } from '@element-plus/icons-vue'
+import type { CreateTemplateData } from '../../api/template'
 import dayjs from 'dayjs'
 
 const route = useRoute()
@@ -352,16 +352,16 @@ const canPreview = computed(() => {
   return formData.name && formData.content
 })
 
-// 获取模板类型颜色
-const getTypeColor = (type: string) => {
-  const colors: Record<string, string> = {
-    system: 'blue',
-    announcement: 'green',
-    alert: 'red',
-    reminder: 'orange',
-    marketing: 'purple'
+// 获取模板类型标签类型
+const getTypeTagType = (type: string) => {
+  const types: Record<string, '' | 'success' | 'warning' | 'danger' | 'info'> = {
+    system: '',
+    announcement: 'success',
+    alert: 'danger',
+    reminder: 'warning',
+    marketing: 'info'
   }
-  return colors[type] || 'default'
+  return types[type] || 'info'
 }
 
 // 获取模板类型标签
@@ -429,7 +429,7 @@ const insertVariable = () => {
 // 确认插入变量
 const confirmInsertVariable = () => {
   if (!newVariableName.value.trim()) {
-    message.error('请输入变量名称')
+    ElMessage.error('请输入变量名称')
     return
   }
   
@@ -448,7 +448,7 @@ const confirmInsertVariable = () => {
   analyzeVariables()
   
   variableModalVisible.value = false
-  message.success('变量插入成功')
+  ElMessage.success('变量插入成功')
 }
 
 // 插入常用变量
@@ -456,7 +456,7 @@ const insertCommonVariable = (variableName: string) => {
   const variableText = `{{${variableName}}}`
   formData.content += variableText
   analyzeVariables()
-  message.success(`已插入变量：${variableName}`)
+  ElMessage.success(`已插入变量：${variableName}`)
 }
 
 // 格式化内容
@@ -470,7 +470,7 @@ const formatContent = () => {
     .trim()
   
   analyzeVariables()
-  message.success('内容格式化完成')
+  ElMessage.success('内容格式化完成')
 }
 
 // 清空内容
@@ -484,7 +484,7 @@ const clearContent = () => {
 // 预览模板
 const previewTemplate = () => {
   if (!canPreview.value) {
-    message.error('请先填写模板名称和内容')
+    ElMessage.error('请先填写模板名称和内容')
     return
   }
   
@@ -514,15 +514,15 @@ const saveTemplate = async () => {
     
     if (isEdit.value) {
       await templateStore.actions.update(Number(route.params.id), data)
-      message.success('模板更新成功')
+      ElMessage.success('模板更新成功')
     } else {
       await templateStore.actions.create(data)
-      message.success('模板创建成功')
+      ElMessage.success('模板创建成功')
     }
     
     router.push('/admin/template')
   } catch (error) {
-    message.error('保存失败')
+    ElMessage.error('保存失败')
   } finally {
     saving.value = false
   }
@@ -557,7 +557,7 @@ const loadTemplateDetail = async () => {
       variableDescriptions.value = template.variable_descriptions
     }
   } catch (error) {
-    message.error('加载模板详情失败')
+    ElMessage.error('加载模板详情失败')
     router.push('/admin/template')
   }
 }
@@ -587,7 +587,7 @@ onMounted(async () => {
         variableDescriptions.value = template.variable_descriptions
       }
     } catch (error) {
-      message.error('加载模板失败')
+      ElMessage.error('加载模板失败')
     }
   }
 })
@@ -647,17 +647,19 @@ onMounted(async () => {
 }
 
 .content-editor {
-  border: 1px solid #f0f0f0;
+  border: 1px solid #dcdfe6;
   border-radius: 6px;
 }
 
 .editor-toolbar {
   padding: 8px 12px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #dcdfe6;
   background: #fafafa;
+  display: flex;
+  gap: 8px;
 }
 
-.content-textarea {
+.content-textarea :deep(.el-textarea__inner) {
   border: none !important;
   box-shadow: none !important;
 }
@@ -665,7 +667,7 @@ onMounted(async () => {
 .content-help {
   padding: 12px;
   background: #f9f9f9;
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid #dcdfe6;
   font-size: 12px;
 }
 
@@ -734,7 +736,7 @@ onMounted(async () => {
 }
 
 .common-var-tag:hover {
-  background: #1890ff;
+  background: #409eff;
   color: white;
 }
 
@@ -775,7 +777,7 @@ onMounted(async () => {
 
 .content-preview {
   padding: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #dcdfe6;
   border-radius: 6px;
   background: #fafafa;
   line-height: 1.6;
@@ -834,7 +836,7 @@ onMounted(async () => {
 
 .modal-preview-content {
   padding: 16px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #dcdfe6;
   border-radius: 6px;
   background: #fafafa;
   line-height: 1.6;

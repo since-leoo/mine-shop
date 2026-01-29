@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Schema\Schema;
@@ -33,16 +32,16 @@ class CreateUserNotificationPreferencesTable extends Migration
             $table->time('do_not_disturb_end')->nullable()->comment('免打扰结束时间');
             $table->json('custom_settings')->nullable()->comment('自定义设置（为未来扩展预留）');
             $table->timestamps();
-            
+
             // 唯一索引
             $table->unique(['user_id', 'message_type'], 'uk_user_type');
-            
+
             // 普通索引
             $table->index('user_id', 'idx_user_id');
             $table->index('message_type', 'idx_message_type');
             $table->index('is_enabled', 'idx_is_enabled');
             $table->index(['user_id', 'is_enabled'], 'idx_user_enabled');
-            
+
             // 外键约束
             // $table->foreign('user_id')->references('id')->on('user')->onDelete('cascade');
         });

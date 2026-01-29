@@ -15,7 +15,7 @@
   "description": "Quickly build a background management system for web applications",
   "license": "Apache-2.0",
   "require": {
-    "php": ">=8.1",
+    "php": ">=8.2",
     "ext-fileinfo": "*",
     "ext-json": "*",
     "ext-openssl": "*",
@@ -36,7 +36,6 @@
     "hyperf/crontab": "~3.1",
     "hyperf/database": "3.1.*",
     "hyperf/database-pgsql": "*",
-    "hyperf/db-connection": "3.1.*",
     "hyperf/di": "3.1.*",
     "hyperf/dispatcher": "3.1.*",
     "hyperf/engine": "^2.0",
@@ -52,11 +51,12 @@
     "hyperf/polyfill-coroutine": "3.1.*",
     "hyperf/pool": "3.1.*",
     "hyperf/process": "3.1.*",
+    "hyperf/rate-limit": "^3.1",
     "hyperf/redis": "3.1.*",
+    "hyperf/resource": "^3.1",
     "hyperf/server": "3.1.*",
     "hyperf/utils": "3.1.*",
     "hyperf/validation": "~3.1",
-    "hyperf/websocket-server": "^3.1",
     "mineadmin/access": "~3.0",
     "mineadmin/app-store": "~3.0",
     "mineadmin/auth-jwt": "~3.0",
@@ -64,7 +64,8 @@
     "mineadmin/jwt": "~3.0",
     "mineadmin/support": "~3.0",
     "mineadmin/swagger": "~3.0",
-    "mineadmin/upload": "~3.0"
+    "mineadmin/upload": "~3.0",
+    "yansongda/pay": "^3.6"
   },
   "require-dev": {
     "doctrine/dbal": "^3.6",

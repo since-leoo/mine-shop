@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Model\Enums\User\Status;
-use App\Model\Enums\User\Type;
-use App\Model\Permission\User;
-use App\Repository\Permission\UserRepository;
+use App\Domain\Auth\Enum\Status;
+use App\Domain\Auth\Enum\Type;
+use App\Domain\Permission\Repository\UserRepository;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Faker\Provider\Internet;
 use Hyperf\Collection\Collection;

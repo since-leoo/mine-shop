@@ -9,12 +9,19 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Service\PassportService;
+
+use App\Application\Auth\Service\JwtTokenChecker;
+use App\Domain\Product\Contract\ProductCodeGeneratorInterface;
+use App\Domain\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Product\Service\ProductSnapshotService;
+use App\Infrastructure\Product\ProductCodeGenerator;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 use Mine\Upload\Factory;
 use Mine\Upload\UploadInterface;
 
 return [
     UploadInterface::class => Factory::class,
-    CheckTokenInterface::class => PassportService::class,
+    CheckTokenInterface::class => JwtTokenChecker::class,
+    ProductSnapshotInterface::class => ProductSnapshotService::class,
+    ProductCodeGeneratorInterface::class => ProductCodeGenerator::class,
 ];

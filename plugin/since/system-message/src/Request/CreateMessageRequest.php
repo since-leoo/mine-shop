@@ -103,10 +103,11 @@ class CreateMessageRequest extends FormRequest
 
     /**
      * Configure the validator instance.
+     * @param mixed $validator
      */
     public function withValidator($validator): void
     {
-        $validator->after(function ($validator) {
+        $validator->after(static function ($validator) {
             $data = $validator->getData();
 
             // 验证收件人ID是否必需
@@ -115,7 +116,7 @@ class CreateMessageRequest extends FormRequest
             }
 
             // 验证模板变量
-            if (!empty($data['template_id']) && !empty($data['template_variables'])) {
+            if (! empty($data['template_id']) && ! empty($data['template_variables'])) {
                 // 这里可以添加模板变量验证逻辑
                 // 例如检查必需的变量是否都提供了
             }

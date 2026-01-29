@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Schema\Schema;
@@ -48,7 +47,7 @@ class CreateSystemMessagesTable extends Migration
             $table->timestamps();
             $table->timestamp('deleted_at')->nullable()->comment('删除时间');
             $table->string('remark', 255)->default('')->comment('备注');
-            
+
             // 索引
             $table->index('type', 'idx_type');
             $table->index('status', 'idx_status');
@@ -58,7 +57,7 @@ class CreateSystemMessagesTable extends Migration
             $table->index('recipient_type', 'idx_recipient_type');
             $table->index(['type', 'status'], 'idx_type_status');
             $table->index('deleted_at', 'idx_deleted_at');
-            
+
             // 外键约束（如果需要）
             // $table->foreign('sender_id')->references('id')->on('user')->onDelete('set null');
             // $table->foreign('template_id')->references('id')->on('message_templates')->onDelete('set null');

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\MineAdmin\AppStore\Service;
 
-use App\Exception\BusinessException;
-use App\Http\Common\ResultCode;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Common\ResultCode;
 use Hyperf\HttpMessage\Upload\UploadedFile;
 use Mine\AppStore\Exception\PluginNotFoundException;
 use Mine\AppStore\Plugin;

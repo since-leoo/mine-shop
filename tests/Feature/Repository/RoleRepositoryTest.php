@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Model\Permission\Role;
-use App\Repository\Permission\RoleRepository;
+use App\Infrastructure\Model\Permission\Role;
+use App\Domain\Permission\Repository\RoleRepository;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\DbConnection\Model\Model;

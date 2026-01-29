@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
-use App\Http\Common\ResultCode;
-use App\Model\Enums\User\Status;
-use App\Model\Permission\Menu;
-use App\Model\Permission\Role;
-use App\Model\Permission\User;
+use App\Domain\Auth\Enum\Status;
+use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Model\Permission\Role;
+use App\Infrastructure\Model\Permission\User;
+use App\Interface\Common\ResultCode;
 use Hyperf\Collection\Arr;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;

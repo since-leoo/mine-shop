@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\MineAdmin\AppStore\Controller;
 
-use App\Http\Common\Middleware\AccessTokenMiddleware;
-use App\Http\Common\Result;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
