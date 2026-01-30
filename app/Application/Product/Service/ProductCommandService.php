@@ -43,7 +43,7 @@ final class ProductCommandService
     #[Transactional]
     public function create(ProductEntity $entity): Product
     {
-        Db::transaction(fn () => $this->productService->create($entity));
+        $entity = Db::transaction(fn () => $this->productService->create($entity));
 
         $model = $this->queryService->find($entity->getId());
         if (! $model) {

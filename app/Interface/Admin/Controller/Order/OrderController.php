@@ -14,6 +14,7 @@ use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
+use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -27,11 +28,17 @@ use Mine\Access\Attribute\Permission;
 #[Middleware(middleware: OperationMiddleware::class, priority: 98)]
 final class OrderController extends AbstractController
 {
-    public function __construct(
-        private readonly OrderQueryService $queryService,
-        private readonly OrderCommandService $commandService,
-        private readonly CurrentUser $currentUser
-    ) {}
+    #[Inject]
+    private OrderQueryService $queryService;
+    #[Inject]
+    private OrderCommandService $commandService;
+    #[Inject]
+    private CurrentUser $currentUser;
+//    public function __construct(
+//        private readonly OrderQueryService $queryService,
+//        private readonly OrderCommandService $commandService,
+//        private readonly CurrentUser $currentUser
+//    ) {}
 
     #[GetMapping(path: 'list')]
     #[Permission(code: 'order:order:list')]

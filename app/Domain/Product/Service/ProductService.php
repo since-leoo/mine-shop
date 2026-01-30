@@ -39,10 +39,10 @@ final class ProductService
     /**
      * 创建商品.
      */
-    public function create(ProductEntity $entity): void
+    public function create(ProductEntity $entity): ProductEntity
     {
         $entity->syncPriceRange();
-        $this->repository->save($entity);
+        return $this->repository->save($entity);
     }
 
     /**

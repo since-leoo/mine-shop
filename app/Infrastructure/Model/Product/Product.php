@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Model\Product;
 
 use Carbon\Carbon;
+use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\Database\Model\SoftDeletes;
@@ -123,5 +124,14 @@ class Product extends Model
     public function gallery(): HasMany
     {
         return $this->hasMany(ProductGallery::class, 'product_id');
+    }
+
+    public function creating(Creating $event)
+    {
+        if (empty($this->product_code)) {
+            $this->product_code = self::CODE_PREFIX . '-' . str_pad(uniqid(), 5, '0', STR_PAD_LEFT);
+        }
+
+        return $event;
     }
 }

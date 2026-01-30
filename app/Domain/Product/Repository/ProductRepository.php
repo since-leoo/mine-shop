@@ -45,14 +45,17 @@ final class ProductRepository extends IRepository
      * 保存商品
      *
      * @param ProductEntity $entity
-     * @return void
+     * @return ProductEntity
      */
-    public function save(ProductEntity $entity): void
+    public function save(ProductEntity $entity): ProductEntity
     {
         /** @var Product $model */
         $model = $this->create($entity->toArray());
-        $model->skus()->createMany($entity->getSkus());
-        $model->attributes()->createMany($entity->getAttributes());
+        $model->skus()->createMany(array_map(static function ($sku) {return $sku->toArray();}, $entity->getSkus()));
+        $model->attributes()->createMany(array_map(static function ($attr) {return $attr->toArray();}, $entity->getAttributes()));
+
+        $entity->setId($model->id);
+        return $entity;
     }
 
     /**

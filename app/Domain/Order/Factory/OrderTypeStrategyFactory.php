@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Order\Factory;
 
 use App\Domain\Order\Contract\OrderTypeStrategyInterface;
+use App\Domain\Order\Strategy\NormalOrderStrategy;
 use RuntimeException;
 
 final class OrderTypeStrategyFactory
@@ -12,14 +13,9 @@ final class OrderTypeStrategyFactory
     /**
      * @var array<string, OrderTypeStrategyInterface>
      */
-    private array $strategies = [];
-
-    public function __construct(OrderTypeStrategyInterface ...$strategies)
-    {
-        foreach ($strategies as $strategy) {
-            $this->strategies[$strategy->type()] = $strategy;
-        }
-    }
+    private array $strategies = [
+        'normal' => NormalOrderStrategy::class,
+    ];
 
     public function make(string $type): OrderTypeStrategyInterface
     {

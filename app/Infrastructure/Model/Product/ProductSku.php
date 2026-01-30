@@ -84,19 +84,6 @@ class ProductSku extends Model
         }
     }
 
-    public function updating(Updating $event): void
-    {
-        if ($this->isDirty('sku_code')) {
-            $code = (string) $this->sku_code;
-            if ($code === '') {
-                throw new \InvalidArgumentException('SKU编码不能为空');
-            }
-            if (! self::isCodeUnique($code, (int) $this->id)) {
-                throw new \InvalidArgumentException('SKU编码已存在');
-            }
-        }
-    }
-
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');

@@ -33,8 +33,8 @@ final class ProductAssembler
         self::fillBaseFields($entity, $payload, ProductStatus::DRAFT->value);
 
         $entity->setSkus(self::mapSkus($payload['skus'] ?? []));
-        $entity->setAttributes(self::mapAttributes($payload['product_attributes'] ?? []));
-        $entity->setGallery(self::normalizeGallery($payload['gallery'] ?? []));
+        $entity->setAttributes(self::mapAttributes($payload['attributes'] ?? []));
+        $entity->setGallery($payload['gallery'] ?? []);
 
         return $entity;
     }
@@ -49,7 +49,7 @@ final class ProductAssembler
         self::fillBaseFields($entity, $payload, null, false);
         $entity->setSkus(self::mapSkus($payload['skus'] ?? []));
         $entity->setAttributes(self::mapAttributes($payload['product_attributes'] ?? []));
-        $entity->setGallery(self::normalizeGallery($payload['gallery'] ?? []));
+        $entity->setGallery($payload['gallery'] ?? []);
 
         return $entity;
     }
@@ -133,18 +133,5 @@ final class ProductAssembler
 
             return $attribute;
         }, $items);
-    }
-
-    /**
-     * @param mixed $gallery
-     * @return array<int, mixed>
-     */
-    private static function normalizeGallery(mixed $gallery): array
-    {
-        if (! is_array($gallery)) {
-            return [];
-        }
-
-        return array_values($gallery);
     }
 }

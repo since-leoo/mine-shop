@@ -18,12 +18,10 @@ use App\Domain\Order\Entity\OrderShipEntity;
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
 use App\Domain\Order\Service\OrderService;
-use Hyperf\Di\Annotation\Inject;
 
 final class OrderCommandService
 {
-    #[Inject]
-    private readonly OrderService $orderService;
+    public function __construct(private readonly OrderService $orderService) {}
 
     /**
      * @return array<string, mixed>
