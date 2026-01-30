@@ -126,12 +126,10 @@ class Product extends Model
         return $this->hasMany(ProductGallery::class, 'product_id');
     }
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if (empty($this->product_code)) {
-            $this->product_code = self::CODE_PREFIX . '-' . str_pad(uniqid(), 5, '0', STR_PAD_LEFT);
+            $this->product_code = self::CODE_PREFIX . '-' . strtoupper(str_pad(uniqid(), 5, '0', STR_PAD_LEFT));
         }
-
-        return $event;
     }
 }

@@ -13,9 +13,15 @@ final class OrderTypeStrategyFactory
     /**
      * @var array<string, OrderTypeStrategyInterface>
      */
-    private array $strategies = [
-        'normal' => NormalOrderStrategy::class,
-    ];
+    private array $strategies = [];
+
+    public function __construct(NormalOrderStrategy $normalStrategy) {
+        if (! isset($this->strategies[$normalStrategy->type()])) {
+            $this->strategies = [
+                $normalStrategy->type() => $normalStrategy
+            ];
+        }
+    }
 
     public function make(string $type): OrderTypeStrategyInterface
     {
