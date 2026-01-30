@@ -10,8 +10,8 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-use App\Domain\Product\Listener\ProductSkuStockListener;
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
+use App\Domain\Product\Listener\ProductSkuStockListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 use Mine\Core\Subscriber\BootApplicationSubscriber;
 use Mine\Core\Subscriber\DbQueryExecutedSubscriber;

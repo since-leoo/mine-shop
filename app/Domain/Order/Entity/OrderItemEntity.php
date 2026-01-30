@@ -1,10 +1,18 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Entity;
 
-final class OrderDraftItemEntity
+final class OrderItemEntity
 {
     private int $productId = 0;
 
@@ -21,11 +29,11 @@ final class OrderDraftItemEntity
      */
     private array $specValues = [];
 
-    private float $unitPrice = 0.0;
+    private int $unitPrice = 0;
 
     private int $quantity = 0;
 
-    private float $totalPrice = 0.0;
+    private int $totalPrice = 0;
 
     private float $weight = 0.0;
 
@@ -95,12 +103,12 @@ final class OrderDraftItemEntity
         return $this->specValues;
     }
 
-    public function setUnitPrice(float $unitPrice): void
+    public function setUnitPrice(int $unitPrice): void
     {
         $this->unitPrice = $unitPrice;
     }
 
-    public function getUnitPrice(): float
+    public function getUnitPrice(): int
     {
         return $this->unitPrice;
     }
@@ -108,7 +116,6 @@ final class OrderDraftItemEntity
     public function setQuantity(int $quantity): void
     {
         $this->quantity = max(0, $quantity);
-        $this->recalculateTotal();
     }
 
     public function getQuantity(): int
@@ -116,12 +123,12 @@ final class OrderDraftItemEntity
         return $this->quantity;
     }
 
-    public function setTotalPrice(float $totalPrice): void
+    public function setTotalPrice(int $totalPrice): void
     {
         $this->totalPrice = $totalPrice;
     }
 
-    public function getTotalPrice(): float
+    public function getTotalPrice(): int
     {
         return $this->totalPrice;
     }
@@ -136,8 +143,17 @@ final class OrderDraftItemEntity
         return $this->weight;
     }
 
-    private function recalculateTotal(): void
+    public function toArray(): array
     {
-        $this->totalPrice = round($this->unitPrice * $this->quantity, 2);
+        return [
+            'sku_id' => $this->getSkuId(),
+            'product_name' => $this->getProductName(),
+            'sku_name' => $this->getSkuName(),
+            'product_image' => $this->getProductImage(),
+            'spec_values' => $this->getSpecValues(),
+            'unit_price' => $this->getUnitPrice(),
+            'quantity' => $this->getQuantity(),
+            'total_price' => (int) bcmul((string) $this->getUnitPrice(), (string) $this->getQuantity(), 2),
+        ];
     }
 }

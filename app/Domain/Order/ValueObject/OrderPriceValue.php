@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\ValueObject;
 
@@ -67,6 +75,17 @@ final class OrderPriceValue
     public function getPayAmount(): float
     {
         return $this->payAmount;
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'goods_amount' => $this->getGoodsAmount(),
+            'discount_amount' => $this->getDiscountAmount(),
+            'shipping_fee' => $this->getShippingFee(),
+            'total_amount' => $this->getTotalAmount(),
+            'pay_amount' => $this->getPayAmount(),
+        ];
     }
 
     private function recalculate(): void

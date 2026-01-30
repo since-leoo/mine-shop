@@ -102,4 +102,17 @@ final class OrderAddressValue
     {
         return $this->fullAddress ?: trim($this->province . $this->city . $this->district . $this->detail);
     }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->receiverName,
+            'phone' => $this->receiverPhone,
+            'province' => $this->province,
+            'city' => $this->city,
+            'district' => $this->district,
+            'detail' => $this->detail,
+            'full_address' => $this->fullAddress,
+        ];
+    }
 }

@@ -1,17 +1,30 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+use PhpCsFixer\Config;
+use PhpCsFixer\Finder;
+use PhpCsFixer\Runner\Parallel\ParallelConfig;
+
 $header = <<<'EOF'
-This file is part of MineAdmin.
+    This file is part of MineAdmin.
 
-@link     https://www.mineadmin.com
-@document https://doc.mineadmin.com
-@contact  root@imoi.cn
-@license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
-EOF;
+    @link     https://www.mineadmin.com
+    @document https://doc.mineadmin.com
+    @contact  root@imoi.cn
+    @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+    EOF;
 
-return (new PhpCsFixer\Config())
+return (new Config())
     ->setRiskyAllowed(true)
-    ->setParallelConfig(new PhpCsFixer\Runner\Parallel\ParallelConfig(8, 24))
+    ->setParallelConfig(new ParallelConfig(8, 24))
     ->setRules([
         '@PSR2' => true,
         '@PhpCsFixer:risky' => true,
@@ -29,13 +42,13 @@ return (new PhpCsFixer\Config())
             'location' => 'after_declare_strict',
         ],
         'array_syntax' => [
-            'syntax' => 'short'
+            'syntax' => 'short',
         ],
         'list_syntax' => [
-            'syntax' => 'short'
+            'syntax' => 'short',
         ],
         'concat_space' => [
-            'spacing' => 'one'
+            'spacing' => 'one',
         ],
         'blank_line_before_statement' => [
             'statements' => [
@@ -44,7 +57,7 @@ return (new PhpCsFixer\Config())
         ],
         'general_phpdoc_annotation_remove' => [
             'annotations' => [
-                'author'
+                'author',
             ],
         ],
         'ordered_imports' => [
@@ -89,15 +102,17 @@ return (new PhpCsFixer\Config())
         'mb_str_functions' => true,
         'set_type_to_cast' => true,
         'no_multiline_whitespace_around_double_arrow' => true,
-        'normalize_index_brace'    => true,
-        'return_to_yield_from'  =>  true,
+        'normalize_index_brace' => true,
+        'return_to_yield_from' => true,
         'class_keyword' => true,
     ])
     ->setFinder(
-        PhpCsFixer\Finder::create()
+        Finder::create()
             ->exclude('vendor')
             ->exclude('bin')
             ->exclude('runtime')
+            ->exclude('plugin')
+            ->exclude('databases')
             ->in(__DIR__)
     )
     ->setUsingCache(false);

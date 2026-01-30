@@ -1,18 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Service;
 
-use App\Domain\Order\Entity\OrderDraftEntity;
 use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Entity\OrderSubmitCommand;
 use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
 use Hyperf\DbConnection\Db;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use Throwable;
 
 final class OrderService
 {
@@ -20,9 +25,22 @@ final class OrderService
         private readonly OrderRepository $repository,
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly OrderStockService $stockService,
-        private readonly OrderService $orderService,
         private readonly EventDispatcherInterface $eventDispatcher
     ) {}
+
+    /**
+     * 获取订单.
+     */
+    public function getEntityById(int $id): OrderEntity
+    {
+        $orderEntity = $this->repository->getEntityById($id);
+
+        if (! $orderEntity) {
+            throw new \RuntimeException('订单不存在');
+        }
+
+        return $orderEntity;
+    }
 
     /**
      * @param array<string, mixed> $filters
@@ -46,12 +64,9 @@ final class OrderService
     }
 
     /**
-     * 预览订单
-     *
-     * @param OrderSubmitCommand $command
-     * @return OrderDraftEntity
+     * 预览订单.
      */
-    public function preview(OrderSubmitCommand $command): OrderDraftEntity
+    public function preview(OrderEntity $command): OrderEntity
     {
         $strategy = $this->strategyFactory->make($command->getOrderType());
         $strategy->validate($command);
@@ -59,41 +74,36 @@ final class OrderService
     }
 
     /**
-     * 提交订单
+     * 提交订单.
      *
-     * @param OrderSubmitCommand $command
-     * @return OrderEntity
-     * @throws Throwable
+     * @throws \Throwable
      */
-    public function submit(OrderSubmitCommand $command): OrderEntity
+    public function submit(OrderEntity $orderEntity): OrderEntity
     {
-        $strategy = $this->strategyFactory->make($command->getOrderType());
-        $strategy->validate($command);
-
-        $locks = $this->stockService->acquireLocks($command->getItems());
+        // 获取订单策略
+        $strategy = $this->strategyFactory->make($orderEntity->getOrderType());
+        // 验证
+        $strategy->validate($orderEntity);
+        // 获取订单商品
+        $items = array_map(static function ($item) {return $item->toArray(); }, $orderEntity->getItems());
+        // 锁定库存
+        $locks = $this->stockService->acquireLocks($items);
         try {
-            $this->stockService->reserve($command->getItems());
+            // 库存扣除（LUA）
+            $this->stockService->reserve($items);
 
             try {
-                $draft = $strategy->buildDraft($command);
-                $order = $this->orderService->createFromDraft($draft);
-                $strategy->postCreate($order, $draft);
-                $this->eventDispatcher->dispatch(new OrderCreatedEvent($order));
-                return $order;
-            } catch (Throwable $throwable) {
-                $this->stockService->rollback($command->getItems());
+                $this->repository->save($strategy->buildDraft($orderEntity));
+                $strategy->postCreate($orderEntity);
+                $this->eventDispatcher->dispatch(new OrderCreatedEvent($orderEntity));
+                return $orderEntity;
+            } catch (\Throwable $throwable) {
+                $this->stockService->rollback($items);
                 throw $throwable;
             }
         } finally {
             $this->stockService->releaseLocks($locks);
         }
-    }
-
-    public function createFromDraft(OrderDraftEntity $draft): OrderEntity
-    {
-        return Db::transaction(function () use ($draft) {
-            return $this->repository->createFromDraft($draft);
-        });
     }
 
     public function ship(OrderEntity $entity): OrderEntity

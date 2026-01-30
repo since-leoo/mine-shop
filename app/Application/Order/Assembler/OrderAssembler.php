@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Application\Order\Assembler;
 
 use App\Domain\Order\Entity\OrderCancelEntity;
+use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Entity\OrderShipEntity;
-use App\Domain\Order\Entity\OrderSubmitCommand;
 
 final class OrderAssembler
 {
@@ -50,16 +50,14 @@ final class OrderAssembler
     /**
      * @param array<string, mixed> $payload
      */
-    public static function toSubmitCommand(array $payload): OrderSubmitCommand
+    public static function toSubmitCommand(array $payload): OrderEntity
     {
-        $command = new OrderSubmitCommand();
+        $command = new OrderEntity();
         $command->setMemberId((int) ($payload['member_id'] ?? 0));
         $command->setOrderType((string) ($payload['order_type'] ?? 'normal'));
         $command->setItems($payload['items'] ?? []);
         $command->setAddress($payload['address'] ?? []);
-        $command->setCouponIds($payload['coupon_ids'] ?? []);
         $command->setBuyerRemark((string) ($payload['remark'] ?? ''));
-        $command->setExtra($payload['extra'] ?? []);
         return $command;
     }
 }

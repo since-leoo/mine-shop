@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Application\Order\Service;
 
 use App\Domain\Order\Service\OrderService;
+use Hyperf\Di\Annotation\Inject;
 
 final class OrderQueryService
 {
-    public function __construct(private readonly OrderService $orderService) {}
+    #[Inject]
+    private readonly OrderService $orderService;
 
     /**
      * @param array<string, mixed> $filters

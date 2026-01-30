@@ -1,33 +1,35 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Application\Order\Service;
 
+use _PHPStan_ef7e5b90a\Nette\DI\Attributes\Inject;
 use App\Domain\Order\Entity\OrderCancelEntity;
+use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Entity\OrderShipEntity;
-use App\Domain\Order\Entity\OrderSubmitCommand;
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
 use App\Domain\Order\Service\OrderService;
-use App\Domain\Order\Service\OrderSubmissionService;
-use Psr\EventDispatcher\EventDispatcherInterface;
-use RuntimeException;
 
 final class OrderCommandService
 {
-    public function __construct(
-        private readonly OrderService $orderService,
-        private readonly EventDispatcherInterface $eventDispatcher
-    ) {}
-
+    #[Inject]
+    private readonly OrderService $orderService;
 
     /**
-     * @param OrderSubmitCommand $command
      * @return array<string, mixed>
      * @throws \Throwable
      */
-    public function submit(OrderSubmitCommand $command): array
+    public function submit(OrderEntity $command): array
     {
         $order = $this->orderService->submit($command);
         return $this->orderService->findDetail($order->getId()) ?? [];
@@ -36,7 +38,7 @@ final class OrderCommandService
     /**
      * @return array<string, mixed>
      */
-    public function preview(OrderSubmitCommand $command): array
+    public function preview(OrderEntity $command): array
     {
         $draft = $this->orderService->preview($command);
         return $draft->toArray();
@@ -47,18 +49,14 @@ final class OrderCommandService
      */
     public function ship(OrderShipEntity $orderShipEntity): array
     {
-        $orderEntity = $this->orderService->findEntityById($orderShipEntity->getOrderId());
-        if (! $orderEntity) {
-            throw new RuntimeException('订单不存在');
-        }
+        $orderEntity = $this->orderService->getEntityById($orderShipEntity->getOrderId());
 
         $orderEntity->setShipEntity($orderShipEntity);
         $orderEntity->ship();
-        
+
         $this->orderService->ship($orderEntity);
 
-        // 发送事件
-        $this->eventDispatcher->dispatch(new OrderShippedEvent($orderEntity, $orderShipEntity));
+        event(new OrderShippedEvent($orderEntity, $orderShipEntity));
 
         return $this->orderService->findDetail($orderEntity->getId()) ?? [];
     }
@@ -68,15 +66,13 @@ final class OrderCommandService
      */
     public function cancel(OrderCancelEntity $orderCancelEntity): array
     {
-        $orderEntity = $this->orderService->findEntityById($orderCancelEntity->getOrderId());
-        if (! $orderEntity) {
-            throw new RuntimeException('订单不存在');
-        }
+        $orderEntity = $this->orderService->getEntityById($orderCancelEntity->getOrderId());
+
         $orderEntity->cancel();
 
         $this->orderService->cancel($orderEntity);
 
-        $this->eventDispatcher->dispatch(new OrderCancelledEvent($orderEntity, $orderCancelEntity));
+        event(new OrderCancelledEvent($orderEntity, $orderCancelEntity));
 
         return $this->orderService->findDetail($orderEntity->getId()) ?? [];
     }

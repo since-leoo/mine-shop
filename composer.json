@@ -65,7 +65,9 @@
     "mineadmin/support": "~3.0",
     "mineadmin/swagger": "~3.0",
     "mineadmin/upload": "~3.0",
-    "yansongda/pay": "^3.6"
+    "w7corp/easywechat": "^6.5",
+    "yansongda/pay": "^3.6",
+    "ext-bcmath": "*"
   },
   "require-dev": {
     "doctrine/dbal": "^3.6",
@@ -90,7 +92,10 @@
   "autoload": {
     "psr-4": {
       "App\\": "app/"
-    }
+    },
+    "files": [
+      "./helper/helper.php"
+    ]
   },
   "autoload-dev": {
     "psr-4": {

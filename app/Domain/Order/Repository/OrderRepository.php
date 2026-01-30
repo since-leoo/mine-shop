@@ -1,21 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Repository;
 
-use App\Domain\Order\Entity\OrderDraftEntity;
 use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Enum\PaymentStatus;
-use App\Domain\Order\Enum\ShippingStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\Order;
-use App\Infrastructure\Model\Order\OrderLog;
 use App\Infrastructure\Model\Order\OrderPackage;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
-use RuntimeException;
 
 /**
  * @extends IRepository<Order>
@@ -89,39 +91,28 @@ final class OrderRepository extends IRepository
     }
 
     /**
-     * 创建订单
-     *
-     * @param OrderDraftEntity $draft
-     * @return OrderEntity
+     * 创建订单.
      */
-    public function createFromDraft(OrderDraftEntity $draft): OrderEntity
+    public function save(OrderEntity $draft): void
     {
-        $payload = $draft->toArray();
+        $items = array_map(static function ($item) {return $item->toArray(); }, $draft->getItems());
 
-        $model = $this->model->newQuery()->create($payload['order']);
+        $model = $this->model->newQuery()->create($draft->toArray());
 
-        if ($payload['items'] !== []) {
-            $model->items()->createMany($payload['items']);
-        }
-
-        if ($payload['address']) {
-            $model->address()->create($payload['address']);
-        }
+        $model->items()->createMany($items);
+        $model->address()->create($draft->getAddress()->toArray());
 
         $model->refresh();
-        return OrderEntity::fromModel($model);
     }
 
     /**
-     * 发货
-     *
-     * @param OrderEntity $entity
+     * 发货.
      */
     public function ship(OrderEntity $entity): void
     {
         $order = $this->getQuery()->whereKey($entity->getId())->lockForUpdate()->first();
         if (! $order) {
-            throw new RuntimeException('订单不存在');
+            throw new \RuntimeException('订单不存在');
         }
 
         $order->status = $entity->getStatus();
@@ -133,21 +124,29 @@ final class OrderRepository extends IRepository
     }
 
     /**
-     * 取消订单
-     *
-     * @param OrderEntity $entity
+     * 取消订单.
      */
     public function cancel(OrderEntity $entity): void
     {
         $order = $this->getQuery()->whereKey($entity->getId())->lockForUpdate()->first();
         if (! $order) {
-            throw new RuntimeException('订单不存在');
+            throw new \RuntimeException('订单不存在');
         }
 
         $order->status = $entity->getStatus();
         $order->shipping_status = $entity->getShippingStatus();
         $order->pay_status = $entity->getPayStatus();
         $order->save();
+    }
+
+    /**
+     * 通过ID获取订单.
+     */
+    public function getEntityById(int $id): ?OrderEntity
+    {
+        /** @var null|Order $order */
+        $order = $this->getQuery()->whereKey($id)->first();
+        return $order ? OrderEntity::fromModel($order) : null;
     }
 
     /**
@@ -214,11 +213,5 @@ final class OrderRepository extends IRepository
                 'delivered_at' => $package->delivered_at?->toDateTimeString(),
             ])->toArray(),
         ];
-    }
-
-    public function findAggregate(int $id): ?OrderEntity
-    {
-        $order = $this->getQuery()->whereKey($id)->first();
-        return $order ? OrderEntity::fromModel($order) : null;
     }
 }

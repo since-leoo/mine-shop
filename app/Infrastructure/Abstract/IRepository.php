@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Abstract;
 
-use App\Domain\Order\Entity\OrderEntity;
 use App\Infrastructure\Traits\BootTrait;
 use App\Infrastructure\Traits\RepositoryOrderByTrait;
 use Hyperf\Collection\Collection;
