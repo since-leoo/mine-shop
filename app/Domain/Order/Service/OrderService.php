@@ -16,8 +16,6 @@ use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
-use Hyperf\DbConnection\Db;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class OrderService
 {
@@ -25,7 +23,6 @@ final class OrderService
         private readonly OrderRepository $repository,
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly OrderStockService $stockService,
-        private readonly EventDispatcherInterface $eventDispatcher
     ) {}
 
     /**
@@ -95,7 +92,7 @@ final class OrderService
             try {
                 $this->repository->save($strategy->buildDraft($orderEntity));
                 $strategy->postCreate($orderEntity);
-                $this->eventDispatcher->dispatch(new OrderCreatedEvent($orderEntity));
+                event(new OrderCreatedEvent($orderEntity));
                 return $orderEntity;
             } catch (\Throwable $throwable) {
                 $this->stockService->rollback($items);

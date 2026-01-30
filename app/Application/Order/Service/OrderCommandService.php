@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Application\Order\Service;
 
-use _PHPStan_ef7e5b90a\Nette\DI\Attributes\Inject;
 use App\Domain\Order\Entity\OrderCancelEntity;
 use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Entity\OrderShipEntity;
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
 use App\Domain\Order\Service\OrderService;
+use Hyperf\Di\Annotation\Inject;
 
 final class OrderCommandService
 {
