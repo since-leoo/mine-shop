@@ -421,9 +421,108 @@
 
 **接口**: `GET /admin/member/member/list`
 
+**参数**
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `keyword` | string | 昵称/手机号/OpenID 模糊搜索 |
+| `status` | string | `active` / `inactive` / `banned` |
+| `level` | string | `bronze` / `silver` / `gold` / `diamond` |
+| `source` | string | `wechat` / `mini_program` / `h5` / `admin` |
+| `tag_id` | int | 标签 ID |
+| `created_start` / `created_end` | date | 注册时间范围 |
+| `page` / `page_size` | int | 分页参数 |
+
+**响应**
+
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "list": [
+      {
+        "id": 1,
+        "nickname": "小明",
+        "avatar": "https://cdn.example.com/avatar.png",
+        "phone": "13800000000",
+        "level": "gold",
+        "status": "active",
+        "source": "mini_program",
+        "total_orders": 8,
+        "total_amount": 3299.00,
+        "tags": [
+          { "id": 2, "name": "高价值用户", "color": "#f56c6c", "status": "active" }
+        ],
+        "created_at": "2025-12-01 10:20:00",
+        "last_login_at": "2026-01-25 19:30:00"
+      }
+    ],
+    "total": 1
+  }
+}
+```
+
+### 会员统计
+
+**接口**: `GET /admin/member/member/stats`
+
+返回 `total`（累计会员）、`new_today`、`active_30d`、`sleeping_30d`、`banned` 等指标。
+
 ### 会员详情
 
 **接口**: `GET /admin/member/member/{id}`
+
+包含基础信息、钱包汇总、标签、收货地址等。
+
+### 更新会员资料
+
+**接口**: `PUT /admin/member/member/{id}`
+
+**请求示例**
+
+```json
+{
+  "nickname": "新的昵称",
+  "phone": "18800000000",
+  "gender": "female",
+  "level": "diamond",
+  "growth_value": 5200,
+  "status": "active",
+  "source": "admin",
+  "remark": "私域高优先级用户"
+}
+```
+
+### 更新会员状态
+
+**接口**: `PUT /admin/member/member/{id}/status`
+
+```json
+{
+  "status": "banned"
+}
+```
+
+### 同步会员标签
+
+**接口**: `PUT /admin/member/member/{id}/tags`
+
+```json
+{
+  "tags": [1, 2, 5]
+}
+```
+
+### 标签管理
+
+| 操作 | 接口 |
+| --- | --- |
+| 标签列表 | `GET /admin/member/tag/list` |
+| 新增标签 | `POST /admin/member/tag` |
+| 更新标签 | `PUT /admin/member/tag/{id}` |
+| 删除标签 | `DELETE /admin/member/tag/{id}` |
+| 可用标签选项 | `GET /admin/member/tag/options` |
 
 ## 统计数据
 

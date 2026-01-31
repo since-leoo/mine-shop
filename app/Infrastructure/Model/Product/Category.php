@@ -57,16 +57,17 @@ class Category extends Model
 
     public function children(): HasMany
     {
-        /** @var HasMany $relation */
-        return $this->hasMany(self::class, 'parent_id', 'id')
-            ->where('status', CategoryStatus::ACTIVE->value)
-            ->orderBy('sort', 'asc');
+        $relation = $this->hasMany(self::class, 'parent_id', 'id');
+        $relation->where('status', CategoryStatus::ACTIVE->value);
+        $relation->orderBy('sort', 'asc');
+        return $relation;
     }
 
     public function allChildren(): HasMany
     {
-        /** @var HasMany $relation */
-        return $this->children()->with('allChildren');
+        $relation = $this->children();
+        $relation->with('allChildren');
+        return $relation;
     }
 
     public function parent(): BelongsTo

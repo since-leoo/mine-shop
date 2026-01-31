@@ -23,16 +23,19 @@ class CreateMallWalletsTable extends Migration
         Schema::create('mall_wallets', static function (Blueprint $table) {
             $table->comment('会员钱包表');
             $table->id();
-            $table->unsignedBigInteger('member_id')->unique()->comment('会员ID');
-            $table->decimal('balance', 10, 2)->default(0)->comment('余额');
-            $table->decimal('frozen_balance', 10, 2)->default(0)->comment('冻结余额');
-            $table->decimal('total_recharge', 10, 2)->default(0)->comment('累计充值');
-            $table->decimal('total_consume', 10, 2)->default(0)->comment('累计消费');
+            $table->unsignedBigInteger('member_id')->comment('会员ID');
+            $table->enum('type', ['balance', 'points'])->default('balance')->comment('钱包类型');
+            $table->decimal('balance', 10, 2)->default(0)->comment('余额 / 积分余额');
+            $table->decimal('frozen_balance', 10, 2)->default(0)->comment('冻结金额');
+            $table->decimal('total_recharge', 10, 2)->default(0)->comment('累计收入');
+            $table->decimal('total_consume', 10, 2)->default(0)->comment('累计支出');
             $table->string('pay_password', 255)->nullable()->comment('支付密码');
             $table->enum('status', ['active', 'frozen'])->default('active')->comment('状态');
             $table->timestamps();
 
+            $table->unique(['member_id', 'type'], 'uniq_member_wallet_type');
             $table->index(['member_id'], 'idx_member_id');
+            $table->index(['type'], 'idx_wallet_type');
             $table->index(['status'], 'idx_status');
         });
     }

@@ -166,8 +166,8 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     private function decodeSnapshot(string $raw): ?array
     {
         try {
-            /** @var array<string, mixed> $decoded */
-            return json_decode($raw, true, 512, \JSON_THROW_ON_ERROR);
+            $decoded = json_decode($raw, true, 512, \JSON_THROW_ON_ERROR);
+            return \is_array($decoded) ? $decoded : null;
         } catch (\JsonException) {
             return null;
         }

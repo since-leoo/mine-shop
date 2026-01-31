@@ -608,6 +608,20 @@ return [
                     ],
                     'sort' => 60,
                 ],
+                'mall.member.default_level' => [
+                    'label' => '默认会员等级',
+                    'description' => '新会员注册后默认赋予的等级 ID。',
+                    'type' => 'integer',
+                    'default' => 1,
+                    'sort' => 70,
+                ],
+                'mall.member.points_ratio' => [
+                    'label' => '积分兑换比例',
+                    'description' => '1 元可兑换的积分数量，用于积分抵现。',
+                    'type' => 'integer',
+                    'default' => 100,
+                    'sort' => 80,
+                ],
             ],
         ],
         'content' => [

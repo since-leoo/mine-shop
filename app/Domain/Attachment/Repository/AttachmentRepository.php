@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Attachment\Repository;
 
 use App\Domain\Attachment\Entity\AttachmentEntity;
+use App\Domain\Attachment\Trait\AttachmentMapperTrait;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Attachment\Attachment;
 use Hyperf\Collection\Arr;
@@ -23,6 +24,8 @@ use Hyperf\Database\Model\Builder;
  */
 final class AttachmentRepository extends IRepository
 {
+    use AttachmentMapperTrait;
+
     public function __construct(protected readonly Attachment $model) {}
 
     public function create(array $payload): Attachment
@@ -33,13 +36,13 @@ final class AttachmentRepository extends IRepository
     public function findEntityById(int $id): ?AttachmentEntity
     {
         $model = parent::findById($id);
-        return $model instanceof Attachment ? $this->mapToEntity($model) : null;
+        return $model instanceof Attachment ? self::mapper($model) : null;
     }
 
     public function findByHash(string $hash): ?AttachmentEntity
     {
         $model = Attachment::where('hash', $hash)->first();
-        return $model ? $this->mapToEntity($model) : null;
+        return $model ? self::mapper($model) : null;
     }
 
     public function save(AttachmentEntity $entity): AttachmentEntity
@@ -86,20 +89,8 @@ final class AttachmentRepository extends IRepository
             ->when(Arr::get($params, 'origin_name'), static fn (Builder $q, $v) => $q->where('origin_name', 'like', '%' . $v . '%'));
     }
 
-    private function mapToEntity(Attachment $model): AttachmentEntity
+    public function mapToEntity(Attachment $model): AttachmentEntity
     {
-        return (new AttachmentEntity())
-            ->setId((int) $model->id)
-            ->setCreatedBy((int) $model->created_by)
-            ->setOriginName((string) $model->origin_name)
-            ->setStorageMode((string) $model->storage_mode)
-            ->setObjectName((string) $model->object_name)
-            ->setMimeType((string) $model->mime_type)
-            ->setStoragePath((string) $model->storage_path)
-            ->setHash((string) $model->hash)
-            ->setSuffix((string) $model->suffix)
-            ->setSizeByte((int) $model->size_byte)
-            ->setSizeInfo((string) $model->size_info)
-            ->setUrl((string) $model->url);
+        return self::mapper($model);
     }
 }

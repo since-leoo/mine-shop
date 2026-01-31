@@ -27,6 +27,8 @@ final class MemberSetting
         private readonly int $inviteReward,
         private readonly int $pointsExpireMonths,
         private readonly array $vipLevels,
+        private readonly int $defaultLevel,
+        private readonly int $pointsRatio,
     ) {}
 
     public function enableGrowth(): bool
@@ -52,6 +54,16 @@ final class MemberSetting
     public function pointsExpireMonths(): int
     {
         return $this->pointsExpireMonths;
+    }
+
+    public function defaultLevel(): int
+    {
+        return $this->defaultLevel;
+    }
+
+    public function pointsRatio(): int
+    {
+        return $this->pointsRatio;
     }
 
     /**

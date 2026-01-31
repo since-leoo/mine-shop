@@ -111,6 +111,8 @@ final class MallSettingService
             (int) $this->value('mall.member.invite_reward', 50),
             (int) $this->value('mall.member.points_expire_months', 24),
             $this->normalizeLevelDefinitions($this->value('mall.member.vip_levels', [])),
+            (int) $this->value('mall.member.default_level', 1),
+            (int) $this->value('mall.member.points_ratio', 100),
         );
     }
 

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
+use App\Infrastructure\Model\Concerns\LoadsRelations;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
@@ -32,6 +33,8 @@ use Hyperf\DbConnection\Model\Model;
  */
 class OrderPackage extends Model
 {
+    use LoadsRelations;
+
     protected ?string $table = 'mall_order_packages';
 
     protected array $fillable = [
@@ -55,8 +58,23 @@ class OrderPackage extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected array $appends = [
+        'shipping_company',
+        'shipping_no',
+    ];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+
+    public function getShippingCompanyAttribute(): ?string
+    {
+        return $this->express_company;
+    }
+
+    public function getShippingNoAttribute(): ?string
+    {
+        return $this->express_no;
     }
 }

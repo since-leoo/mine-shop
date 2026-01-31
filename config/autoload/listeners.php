@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
 use App\Domain\Product\Listener\ProductStockWarningListener;
@@ -43,4 +44,6 @@ return [
     ProductStockWarningListener::class,
     // 订单状态消息推送
     OrderStatusNotifyListener::class,
+    // 会员账户流水
+    RecordMemberBalanceLogListener::class,
 ];

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Model\Order;
 
 use App\Domain\Order\Enum\OrderStatus;
+use App\Infrastructure\Model\Concerns\LoadsRelations;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
@@ -46,6 +47,8 @@ use Hyperf\DbConnection\Model\Model;
  */
 class Order extends Model
 {
+    use LoadsRelations;
+
     protected ?string $table = 'mall_orders';
 
     protected array $fillable = [
@@ -101,7 +104,21 @@ class Order extends Model
 
     public function items(): HasMany
     {
-        return $this->hasMany(OrderItem::class, 'order_id', 'id');
+        $relation = $this->hasMany(OrderItem::class, 'order_id', 'id');
+        $relation->select([
+            'id',
+            'order_id',
+            'product_id',
+            'sku_id',
+            'product_name',
+            'sku_name',
+            'product_image',
+            'unit_price',
+            'quantity',
+            'total_price',
+            'created_at',
+        ]);
+        return $relation;
     }
 
     public function logs(): HasMany
@@ -111,16 +128,42 @@ class Order extends Model
 
     public function address(): HasOne
     {
-        return $this->hasOne(OrderAddress::class, 'order_id', 'id');
+        $relation = $this->hasOne(OrderAddress::class, 'order_id', 'id');
+        $relation->select([
+            'id',
+            'order_id',
+            'receiver_name',
+            'receiver_phone',
+            'province',
+            'city',
+            'district',
+            'detail',
+            'full_address',
+            'created_at',
+        ]);
+        return $relation;
     }
 
     public function member(): BelongsTo
     {
-        return $this->belongsTo(Member::class, 'member_id', 'id');
+        $relation = $this->belongsTo(Member::class, 'member_id', 'id');
+        $relation->select(['id', 'nickname', 'phone']);
+        return $relation;
     }
 
     public function packages(): HasMany
     {
-        return $this->hasMany(OrderPackage::class, 'order_id', 'id');
+        $relation = $this->hasMany(OrderPackage::class, 'order_id', 'id');
+        $relation->select([
+            'id',
+            'order_id',
+            'package_no',
+            'express_company',
+            'express_no',
+            'status',
+            'shipped_at',
+            'delivered_at',
+        ]);
+        return $relation;
     }
 }

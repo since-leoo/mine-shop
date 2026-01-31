@@ -1,0 +1,27 @@
+memberMenu:
+  member:
+    index: 会员中心
+    overview: 会员概览
+    list: 会员列表
+    detail: 会员详情
+    create: 会员新增
+    update: 会员编辑
+    tag: 会员标签
+    tagList: 标签列表
+    tagCreate: 标签新增
+    tagUpdate: 标签编辑
+    tagDelete: 标签删除
+    level: 等级配置
+    levelList: 等级列表
+    levelRead: 等级详情
+    levelCreate: 等级新增
+    levelUpdate: 等级编辑
+    levelDelete: 等级删除
+    points: 会员钱包
+    pointsList: 钱包记录
+    pointsAdjust: 钱包调整
+    growthList: 成长记录
+    growthAdjust: 成长值调整
+    wallet: 会员钱包
+    walletList: 钱包记录
+    walletAdjust: 钱包调整

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
+use App\Infrastructure\Model\Concerns\LoadsRelations;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
@@ -33,6 +34,8 @@ use Hyperf\DbConnection\Model\Model;
  */
 class OrderItem extends Model
 {
+    use LoadsRelations;
+
     protected ?string $table = 'mall_order_items';
 
     protected array $fillable = [
@@ -60,8 +63,23 @@ class OrderItem extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected array $appends = [
+        'price',
+        'total_amount',
+    ];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+
+    public function getPriceAttribute(): float
+    {
+        return (float) $this->unit_price;
+    }
+
+    public function getTotalAmountAttribute(): float
+    {
+        return (float) $this->total_price;
     }
 }

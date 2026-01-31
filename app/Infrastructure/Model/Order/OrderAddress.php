@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
+use App\Infrastructure\Model\Concerns\LoadsRelations;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
@@ -31,6 +32,8 @@ use Hyperf\DbConnection\Model\Model;
  */
 class OrderAddress extends Model
 {
+    use LoadsRelations;
+
     protected ?string $table = 'mall_order_addresses';
 
     protected array $fillable = [
@@ -50,8 +53,29 @@ class OrderAddress extends Model
         'updated_at' => 'datetime',
     ];
 
+    protected array $appends = [
+        'name',
+        'phone',
+        'address',
+    ];
+
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
+    }
+
+    public function getNameAttribute(): string
+    {
+        return (string) $this->receiver_name;
+    }
+
+    public function getPhoneAttribute(): string
+    {
+        return (string) $this->receiver_phone;
+    }
+
+    public function getAddressAttribute(): string
+    {
+        return (string) $this->detail;
     }
 }

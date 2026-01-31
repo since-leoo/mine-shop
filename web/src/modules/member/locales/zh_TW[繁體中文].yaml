@@ -1,0 +1,27 @@
+memberMenu:
+  member:
+    index: 會員中心
+    overview: 會員概覽
+    list: 會員列表
+    detail: 會員詳情
+    create: 會員新增
+    update: 會員編輯
+    tag: 會員標籤
+    tagList: 標籤列表
+    tagCreate: 標籤新增
+    tagUpdate: 標籤編輯
+    tagDelete: 標籤刪除
+    level: 等級設定
+    levelList: 等級列表
+    levelRead: 等級詳情
+    levelCreate: 等級新增
+    levelUpdate: 等級編輯
+    levelDelete: 等級刪除
+    points: 會員錢包
+    pointsList: 錢包記錄
+    pointsAdjust: 錢包調整
+    growthList: 成長記錄
+    growthAdjust: 成長調整
+    wallet: 會員錢包
+    walletList: 錢包記錄
+    walletAdjust: 錢包調整

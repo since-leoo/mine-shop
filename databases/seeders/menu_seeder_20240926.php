@@ -539,6 +539,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '商品与库存',
                             'i18n' => 'mallMenu.mall.productSetting',
+                            'icon' => 'ph:cube',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -554,6 +555,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '订单与售后',
                             'i18n' => 'mallMenu.mall.orderSetting',
+                            'icon' => 'ph:receipt',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -569,6 +571,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '支付与结算',
                             'i18n' => 'mallMenu.mall.paymentSetting',
+                            'icon' => 'ph:credit-card',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -584,6 +587,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '配送与物流',
                             'i18n' => 'mallMenu.mall.shippingSetting',
+                            'icon' => 'ph:truck',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -599,6 +603,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '会员与营销',
                             'i18n' => 'mallMenu.mall.memberSetting',
+                            'icon' => 'ph:users-three',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -614,6 +619,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '内容与合规',
                             'i18n' => 'mallMenu.mall.contentSetting',
+                            'icon' => 'ph:file-text',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -648,6 +654,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '基础信息',
                             'i18n' => 'systemMenu.system.basic',
+                            'icon' => 'ph:sliders',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -663,6 +670,7 @@ class MenuSeeder20240926 extends Seeder
                         'meta' => new Meta([
                             'title' => '系统集成',
                             'i18n' => 'systemMenu.system.integration',
+                            'icon' => 'ph:plug',
                             'type' => 'M',
                             'hidden' => 0,
                             'componentPath' => 'modules/',
@@ -686,6 +694,223 @@ class MenuSeeder20240926 extends Seeder
                             'type' => 'B',
                             'i18n' => 'systemMenu.system.settingUpdate',
                         ]),
+                    ],
+                ],
+            ],
+            [
+                'name' => 'member',
+                'path' => '/member',
+                'meta' => new Meta([
+                    'title' => '会员中心',
+                    'i18n' => 'memberMenu.member.index',
+                    'icon' => 'ph:user-circle',
+                    'hidden' => 0,
+                    'type' => 'M',
+                    'componentPath' => 'modules/',
+                    'componentSuffix' => '.vue',
+                    'breadcrumbEnable' => 1,
+                    'copyright' => 1,
+                    'cache' => 1,
+                    'affix' => 0,
+                ]),
+                'children' => [
+                    [
+                        'name' => 'member:overview',
+                        'path' => '/member/overview',
+                        'component' => 'member/views/overview/index',
+                        'meta' => new Meta([
+                            'title' => '会员概览',
+                            'i18n' => 'memberMenu.member.overview',
+                            'icon' => 'ph:chart-line',
+                            'type' => 'M',
+                            'hidden' => 0,
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'cache' => 1,
+                        ]),
+                    ],
+                    [
+                        'name' => 'member:list',
+                        'path' => '/member/list',
+                        'component' => 'member/views/list/index',
+                        'meta' => new Meta([
+                            'title' => '会员列表',
+                            'i18n' => 'memberMenu.member.list',
+                            'icon' => 'ph:list-bullets',
+                            'type' => 'M',
+                            'hidden' => 0,
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'cache' => 1,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'member:member:list',
+                                'meta' => new Meta([
+                                    'title' => '会员列表',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.list',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:member:read',
+                                'meta' => new Meta([
+                                    'title' => '会员详情',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.detail',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:member:create',
+                                'meta' => new Meta([
+                                    'title' => '会员新增',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.create',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:member:update',
+                                'meta' => new Meta([
+                                    'title' => '会员编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.update',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:member:tag',
+                                'meta' => new Meta([
+                                    'title' => '会员标签',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.tag',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:tag:list',
+                                'meta' => new Meta([
+                                    'title' => '标签列表',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.tagList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:tag:create',
+                                'meta' => new Meta([
+                                    'title' => '标签新增',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.tagCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:tag:update',
+                                'meta' => new Meta([
+                                    'title' => '标签编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.tagUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:tag:delete',
+                                'meta' => new Meta([
+                                    'title' => '标签删除',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.tagDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'member:level',
+                        'path' => '/member/levels',
+                        'component' => 'member/views/level/index',
+                        'meta' => new Meta([
+                            'title' => '等级配置',
+                            'i18n' => 'memberMenu.member.level',
+                            'icon' => 'ph:medal',
+                            'type' => 'M',
+                            'hidden' => 0,
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'cache' => 1,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'member:level:list',
+                                'meta' => new Meta([
+                                    'title' => '等级列表',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.levelList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:level:read',
+                                'meta' => new Meta([
+                                    'title' => '等级详情',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.levelRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:level:create',
+                                'meta' => new Meta([
+                                    'title' => '等级新增',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.levelCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:level:update',
+                                'meta' => new Meta([
+                                    'title' => '等级编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.levelUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:level:delete',
+                                'meta' => new Meta([
+                                    'title' => '等级删除',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.levelDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'member:wallet',
+                        'path' => '/member/points',
+                        'component' => 'member/views/points/index',
+                        'meta' => new Meta([
+                            'title' => '会员钱包',
+                            'i18n' => 'memberMenu.member.wallet',
+                            'icon' => 'ph:wallet',
+                            'type' => 'M',
+                            'hidden' => 0,
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'cache' => 1,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'member:wallet:list',
+                                'meta' => new Meta([
+                                    'title' => '钱包记录',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.walletList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'member:wallet:adjust',
+                                'meta' => new Meta([
+                                    'title' => '钱包调整',
+                                    'type' => 'B',
+                                    'i18n' => 'memberMenu.member.walletAdjust',
+                                ]),
+                            ],
+                        ],
                     ],
                 ],
             ],

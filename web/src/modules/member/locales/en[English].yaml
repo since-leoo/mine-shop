@@ -1,0 +1,27 @@
+memberMenu:
+  member:
+    index: Member Center
+    overview: Member Overview
+    list: Member List
+    detail: Member Detail
+    create: Create Member
+    update: Edit Member
+    tag: Member Tags
+    tagList: Tag List
+    tagCreate: Create Tag
+    tagUpdate: Update Tag
+    tagDelete: Delete Tag
+    level: Level Settings
+    levelList: Level List
+    levelRead: Level Detail
+    levelCreate: Create Level
+    levelUpdate: Update Level
+    levelDelete: Delete Level
+    points: Member Wallet
+    pointsList: Wallet Logs
+    pointsAdjust: Adjust Wallet
+    growthList: Growth Logs
+    growthAdjust: Adjust Growth
+    wallet: Member Wallet
+    walletList: Wallet Logs
+    walletAdjust: Adjust Wallet

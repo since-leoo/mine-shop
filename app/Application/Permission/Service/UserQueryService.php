@@ -43,8 +43,8 @@ final class UserQueryService
     {
         $key = (string) $id;
         if ($this->cache->has($key)) {
-            /** @var null|User $cached */
-            return $this->cache->get($key);
+            $cached = $this->cache->get($key);
+            return $cached instanceof User ? $cached : null;
         }
         $user = $this->repository->findById($id);
         $this->cache->set($key, $user, $ttl);
