@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Product\Entity;
 
 use App\Domain\Product\Trait\ProductEntityTrait;
+use App\Domain\Product\Trait\ProductSettingsTrait;
 use App\Infrastructure\Model\Product\Product;
 
 /**
@@ -21,6 +22,7 @@ use App\Infrastructure\Model\Product\Product;
 final class ProductEntity
 {
     use ProductEntityTrait;
+    use ProductSettingsTrait;
 
     private int $id = 0;
 

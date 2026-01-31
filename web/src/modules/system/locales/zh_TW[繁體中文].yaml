@@ -1,0 +1,8 @@
+systemMenu:
+  system:
+    setting: 系統設定
+    config: 系統設定
+    basic: 基礎資訊
+    integration: 系統整合
+    settingList: 設定檢視
+    settingUpdate: 設定更新

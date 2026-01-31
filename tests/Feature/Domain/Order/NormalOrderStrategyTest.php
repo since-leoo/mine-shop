@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Order;
 
-use App\Domain\Order\Entity\OrderSubmitCommand;
+use App\Domain\Order\Entity\OrderEntity;
+use App\Domain\Order\Entity\OrderItemEntity;
 use App\Domain\Order\Strategy\NormalOrderStrategy;
+use App\Domain\Order\ValueObject\OrderAddressValue;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
@@ -30,15 +32,15 @@ final class NormalOrderStrategyTest extends TestCase
             ]),
         ]);
 
-        $command = $this->makeCommand();
-        $draft = $strategy->buildDraft($command);
+        $entity = $this->makeOrderEntity();
+        $draft = $strategy->buildDraft($entity);
 
         self::assertSame('normal', $draft->getOrderType());
         self::assertSame(1, \count($draft->getItems()));
         $item = $draft->getItems()[0];
         self::assertSame(1, $item->getSkuId());
         self::assertSame(2, $item->getQuantity());
-        self::assertSame(200.0, $item->getTotalPrice());
+        self::assertSame(200, $item->getTotalPrice());
         self::assertSame(200.0, $draft->getPriceDetail()?->getGoodsAmount());
         self::assertSame(0.0, $draft->getPriceDetail()?->getShippingFee());
     }
@@ -46,13 +48,13 @@ final class NormalOrderStrategyTest extends TestCase
     public function testValidateRequiresAddress(): void
     {
         $strategy = $this->makeStrategy([]);
-        $command = $this->makeCommand([
+        $entity = $this->makeOrderEntity([
             'address' => ['name' => '', 'phone' => '', 'detail' => ''],
         ]);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('请完善收货地址信息');
-        $strategy->validate($command);
+        $strategy->validate($entity);
     }
 
     public function testBuildDraftFailsWhenSkuInactive(): void
@@ -64,24 +66,30 @@ final class NormalOrderStrategyTest extends TestCase
                 'status' => ProductSku::STATUS_INACTIVE,
             ]),
         ]);
-        $command = $this->makeCommand([
+        $entity = $this->makeOrderEntity([
             'items' => [
-                ['sku_id' => 1, 'quantity' => 5],
+                ['sku_id' => 1, 'quantity' => 5, 'unit_price' => 100, 'sku_name' => '标准款'],
             ],
         ]);
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('商品 标准款 已下架');
-        $strategy->buildDraft($command);
+        $strategy->buildDraft($entity);
     }
 
-    private function makeCommand(array $overrides = []): OrderSubmitCommand
+    private function makeOrderEntity(array $overrides = []): OrderEntity
     {
         $defaults = [
             'member_id' => 1,
             'order_type' => 'normal',
             'items' => [
-                ['sku_id' => 1, 'quantity' => 2],
+                [
+                    'sku_id' => 1,
+                    'quantity' => 2,
+                    'unit_price' => 100,
+                    'product_name' => '测试商品',
+                    'sku_name' => '标准款',
+                ],
             ],
             'address' => [
                 'name' => '张三',
@@ -96,13 +104,37 @@ final class NormalOrderStrategyTest extends TestCase
 
         $data = array_merge($defaults, $overrides);
 
-        $command = new OrderSubmitCommand();
-        $command->setMemberId($data['member_id']);
-        $command->setOrderType($data['order_type']);
-        $command->setItems($data['items']);
-        $command->setAddress($data['address']);
-        $command->setBuyerRemark($data['remark']);
-        return $command;
+        $entity = new OrderEntity();
+        $entity->setMemberId($data['member_id']);
+        $entity->setOrderType($data['order_type']);
+        foreach ($data['items'] as $itemPayload) {
+            $entity->setItems($this->toOrderItem($itemPayload));
+        }
+        $entity->setAddress(OrderAddressValue::fromArray($data['address']));
+        $entity->setBuyerRemark($data['remark']);
+
+        return $entity;
+    }
+
+    /**
+     * @param array<string, mixed> $itemPayload
+     */
+    private function toOrderItem(array $itemPayload): OrderItemEntity
+    {
+        $item = new OrderItemEntity();
+        $item->setSkuId((int) ($itemPayload['sku_id'] ?? 0));
+        $item->setProductId((int) ($itemPayload['product_id'] ?? 0));
+        $item->setProductName((string) ($itemPayload['product_name'] ?? '测试商品'));
+        $item->setSkuName((string) ($itemPayload['sku_name'] ?? '默认规格'));
+        $item->setUnitPrice((int) ($itemPayload['unit_price'] ?? 0));
+        $item->setQuantity((int) ($itemPayload['quantity'] ?? 0));
+        $item->setTotalPrice((int) bcmul(
+            (string) $item->getUnitPrice(),
+            (string) $item->getQuantity(),
+            2
+        ));
+
+        return $item;
     }
 
     /**

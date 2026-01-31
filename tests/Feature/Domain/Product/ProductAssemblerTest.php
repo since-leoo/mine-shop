@@ -24,7 +24,9 @@ final class ProductAssemblerTest extends TestCase
             'gallery_images' => ['/g1.jpg', '/g2.jpg'],
             'description' => '描述',
             'detail_content' => '<p>详情</p>',
-            'attributes' => ['color' => 'red'],
+            'attributes' => [
+                ['attribute_name' => '材质', 'value' => '棉'],
+            ],
             'min_price' => 100,
             'max_price' => 200,
             'virtual_sales' => 10,
@@ -43,9 +45,6 @@ final class ProductAssemblerTest extends TestCase
                     'sale_price' => 199.9,
                     'stock' => 5,
                 ],
-            ],
-            'product_attributes' => [
-                ['id' => 30, 'attribute_name' => '材质', 'value' => '棉'],
             ],
             'gallery' => [
                 ['url' => '/extra-1.jpg'],

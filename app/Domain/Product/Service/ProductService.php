@@ -14,6 +14,7 @@ namespace App\Domain\Product\Service;
 
 use App\Domain\Product\Entity\ProductEntity;
 use App\Domain\Product\Repository\ProductRepository;
+use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Model\Product\Product;
 
 /**
@@ -23,6 +24,7 @@ final class ProductService
 {
     public function __construct(
         private readonly ProductRepository $repository,
+        private readonly MallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -41,6 +43,7 @@ final class ProductService
      */
     public function create(ProductEntity $entity): ProductEntity
     {
+        $this->applyProductSettings($entity);
         $entity->syncPriceRange();
         return $this->repository->save($entity);
     }
@@ -50,6 +53,7 @@ final class ProductService
      */
     public function update(ProductEntity $entity): void
     {
+        $this->applyProductSettings($entity);
         $entity->syncPriceRange();
         $this->repository->update($entity);
     }
@@ -94,5 +98,13 @@ final class ProductService
         $product?->load(['category', 'brand', 'skus', 'attributes', 'gallery']);
 
         return $product;
+    }
+
+    private function applyProductSettings(ProductEntity $entity): void
+    {
+        $entity->applySettingConstraints(
+            $this->mallSettingService->product(),
+            $this->mallSettingService->content()
+        );
     }
 }

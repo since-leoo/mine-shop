@@ -1,0 +1,8 @@
+systemMenu:
+  system:
+    setting: System Settings
+    config: System Settings
+    basic: Basic Info
+    integration: Integrations
+    settingList: View Settings
+    settingUpdate: Update Settings

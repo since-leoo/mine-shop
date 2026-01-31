@@ -1,0 +1,8 @@
+systemMenu:
+  system:
+    setting: 系统配置
+    config: 系统配置
+    basic: 基础信息
+    integration: 系统集成
+    settingList: 配置查看
+    settingUpdate: 配置更新
