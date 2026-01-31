@@ -15,6 +15,7 @@ return [
         'auth' => env('REDIS_AUTH', null),
         'port' => (int) env('REDIS_PORT', 6379),
         'db' => (int) env('REDIS_DB', 0),
+        'prefix' => env('REDIS_PREFIX', 'mineshop:'),
         'pool' => [
             'min_connections' => 1,
             'max_connections' => 10,
