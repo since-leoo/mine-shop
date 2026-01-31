@@ -52,7 +52,7 @@ final class SystemSettingEntity
         $entity->description = $model->description;
         $entity->sort = $model->sort;
         $entity->isSensitive = (bool) $model->is_sensitive;
-        $entity->meta = is_array($model->meta) ? $model->meta : [];
+        $entity->meta = \is_array($model->meta) ? $model->meta : [];
         $entity->rawValue = $model->value;
         $entity->value = $entity->castValue($model->value);
 
@@ -72,7 +72,7 @@ final class SystemSettingEntity
         $entity->description = $definition['description'] ?? null;
         $entity->sort = (int) ($definition['sort'] ?? 0);
         $entity->isSensitive = (bool) ($definition['is_sensitive'] ?? false);
-        $entity->meta = is_array($definition['meta'] ?? null) ? $definition['meta'] : [];
+        $entity->meta = \is_array($definition['meta'] ?? null) ? $definition['meta'] : [];
         $entity->setValue($definition['default'] ?? null);
 
         return $entity;
@@ -255,7 +255,7 @@ final class SystemSettingEntity
         }
 
         return match ($this->type) {
-            'boolean' => $value === '1' || strtolower($value) === 'true',
+            'boolean' => $value === '1' || mb_strtolower($value) === 'true',
             'integer' => (int) $value,
             'decimal' => (float) $value,
             'json' => $this->normalizeJsonValue($value),
@@ -283,7 +283,7 @@ final class SystemSettingEntity
         return match ($this->type) {
             'boolean' => $value ? '1' : '0',
             'integer', 'decimal' => (string) $value,
-            'json' => json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'json' => json_encode($value, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES),
             default => (string) $value,
         };
     }
@@ -293,11 +293,11 @@ final class SystemSettingEntity
      */
     private function normalizeJsonValue(mixed $value): array
     {
-        if (is_string($value)) {
+        if (\is_string($value)) {
             $decoded = json_decode($value, true);
-            return is_array($decoded) ? $decoded : [];
+            return \is_array($decoded) ? $decoded : [];
         }
 
-        return is_array($value) ? $value : [];
+        return \is_array($value) ? $value : [];
     }
 }

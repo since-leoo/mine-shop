@@ -66,4 +66,3 @@ final class PaymentSetting
         return $this->settlementCycleDays;
     }
 }
-

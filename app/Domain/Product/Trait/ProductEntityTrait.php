@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Product\Trait;
 
@@ -35,7 +43,7 @@ trait ProductEntityTrait
     }
 
     /**
-     * @param array<int, mixed>|null $items
+     * @param null|array<int, mixed> $items
      * @return int[]
      */
     private function extractIds(?array $items): array
@@ -49,7 +57,7 @@ trait ProductEntityTrait
             $id = null;
             if ($item instanceof ProductSkuEntity || $item instanceof ProductAttributeEntity) {
                 $id = $item->getId();
-            } elseif (is_array($item) && isset($item['id'])) {
+            } elseif (\is_array($item) && isset($item['id'])) {
                 $id = $item['id'];
             }
 

@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 
 namespace App\Domain\Logstash\Repository;
+
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\System\UserOperationLog;
 use Hyperf\Collection\Arr;

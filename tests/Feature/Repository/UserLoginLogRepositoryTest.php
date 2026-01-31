@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Infrastructure\Model\System\UserLoginLog;
 use App\Domain\Logstash\Repository\UserLoginLogRepository;
+use App\Infrastructure\Model\System\UserLoginLog;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\DbConnection\Model\Model;

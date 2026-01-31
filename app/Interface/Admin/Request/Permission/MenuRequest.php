@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
-use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use App\Interface\Common\Request\BaseRequest;
+use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 
 class MenuRequest extends BaseRequest
 {

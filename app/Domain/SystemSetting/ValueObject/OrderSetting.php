@@ -56,4 +56,3 @@ final class OrderSetting
         return $this->customerServicePhone;
     }
 }
-

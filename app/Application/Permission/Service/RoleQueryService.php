@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Application\Permission\Service;
 
+use App\Domain\Permission\Repository\RoleRepository;
 use App\Domain\Shared\ValueObject\PageQuery;
 use App\Infrastructure\Model\Permission\Role;
-use App\Domain\Permission\Repository\RoleRepository;
 use Hyperf\Collection\Collection;
 
 final class RoleQueryService

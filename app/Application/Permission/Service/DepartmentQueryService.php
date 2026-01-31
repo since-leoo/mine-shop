@@ -16,9 +16,7 @@ use App\Domain\Permission\Repository\DepartmentRepository;
 
 final class DepartmentQueryService
 {
-    public function __construct(private readonly DepartmentRepository $repository)
-    {
-    }
+    public function __construct(private readonly DepartmentRepository $repository) {}
 
     public function list(array $filters): array
     {

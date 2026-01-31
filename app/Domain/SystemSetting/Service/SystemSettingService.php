@@ -19,14 +19,14 @@ use Hamcrest\Description;
 
 /**
  * 系统设置服务类
- * 提供系统配置的获取、更新、缓存管理等功能
+ * 提供系统配置的获取、更新、缓存管理等功能.
  */
 final class SystemSettingService
 {
     private const CACHE_PREFIX = 'system:settings';
 
     /**
-     * 构造函数
+     * 构造函数.
      *
      * @param SystemSettingRepository $repository 配置仓库
      * @param ICache $cache 缓存接口
@@ -51,7 +51,7 @@ final class SystemSettingService
     }
 
     /**
-     * 获取指定分组的所有配置项
+     * 获取指定分组的所有配置项.
      *
      * @param string $group 分组名称
      * @return array<int, array<string, mixed>> 配置项数组
@@ -60,7 +60,7 @@ final class SystemSettingService
     {
         $cacheKey = $this->groupCacheKey($group);
         $cached = $this->cache->get($cacheKey);
-        if (is_array($cached)) {
+        if (\is_array($cached)) {
             return $cached;
         }
 
@@ -104,7 +104,7 @@ final class SystemSettingService
     {
         $definition = $this->configGroups()[$group] ?? null;
         if (! $definition) {
-            throw new \RuntimeException(sprintf('配置分组 %s 不存在', $group));
+            throw new \RuntimeException(\sprintf('配置分组 %s 不存在', $group));
         }
 
         $items = $definition['settings'] ?? [];
@@ -132,7 +132,7 @@ final class SystemSettingService
     }
 
     /**
-     * 更新系统配置
+     * 更新系统配置.
      *
      * @param SystemSettingEntity $command 配置实体
      * @return array 更新后的配置响应数据
@@ -143,7 +143,7 @@ final class SystemSettingService
         if (! $entity) {
             [$group, $definition] = $this->definitionByKey($command->getKey());
             if (! $definition) {
-                throw new \RuntimeException(sprintf('系统配置 %s 不存在', $command->getKey()));
+                throw new \RuntimeException(\sprintf('系统配置 %s 不存在', $command->getKey()));
             }
 
             $entity = SystemSettingEntity::fromDefinition($group, $command->getKey(), $definition);
@@ -157,7 +157,20 @@ final class SystemSettingService
     }
 
     /**
-     * 获取配置分组定义
+     * 清除指定分组和键名的缓存.
+     *
+     * @param string $group 分组名称
+     * @param string $key 配置键名
+     */
+    public function flushCache(string $group, string $key): void
+    {
+        $this->cache->setPrefix(self::CACHE_PREFIX);
+        $this->cache->delete($this->groupCacheKey($group));
+        $this->cache->delete($this->keyCacheKey($key));
+    }
+
+    /**
+     * 获取配置分组定义.
      *
      * @return array<string, mixed> 配置分组数组
      */
@@ -167,7 +180,7 @@ final class SystemSettingService
     }
 
     /**
-     * 根据配置键名查找对应的分组和定义
+     * 根据配置键名查找对应的分组和定义.
      *
      * @param string $key 配置键名
      * @return array 包含分组名和定义的数组
@@ -185,7 +198,7 @@ final class SystemSettingService
     }
 
     /**
-     * 将配置项数组按键名索引
+     * 将配置项数组按键名索引.
      *
      * @param array<int, array<string, mixed>> $items 配置项数组
      * @return array<string, array<string, mixed>> 按键名索引的配置项数组
@@ -200,21 +213,7 @@ final class SystemSettingService
     }
 
     /**
-     * 清除指定分组和键名的缓存
-     *
-     * @param string $group 分组名称
-     * @param string $key 配置键名
-     * @return void
-     */
-    public function flushCache(string $group, string $key): void
-    {
-        $this->cache->setPrefix(self::CACHE_PREFIX);
-        $this->cache->delete($this->groupCacheKey($group));
-        $this->cache->delete($this->keyCacheKey($key));
-    }
-
-    /**
-     * 从缓存或数据库中获取并记住配置项
+     * 从缓存或数据库中获取并记住配置项.
      *
      * @param string $key 配置键名
      * @return array 配置项数据
@@ -223,7 +222,7 @@ final class SystemSettingService
     {
         $cacheKey = $this->keyCacheKey($key);
         $cached = $this->cache->get($cacheKey);
-        if (is_array($cached)) {
+        if (\is_array($cached)) {
             return $cached;
         }
 
@@ -239,24 +238,24 @@ final class SystemSettingService
     }
 
     /**
-     * 生成配置键名的缓存键
+     * 生成配置键名的缓存键.
      *
      * @param string $key 配置键名
      * @return string 缓存键
      */
     private function keyCacheKey(string $key): string
     {
-        return sprintf('key:%s', $key);
+        return \sprintf('key:%s', $key);
     }
 
     /**
-     * 生成配置分组的缓存键
+     * 生成配置分组的缓存键.
      *
      * @param string $group 分组名称
      * @return string 缓存键
      */
     private function groupCacheKey(string $group): string
     {
-        return sprintf('group:%s', $group);
+        return \sprintf('group:%s', $group);
     }
 }

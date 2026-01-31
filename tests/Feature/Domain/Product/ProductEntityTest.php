@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Feature\Domain\Product;
 
@@ -10,10 +18,13 @@ use App\Domain\Product\Entity\ProductSkuEntity;
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Relations\HasMany;
-use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 final class ProductEntityTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
@@ -40,12 +51,12 @@ final class ProductEntityTest extends TestCase
             $attribute,
         ]);
 
-        $product = Mockery::mock(Product::class);
-        $skuRelation = Mockery::mock(HasMany::class);
+        $product = \Mockery::mock(Product::class);
+        $skuRelation = \Mockery::mock(HasMany::class);
         $skuRelation->shouldReceive('pluck')->with('id')->andReturn(new Collection([1, 2]));
         $product->shouldReceive('skus')->andReturn($skuRelation);
 
-        $attrRelation = Mockery::mock(HasMany::class);
+        $attrRelation = \Mockery::mock(HasMany::class);
         $attrRelation->shouldReceive('pluck')->with('id')->andReturn(new Collection([10, 20]));
         $product->shouldReceive('attributes')->andReturn($attrRelation);
 

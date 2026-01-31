@@ -26,33 +26,28 @@ use Hyperf\Database\Model\Builder;
 final class ProductRepository extends IRepository
 {
     use ProductMapperTrait;
+
     public function __construct(protected readonly Product $model) {}
 
     /**
-     * 通过ID获取商品实体
-     *
-     * @param int $id
-     * @return null|ProductEntity
+     * 通过ID获取商品实体.
      */
     public function getEntityById(int $id): ?ProductEntity
     {
         /** @var null|Product $model */
         $model = $this->findById($id);
-        return $model ? self::mapper($model) :  throw new BusinessException(ResultCode::FORBIDDEN ,'商品不存在');
+        return $model ? self::mapper($model) : throw new BusinessException(ResultCode::FORBIDDEN, '商品不存在');
     }
 
     /**
      * 保存商品
-     *
-     * @param ProductEntity $entity
-     * @return ProductEntity
      */
     public function save(ProductEntity $entity): ProductEntity
     {
         /** @var Product $model */
         $model = $this->create($entity->toArray());
-        $model->skus()->createMany(array_map(static function ($sku) {return $sku->toArray();}, $entity->getSkus()));
-        $model->attributes()->createMany(array_map(static function ($attr) {return $attr->toArray();}, $entity->getAttributes()));
+        $model->skus()->createMany(array_map(static function ($sku) {return $sku->toArray(); }, $entity->getSkus()));
+        $model->attributes()->createMany(array_map(static function ($attr) {return $attr->toArray(); }, $entity->getAttributes()));
 
         $entity->setId($model->id);
         return $entity;
@@ -81,9 +76,6 @@ final class ProductRepository extends IRepository
         }
     }
 
-    /**
-     * @param ProductEntity $entity
-     */
     public function remove(ProductEntity $entity): void
     {
         $model = $this->findById($entity->getId());
@@ -103,8 +95,8 @@ final class ProductRepository extends IRepository
             ->when(isset($params['name']), static fn (Builder $q) => $q->where('name', 'like', '%' . $params['name'] . '%'))
             ->when(isset($params['keyword']), static fn (Builder $q) => $q->where(static fn (Builder $q) => $q->where('name', 'like', '%' . $params['keyword'] . '%')->orWhere('product_code', 'like', '%' . $params['keyword'] . '%')))
             ->when(isset($params['product_code']), static fn (Builder $q) => $q->where('product_code', 'like', '%' . $params['product_code'] . '%'))
-            ->when(isset($params['category_id']), static fn (Builder $q) => is_array($params['category_id']) ? $q->whereIn('category_id', $params['category_id']) : $q->where('category_id', $params['category_id']))
-            ->when(isset($params['brand_id']), static fn (Builder $q) => is_array($params['brand_id']) ? $q->whereIn('brand_id', $params['brand_id']) : $q->where('brand_id', $params['brand_id']))
+            ->when(isset($params['category_id']), static fn (Builder $q) => \is_array($params['category_id']) ? $q->whereIn('category_id', $params['category_id']) : $q->where('category_id', $params['category_id']))
+            ->when(isset($params['brand_id']), static fn (Builder $q) => \is_array($params['brand_id']) ? $q->whereIn('brand_id', $params['brand_id']) : $q->where('brand_id', $params['brand_id']))
             ->when(isset($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
             ->when(isset($params['is_recommend']), static fn (Builder $q) => $q->where('is_recommend', (bool) $params['is_recommend']))
             ->when(isset($params['is_hot']), static fn (Builder $q) => $q->where('is_hot', (bool) $params['is_hot']))
@@ -115,5 +107,4 @@ final class ProductRepository extends IRepository
             ->when(isset($params['sales_max']), static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
             ->with(['category', 'brand']);
     }
-
 }

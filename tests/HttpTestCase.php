@@ -45,6 +45,11 @@ abstract class HttpTestCase extends TestCase
         $this->client = make(Client::class);
     }
 
+    public function __call($name, $arguments)
+    {
+        return $this->client->{$name}(...$arguments);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -55,11 +60,6 @@ abstract class HttpTestCase extends TestCase
                 // 测试环境没有 Redis 时直接跳过
             }
         }
-    }
-
-    public function __call($name, $arguments)
-    {
-        return $this->client->{$name}(...$arguments);
     }
 
     protected function fakerGenerator(): Generator

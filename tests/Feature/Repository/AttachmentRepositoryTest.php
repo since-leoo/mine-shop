@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Infrastructure\Model\Attachment\Attachment;
 use App\Domain\Attachment\Repository\AttachmentRepository;
+use App\Infrastructure\Model\Attachment\Attachment;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\DbConnection\Model\Model;

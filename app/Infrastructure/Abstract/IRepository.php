@@ -17,7 +17,7 @@ use App\Infrastructure\Traits\RepositoryOrderByTrait;
 use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 use Hyperf\Database\Model\Builder;
-use Hyperf\DbConnection\Model\Model;
+use Hyperf\Database\Model\Model;
 use Hyperf\DbConnection\Traits\HasContainer;
 use Hyperf\Paginator\AbstractPaginator;
 
@@ -78,7 +78,7 @@ abstract class IRepository
     }
 
     /**
-     * @return object|null
+     * @return null|object
      */
     public function findById(int $id)
     {

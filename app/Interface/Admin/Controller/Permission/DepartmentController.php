@@ -16,9 +16,9 @@ use App\Application\Permission\Assembler\DepartmentAssembler;
 use App\Application\Permission\Service\DepartmentCommandService;
 use App\Application\Permission\Service\DepartmentQueryService;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Common\CurrentUser;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\DepartmentRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -58,7 +58,7 @@ class DepartmentController extends AbstractController
         $payload = DepartmentAssembler::fromArray(array_merge($request->validated(), [
             'created_by' => $this->currentUser->id(),
         ]));
-        $this->commandService->create($payload, function ($entity, array $data): void {
+        $this->commandService->create($payload, static function ($entity, array $data): void {
             // 复用原关系同步逻辑
             $entity->department_users()->sync($data['department_users'] ?? []);
             $entity->leader()->sync($data['leader'] ?? []);
@@ -73,7 +73,7 @@ class DepartmentController extends AbstractController
         $payload = DepartmentAssembler::fromArray(array_merge($request->validated(), [
             'updated_by' => $this->currentUser->id(),
         ]));
-        $this->commandService->update($id, $payload, function ($entity, array $data): void {
+        $this->commandService->update($id, $payload, static function ($entity, array $data): void {
             $entity->department_users()->sync($data['department_users'] ?? []);
             $entity->leader()->sync($data['leader'] ?? []);
         });

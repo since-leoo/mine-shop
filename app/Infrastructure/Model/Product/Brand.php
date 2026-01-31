@@ -34,6 +34,7 @@ class Brand extends Model
     use SoftDeletes;
 
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
 
     protected ?string $table = 'mall_brands';

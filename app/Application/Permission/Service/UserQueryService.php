@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Application\Permission\Service;
 
+use App\Domain\Permission\Repository\UserRepository;
 use App\Domain\Shared\ValueObject\PageQuery;
 use App\Infrastructure\Model\Permission\User;
-use App\Domain\Permission\Repository\UserRepository;
 use Hyperf\Collection\Collection;
 use Psr\SimpleCache\CacheInterface;
 
@@ -44,8 +44,7 @@ final class UserQueryService
         $key = (string) $id;
         if ($this->cache->has($key)) {
             /** @var null|User $cached */
-            $cached = $this->cache->get($key);
-            return $cached;
+            return $this->cache->get($key);
         }
         $user = $this->repository->findById($id);
         $this->cache->set($key, $user, $ttl);

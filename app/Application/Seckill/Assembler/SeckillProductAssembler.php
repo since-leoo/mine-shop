@@ -38,7 +38,7 @@ final class SeckillProductAssembler
             soldQuantity: 0,
             maxQuantityPerUser: isset($payload['max_quantity_per_user']) ? (int) $payload['max_quantity_per_user'] : 1,
             sortOrder: isset($payload['sort_order']) ? (int) $payload['sort_order'] : 0,
-            isEnabled: !isset($payload['is_enabled']) || $payload['is_enabled']
+            isEnabled: ! isset($payload['is_enabled']) || $payload['is_enabled']
         );
     }
 

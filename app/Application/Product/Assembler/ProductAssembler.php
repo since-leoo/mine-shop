@@ -65,7 +65,7 @@ final class ProductAssembler
         $entity->setName($payload['name'] ?? null);
         $entity->setSubTitle($payload['sub_title'] ?? null);
         $entity->setMainImage($payload['main_image'] ?? null);
-        $entity->setGalleryImages(is_array($payload['gallery_images'] ?? null) ? $payload['gallery_images'] : null);
+        $entity->setGalleryImages(\is_array($payload['gallery_images'] ?? null) ? $payload['gallery_images'] : null);
         $entity->setDescription($payload['description'] ?? null);
         $entity->setDetailContent($payload['detail_content'] ?? null);
         $entity->setAttributesJson($payload['attributes'] ?? null);
@@ -88,7 +88,7 @@ final class ProductAssembler
 
     /**
      * @param array<int, array<string, mixed>> $items
-     * @return ProductSkuEntity[]|null
+     * @return null|ProductSkuEntity[]
      */
     private static function mapSkus(array $items): ?array
     {
@@ -117,7 +117,7 @@ final class ProductAssembler
 
     /**
      * @param array<int, array<string, mixed>> $items
-     * @return ProductAttributeEntity[]|null
+     * @return null|ProductAttributeEntity[]
      */
     private static function mapAttributes(array $items): ?array
     {

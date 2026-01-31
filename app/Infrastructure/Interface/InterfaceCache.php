@@ -1,10 +1,20 @@
 <?php
 
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+
 namespace App\Infrastructure\Interface;
 
 /**
  * 缓存接口定义
- * 定义了缓存操作的基本方法，包括键值对存储、哈希表操作和缓存清理等功能
+ * 定义了缓存操作的基本方法，包括键值对存储、哈希表操作和缓存清理等功能.
  */
 interface InterfaceCache
 {
@@ -12,7 +22,6 @@ interface InterfaceCache
      * 设置缓存键前缀
      *
      * @param string $prefix 缓存键前缀
-     * @return InterfaceCache
      */
     public function setPrefix(string $prefix): self;
 
@@ -35,7 +44,7 @@ interface InterfaceCache
     public function set(string $key, mixed $value, int $ttl = 0): bool;
 
     /**
-     * 删除指定缓存
+     * 删除指定缓存.
      *
      * @param string ...$key 要删除的缓存键
      * @return bool 操作是否成功
@@ -43,7 +52,7 @@ interface InterfaceCache
     public function delete(string ...$key): bool;
 
     /**
-     * 清空缓存
+     * 清空缓存.
      *
      * @param string $prefix 要清空的缓存前缀，如果为空则清空所有缓存
      * @return bool 操作是否成功
@@ -88,7 +97,7 @@ interface InterfaceCache
     public function hMget(string $key, array $fields): array;
 
     /**
-     * 删除哈希表字段
+     * 删除哈希表字段.
      *
      * @param string $key 哈希表键
      * @param string $field 要删除的字段名

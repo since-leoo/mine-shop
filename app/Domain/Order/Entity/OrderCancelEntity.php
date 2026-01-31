@@ -1,15 +1,27 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Entity;
 
 final class OrderCancelEntity
 {
     private int $orderId = 0;
+
     private int $userId = 0;
+
     private string $reason = '';
+
     private int $operatorId = 0;
+
     private string $operatorName = '';
 
     public function setOrderId(int $orderId): void

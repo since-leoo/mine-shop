@@ -35,10 +35,10 @@ final class UserAssembler
     {
         self::fillBasicFields($payload, $entity);
 
-        array_key_exists('department', $payload) && $entity->setDepartmentIds(self::intArray($payload['department']));
-        array_key_exists('position', $payload) && $entity->setPositionIds(self::intArray($payload['position']));
+        \array_key_exists('department', $payload) && $entity->setDepartmentIds(self::intArray($payload['department']));
+        \array_key_exists('position', $payload) && $entity->setPositionIds(self::intArray($payload['position']));
 
-        if (array_key_exists('policy', $payload) && is_array($payload['policy'])) {
+        if (\array_key_exists('policy', $payload) && \is_array($payload['policy'])) {
             $entity->setPolicy(self::buildPolicy($payload['policy']));
         }
 
@@ -47,19 +47,19 @@ final class UserAssembler
 
     private static function fillBasicFields(array $payload, UserEntity $entity): void
     {
-        array_key_exists('username', $payload) && $entity->setUsername((string) $payload['username']);
-        array_key_exists('password', $payload) && $entity->setPassword($payload['password'] === null ? null : (string) $payload['password']);
-        array_key_exists('user_type', $payload) && $entity->setUserType(self::toUserType($payload['user_type']));
-        array_key_exists('nickname', $payload) && $entity->setNickname((string) $payload['nickname']);
-        array_key_exists('phone', $payload) && $entity->setPhone(self::nullableString($payload['phone']));
-        array_key_exists('email', $payload) && $entity->setEmail(self::nullableString($payload['email']));
-        array_key_exists('avatar', $payload) && $entity->setAvatar(self::nullableString($payload['avatar']));
-        array_key_exists('signed', $payload) && $entity->setSigned(self::nullableString($payload['signed']));
-        array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
-        array_key_exists('backend_setting', $payload) && $entity->setBackendSetting((array) $payload['backend_setting']);
-        array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
-        array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
-        array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
+        \array_key_exists('username', $payload) && $entity->setUsername((string) $payload['username']);
+        \array_key_exists('password', $payload) && $entity->setPassword($payload['password'] === null ? null : (string) $payload['password']);
+        \array_key_exists('user_type', $payload) && $entity->setUserType(self::toUserType($payload['user_type']));
+        \array_key_exists('nickname', $payload) && $entity->setNickname((string) $payload['nickname']);
+        \array_key_exists('phone', $payload) && $entity->setPhone(self::nullableString($payload['phone']));
+        \array_key_exists('email', $payload) && $entity->setEmail(self::nullableString($payload['email']));
+        \array_key_exists('avatar', $payload) && $entity->setAvatar(self::nullableString($payload['avatar']));
+        \array_key_exists('signed', $payload) && $entity->setSigned(self::nullableString($payload['signed']));
+        \array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
+        \array_key_exists('backend_setting', $payload) && $entity->setBackendSetting((array) $payload['backend_setting']);
+        \array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
+        \array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
+        \array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
     }
 
     private static function toUserType(mixed $userType): Type
@@ -113,12 +113,12 @@ final class UserAssembler
     }
 
     /**
-     * @param array<int|string, mixed>|null $values
+     * @param null|array<int|string, mixed> $values
      * @return int[]
      */
     private static function intArray(mixed $values): array
     {
-        if (! is_array($values)) {
+        if (! \is_array($values)) {
             return [];
         }
 

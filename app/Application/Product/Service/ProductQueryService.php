@@ -32,10 +32,6 @@ final class ProductQueryService
         return $this->productService->page($filters, $page, $pageSize);
     }
 
-    /**
-     * @param int $id
-     * @return Product|null
-     */
     public function find(int $id): ?Product
     {
         return $this->productService->getInfoById($id);

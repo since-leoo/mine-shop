@@ -57,7 +57,7 @@ final class SeckillSessionController extends AbstractController
     public function byActivity(int $activityId): Result
     {
         $sessions = $this->queryService->findByActivityId($activityId);
-        return $this->success(array_map(fn ($s) => $s->toArray(), $sessions));
+        return $this->success(array_map(static fn ($s) => $s->toArray(), $sessions));
     }
 
     #[GetMapping(path: '{id:\d+}')]

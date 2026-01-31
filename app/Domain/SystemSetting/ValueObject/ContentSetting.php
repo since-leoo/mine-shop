@@ -50,4 +50,3 @@ final class ContentSetting
         return $this->complianceEmail;
     }
 }
-

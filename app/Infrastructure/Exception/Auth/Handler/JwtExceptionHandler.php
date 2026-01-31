@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\Auth\Handler;
 
+use App\Infrastructure\Exception\System\Handler\AbstractHandler;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Lcobucci\JWT\Exception;
 
-final class JwtExceptionHandler extends \App\Infrastructure\Exception\System\Handler\AbstractHandler
+final class JwtExceptionHandler extends AbstractHandler
 {
     public function handleResponse(\Throwable $throwable): Result
     {

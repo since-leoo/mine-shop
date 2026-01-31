@@ -75,7 +75,7 @@ final class SeckillSessionControllerTest extends ControllerCase
         $result = $this->get('/admin/seckill/session/by-activity/' . $this->activity->id, [], $this->authHeader());
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         self::assertIsArray($result['data']);
-        self::assertGreaterThanOrEqual(1, count($result['data']));
+        self::assertGreaterThanOrEqual(1, \count($result['data']));
     }
 
     public function testCreate(): void

@@ -16,7 +16,5 @@ use App\Infrastructure\Model\Product\Product;
 
 final class ProductCreated
 {
-    public function __construct(public readonly Product $product)
-    {
-    }
+    public function __construct(public readonly Product $product) {}
 }

@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Handler;
 
-use EasyWeChat\Exceptions\BadResponseException;
 use EasyWeChat\MiniApp\Application;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\HttpServer\Contract\RequestInterface;

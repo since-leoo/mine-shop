@@ -14,8 +14,11 @@ namespace App\Domain\Order\Repository;
 
 use App\Domain\Order\Entity\OrderEntity;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
+use App\Infrastructure\Model\Order\OrderAddress;
 use App\Infrastructure\Model\Order\OrderPackage;
+use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
@@ -77,7 +80,7 @@ final class OrderRepository extends IRepository
 
     public function findDetail(int $id): ?array
     {
-        /** @var Order $order */
+        /** @var null|Order $order */
         $order = $this->getQuery()
             ->with([
                 'member:id,nickname,phone',
@@ -120,7 +123,7 @@ final class OrderRepository extends IRepository
         $order->package_count = $entity->getPackageCount();
         $order->save();
 
-        $order->packages()->createMany($entity->getShipEntity()->getPackages());
+        $order->packages()->createMany($entity->getShipEntity()->getPackagePayloads());
     }
 
     /**
@@ -154,6 +157,15 @@ final class OrderRepository extends IRepository
      */
     private function transformOrder(Order $order): array
     {
+        /** @var null|Member $member */
+        $member = $order->member;
+        /** @var null|OrderAddress $address */
+        $address = $order->address;
+        $payTime = $order->pay_time;
+        $expireTime = $order->expire_time;
+        $createdAt = $order->created_at;
+        $updatedAt = $order->updated_at;
+
         return [
             'id' => $order->id,
             'order_no' => $order->order_no,
@@ -166,34 +178,30 @@ final class OrderRepository extends IRepository
             'total_amount' => $order->total_amount,
             'pay_amount' => $order->pay_amount,
             'pay_status' => $order->pay_status,
-            'pay_time' => $order->pay_time?->toDateTimeString(),
+            'pay_time' => $payTime instanceof Carbon ? $payTime->toDateTimeString() : null,
             'pay_no' => $order->pay_no,
             'pay_method' => $order->pay_method,
             'buyer_remark' => $order->buyer_remark,
             'seller_remark' => $order->seller_remark,
             'shipping_status' => $order->shipping_status,
             'package_count' => $order->package_count,
-            'expire_time' => $order->expire_time?->toDateTimeString(),
-            'created_at' => $order->created_at?->toDateTimeString(),
-            'updated_at' => $order->updated_at?->toDateTimeString(),
-            'member' => $order->member
-                ? [
-                    'id' => $order->member->id,
-                    'nickname' => $order->member->nickname,
-                    'phone' => $order->member->phone,
-                ]
-                : null,
-            'address' => $order->address
-                ? [
-                    'name' => $order->address->receiver_name,
-                    'phone' => $order->address->receiver_phone,
-                    'province' => $order->address->province,
-                    'city' => $order->address->city,
-                    'district' => $order->address->district,
-                    'address' => $order->address->detail,
-                    'full_address' => $order->address->full_address,
-                ]
-                : null,
+            'expire_time' => $expireTime instanceof Carbon ? $expireTime->toDateTimeString() : null,
+            'created_at' => $order->created_at->toDateTimeString(),
+            'updated_at' => $order->updated_at->toDateTimeString(),
+            'member' => $member instanceof Member ? [
+                'id' => $member->id,
+                'nickname' => $member->nickname,
+                'phone' => $member->phone,
+            ] : null,
+            'address' => $address instanceof OrderAddress ? [
+                'name' => $address->receiver_name,
+                'phone' => $address->receiver_phone,
+                'province' => $address->province,
+                'city' => $address->city,
+                'district' => $address->district,
+                'address' => $address->detail,
+                'full_address' => $address->full_address,
+            ] : null,
             'items' => $order->items->map(static fn ($item) => [
                 'id' => $item->id,
                 'product_name' => $item->product_name,
@@ -203,15 +211,20 @@ final class OrderRepository extends IRepository
                 'quantity' => $item->quantity,
                 'total_amount' => $item->total_price,
             ])->toArray(),
-            'packages' => $order->packages->map(static fn (OrderPackage $package) => [
-                'id' => $package->id,
-                'package_no' => $package->package_no,
-                'shipping_company' => $package->express_company,
-                'shipping_no' => $package->express_no,
-                'status' => $package->status,
-                'shipped_at' => $package->shipped_at?->toDateTimeString(),
-                'delivered_at' => $package->delivered_at?->toDateTimeString(),
-            ])->toArray(),
+            'packages' => $order->packages->map(static function (OrderPackage $package) {
+                $shippedAt = $package->shipped_at;
+                $deliveredAt = $package->delivered_at;
+
+                return [
+                    'id' => $package->id,
+                    'package_no' => $package->package_no,
+                    'shipping_company' => $package->express_company,
+                    'shipping_no' => $package->express_no,
+                    'status' => $package->status,
+                    'shipped_at' => $shippedAt instanceof Carbon ? $shippedAt->toDateTimeString() : null,
+                    'delivered_at' => $deliveredAt instanceof Carbon ? $deliveredAt->toDateTimeString() : null,
+                ];
+            })->toArray(),
         ];
     }
 }

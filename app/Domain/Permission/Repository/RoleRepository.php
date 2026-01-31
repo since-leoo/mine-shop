@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 
 namespace App\Domain\Permission\Repository;
+
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Permission\Role;
 use Hyperf\Collection\Arr;

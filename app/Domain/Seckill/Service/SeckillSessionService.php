@@ -75,7 +75,7 @@ final class SeckillSessionService
     {
         return (bool) Db::transaction(function () use ($id) {
             // 级联删除场次下的商品
-            $this->productRepository->getModel()::where('session_id', $id)->delete();
+            $this->productRepository->getQuery()->where('session_id', $id)->delete();
             return $this->repository->deleteById($id);
         });
     }

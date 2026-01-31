@@ -92,7 +92,7 @@ final class ProductService
      */
     public function getInfoById(int $id): ?Product
     {
-        /** @var Product $product */
+        /** @var null|Product $product */
         $product = $this->repository->findById($id);
 
         $product?->load(['category', 'brand', 'skus', 'attributes', 'gallery']);

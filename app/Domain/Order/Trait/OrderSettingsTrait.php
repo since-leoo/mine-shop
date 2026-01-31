@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Order\Trait;
 
 use App\Domain\Order\Entity\OrderShipEntity;
+use App\Domain\Order\ValueObject\OrderPackageValue;
 use App\Domain\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\SystemSetting\ValueObject\ShippingSetting;
 use Carbon\Carbon;
@@ -55,14 +56,14 @@ trait OrderSettingsTrait
         }
 
         foreach ($packages as $package) {
-            $company = (string) ($package['express_company'] ?? '');
+            \assert($package instanceof OrderPackageValue);
+            $company = $package->getShippingCompany();
             if ($company === '') {
                 throw new \DomainException('快递公司不能为空');
             }
             if (! $shippingSetting->isProviderSupported($company)) {
-                throw new \DomainException(sprintf('快递公司 %s 未在商城配置的支持列表中', $company));
+                throw new \DomainException(\sprintf('快递公司 %s 未在商城配置的支持列表中', $company));
             }
         }
     }
 }
-

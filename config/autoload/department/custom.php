@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Infrastructure\Library\DataPermission\Context;
 use App\Infrastructure\Library\DataPermission\ScopeType;
 use App\Infrastructure\Model\DataPermission\Policy;
@@ -17,7 +16,7 @@ use App\Infrastructure\Model\Permission\User;
 use Hyperf\Database\Query\Builder;
 
 return [
-    'testction' =>  function (Builder $builder, ScopeType $scopeType, Policy $policy, User $user) {
+    'testction' => static function (Builder $builder, ScopeType $scopeType, Policy $policy, User $user) {
         // 只针对 id 为 2 的用户生效
         if ($user->id !== 2) {
             return;
@@ -26,7 +25,7 @@ return [
         $createdByColumn = Context::getCreatedByColumn();
         // 获取当前上下文中的部门字段名称
         $deptColumn = Context::getDeptColumn();
-        switch ($scopeType){
+        switch ($scopeType) {
             // 隔离类型为根据创建人
             case ScopeType::CREATED_BY:
                 // 创建人字段为当前用户
@@ -49,6 +48,5 @@ return [
                 $builder->orWhere($createdByColumn, $user->id);
                 break;
         }
-        return;
-    }
+    },
 ];

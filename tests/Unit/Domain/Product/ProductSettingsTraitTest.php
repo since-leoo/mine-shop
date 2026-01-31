@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Product;
 
@@ -10,6 +18,10 @@ use App\Domain\SystemSetting\ValueObject\ContentSetting;
 use App\Domain\SystemSetting\ValueObject\ProductSetting;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 final class ProductSettingsTraitTest extends TestCase
 {
     public function testApplySettingConstraintsHydratesSkuData(): void
@@ -60,4 +72,3 @@ final class ProductSettingsTraitTest extends TestCase
         $entity->applySettingConstraints($productSetting, $contentSetting);
     }
 }
-

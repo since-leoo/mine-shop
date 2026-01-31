@@ -50,8 +50,11 @@ class Product extends Model
     use SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const STATUS_SOLD_OUT = 'sold_out';
 
     public const CODE_PREFIX = 'PRD';
@@ -129,7 +132,7 @@ class Product extends Model
     public function creating(Creating $event): void
     {
         if (empty($this->product_code)) {
-            $this->product_code = self::CODE_PREFIX . '-' . strtoupper(str_pad(uniqid(), 5, '0', STR_PAD_LEFT));
+            $this->product_code = self::CODE_PREFIX . '-' . mb_strtoupper(mb_str_pad(uniqid(), 5, '0', \STR_PAD_LEFT));
         }
     }
 }

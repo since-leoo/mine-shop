@@ -57,7 +57,7 @@ final class SeckillProductController extends AbstractController
     public function bySession(int $sessionId): Result
     {
         $products = $this->queryService->findBySessionId($sessionId);
-        return $this->success(array_map(fn ($p) => $p->toArray(), $products));
+        return $this->success(array_map(static fn ($p) => $p->toArray(), $products));
     }
 
     #[GetMapping(path: '{id:\d+}')]
@@ -91,7 +91,7 @@ final class SeckillProductController extends AbstractController
         );
         $products = $this->commandService->batchCreate($entities);
         return $this->success(
-            array_map(fn ($p) => $p->toArray(), $products),
+            array_map(static fn ($p) => $p->toArray(), $products),
             '批量添加商品成功',
             201
         );

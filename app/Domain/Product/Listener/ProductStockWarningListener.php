@@ -47,8 +47,8 @@ final class ProductStockWarningListener implements ListenerInterface
         $integration = $this->mallSettingService->integration();
         if ($integration->isChannelEnabled('system')) {
             SystemMessage::sendToAll(
-                sprintf('SKU %d 库存预警', $event->getSkuId()),
-                sprintf(
+                \sprintf('SKU %d 库存预警', $event->getSkuId()),
+                \sprintf(
                     'SKU %d 当前库存：%d，已达到预警阈值 %d，请及时补货。',
                     $event->getSkuId(),
                     $event->getStock(),

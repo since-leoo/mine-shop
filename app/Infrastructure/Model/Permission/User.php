@@ -166,11 +166,8 @@ final class User extends Model
 
     public function getPolicy(): ?Policy
     {
-        /**
-         * @var null|Policy $policy
-         */
         $policy = $this->policy()->first();
-        if (! empty($policy)) {
+        if ($policy instanceof Policy) {
             return $policy;
         }
 
@@ -178,7 +175,7 @@ final class User extends Model
         $positionList = $this->position;
         foreach ($positionList as $position) {
             $current = $position->policy()->first();
-            if (! empty($current)) {
+            if ($current instanceof Policy) {
                 return $current;
             }
         }

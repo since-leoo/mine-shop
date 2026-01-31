@@ -59,4 +59,3 @@ final class ProductSetting
         return $this->contentFilter;
     }
 }
-

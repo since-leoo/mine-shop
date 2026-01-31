@@ -39,7 +39,7 @@ trait ProductSettingsTrait
 
         $images = $this->getGalleryImages() ?? [];
         if (\count($images) > $max) {
-            throw new \DomainException(sprintf('商品主图最多支持 %d 张，请删除多余图片。', $max));
+            throw new \DomainException(\sprintf('商品主图最多支持 %d 张，请删除多余图片。', $max));
         }
     }
 
@@ -117,10 +117,9 @@ trait ProductSettingsTrait
                     continue;
                 }
                 if (mb_stripos($text, $keyword) !== false) {
-                    throw new \DomainException(sprintf('%s包含敏感词“%s”，请调整后再提交。', $label, $keyword));
+                    throw new \DomainException(\sprintf('%s包含敏感词“%s”，请调整后再提交。', $label, $keyword));
                 }
             }
         }
     }
 }
-

@@ -17,7 +17,7 @@ use App\Interface\Common\ResultCode;
 
 abstract class AbstractController
 {
-    protected function success(mixed $data = [], ?string $message = null): Result
+    protected function success(mixed $data = [], ?string $message = null, mixed $_extra = null): Result
     {
         return new Result(ResultCode::SUCCESS, $message, $data);
     }

@@ -73,7 +73,7 @@ abstract class BaseRequest extends FormRequest
     protected function getActionMethod(): string
     {
         /**
-         * @var Dispatched|null $dispatch
+         * @var null|Dispatched $dispatch
          */
         $dispatch = $this->getAttribute(Dispatched::class);
         $callback = $dispatch?->handler?->callback;

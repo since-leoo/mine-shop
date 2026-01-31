@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Product\Service;
 
@@ -13,6 +21,7 @@ use Hyperf\Codec\Json;
 final class ProductSnapshotService implements ProductSnapshotInterface
 {
     private const SKU_SNAPSHOT_KEY_PREFIX = 'snapshot';
+
     private const SKU_SNAPSHOT_KEY = 'sku:%d';
 
     public function __construct(
@@ -37,7 +46,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
         $keys = array_map(fn (int $id) => $this->skuKey($id), $skuIds);
         $rawValues = $this->cache->mget($keys);
 
-        if (! is_array($rawValues)) {
+        if (! \is_array($rawValues)) {
             $rawValues = array_fill(0, \count($keys), null);
         }
 
@@ -150,7 +159,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
 
     private function persistSnapshot(int $skuId, array $payload): void
     {
-        $encoded = Json::encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $encoded = Json::encode($payload, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR);
         $this->cache->set($this->skuKey($skuId), $encoded);
     }
 
@@ -158,8 +167,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     {
         try {
             /** @var array<string, mixed> $decoded */
-            $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-            return $decoded;
+            return json_decode($raw, true, 512, \JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             return null;
         }
@@ -167,6 +175,6 @@ final class ProductSnapshotService implements ProductSnapshotInterface
 
     private function skuKey(int $skuId): string
     {
-        return sprintf(self::SKU_SNAPSHOT_KEY, $skuId);
+        return \sprintf(self::SKU_SNAPSHOT_KEY, $skuId);
     }
 }

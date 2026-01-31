@@ -16,9 +16,7 @@ use Plugin\Wechat\Interfaces\MiniAppInterface;
 
 final class MiniAppAuthService
 {
-    public function __construct(private readonly MiniAppInterface $miniApp)
-    {
-    }
+    public function __construct(private readonly MiniAppInterface $miniApp) {}
 
     /**
      * @return array<string, mixed>

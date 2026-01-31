@@ -26,7 +26,7 @@ final class SystemSettingRepository extends IRepository
 
     public function handleItems(Collection $items): Collection
     {
-        return $items->map(fn (SystemSetting $model) => $model->toArray());
+        return $items->map(static fn (SystemSetting $model) => $model->toArray());
     }
 
     public function findEntityByKey(string $key): ?SystemSettingEntity

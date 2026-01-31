@@ -31,7 +31,7 @@ final class SeckillActivityAssembler
             title: $payload['title'] ?? null,
             description: $payload['description'] ?? null,
             status: $payload['status'] ?? 'pending',
-            isEnabled: !isset($payload['is_enabled']) || (bool)$payload['is_enabled'],
+            isEnabled: ! isset($payload['is_enabled']) || (bool) $payload['is_enabled'],
             rules: $payload['rules'] ?? null,
             remark: $payload['remark'] ?? null
         );

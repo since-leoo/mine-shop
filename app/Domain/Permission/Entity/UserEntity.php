@@ -341,7 +341,7 @@ final class UserEntity
             function ($value, string $field) {
                 return isset($this->dirty[$field]) && $value !== null;
             },
-            ARRAY_FILTER_USE_BOTH
+            \ARRAY_FILTER_USE_BOTH
         );
     }
 

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
-use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use App\Interface\Common\Request\BaseRequest;
+use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 
 class UserRequest extends BaseRequest
 {

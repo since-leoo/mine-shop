@@ -17,6 +17,7 @@ use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
+use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -52,7 +53,7 @@ final class SeckillProductRepository extends IRepository
             ->orderBy('id', 'desc');
     }
 
-    public function handleItems(\Hyperf\Collection\Collection $items): \Hyperf\Collection\Collection
+    public function handleItems(Collection $items): Collection
     {
         $productIds = $items->pluck('product_id')->unique()->toArray();
         $skuIds = $items->pluck('product_sku_id')->unique()->toArray();
@@ -60,7 +61,7 @@ final class SeckillProductRepository extends IRepository
         $products = Product::whereIn('id', $productIds)->get()->keyBy('id');
         $skus = ProductSku::whereIn('id', $skuIds)->get()->keyBy('id');
 
-        return $items->map(function ($item) use ($products, $skus) {
+        return $items->map(static function ($item) use ($products, $skus) {
             $product = $products->get($item->product_id);
             $sku = $skus->get($item->product_sku_id);
 

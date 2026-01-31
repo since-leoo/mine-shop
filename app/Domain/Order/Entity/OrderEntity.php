@@ -74,7 +74,6 @@ final class OrderEntity
 
     private ?OrderPriceValue $priceDetail = null;
 
-
     public function getId(): int
     {
         return $this->id;

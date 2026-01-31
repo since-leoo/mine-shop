@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+use App\Infrastructure\Exception\Auth\Handler\JwtExceptionHandler;
 use App\Infrastructure\Exception\System\Handler\AppExceptionHandler;
 use App\Infrastructure\Exception\System\Handler\BusinessExceptionHandler;
-use App\Infrastructure\Exception\Auth\Handler\JwtExceptionHandler;
 use App\Infrastructure\Exception\System\Handler\ModeNotFoundHandler;
 use App\Infrastructure\Exception\System\Handler\UnauthorizedExceptionHandler;
 use App\Infrastructure\Exception\System\Handler\ValidationExceptionHandler;

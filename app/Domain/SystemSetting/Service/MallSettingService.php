@@ -110,7 +110,7 @@ final class MallSettingService
             (int) $this->value('mall.member.sign_in_reward', 5),
             (int) $this->value('mall.member.invite_reward', 50),
             (int) $this->value('mall.member.points_expire_months', 24),
-            $this->normalizeArray($this->value('mall.member.vip_levels', [])),
+            $this->normalizeLevelDefinitions($this->value('mall.member.vip_levels', [])),
         );
     }
 
@@ -164,12 +164,30 @@ final class MallSettingService
     }
 
     /**
-     * @param mixed $value
      * @return array<string, mixed>
      */
     private function normalizeArray(mixed $value): array
     {
         return \is_array($value) ? $value : [];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeLevelDefinitions(mixed $value): array
+    {
+        if (! \is_array($value)) {
+            return [];
+        }
+
+        $levels = [];
+        foreach ($value as $item) {
+            if (\is_array($item)) {
+                $levels[] = $item;
+            }
+        }
+
+        return $levels;
     }
 
     /**
@@ -187,7 +205,6 @@ final class MallSettingService
     }
 
     /**
-     * @param mixed $value
      * @return array<string, bool>
      */
     private function normalizeChannels(mixed $value): array
@@ -199,4 +216,3 @@ final class MallSettingService
         return $channels;
     }
 }
-

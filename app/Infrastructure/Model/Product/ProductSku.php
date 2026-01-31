@@ -14,7 +14,6 @@ namespace App\Infrastructure\Model\Product;
 
 use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
-use Hyperf\Database\Model\Events\Updating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
@@ -38,7 +37,9 @@ use Hyperf\DbConnection\Model\Model;
 class ProductSku extends Model
 {
     public const STATUS_ACTIVE = 'active';
+
     public const STATUS_INACTIVE = 'inactive';
+
     public const CODE_PREFIX = 'SKU';
 
     protected ?string $table = 'mall_product_skus';
@@ -108,7 +109,7 @@ class ProductSku extends Model
     {
         $prefix = self::CODE_PREFIX;
         $timestamp = date('YmdHis');
-        $random = str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
+        $random = mb_str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
 
         return $prefix . $timestamp . $random;
     }

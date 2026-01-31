@@ -217,7 +217,7 @@ final class MenuEntity
     }
 
     /**
-     * @param array<int, ButtonPermission|array<string, mixed>> $permissions
+     * @param array<int, array<string, mixed>|ButtonPermission> $permissions
      */
     public function setButtonPermissions(array $permissions = []): self
     {

@@ -30,7 +30,6 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 
-
 #[Controller(prefix: '/admin/permission')]
 #[Middleware(AccessTokenMiddleware::class)]
 final class PermissionController extends AbstractController

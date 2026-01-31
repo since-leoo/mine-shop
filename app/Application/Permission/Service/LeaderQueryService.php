@@ -17,9 +17,7 @@ use App\Domain\Shared\ValueObject\PageQuery;
 
 final class LeaderQueryService
 {
-    public function __construct(private readonly LeaderRepository $repository)
-    {
-    }
+    public function __construct(private readonly LeaderRepository $repository) {}
 
     public function paginate(PageQuery $query): array
     {

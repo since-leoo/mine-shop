@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Listener;
 
@@ -39,12 +47,12 @@ final class OrderStatusNotifyListener implements ListenerInterface
         $packages = $event->command->getPackages();
         $firstPackage = $packages[0] ?? null;
         $content = $firstPackage
-            ? sprintf('您的订单已由 %s 发货，快递单号 %s。', $firstPackage->getShippingCompany(), $firstPackage->getShippingNo())
+            ? \sprintf('您的订单已由 %s 发货，快递单号 %s。', $firstPackage->getShippingCompany(), $firstPackage->getShippingNo())
             : '您的订单已发货。';
 
         $this->notify(
             $event->order->getMemberId(),
-            sprintf('订单 %s 已发货', $event->order->getOrderNo()),
+            \sprintf('订单 %s 已发货', $event->order->getOrderNo()),
             $content
         );
     }
@@ -54,8 +62,8 @@ final class OrderStatusNotifyListener implements ListenerInterface
         $reason = $event->command->getReason() ?: '管理员取消订单';
         $this->notify(
             $event->order->getMemberId(),
-            sprintf('订单 %s 已取消', $event->order->getOrderNo()),
-            sprintf('取消原因：%s', $reason)
+            \sprintf('订单 %s 已取消', $event->order->getOrderNo()),
+            \sprintf('取消原因：%s', $reason)
         );
     }
 

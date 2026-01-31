@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Application\Permission\Service;
 
 use App\Domain\Permission\Entity\RoleEntity;
-use App\Infrastructure\Model\Permission\Role;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Domain\Permission\Repository\RoleRepository;
+use App\Infrastructure\Model\Permission\Role;
 use Hyperf\DbConnection\Db;
 
 final class RoleCommandService

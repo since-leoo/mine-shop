@@ -30,18 +30,18 @@ final class MenuAssembler
 
     private static function map(array $payload, MenuEntity $entity): MenuEntity
     {
-        array_key_exists('parent_id', $payload) && $entity->setParentId((int) $payload['parent_id']);
-        array_key_exists('name', $payload) && $entity->setName((string) $payload['name']);
-        array_key_exists('path', $payload) && $entity->setPath(self::nullableString($payload['path']));
-        array_key_exists('component', $payload) && $entity->setComponent(self::nullableString($payload['component']));
-        array_key_exists('redirect', $payload) && $entity->setRedirect(self::nullableString($payload['redirect']));
-        array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
-        array_key_exists('sort', $payload) && $entity->setSort((int) $payload['sort']);
-        array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
-        array_key_exists('meta', $payload) && $entity->setMeta((array) $payload['meta']);
-        array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
-        array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
-        array_key_exists('btnPermission', $payload) && $entity->setButtonPermissions((array) $payload['btnPermission']);
+        \array_key_exists('parent_id', $payload) && $entity->setParentId((int) $payload['parent_id']);
+        \array_key_exists('name', $payload) && $entity->setName((string) $payload['name']);
+        \array_key_exists('path', $payload) && $entity->setPath(self::nullableString($payload['path']));
+        \array_key_exists('component', $payload) && $entity->setComponent(self::nullableString($payload['component']));
+        \array_key_exists('redirect', $payload) && $entity->setRedirect(self::nullableString($payload['redirect']));
+        \array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
+        \array_key_exists('sort', $payload) && $entity->setSort((int) $payload['sort']);
+        \array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
+        \array_key_exists('meta', $payload) && $entity->setMeta((array) $payload['meta']);
+        \array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
+        \array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
+        \array_key_exists('btnPermission', $payload) && $entity->setButtonPermissions((array) $payload['btnPermission']);
 
         return $entity;
     }

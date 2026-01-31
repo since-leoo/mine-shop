@@ -25,8 +25,7 @@ final class UserOperationLogEntry
         private string $createdAt,
         private string $updatedAt,
         private string $remark
-    ) {
-    }
+    ) {}
 
     public function getId(): int
     {

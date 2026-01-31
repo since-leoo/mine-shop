@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Service;
 
@@ -9,29 +17,28 @@ use App\Domain\SystemSetting\Service\MallSettingService;
 use Hyperf\Redis\Redis;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Stringable\Str;
-use RuntimeException;
 
 final class OrderStockService
 {
     private const STOCK_HASH_KEY = 'mall:stock:sku';
 
     private const DEDUCT_SCRIPT = <<<'LUA'
-local stockKey = KEYS[1]
-for i = 1, #ARGV, 2 do
-    local field = ARGV[i]
-    local quantity = tonumber(ARGV[i + 1])
-    local current = tonumber(redis.call('HGET', stockKey, field) or '-1')
-    if current < quantity then
-        return 0
-    end
-end
-for i = 1, #ARGV, 2 do
-    local field = ARGV[i]
-    local quantity = tonumber(ARGV[i + 1])
-    redis.call('HINCRBY', stockKey, field, -quantity)
-end
-return 1
-LUA;
+        local stockKey = KEYS[1]
+        for i = 1, #ARGV, 2 do
+            local field = ARGV[i]
+            local quantity = tonumber(ARGV[i + 1])
+            local current = tonumber(redis.call('HGET', stockKey, field) or '-1')
+            if current < quantity then
+                return 0
+            end
+        end
+        for i = 1, #ARGV, 2 do
+            local field = ARGV[i]
+            local quantity = tonumber(ARGV[i + 1])
+            redis.call('HINCRBY', stockKey, field, -quantity)
+        end
+        return 1
+        LUA;
 
     public function __construct(
         private readonly RedisFactory $redisFactory,
@@ -48,7 +55,7 @@ LUA;
     {
         $locks = [];
         foreach (array_keys($this->normalizeItems($items)) as $skuId) {
-            $lockKey = sprintf('mall:stock:lock:%d', $skuId);
+            $lockKey = \sprintf('mall:stock:lock:%d', $skuId);
             $token = Str::uuid()->toString();
             $acquired = false;
             for ($i = 0; $i < $this->lockRetry; ++$i) {
@@ -60,7 +67,7 @@ LUA;
             }
             if (! $acquired) {
                 $this->releaseLocks($locks);
-                throw new RuntimeException('库存繁忙，请稍后重试');
+                throw new \RuntimeException('库存繁忙，请稍后重试');
             }
             $locks[$lockKey] = $token;
         }
@@ -78,14 +85,14 @@ LUA;
         }
 
         $script = <<<'LUA'
-if redis.call('GET', KEYS[1]) == ARGV[1] then
-    return redis.call('DEL', KEYS[1])
-end
-return 0
-LUA;
+            if redis.call('GET', KEYS[1]) == ARGV[1] then
+                return redis.call('DEL', KEYS[1])
+            end
+            return 0
+            LUA;
 
         foreach ($locks as $key => $token) {
-            $this->redis()->eval($script, [$key], [$token]);
+            $this->redis()->eval($script, [$key, $token], 1);
         }
     }
 
@@ -96,7 +103,7 @@ LUA;
     {
         $normalized = $this->normalizeItems($items);
         if ($normalized === []) {
-            throw new RuntimeException('没有可扣减的商品');
+            throw new \RuntimeException('没有可扣减的商品');
         }
 
         $args = [];
@@ -105,9 +112,10 @@ LUA;
             $args[] = (string) $quantity;
         }
 
-        $result = $this->redis()->eval(self::DEDUCT_SCRIPT, [self::STOCK_HASH_KEY], $args);
+        $payload = array_merge([self::STOCK_HASH_KEY], $args);
+        $result = $this->redis()->eval(self::DEDUCT_SCRIPT, $payload, 1);
         if ((int) $result !== 1) {
-            throw new RuntimeException('库存不足或商品已下架');
+            throw new \RuntimeException('库存不足或商品已下架');
         }
 
         $this->triggerStockWarnings($normalized);

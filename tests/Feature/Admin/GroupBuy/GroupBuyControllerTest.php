@@ -48,22 +48,6 @@ final class GroupBuyControllerTest extends ControllerCase
         parent::tearDown();
     }
 
-    private function createTestProduct(): void
-    {
-        $this->product = Product::create([
-            'name' => '测试商品' . Str::random(5),
-            'category_id' => 1,
-            'status' => 'active',
-            'price' => 100.00,
-        ]);
-        $this->sku = ProductSku::create([
-            'product_id' => $this->product->id,
-            'name' => '默认规格',
-            'price' => 100.00,
-            'stock' => 1000,
-        ]);
-    }
-
     public function testPageList(): void
     {
         $result = $this->get('/admin/group-buy/list');
@@ -283,5 +267,21 @@ final class GroupBuyControllerTest extends ControllerCase
         self::assertSame($result['code'], ResultCode::SUCCESS->value);
         $entity->refresh();
         self::assertTrue($entity->is_enabled);
+    }
+
+    private function createTestProduct(): void
+    {
+        $this->product = Product::create([
+            'name' => '测试商品' . Str::random(5),
+            'category_id' => 1,
+            'status' => 'active',
+            'price' => 100.00,
+        ]);
+        $this->sku = ProductSku::create([
+            'product_id' => $this->product->id,
+            'name' => '默认规格',
+            'price' => 100.00,
+            'stock' => 1000,
+        ]);
     }
 }

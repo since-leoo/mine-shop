@@ -5,6 +5,8 @@
 #
 parameters:
   reportUnmatchedIgnoredErrors: false
+  stubFiles:
+    - phpstan/stubs/model.php
   excludePaths:
     - tests/
     - app/Library/DataPermission/Scope/DataScopes.php
@@ -13,8 +15,10 @@ parameters:
     - '#Static call to instance method Hyperf\\DbConnection\\Db::[a-zA-Z0-9\\_]+\(\)#'
     - '#Constant BASE_PATH not found.#'
     - '#Call to an undefined static method App\\Model.*#'
+    - '#Call to an undefined static method App\\Infrastructure\\Model.*#'
     - '#Call to an undefined static method T of Hyperf\\.*#'
     - '#.with no value type specified in iterable type array.*#'
     - '#.return type specified.*#'
     - '#Access to an undefined property.*#'
     - '#Call to an undefined static method App\\Kernel\\Casbin\\Rule\\Rule::getModel\(\)#'
+    - '#should return Hyperf\\Database\\Model\\Builder but returns Hyperf\\Database\\Query\\Builder#'

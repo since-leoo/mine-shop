@@ -30,13 +30,13 @@ final class RoleAssembler
 
     private static function map(array $payload, RoleEntity $entity): RoleEntity
     {
-        array_key_exists('name', $payload) && $entity->setName((string) $payload['name']);
-        array_key_exists('code', $payload) && $entity->setCode((string) $payload['code']);
-        array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
-        array_key_exists('sort', $payload) && $entity->setSort((int) $payload['sort']);
-        array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
-        array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
-        array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
+        \array_key_exists('name', $payload) && $entity->setName((string) $payload['name']);
+        \array_key_exists('code', $payload) && $entity->setCode((string) $payload['code']);
+        \array_key_exists('status', $payload) && $entity->setStatus(self::toStatus($payload['status']));
+        \array_key_exists('sort', $payload) && $entity->setSort((int) $payload['sort']);
+        \array_key_exists('remark', $payload) && $entity->setRemark(self::nullableString($payload['remark']));
+        \array_key_exists('created_by', $payload) && $entity->setCreatedBy((int) $payload['created_by']);
+        \array_key_exists('updated_by', $payload) && $entity->setUpdatedBy((int) $payload['updated_by']);
 
         return $entity;
     }

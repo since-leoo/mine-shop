@@ -38,14 +38,14 @@ final class ProductEntity
 
     private ?string $mainImage = null;
 
-    /** @var string[]|null */
+    /** @var null|string[] */
     private ?array $galleryImages = null;
 
     private ?string $description = null;
 
     private ?string $detailContent = null;
 
-    /** @var array<string, mixed>|null */
+    /** @var null|array<string, mixed> */
     private ?array $attributesJson = null;
 
     private ?float $minPrice = null;
@@ -68,10 +68,10 @@ final class ProductEntity
 
     private ?string $status = null;
 
-    /** @var ProductSkuEntity[]|null */
+    /** @var null|ProductSkuEntity[] */
     private ?array $skus = null;
 
-    /** @var ProductAttributeEntity[]|null */
+    /** @var null|ProductAttributeEntity[] */
     private ?array $attributes = null;
 
     /** @var array<int, mixed> */
@@ -138,7 +138,7 @@ final class ProductEntity
     }
 
     /**
-     * @return array<string>|null
+     * @return null|array<string>
      */
     public function getGalleryImages(): ?array
     {
@@ -146,7 +146,7 @@ final class ProductEntity
     }
 
     /**
-     * @param array<string>|null $galleryImages
+     * @param null|array<string> $galleryImages
      */
     public function setGalleryImages(?array $galleryImages): void
     {
@@ -174,7 +174,7 @@ final class ProductEntity
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return null|array<string, mixed>
      */
     public function getAttributesJson(): ?array
     {
@@ -182,7 +182,7 @@ final class ProductEntity
     }
 
     /**
-     * @param array<string, mixed>|null $attributes
+     * @param null|array<string, mixed> $attributes
      */
     public function setAttributesJson(?array $attributes): void
     {
@@ -300,7 +300,7 @@ final class ProductEntity
     }
 
     /**
-     * @return ProductSkuEntity[]|null
+     * @return null|ProductSkuEntity[]
      */
     public function getSkus(): ?array
     {
@@ -308,7 +308,7 @@ final class ProductEntity
     }
 
     /**
-     * @param ProductSkuEntity[]|null $skus
+     * @param null|ProductSkuEntity[] $skus
      */
     public function setSkus(?array $skus): void
     {
@@ -316,7 +316,7 @@ final class ProductEntity
     }
 
     /**
-     * @return ProductAttributeEntity[]|null
+     * @return null|ProductAttributeEntity[]
      */
     public function getAttributes(): ?array
     {
@@ -324,24 +324,18 @@ final class ProductEntity
     }
 
     /**
-     * @param ProductAttributeEntity[]|null $attributes
+     * @param null|ProductAttributeEntity[] $attributes
      */
     public function setAttributes(?array $attributes): void
     {
         $this->attributes = $attributes;
     }
 
-    /**
-     * @return array
-     */
     public function getGallery(): array
     {
         return $this->gallery;
     }
 
-    /**
-     * @param array $gallery
-     */
     public function setGallery(array $gallery): void
     {
         $this->gallery = $gallery;

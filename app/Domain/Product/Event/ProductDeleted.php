@@ -22,6 +22,5 @@ final class ProductDeleted
     public function __construct(
         public readonly Product $product,
         public readonly array $skuIds = []
-    ) {
-    }
+    ) {}
 }

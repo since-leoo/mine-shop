@@ -77,4 +77,3 @@ final class IntegrationSetting
         return $this->auditMode;
     }
 }
-

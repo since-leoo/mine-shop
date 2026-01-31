@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request;
 
+use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\Collection\Arr;
 use Hyperf\Swagger\Annotation\Property;
 use Hyperf\Swagger\Annotation\Schema;
-use App\Interface\Common\Request\BaseRequest;
 use Mine\Support\Request\ClientIpRequestTrait;
 use Mine\Support\Request\ClientOsTrait;
 

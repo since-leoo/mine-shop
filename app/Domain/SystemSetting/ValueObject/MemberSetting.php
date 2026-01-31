@@ -62,4 +62,3 @@ final class MemberSetting
         return $this->vipLevels;
     }
 }
-

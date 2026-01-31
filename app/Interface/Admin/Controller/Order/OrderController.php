@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\Order;
 
@@ -14,7 +22,6 @@ use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
-use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -28,17 +35,11 @@ use Mine\Access\Attribute\Permission;
 #[Middleware(middleware: OperationMiddleware::class, priority: 98)]
 final class OrderController extends AbstractController
 {
-    #[Inject]
-    private OrderQueryService $queryService;
-    #[Inject]
-    private OrderCommandService $commandService;
-    #[Inject]
-    private CurrentUser $currentUser;
-//    public function __construct(
-//        private readonly OrderQueryService $queryService,
-//        private readonly OrderCommandService $commandService,
-//        private readonly CurrentUser $currentUser
-//    ) {}
+    public function __construct(
+        private readonly OrderQueryService $queryService,
+        private readonly OrderCommandService $commandService,
+        private readonly CurrentUser $currentUser
+    ) {}
 
     #[GetMapping(path: 'list')]
     #[Permission(code: 'order:order:list')]

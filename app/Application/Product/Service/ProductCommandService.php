@@ -18,7 +18,6 @@ use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
 use App\Domain\Product\Service\ProductService;
 use App\Infrastructure\Model\Product\Product;
-use Hyperf\Cache\Annotation\CacheEvict;
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\DbConnection\Db;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -36,9 +35,6 @@ final class ProductCommandService
 
     /**
      * 创建商品
-     *
-     * @param ProductEntity $entity
-     * @return Product
      */
     #[Transactional]
     public function create(ProductEntity $entity): Product
@@ -56,9 +52,6 @@ final class ProductCommandService
 
     /**
      * 更新商品
-     *
-     * @param ProductEntity $entity
-     * @return bool
      */
     #[Transactional]
     public function update(ProductEntity $entity): bool
@@ -76,9 +69,6 @@ final class ProductCommandService
 
     /**
      * 删除商品
-     *
-     * @param int $id
-     * @return bool
      */
     #[Transactional]
     public function delete(int $id): bool

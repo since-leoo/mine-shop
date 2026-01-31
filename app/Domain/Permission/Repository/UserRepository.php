@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 
 namespace App\Domain\Permission\Repository;
+
 use App\Domain\Auth\Enum\Type;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Permission\User;

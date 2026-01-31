@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
-use App\Infrastructure\Enum\Order\PaymentStatus;
+use App\Domain\Order\Enum\PaymentStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\DbConnection\Model\Model;
@@ -99,6 +99,6 @@ class OrderPayment extends Model
 
     public function generatePaymentNo(): string
     {
-        return 'PAY' . date('YmdHis') . str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
+        return 'PAY' . date('YmdHis') . mb_str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
     }
 }

@@ -24,8 +24,7 @@ final class UserLoginLogEntry
         private string $message,
         private string $loginTime,
         private string $remark
-    ) {
-    }
+    ) {}
 
     public function getId(): int
     {

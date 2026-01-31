@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Application\Permission\Service;
 
 use App\Domain\Permission\Entity\UserEntity;
-use App\Infrastructure\Model\Permission\User;
 use App\Domain\Permission\Repository\RoleRepository;
 use App\Domain\Permission\Repository\UserRepository;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\DbConnection\Db;
 use Psr\SimpleCache\CacheInterface;
 
@@ -30,6 +30,7 @@ final class UserCommandService
     public function create(UserEntity $entity): User
     {
         return Db::transaction(function () use ($entity) {
+            /** @var User $user */
             $user = $this->userRepository->getModel()->newQuery()->create($entity->toArray());
             $this->syncRelations($user, $entity);
             $this->forgetCache((int) $user->id);
@@ -40,6 +41,7 @@ final class UserCommandService
     public function update(UserEntity $entity): ?User
     {
         return Db::transaction(function () use ($entity) {
+            /** @var null|User $user */
             $user = $this->userRepository->findById($entity->getId());
             if (! $user) {
                 return null;
@@ -66,6 +68,7 @@ final class UserCommandService
 
     public function resetPassword(int $id): bool
     {
+        /** @var null|User $user */
         $user = $this->userRepository->findById($id);
         if (! $user) {
             return false;
@@ -81,6 +84,7 @@ final class UserCommandService
      */
     public function grantRoles(int $userId, array $roleCodes): void
     {
+        /** @var null|User $user */
         $user = $this->userRepository->findById($userId);
         if (! $user) {
             return;

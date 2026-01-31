@@ -44,4 +44,3 @@ final class BasicSetting
         return $this->hotline;
     }
 }
-

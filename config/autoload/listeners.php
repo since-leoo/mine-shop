@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
 use App\Domain\Product\Listener\ProductStockWarningListener;

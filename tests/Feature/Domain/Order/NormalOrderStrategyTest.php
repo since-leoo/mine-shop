@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Feature\Domain\Order;
 
@@ -11,11 +19,13 @@ use App\Domain\Order\ValueObject\OrderAddressValue;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
-use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
+/**
+ * @internal
+ * @coversNothing
+ */
 final class NormalOrderStrategyTest extends TestCase
 {
     use MockeryPHPUnitIntegration;
@@ -52,7 +62,7 @@ final class NormalOrderStrategyTest extends TestCase
             'address' => ['name' => '', 'phone' => '', 'detail' => ''],
         ]);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('请完善收货地址信息');
         $strategy->validate($entity);
     }
@@ -72,7 +82,7 @@ final class NormalOrderStrategyTest extends TestCase
             ],
         ]);
 
-        $this->expectException(RuntimeException::class);
+        $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('商品 标准款 已下架');
         $strategy->buildDraft($entity);
     }
@@ -164,7 +174,7 @@ final class NormalOrderStrategyTest extends TestCase
      */
     private function makeStrategy(array $snapshots): NormalOrderStrategy
     {
-        $service = Mockery::mock(ProductSnapshotInterface::class);
+        $service = \Mockery::mock(ProductSnapshotInterface::class);
         $service->shouldReceive('getSkuSnapshots')
             ->andReturnUsing(static function (array $ids) use ($snapshots): array {
                 $result = [];

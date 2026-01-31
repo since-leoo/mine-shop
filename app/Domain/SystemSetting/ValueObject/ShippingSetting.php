@@ -65,4 +65,3 @@ final class ShippingSetting
         return \in_array($code, $this->supportedProviders, true);
     }
 }
-

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Order\Entity;
 
@@ -86,6 +94,14 @@ final class OrderShipEntity
      */
     public function getPackages(): array
     {
+        return $this->packages;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function getPackagePayloads(): array
+    {
         return array_map(function (OrderPackageValue $package) {
             return $package->toArray($this->orderId);
         }, $this->packages);
@@ -105,9 +121,7 @@ final class OrderShipEntity
     {
         return [
             'order_id' => $this->orderId,
-            'packages' => array_map(function (OrderPackageValue $package) {
-                return $package->toArray($this->orderId);
-            }, $this->packages),
+            'packages' => $this->getPackagePayloads(),
             'shipped_at' => $this->shippedAt?->toDateTimeString(),
         ];
     }
