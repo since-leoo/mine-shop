@@ -48,3 +48,13 @@ mallMenu:
     orderRead: Order Detail
     orderCreate: Create Order
     orderUpdate: Update Order
+    config: Mall Settings
+    productSetting: Product & Inventory
+    orderSetting: Orders & After-sales
+    paymentSetting: Payment & Settlement
+    shippingSetting: Shipping & Logistics
+    memberSetting: Member & Marketing
+    contentSetting: Content & Compliance
+    setting: System Settings
+    settingList: View Settings
+    settingUpdate: Update Settings

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
+use App\Domain\Product\Listener\ProductStockWarningListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 use Mine\Core\Subscriber\BootApplicationSubscriber;
 use Mine\Core\Subscriber\DbQueryExecutedSubscriber;
@@ -39,6 +40,8 @@ return [
     RegisterBlueprintListener::class,
     // 商品库存同步
     ProductSkuStockListener::class,
+    // 商品库存预警
+    ProductStockWarningListener::class,
     // 订单状态消息推送
     OrderStatusNotifyListener::class,
 ];

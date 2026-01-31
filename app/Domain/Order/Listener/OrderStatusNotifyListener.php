@@ -6,11 +6,14 @@ namespace App\Domain\Order\Listener;
 
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
+use App\Domain\SystemSetting\Service\MallSettingService;
 use Hyperf\Event\Contract\ListenerInterface;
 use Plugin\Since\SystemMessage\Facade\SystemMessage;
 
 final class OrderStatusNotifyListener implements ListenerInterface
 {
+    public function __construct(private readonly MallSettingService $mallSettingService) {}
+
     public function listen(): array
     {
         return [
@@ -58,7 +61,7 @@ final class OrderStatusNotifyListener implements ListenerInterface
 
     private function notify(int $memberId, string $title, string $content): void
     {
-        if ($memberId <= 0) {
+        if ($memberId <= 0 || ! $this->mallSettingService->integration()->isChannelEnabled('system')) {
             return;
         }
 

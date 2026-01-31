@@ -48,3 +48,13 @@ mallMenu:
     orderRead: 订单详情
     orderCreate: 订单新增
     orderUpdate: 订单更新
+    config: 商城配置
+    productSetting: 商品与库存
+    orderSetting: 订单与售后
+    paymentSetting: 支付与结算
+    shippingSetting: 配送与物流
+    memberSetting: 会员与营销
+    contentSetting: 内容与合规
+    setting: 系统配置
+    settingList: 配置查看
+    settingUpdate: 配置更新

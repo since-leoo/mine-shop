@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Service;
 
+use App\Domain\Product\Event\ProductStockWarningEvent;
+use App\Domain\SystemSetting\Service\MallSettingService;
 use Hyperf\Redis\Redis;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Stringable\Str;
@@ -33,6 +35,7 @@ LUA;
 
     public function __construct(
         private readonly RedisFactory $redisFactory,
+        private readonly MallSettingService $mallSettingService,
         private readonly int $lockTtl = 3000,
         private readonly int $lockRetry = 5
     ) {}
@@ -106,6 +109,8 @@ LUA;
         if ((int) $result !== 1) {
             throw new RuntimeException('库存不足或商品已下架');
         }
+
+        $this->triggerStockWarnings($normalized);
     }
 
     /**
@@ -140,5 +145,23 @@ LUA;
     private function redis(): Redis
     {
         return $this->redisFactory->get('default');
+    }
+
+    /**
+     * @param array<int, int> $deducted
+     */
+    private function triggerStockWarnings(array $deducted): void
+    {
+        $threshold = $this->mallSettingService->product()->stockWarning();
+        if ($threshold <= 0) {
+            return;
+        }
+
+        foreach (array_keys($deducted) as $skuId) {
+            $remaining = (int) $this->redis()->hGet(self::STOCK_HASH_KEY, (string) $skuId);
+            if ($remaining <= $threshold) {
+                event(new ProductStockWarningEvent($skuId, $remaining, $threshold));
+            }
+        }
     }
 }

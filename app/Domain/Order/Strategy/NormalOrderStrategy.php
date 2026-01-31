@@ -14,6 +14,7 @@ namespace App\Domain\Order\Strategy;
 
 use App\Domain\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Order\Entity\OrderEntity;
+use App\Domain\Order\Entity\OrderItemEntity;
 use App\Domain\Order\ValueObject\OrderPriceValue;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Infrastructure\Model\Product\Product;
@@ -43,7 +44,7 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         }
 
         $address = $orderEntity->getAddress();
-        if (empty($address['name']) || empty($address['phone']) || empty($address['detail'])) {
+        if (! $address || $address->getReceiverName() === '' || $address->getReceiverPhone() === '' || $address->getDetail() === '') {
             throw new \RuntimeException('请完善收货地址信息');
         }
     }
@@ -54,7 +55,7 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
     public function buildDraft(OrderEntity $orderEntity): OrderEntity
     {
         $itemPayloads = $orderEntity->getItems();
-        $skuIds = array_map(static fn (array $item) => (int) ($item['sku_id'] ?? 0), $itemPayloads);
+        $skuIds = array_map(static fn (OrderItemEntity $item) => $item->getSkuId(), $itemPayloads);
         $skuIds = array_filter(array_unique($skuIds));
         if ($skuIds === []) {
             throw new \RuntimeException('商品信息不完整');

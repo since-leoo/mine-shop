@@ -5,19 +5,22 @@ declare(strict_types=1);
 namespace App\Domain\Product\Service;
 
 use App\Domain\Product\Contract\ProductSnapshotInterface;
+use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
-use Hyperf\Redis\Redis;
-use Hyperf\Redis\RedisFactory;
+use Hyperf\Codec\Json;
 
 final class ProductSnapshotService implements ProductSnapshotInterface
 {
-    private const SKU_SNAPSHOT_KEY = 'mall:snapshot:sku:%d';
+    private const SKU_SNAPSHOT_KEY_PREFIX = 'snapshot';
+    private const SKU_SNAPSHOT_KEY = 'sku:%d';
 
     public function __construct(
-        private readonly RedisFactory $redisFactory,
+        private readonly ICache $cache,
         private readonly ProductSku $productSkuModel
-    ) {}
+    ) {
+        $this->cache->setPrefix(self::SKU_SNAPSHOT_KEY_PREFIX);
+    }
 
     /**
      * @param array<int, int> $skuIds
@@ -26,12 +29,14 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     public function getSkuSnapshots(array $skuIds): array
     {
         $skuIds = array_values(array_filter(array_unique(array_map('intval', $skuIds))));
+
         if ($skuIds === []) {
             return [];
         }
 
         $keys = array_map(fn (int $id) => $this->skuKey($id), $skuIds);
-        $rawValues = $this->redis()->mget($keys);
+        $rawValues = $this->cache->mget($keys);
+
         if (! is_array($rawValues)) {
             $rawValues = array_fill(0, \count($keys), null);
         }
@@ -83,7 +88,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
             return;
         }
 
-        $this->redis()->del(...$keys);
+        $this->cache->delete(...$keys);
     }
 
     /**
@@ -145,11 +150,8 @@ final class ProductSnapshotService implements ProductSnapshotInterface
 
     private function persistSnapshot(int $skuId, array $payload): void
     {
-        $encoded = json_encode(
-            $payload,
-            JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR
-        );
-        $this->redis()->set($this->skuKey($skuId), $encoded);
+        $encoded = Json::encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $this->cache->set($this->skuKey($skuId), $encoded);
     }
 
     private function decodeSnapshot(string $raw): ?array
@@ -166,10 +168,5 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     private function skuKey(int $skuId): string
     {
         return sprintf(self::SKU_SNAPSHOT_KEY, $skuId);
-    }
-
-    private function redis(): Redis
-    {
-        return $this->redisFactory->get('default');
     }
 }

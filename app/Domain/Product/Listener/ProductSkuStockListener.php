@@ -15,18 +15,19 @@ namespace App\Domain\Product\Listener;
 use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
+use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\Event\Contract\ListenerInterface;
-use Hyperf\Redis\Redis;
 use Psr\Log\LoggerInterface;
 
 final class ProductSkuStockListener implements ListenerInterface
 {
-    private const STOCK_HASH_KEY = 'mall:stock:sku';
+    private const STOCK_HASH_KEY_PREFIX = 'stock';
+    private const STOCK_HASH_KEY = 'sku';
 
     public function __construct(
-        private readonly Redis $redis,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly ICache $redis
     ) {
     }
 
@@ -42,6 +43,7 @@ final class ProductSkuStockListener implements ListenerInterface
     public function process(object $event): void
     {
         try {
+            $this->redis->setPrefix(self::STOCK_HASH_KEY_PREFIX);
             match (true) {
                 $event instanceof ProductCreated => $this->syncStocks($event->product),
                 $event instanceof ProductUpdated => $this->syncUpdatedStocks($event->product, $event->deletedSkuIds),

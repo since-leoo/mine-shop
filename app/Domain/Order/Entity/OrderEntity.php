@@ -15,36 +15,16 @@ namespace App\Domain\Order\Entity;
 use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Enum\PaymentStatus;
 use App\Domain\Order\Enum\ShippingStatus;
+use App\Domain\Order\Trait\OrderSettingsTrait;
 use App\Domain\Order\ValueObject\OrderAddressValue;
 use App\Domain\Order\ValueObject\OrderPriceValue;
 use App\Infrastructure\Model\Order\Order;
 use Carbon\Carbon;
 
-/**
- * @property int $id
- * @property string $order_no
- * @property int $member_id
- * @property string $order_type
- * @property string $status
- * @property float $goods_amount
- * @property float $shipping_fee
- * @property float $discount_amount
- * @property float $total_amount
- * @property null|float $pay_amount
- * @property string $pay_status
- * @property null|Carbon $pay_time
- * @property null|string $pay_no
- * @property null|string $pay_method
- * @property null|string $buyer_remark
- * @property null|string $seller_remark
- * @property string $shipping_status
- * @property int $package_count
- * @property null|Carbon $expire_time
- * @property Carbon $created_at
- * @property Carbon $updated_at
- */
 final class OrderEntity
 {
+    use OrderSettingsTrait;
+
     private int $id = 0;
 
     private string $orderNo = '';

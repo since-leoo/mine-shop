@@ -16,6 +16,8 @@ use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\SystemSetting\Service\MallSettingService;
+use Hyperf\DbConnection\Db;
 
 final class OrderService
 {
@@ -23,6 +25,7 @@ final class OrderService
         private readonly OrderRepository $repository,
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly OrderStockService $stockService,
+        private readonly MallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -65,6 +68,7 @@ final class OrderService
      */
     public function preview(OrderEntity $command): OrderEntity
     {
+        $command->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
         $strategy = $this->strategyFactory->make($command->getOrderType());
         $strategy->validate($command);
         return $strategy->buildDraft($command);
@@ -77,6 +81,8 @@ final class OrderService
      */
     public function submit(OrderEntity $orderEntity): OrderEntity
     {
+        $orderEntity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
+        $orderEntity->applySubmissionPolicy($this->mallSettingService->order());
         // 获取订单策略
         $strategy = $this->strategyFactory->make($orderEntity->getOrderType());
         // 验证
@@ -105,6 +111,7 @@ final class OrderService
 
     public function ship(OrderEntity $entity): OrderEntity
     {
+        $entity->ensureShippable($this->mallSettingService->shipping());
         Db::transaction(function () use ($entity) {
             $this->repository->ship($entity);
         });
@@ -120,4 +127,5 @@ final class OrderService
 
         return $entity;
     }
+
 }
