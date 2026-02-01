@@ -1312,7 +1312,13 @@ onActivated(async () => {
   flex-direction: column;
   gap: 16px;
   padding: 20px;
-  background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 60%, #eef2ff 100%);
+  background: linear-gradient(
+    180deg,
+    rgb(var(--ui-primary) / 0.06) 0%,
+    rgb(var(--ui-primary) / 0.03) 55%,
+    var(--el-bg-color) 100%
+  );
+  transition: background 0.3s ease;
 }
 
 .group-hero {
@@ -1321,8 +1327,12 @@ onActivated(async () => {
   align-items: center;
   padding: 20px 28px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #1b3b7a 0%, #244f9c 70%);
-  color: #fff;
+  background: linear-gradient(
+    135deg,
+    rgb(var(--ui-primary) / 1) 0%,
+    rgb(var(--ui-primary) / 0.85) 65%
+  );
+  color: var(--el-color-white);
   box-shadow: 0 12px 26px rgba(20, 52, 109, 0.25);
 
   .hero-text {

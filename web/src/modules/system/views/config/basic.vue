@@ -1,9 +1,11 @@
 <template>
-  <SettingGroupForm
-    group-key="basic"
-    title="基础信息"
-    description="商城通用基础资料与多语言设置。"
-  />
+  <div class="mine-layout config-setting-page">
+    <SettingGroupForm
+      group-key="basic"
+      title="基础信息"
+      description="商城通用基础资料与多语言设置。"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
