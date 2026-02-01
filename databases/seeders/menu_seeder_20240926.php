@@ -475,6 +475,107 @@ class MenuSeeder20240926 extends Seeder
                         ],
                     ],
                     [
+                        'name' => 'mall:coupon',
+                        'path' => '/mall/coupon',
+                        'component' => 'mall/views/coupon/index',
+                        'meta' => new Meta([
+                            'title' => '优惠券',
+                            'i18n' => 'mallMenu.mall.coupon',
+                            'icon' => 'ph:ticket',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'coupon:list',
+                                'meta' => new Meta([
+                                    'title' => '优惠券列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:read',
+                                'meta' => new Meta([
+                                    'title' => '优惠券详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:create',
+                                'meta' => new Meta([
+                                    'title' => '优惠券新增',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:update',
+                                'meta' => new Meta([
+                                    'title' => '优惠券编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:delete',
+                                'meta' => new Meta([
+                                    'title' => '优惠券删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponDelete',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:issue',
+                                'meta' => new Meta([
+                                    'title' => '优惠券发放',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponIssue',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:user:list',
+                                'meta' => new Meta([
+                                    'title' => '领券列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponUserList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'coupon:user:update',
+                                'meta' => new Meta([
+                                    'title' => '领券记录操作',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.couponUserUpdate',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:coupon:users',
+                        'path' => '/mall/coupon/users',
+                        'component' => 'mall/views/coupon/users/index',
+                        'meta' => new Meta([
+                            'title' => '领券记录',
+                            'i18n' => 'mallMenu.mall.couponUser',
+                            'icon' => 'ph:users-three',
+                            'hidden' => 1,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'cache' => 0,
+                            'affix' => 0,
+                        ]),
+                    ],
+                    [
                         'name' => 'mall:group_buy',
                         'path' => '/mall/group-buy',
                         'component' => 'mall/views/group-buy/index',
