@@ -40,6 +40,16 @@ mallMenu:
     seckillProductCreate: 商品新增
     seckillProductUpdate: 商品编辑
     seckillProductDelete: 商品删除
+    coupon: 优惠券
+    couponList: 优惠券列表
+    couponRead: 优惠券详情
+    couponCreate: 优惠券新增
+    couponUpdate: 优惠券编辑
+    couponDelete: 优惠券删除
+    couponIssue: 优惠券发放
+    couponUser: 领券记录
+    couponUserList: 领券列表
+    couponUserUpdate: 领券记录操作
     groupBuy: 团购活动
     groupBuyList: 团购列表
     groupBuyRead: 团购详情

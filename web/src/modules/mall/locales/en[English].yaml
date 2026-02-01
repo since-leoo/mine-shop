@@ -40,6 +40,16 @@ mallMenu:
     seckillProductCreate: Add Product
     seckillProductUpdate: Update Product
     seckillProductDelete: Remove Product
+    coupon: Coupons
+    couponList: Coupon List
+    couponRead: Coupon Detail
+    couponCreate: Create Coupon
+    couponUpdate: Update Coupon
+    couponDelete: Delete Coupon
+    couponIssue: Issue Coupon
+    couponUser: Redemption Records
+    couponUserList: Coupon User List
+    couponUserUpdate: Update Coupon Records
     groupBuy: Group Buy Campaigns
     groupBuyList: Group Buy List
     groupBuyRead: Group Buy Detail

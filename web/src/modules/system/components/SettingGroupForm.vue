@@ -1409,8 +1409,8 @@ onActivated(async () => {
 
 .setting-card {
   border-radius: 16px;
-  border: 1px solid rgba(66, 82, 110, 0.08);
-  background: #fff;
+  border: 1px solid var(--setting-card-border, var(--el-border-color-light));
+  background: var(--setting-card-bg, var(--el-bg-color));
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
@@ -1440,8 +1440,8 @@ onActivated(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(33, 81, 151, 0.12);
-    color: #1f4296;
+    background: var(--setting-card-icon-bg, var(--el-color-primary-light-9));
+    color: var(--setting-card-icon-color, var(--el-color-primary));
     font-size: 18px;
   }
 
@@ -1470,7 +1470,7 @@ onActivated(async () => {
   &__footer {
     margin-top: 14px;
     padding-top: 12px;
-    border-top: 1px dashed rgba(66, 82, 110, 0.12);
+    border-top: 1px dashed var(--el-border-color-lighter);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1487,6 +1487,24 @@ onActivated(async () => {
     gap: 8px;
     align-items: center;
     white-space: nowrap;
+  }
+}
+
+:global(html.dark) {
+  .setting-card {
+    border-color: rgba(255, 255, 255, 0.08);
+    background: rgba(17, 24, 39, 0.85);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+  }
+
+  .setting-card__icon {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--el-color-primary-light-3);
+  }
+
+  .setting-card__footer {
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
