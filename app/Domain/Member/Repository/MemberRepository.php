@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Domain\Member\Repository;
 
 use App\Domain\Member\Entity\MemberEntity;
+use App\Domain\Member\Enum\MemberLevel as MemberLevelEnum;
+use App\Domain\Member\Enum\MemberSource;
 use App\Domain\Member\Trait\MemberMapperTrait;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\Member;
@@ -27,20 +29,6 @@ final class MemberRepository extends IRepository
 {
     use MemberMapperTrait;
 
-    private const SOURCE_LABELS = [
-        'wechat' => '微信公众号',
-        'mini_program' => '小程序',
-        'h5' => 'H5 活动页',
-        'admin' => '后台导入',
-    ];
-
-    private const LEVEL_LABELS = [
-        'bronze' => '青铜会员',
-        'silver' => '白银会员',
-        'gold' => '黄金会员',
-        'diamond' => '钻石会员',
-    ];
-
     public function __construct(protected readonly Member $model) {}
 
     public function handleItems(Collection $items): Collection
@@ -53,19 +41,19 @@ final class MemberRepository extends IRepository
      */
     public function stats(array $filters = []): array
     {
-        $query = $this->perQuery($this->getQuery(), $filters);
         $now = Carbon::now();
         $today = $now->copy()->startOfDay();
         $activeThreshold = $now->copy()->subDays(30);
+        $query = $this->perQuery($this->getQuery(), $filters);
 
         $total = (clone $query)->count();
-        $newToday = (clone $query)->whereBetween('created_at', [$today, $today->copy()->endOfDay()])->count();
+        $banned = (clone $query)->where('status', 'banned')->count();
         $active = (clone $query)->where('last_login_at', '>=', $activeThreshold)->count();
         $sleeping = (clone $query)->where(static function (Builder $q) use ($activeThreshold) {
-            $q->whereNull('last_login_at')
-                ->orWhere('last_login_at', '<', $activeThreshold);
+            $q->whereNull('last_login_at')->orWhere('last_login_at', '<', $activeThreshold);
         })->count();
-        $banned = (clone $query)->where('status', 'banned')->count();
+
+        $newToday = (clone $query)->whereBetween('created_at', [$today, $today->copy()->endOfDay()])->count();
 
         return [
             'total' => $total,
@@ -101,16 +89,16 @@ final class MemberRepository extends IRepository
     public function detail(int $id): ?array
     {
         /** @var null|Member $member */
-        $member = $this->getQuery()->with(['tags', 'wallet', 'pointsWallet', 'addresses', 'levelDefinition'])->find($id);
+        $member = $this->getQuery()->with(['tags', 'wallet', 'pointsWallet', 'levelDefinition'])->find($id);
 
         if (! $member) {
             return null;
         }
 
-        return $member->loads('wallet', 'pointsWallet', 'tags', 'addresses', 'levelDefinition');
+        return $member->loads('wallet', 'pointsWallet', 'tags', 'levelDefinition');
     }
 
-    public function findEntity(int $id): ?MemberEntity
+    public function findById(int $id): ?MemberEntity
     {
         /** @var null|Member $member */
         $member = $this->model->newQuery()->find($id);
@@ -119,6 +107,13 @@ final class MemberRepository extends IRepository
         }
 
         return self::mapper($member);
+    }
+
+    public function findByOpenid(string $openid): ?MemberEntity
+    {
+        /** @var null|Member $member */
+        $member = $this->getQuery()->where('openid', $openid)->first();
+        return $member ? self::mapper($member) : null;
     }
 
     public function save(MemberEntity $entity): Member
@@ -233,7 +228,7 @@ final class MemberRepository extends IRepository
             ->get()
             ->map(static function ($row) {
                 $key = (string) $row->source_key;
-                $label = self::SOURCE_LABELS[$key] ?? ($key === 'unknown' ? '未标记' : $key);
+                $label = MemberSource::tryFrom($key)?->label() ?? ($key === 'unknown' ? '未标记' : $key);
                 return [
                     'key' => $key,
                     'label' => $label,
@@ -255,7 +250,7 @@ final class MemberRepository extends IRepository
             ->get()
             ->map(static function ($row) {
                 $key = (string) $row->level_key;
-                $label = self::LEVEL_LABELS[$key] ?? ($key === 'unranked' ? '未分级' : $key);
+                $label = MemberLevelEnum::tryFrom($key)?->label() ?? ($key === 'unranked' ? '未分级' : $key);
                 return [
                     'key' => $key,
                     'label' => $label,

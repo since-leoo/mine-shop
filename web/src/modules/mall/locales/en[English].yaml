@@ -1,6 +1,9 @@
 mallMenu:
   mall:
     index: Mall Management
+    productManage: Product Center
+    orderManage: Order Center
+    activity: Campaign Management
     category: Category Management
     categoryList: Category List
     categoryRead: Category Detail
@@ -19,7 +22,7 @@ mallMenu:
     productCreate: Create Product
     productUpdate: Update Product
     productDelete: Delete Product
-    seckill: Flash Sale Management
+    seckill: Flash Sale Campaigns
     seckillSession: Session Management
     seckillProduct: Product Configuration
     seckillActivityList: Activity List
@@ -37,7 +40,7 @@ mallMenu:
     seckillProductCreate: Add Product
     seckillProductUpdate: Update Product
     seckillProductDelete: Remove Product
-    groupBuy: Group Buy Management
+    groupBuy: Group Buy Campaigns
     groupBuyList: Group Buy List
     groupBuyRead: Group Buy Detail
     groupBuyCreate: Create Group Buy

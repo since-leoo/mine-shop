@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Member\Service;
 
+use App\Domain\Auth\Service\TokenService;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Service\MemberService;
 
@@ -20,7 +21,10 @@ use App\Domain\Member\Service\MemberService;
  */
 final class MemberCommandService
 {
-    public function __construct(private readonly MemberService $memberService) {}
+    public function __construct(
+        private readonly MemberService $memberService,
+        private readonly TokenService $tokenService
+    ) {}
 
     public function create(MemberEntity $entity): void
     {
@@ -40,5 +44,22 @@ final class MemberCommandService
     public function syncTags(MemberEntity $entity): void
     {
         $this->memberService->syncTags($entity);
+    }
+
+    /**
+     * 小程序登录.
+     */
+    public function miniProgramLogin(string $code, string $encryptedData, string $iv, ?string $ip = null): array
+    {
+        $member = $this->memberService->miniProgramLogin($code, $encryptedData, $iv, $ip);
+
+        $tokenService = $this->tokenService->using('api');
+        $identifier = 'member:' . $member->getId();
+
+        return [
+            'token' => $tokenService->buildAccessToken($identifier),
+            'refresh_token' => $tokenService->buildRefreshToken($identifier),
+            'expires_in' => $tokenService->getTtl(),
+        ];
     }
 }

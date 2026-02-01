@@ -15,15 +15,21 @@ namespace App\Domain\Member\Service;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Repository\MemberTagRepository;
+use App\Domain\Member\Trait\MemberMapperTrait;
+use Carbon\Carbon;
+use Plugin\Wechat\Interfaces\MiniAppInterface;
 
 /**
  * 会员领域服务.
  */
 final class MemberService
 {
+    use MemberMapperTrait;
+
     public function __construct(
         private readonly MemberRepository $memberRepository,
         private readonly MemberTagRepository $memberTagRepository,
+        private readonly MiniAppInterface $miniApp,
     ) {}
 
     /**
@@ -105,6 +111,37 @@ final class MemberService
         $memberId = $entity->getId();
         $this->ensureMemberExists($memberId);
         $this->applyTags($memberId, $entity->getTagIds());
+    }
+
+    /**
+     * 小程序登录.
+     */
+    public function miniProgramLogin(string $code, string $encryptedData, string $iv, ?string $ip = null): MemberEntity
+    {
+        $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
+
+        if (empty($openid = $payload['openid'])) {
+            throw new \InvalidArgumentException('授权失败');
+        }
+
+        $memberEntity = $this->memberRepository->findByOpenid($openid);
+
+        if (! $memberEntity) {
+            $memberEntity = self::fromMiniProfile($payload);
+            $model = $this->memberRepository->save($memberEntity);
+            $memberEntity->setId($model->id);
+        } else {
+            $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
+            $memberEntity->setNickname($payload['nickname'] ?? $memberEntity->getNickname());
+            $memberEntity->setAvatar($payload['avatar'] ?? $memberEntity->getAvatar());
+            $memberEntity->setGender($payload['gender'] ?? $memberEntity->getGender());
+            $memberEntity->setSource('mini_program');
+            $memberEntity->setLastLoginAt(Carbon::now());
+            $memberEntity->setLastLoginIp($ip);
+            $this->memberRepository->updateEntity($memberEntity);
+        }
+
+        return $memberEntity;
     }
 
     private function ensureMemberExists(int $memberId): void

@@ -44,4 +44,23 @@ trait MemberMapperTrait
 
         return $entity;
     }
+
+    protected static function fromMiniProfile(array $profile): MemberEntity
+    {
+        $openid = (string) ($profile['openid'] ?? '');
+        if (trim($openid) === '') {
+            throw new \InvalidArgumentException('微信登录返回的 openid 为空');
+        }
+
+        $entity = new MemberEntity();
+        $entity->setOpenid($openid);
+        $entity->setUnionid($profile['unionid'] ?? null);
+        $entity->setNickname($profile['nickname'] ?? '微信用户');
+        $entity->setAvatar($profile['avatar'] ?? null);
+        $entity->setGender($profile['gender'] ?? 'unknown');
+        $entity->setSource('mini_program');
+        $entity->setStatus('active');
+
+        return $entity;
+    }
 }

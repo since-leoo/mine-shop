@@ -77,9 +77,6 @@ abstract class IRepository
         return $this->handlePage($result);
     }
 
-    /**
-     * @return null|object
-     */
     public function findById(int $id)
     {
         return $this->getQuery()->whereKey($id)->first();

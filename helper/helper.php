@@ -21,11 +21,21 @@ namespace {
     use Psr\Container\ContainerInterface;
     use Psr\Container\NotFoundExceptionInterface;
     use Psr\EventDispatcher\EventDispatcherInterface;
+    use Psr\Http\Message\RequestInterface;
 
     if (! function_exists('config_base')) {
         function config_base(): ConfigInterface
         {
             return ApplicationContext::getContainer()->get(ConfigInterface::class);
+        }
+    }
+
+    if (! function_exists('ip')) {
+        function ip(): string
+        {
+            // 从request获取真实ip
+            $request = ApplicationContext::getContainer()->get(RequestInterface::class);
+            return $request->getServerParams()['remote_addr'] ?? '127.0.0.1';
         }
     }
 

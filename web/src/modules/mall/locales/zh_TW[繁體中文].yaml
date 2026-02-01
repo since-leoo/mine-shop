@@ -1,6 +1,9 @@
 mallMenu:
   mall:
     index: 商城管理
+    productManage: 產品管理
+    orderManage: 訂單管理
+    activity: 活動管理
     category: 分類管理
     categoryList: 分類列表
     categoryRead: 分類詳情
@@ -19,7 +22,7 @@ mallMenu:
     productCreate: 商品新增
     productUpdate: 商品編輯
     productDelete: 商品刪除
-    seckill: 秒殺管理
+    seckill: 秒殺活動
     seckillSession: 場次管理
     seckillProduct: 商品配置
     seckillActivityList: 活動列表
@@ -37,7 +40,7 @@ mallMenu:
     seckillProductCreate: 商品新增
     seckillProductUpdate: 商品編輯
     seckillProductDelete: 商品刪除
-    groupBuy: 團購管理
+    groupBuy: 團購活動
     groupBuyList: 團購列表
     groupBuyRead: 團購詳情
     groupBuyCreate: 團購新增

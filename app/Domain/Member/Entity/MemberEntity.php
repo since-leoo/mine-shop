@@ -53,6 +53,10 @@ final class MemberEntity
 
     private ?string $remark = null;
 
+    private ?Carbon $lastLoginAt;
+
+    private string $lastLoginIp = '';
+
     /** @var int[] */
     private array $tagIds = [];
 
@@ -249,6 +253,28 @@ final class MemberEntity
         $this->markDirty('remark', $remark);
     }
 
+    public function setLastLoginAt(Carbon $now)
+    {
+        $this->lastLoginAt = $now;
+        $this->markDirty('last_login_at', $now);
+    }
+
+    public function getLastLoginAt(): Carbon
+    {
+        return $this->lastLoginAt;
+    }
+
+    public function getLastLoginIp(): string
+    {
+        return $this->lastLoginIp;
+    }
+
+    public function setLastLoginIp(string $ip): void
+    {
+        $this->lastLoginIp = $ip;
+        $this->markDirty('last_login_ip', $ip);
+    }
+
     /**
      * @return int[]
      */
@@ -297,6 +323,8 @@ final class MemberEntity
                 'status' => $this->status,
                 'source' => $this->source,
                 'remark' => $this->remark,
+                'last_login_at' => $this->lastLoginAt?->toDateTimeString(),
+                'last_login_ip' => $this->lastLoginIp,
                 default => null,
             };
         }
@@ -316,15 +344,7 @@ final class MemberEntity
             return;
         }
 
-        if ($value === null) {
-            return;
-        }
-
-        if (\is_string($value) && trim($value) === '') {
-            return;
-        }
-
-        if (\is_array($value) && $value === []) {
+        if (empty($value)) {
             return;
         }
 

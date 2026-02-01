@@ -50,6 +50,13 @@ final class TokenService
         return (int) $this->getJwt()->getConfig('ttl', 0);
     }
 
+    public function using(string $name): self
+    {
+        $clone = clone $this;
+        $clone->jwt = $name;
+        return $clone;
+    }
+
     private function getJwt(): JwtInterface
     {
         return $this->jwtFactory->get($this->jwt);

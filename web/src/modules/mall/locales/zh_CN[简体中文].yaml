@@ -1,6 +1,9 @@
 mallMenu:
   mall:
     index: 商城管理
+    productManage: 产品管理
+    orderManage: 订单管理
+    activity: 活动管理
     category: 分类管理
     categoryList: 分类列表
     categoryRead: 分类详情
@@ -19,7 +22,7 @@ mallMenu:
     productCreate: 商品新增
     productUpdate: 商品编辑
     productDelete: 商品删除
-    seckill: 秒杀管理
+    seckill: 秒杀活动
     seckillSession: 场次管理
     seckillProduct: 商品配置
     seckillActivityList: 活动列表
@@ -37,7 +40,7 @@ mallMenu:
     seckillProductCreate: 商品新增
     seckillProductUpdate: 商品编辑
     seckillProductDelete: 商品删除
-    groupBuy: 团购管理
+    groupBuy: 团购活动
     groupBuyList: 团购列表
     groupBuyRead: 团购详情
     groupBuyCreate: 团购新增
