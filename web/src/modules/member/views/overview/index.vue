@@ -36,19 +36,19 @@
         <div ref="growthChartRef" class="chart-panel growth-chart" />
       </div>
       <div class="mine-card channel-card">
-        <div class="card-title">渠道构成</div>
-        <div class="card-subtitle">数据来自会员来源字段，支持筛选条件联动</div>
+        <div class="card-title">地区构成</div>
+        <div class="card-subtitle">统计会员省份分布，用于判读主力市场</div>
         <div class="channel-chart">
-          <div ref="channelChartRef" class="chart-panel channel-pie" />
+          <div ref="regionChartRef" class="chart-panel channel-pie" />
         </div>
-        <div v-if="!channelBreakdown.length" class="empty-text">暂无数据</div>
-        <div v-for="channel in channelBreakdown" :key="channel.label" class="channel-item">
+        <div v-if="!regionBreakdown.length" class="empty-text">暂无数据</div>
+        <div v-for="region in regionBreakdown" :key="region.label" class="channel-item">
           <div class="channel-header">
-            <span>{{ channel.label }}</span>
-            <span class="font-medium">{{ channel.percent }}%</span>
+            <span>{{ region.label }}</span>
+            <span class="font-medium">{{ region.percent }}%</span>
           </div>
-          <el-progress :percentage="channel.percent" :stroke-width="10" :color="channel.color" />
-          <div class="channel-remark">累计人数：{{ formatNumber(channel.value) }}</div>
+          <el-progress :percentage="region.percent" :stroke-width="10" :color="region.color" />
+          <div class="channel-remark">累计人数：{{ formatNumber(region.value) }}</div>
         </div>
       </div>
     </div>
@@ -168,7 +168,7 @@ const overviewData = reactive({
     newMembers: [] as number[],
     activeMembers: [] as number[],
   },
-  source: [] as MemberBreakdownItem[],
+  region: [] as MemberBreakdownItem[],
   level: [] as MemberBreakdownItem[],
 })
 
@@ -179,26 +179,26 @@ const statCards = [
   { key: 'sleeping_30d', label: '沉睡会员', trend: -4, desc: '需召回' },
 ] as const
 
-const channelColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#9C27B0']
+const regionColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#9C27B0']
 const levelColors = ['#8CC5FF', '#A0DEFF', '#FDBA74', '#F7797D', '#BB8FCE', '#67C23A']
 
 const growthChartRef = ref<HTMLDivElement>()
-const channelChartRef = ref<HTMLDivElement>()
+const regionChartRef = ref<HTMLDivElement>()
 const levelChartRef = ref<HTMLDivElement>()
 
 const growthChart = useEcharts(growthChartRef)
-const channelChart = useEcharts(channelChartRef)
+const regionChart = useEcharts(regionChartRef)
 const levelChart = useEcharts(levelChartRef)
 
-const channelBreakdown = computed(() => {
-  const total = overviewData.source.reduce((sum, item) => sum + item.value, 0)
+const regionBreakdown = computed(() => {
+  const total = overviewData.region.reduce((sum, item) => sum + item.value, 0)
   if (!total) {
     return []
   }
-  return overviewData.source.map((item, index) => ({
+  return overviewData.region.map((item, index) => ({
     ...item,
     percent: Math.round(((item.value / total) || 0) * 100),
-    color: channelColors[index % channelColors.length],
+    color: regionColors[index % regionColors.length],
   }))
 })
 
@@ -240,11 +240,11 @@ const applyOverviewPayload = async (payload?: MemberOverviewResponse) => {
   overviewData.trend.labels = [...(payload?.trend?.labels ?? [])]
   overviewData.trend.newMembers = [...(payload?.trend?.new_members ?? [])]
   overviewData.trend.activeMembers = [...(payload?.trend?.active_members ?? [])]
-  overviewData.source = [...(payload?.source_breakdown ?? [])]
+  overviewData.region = [...(payload?.region_breakdown ?? [])]
   overviewData.level = [...(payload?.level_breakdown ?? [])]
   await nextTick()
   renderTrendChart()
-  renderChannelChart()
+  renderRegionChart()
   renderLevelChart()
 }
 
@@ -287,12 +287,12 @@ const renderTrendChart = () => {
   growthChart.setOption(option)
 }
 
-const renderChannelChart = () => {
-  const data = overviewData.source.length
-    ? overviewData.source.map((item, index) => ({
+const renderRegionChart = () => {
+  const data = overviewData.region.length
+    ? overviewData.region.map((item, index) => ({
         value: item.value,
         name: item.label,
-        itemStyle: { color: channelColors[index % channelColors.length] },
+        itemStyle: { color: regionColors[index % regionColors.length] },
       }))
     : [{ value: 1, name: '暂无数据', itemStyle: { color: '#E4E7ED' } }]
 
@@ -309,7 +309,7 @@ const renderChannelChart = () => {
       },
     ],
   }
-  channelChart.setOption(option)
+  regionChart.setOption(option)
 }
 
 const renderLevelChart = () => {

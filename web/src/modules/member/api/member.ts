@@ -114,6 +114,7 @@ export interface MemberOverviewTrend {
 export interface MemberOverviewResponse {
   trend: MemberOverviewTrend
   source_breakdown: MemberBreakdownItem[]
+  region_breakdown: MemberBreakdownItem[]
   level_breakdown: MemberBreakdownItem[]
 }
 

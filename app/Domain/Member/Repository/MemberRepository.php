@@ -77,11 +77,13 @@ final class MemberRepository extends IRepository
 
         $trend = $this->buildTrendSeries(clone $query, $trendDays);
         $sources = $this->buildSourceBreakdown(clone $query);
+        $regions = $this->buildRegionBreakdown(clone $query);
         $levels = $this->buildLevelBreakdown(clone $query);
 
         return [
             'trend' => $trend,
             'source_breakdown' => $sources,
+            'region_breakdown' => $regions,
             'level_breakdown' => $levels,
         ];
     }
@@ -231,6 +233,30 @@ final class MemberRepository extends IRepository
                 $label = MemberSource::tryFrom($key)?->label() ?? ($key === 'unknown' ? '未标记' : $key);
                 return [
                     'key' => $key,
+                    'label' => $label,
+                    'value' => (int) $row->total,
+                ];
+            })
+            ->toArray();
+    }
+
+    /**
+     * @return array<int, array{key: string, label: string, value: int}>
+     */
+    private function buildRegionBreakdown(Builder $query): array
+    {
+        $fallbackLabel = '未填写地区';
+
+        return (clone $query)
+            ->selectRaw("COALESCE(NULLIF(province, ''), ?) as region_key, COUNT(*) as total", [$fallbackLabel])
+            ->groupBy('region_key')
+            ->orderByDesc('total')
+            ->limit(6)
+            ->get()
+            ->map(static function ($row) {
+                $label = (string) $row->region_key;
+                return [
+                    'key' => $label,
                     'label' => $label,
                     'value' => (int) $row->total,
                 ];

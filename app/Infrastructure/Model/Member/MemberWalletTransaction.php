@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Model\Member;
 
 use Carbon\Carbon;
+use Hyperf\Database\Model\Events\Creating;
+use Hyperf\Database\Model\Events\Updating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
@@ -67,6 +69,21 @@ class MemberWalletTransaction extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    public function creating(Creating $event)
+    {
+        if (empty($this->wallet_id)) {
+            $this->wallet_id = time();
+        }
+    }
+
+    public function updating(Updating $event)
+    {
+        if (empty($this->wallet_id)) {
+            // 从1000000000开始生成
+            $this->wallet_id = time();
+        }
+    }
 
     public function member(): BelongsTo
     {
