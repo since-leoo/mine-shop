@@ -77,6 +77,14 @@ final class MenuEntity
 
     public function setParentId(int $parentId = 0): self
     {
+        return $this->changeParent($parentId);
+    }
+
+    public function changeParent(int $parentId): self
+    {
+        if ($parentId < 0) {
+            throw new \DomainException('父级菜单无效');
+        }
         $this->parentId = $parentId;
         $this->markDirty('parent_id');
         return $this;
@@ -89,6 +97,15 @@ final class MenuEntity
 
     public function setName(string $name = ''): self
     {
+        return $this->rename($name);
+    }
+
+    public function rename(string $name): self
+    {
+        $name = trim($name);
+        if ($name === '') {
+            throw new \DomainException('菜单名称不能为空');
+        }
         $this->name = $name;
         $this->markDirty('name');
         return $this;
@@ -101,7 +118,7 @@ final class MenuEntity
 
     public function setPath(?string $path = null): self
     {
-        $this->path = $path;
+        $this->path = $path ?: null;
         $this->markDirty('path');
         return $this;
     }
@@ -113,7 +130,7 @@ final class MenuEntity
 
     public function setComponent(?string $component = null): self
     {
-        $this->component = $component;
+        $this->component = $component ?: null;
         $this->markDirty('component');
         return $this;
     }
@@ -125,7 +142,7 @@ final class MenuEntity
 
     public function setRedirect(?string $redirect = null): self
     {
-        $this->redirect = $redirect;
+        $this->redirect = $redirect ?: null;
         $this->markDirty('redirect');
         return $this;
     }
@@ -136,6 +153,11 @@ final class MenuEntity
     }
 
     public function setStatus(Status $status = Status::Normal): self
+    {
+        return $this->changeStatus($status);
+    }
+
+    public function changeStatus(Status $status): self
     {
         $this->status = $status;
         $this->markDirty('status');
@@ -149,7 +171,12 @@ final class MenuEntity
 
     public function setSort(int $sort = 0): self
     {
-        $this->sort = $sort;
+        return $this->applySort($sort);
+    }
+
+    public function applySort(int $sort): self
+    {
+        $this->sort = max(0, $sort);
         $this->markDirty('sort');
         return $this;
     }
@@ -179,6 +206,7 @@ final class MenuEntity
      */
     public function setMeta(array $meta = []): self
     {
+        $meta['type'] = $this->normalizeMenuType($meta['type'] ?? null);
         $this->meta = $meta;
         $this->markDirty('meta');
         return $this;
@@ -226,18 +254,57 @@ final class MenuEntity
             if ($permission instanceof ButtonPermission) {
                 return $permission;
             }
-            return (new ButtonPermission())
-                ->setId((int) ($permission['id'] ?? 0))
-                ->setCode((string) ($permission['code'] ?? ''))
-                ->setTitle((string) ($permission['title'] ?? ''))
-                ->setI18n(isset($permission['i18n']) ? (string) $permission['i18n'] : null);
+            return ButtonPermission::fromArray($permission);
         }, $permissions);
         return $this;
     }
 
     public function shouldSyncButtons(): bool
     {
-        return $this->buttonDirty;
+        return $this->buttonDirty && $this->allowsButtonPermissions();
+    }
+
+    public function allowsButtonPermissions(): bool
+    {
+        return $this->metaType() === 'M';
+    }
+
+    public function metaType(): string
+    {
+        return $this->meta['type'] ?? 'M';
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    public function buttonPayloads(): array
+    {
+        return array_map(
+            static fn (ButtonPermission $permission) => [
+                'id' => $permission->id(),
+                'code' => $permission->code(),
+                'title' => $permission->title(),
+                'i18n' => $permission->i18n(),
+            ],
+            $this->buttonPermissions
+        );
+    }
+
+    public function ensureCanPersist(bool $isCreate = false): void
+    {
+        if ($isCreate && $this->id !== 0) {
+            throw new \DomainException('新增菜单不应提前设置ID');
+        }
+
+        if ($isCreate || isset($this->dirty['name'])) {
+            if (trim($this->name) === '') {
+                throw new \DomainException('菜单名称不能为空');
+            }
+        }
+
+        if (! in_array($this->metaType(), ['M', 'C', 'I', 'L', 'B'], true)) {
+            throw new \DomainException('菜单类型不合法');
+        }
     }
 
     /**
@@ -275,5 +342,15 @@ final class MenuEntity
     private function markDirty(string $field): void
     {
         $this->dirty[$field] = true;
+    }
+
+    private function normalizeMenuType(?string $type): string
+    {
+        $type = strtoupper(trim((string) ($type ?? '')));
+        $allowed = ['M', 'C', 'I', 'L', 'B'];
+        if (! in_array($type, $allowed, true)) {
+            return 'M';
+        }
+        return $type;
     }
 }

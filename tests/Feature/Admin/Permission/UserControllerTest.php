@@ -64,6 +64,7 @@ final class UserControllerTest extends ControllerCase
             'username' => Str::random(),
             'user_type' => 100,
             'nickname' => Str::random(),
+            'password' => Str::random(12),
         ];
         $result = $this->post('/admin/user', $fillAttributes);
         self::assertSame(Arr::get($result, 'code'), ResultCode::UNAUTHORIZED->value);
@@ -80,6 +81,7 @@ final class UserControllerTest extends ControllerCase
             'username' => Str::random(),
             'user_type' => 100,
             'nickname' => Str::random(),
+            'password' => Str::random(12),
             'phone' => Str::random(8),
             'email' => Str::random(10) . '@qq.com',
             'avatar' => 'https://www.baidu.com',

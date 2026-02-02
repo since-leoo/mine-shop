@@ -19,7 +19,7 @@ class LoginRequest extends BaseRequest
 {
     use NoAuthorizeTrait;
 
-    public function miniAppRules(): array
+    public function rules(): array
     {
         return [
             'code' => ['required', 'string'],

@@ -33,9 +33,17 @@ namespace {
     if (! function_exists('ip')) {
         function ip(): string
         {
-            // 从request获取真实ip
-            $request = ApplicationContext::getContainer()->get(RequestInterface::class);
-            return $request->getServerParams()['remote_addr'] ?? '127.0.0.1';
+            try {
+                $container = ApplicationContext::getContainer();
+                if ($container->has(RequestInterface::class)) {
+                    /** @var RequestInterface $request */
+                    $request = $container->get(RequestInterface::class);
+                    return $request->getServerParams()['remote_addr'] ?? '127.0.0.1';
+                }
+            } catch (\Throwable) {
+                // ignore container errors and fallback to loopback
+            }
+            return '127.0.0.1';
         }
     }
 

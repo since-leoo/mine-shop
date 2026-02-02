@@ -50,7 +50,7 @@ final class NormalOrderStrategyTest extends TestCase
         $item = $draft->getItems()[0];
         self::assertSame(1, $item->getSkuId());
         self::assertSame(2, $item->getQuantity());
-        self::assertSame(200, $item->getTotalPrice());
+        self::assertSame(200.0, $item->getTotalPrice());
         self::assertSame(200.0, $draft->getPriceDetail()?->getGoodsAmount());
         self::assertSame(0.0, $draft->getPriceDetail()?->getShippingFee());
     }

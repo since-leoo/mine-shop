@@ -39,28 +39,66 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
     {
       label: () => '优惠值',
       prop: 'value',
-      render: 'inputNumber',
-      renderProps: { min: 0.01, precision: 2, placeholder: '请输入优惠金额/折扣值', class: 'w-full' },
+      render: () => (
+        <el-input-number
+          modelValue={typeof model.value === 'number' ? model.value : undefined}
+          onUpdate:modelValue={(val: number | null) => model.value = typeof val === 'number' ? val : undefined}
+          min={0.01}
+          precision={2}
+          placeholder="请输入优惠金额/折扣值"
+          controls-position="right"
+          class="w-full"
+        />
+      ),
       itemProps: { rules: [{ required: true, message: '请输入优惠值' }] },
     },
     {
       label: () => '最低使用金额',
       prop: 'min_amount',
-      render: 'inputNumber',
-      renderProps: { min: 0, precision: 2, placeholder: '请输入最低使用金额', class: 'w-full' },
+      render: () => (
+        <el-input-number
+          modelValue={typeof model.min_amount === 'number' ? model.min_amount : undefined}
+          onUpdate:modelValue={(val: number | null) => model.min_amount = typeof val === 'number' ? val : undefined}
+          min={0}
+          precision={2}
+          placeholder="请输入最低使用金额"
+          controls-position="right"
+          class="w-full"
+        />
+      ),
     },
     {
       label: () => '发放总数',
       prop: 'total_quantity',
-      render: 'inputNumber',
-      renderProps: { min: 1, precision: 0, placeholder: '请输入发放数量', class: 'w-full' },
+      render: () => (
+        <el-input-number
+          modelValue={typeof model.total_quantity === 'number' ? model.total_quantity : 1}
+          onUpdate:modelValue={(val: number | null) => model.total_quantity = typeof val === 'number' ? val : model.total_quantity}
+          min={1}
+          step={1}
+          controls-position="right"
+          placeholder="请输入发放数量"
+          class="w-full"
+        />
+      ),
       itemProps: { rules: [{ required: true, message: '请输入发放总数' }] },
     },
     {
       label: () => '每人限领',
       prop: 'per_user_limit',
-      render: 'inputNumber',
-      renderProps: { min: 1, precision: 0, placeholder: '请输入限领数量', class: 'w-full' },
+      render: () => (
+        <el-input-number
+          modelValue={typeof model.per_user_limit === 'number' ? model.per_user_limit : undefined}
+          onUpdate:modelValue={(val: number | null) => {
+            model.per_user_limit = typeof val === 'number' ? val : undefined
+          }}
+          min={1}
+          step={1}
+          controls-position="right"
+          placeholder="请输入限领数量（留空则不限）"
+          class="w-full"
+        />
+      ),
     },
     {
       label: () => '有效期',

@@ -62,6 +62,15 @@ abstract class HttpTestCase extends TestCase
         }
     }
 
+    protected function mock(string $abstract, object $instance): void
+    {
+        if (! ApplicationContext::hasContainer()) {
+            return;
+        }
+
+        ApplicationContext::getContainer()->set($abstract, $instance);
+    }
+
     protected function fakerGenerator(): Generator
     {
         return Factory::create();

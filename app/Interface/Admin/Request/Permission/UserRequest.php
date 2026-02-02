@@ -28,7 +28,9 @@ class UserRequest extends BaseRequest
 
     public function createRules(): array
     {
-        return $this->baseRules();
+        return array_merge($this->baseRules(), [
+            'password' => ['required', 'string', 'min:6'],
+        ]);
     }
 
     public function saveRules(): array

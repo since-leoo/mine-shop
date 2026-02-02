@@ -15,7 +15,7 @@ namespace App\Application\Product\Assembler;
 use App\Domain\Product\Entity\ProductAttributeEntity;
 use App\Domain\Product\Entity\ProductEntity;
 use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\Product\ValueObject\ProductStatus;
+use App\Domain\Product\Enum\ProductStatus;
 
 /**
  * 商品组装器：负责将请求数据转换为领域实体.
@@ -83,7 +83,7 @@ final class ProductAssembler
         if ($status === null && $defaultStatus !== null) {
             $status = $defaultStatus;
         }
-        $entity->setStatus($status);
+        $entity->changeStatus($status);
     }
 
     /**

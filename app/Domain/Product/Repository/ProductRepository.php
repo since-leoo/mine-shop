@@ -92,19 +92,19 @@ final class ProductRepository extends IRepository
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
-            ->when(isset($params['name']), static fn (Builder $q) => $q->where('name', 'like', '%' . $params['name'] . '%'))
-            ->when(isset($params['keyword']), static fn (Builder $q) => $q->where(static fn (Builder $q) => $q->where('name', 'like', '%' . $params['keyword'] . '%')->orWhere('product_code', 'like', '%' . $params['keyword'] . '%')))
-            ->when(isset($params['product_code']), static fn (Builder $q) => $q->where('product_code', 'like', '%' . $params['product_code'] . '%'))
-            ->when(isset($params['category_id']), static fn (Builder $q) => \is_array($params['category_id']) ? $q->whereIn('category_id', $params['category_id']) : $q->where('category_id', $params['category_id']))
-            ->when(isset($params['brand_id']), static fn (Builder $q) => \is_array($params['brand_id']) ? $q->whereIn('brand_id', $params['brand_id']) : $q->where('brand_id', $params['brand_id']))
-            ->when(isset($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
-            ->when(isset($params['is_recommend']), static fn (Builder $q) => $q->where('is_recommend', (bool) $params['is_recommend']))
-            ->when(isset($params['is_hot']), static fn (Builder $q) => $q->where('is_hot', (bool) $params['is_hot']))
-            ->when(isset($params['is_new']), static fn (Builder $q) => $q->where('is_new', (bool) $params['is_new']))
-            ->when(isset($params['min_price']), static fn (Builder $q) => $q->where('min_price', '>=', (float) $params['min_price']))
-            ->when(isset($params['max_price']), static fn (Builder $q) => $q->where('max_price', '<=', (float) $params['max_price']))
-            ->when(isset($params['sales_min']), static fn (Builder $q) => $q->where('real_sales', '>=', (int) $params['sales_min']))
-            ->when(isset($params['sales_max']), static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
+            ->when(! empty($params['name']), static fn (Builder $q) => $q->where('name', 'like', '%' . $params['name'] . '%'))
+            ->when(! empty($params['keyword']), static fn (Builder $q) => $q->where(static fn (Builder $q) => $q->where('name', 'like', '%' . $params['keyword'] . '%')->orWhere('product_code', 'like', '%' . $params['keyword'] . '%')))
+            ->when(! empty($params['product_code']), static fn (Builder $q) => $q->where('product_code', 'like', '%' . $params['product_code'] . '%'))
+            ->when(! empty($params['category_id']), static fn (Builder $q) => \is_array($params['category_id']) ? $q->whereIn('category_id', $params['category_id']) : $q->where('category_id', $params['category_id']))
+            ->when(! empty($params['brand_id']), static fn (Builder $q) => \is_array($params['brand_id']) ? $q->whereIn('brand_id', $params['brand_id']) : $q->where('brand_id', $params['brand_id']))
+            ->when(! empty($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
+            ->when(! empty($params['is_recommend']), static fn (Builder $q) => $q->where('is_recommend', (bool) $params['is_recommend']))
+            ->when(! empty($params['is_hot']), static fn (Builder $q) => $q->where('is_hot', (bool) $params['is_hot']))
+            ->when(! empty($params['is_new']), static fn (Builder $q) => $q->where('is_new', (bool) $params['is_new']))
+            ->when(! empty($params['min_price']), static fn (Builder $q) => $q->where('min_price', '>=', (float) $params['min_price']))
+            ->when(! empty($params['max_price']), static fn (Builder $q) => $q->where('max_price', '<=', (float) $params['max_price']))
+            ->when(! empty($params['sales_min']), static fn (Builder $q) => $q->where('real_sales', '>=', (int) $params['sales_min']))
+            ->when(! empty($params['sales_max']), static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
             ->with(['category', 'brand']);
     }
 }

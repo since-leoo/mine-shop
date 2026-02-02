@@ -44,6 +44,7 @@ final class ProductService
     public function create(ProductEntity $entity): ProductEntity
     {
         $this->applyProductSettings($entity);
+        $entity->ensureCanPersist(true);
         $entity->syncPriceRange();
         return $this->repository->save($entity);
     }
@@ -54,6 +55,7 @@ final class ProductService
     public function update(ProductEntity $entity): void
     {
         $this->applyProductSettings($entity);
+        $entity->ensureCanPersist();
         $entity->syncPriceRange();
         $this->repository->update($entity);
     }
@@ -73,18 +75,13 @@ final class ProductService
     {
         foreach ($sortData as $item) {
             if (isset($item['id'], $item['sort'])) {
-                $this->repository->updateById((int) $item['id'], ['sort' => $item['sort']]);
+                $entity = new ProductEntity();
+                $entity->setId((int) $item['id']);
+                $entity->applySort((int) $item['sort']);
+                $this->repository->updateById($entity->getId(), ['sort' => $entity->getSort()]);
             }
         }
         return true;
-    }
-
-    /**
-     * 根据ID获取商品.
-     */
-    public function getEntityById(int $id): ?ProductEntity
-    {
-        return $this->repository->getEntityById($id);
     }
 
     /**

@@ -19,7 +19,7 @@ class CouponIssueRequest extends BaseRequest
 {
     use NoAuthorizeTrait;
 
-    public function issueRules(): array
+    public function rules(): array
     {
         return [
             'member_ids' => ['required', 'array', 'min:1'],

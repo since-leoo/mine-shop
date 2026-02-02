@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Product\Entity;
 
 use App\Domain\Product\Enum\BrandStatus;
+use DomainException;
 
 /**
  * 品牌实体.
@@ -21,7 +22,7 @@ final class BrandEntity
 {
     private int $id = 0;
 
-    private string $name = '';
+    private ?string $name = null;
 
     private ?string $logo = null;
 
@@ -29,9 +30,9 @@ final class BrandEntity
 
     private ?string $website = null;
 
-    private int $sort = 0;
+    private ?int $sort = null;
 
-    private string $status = 'active';
+    private string $status = BrandStatus::ACTIVE->value;
 
     public function getId(): int
     {
@@ -44,13 +45,22 @@ final class BrandEntity
         return $this;
     }
 
-    public function getName(): string
+    public function getName(): ?string
     {
         return $this->name;
     }
 
     public function setName(string $name = ''): self
     {
+        return $this->rename($name);
+    }
+
+    public function rename(string $name): self
+    {
+        $name = trim($name);
+        if ($name === '') {
+            throw new DomainException('品牌名称不能为空');
+        }
         $this->name = $name;
         return $this;
     }
@@ -62,7 +72,12 @@ final class BrandEntity
 
     public function setLogo(?string $logo = null): self
     {
-        $this->logo = $logo;
+        return $this->changeLogo($logo);
+    }
+
+    public function changeLogo(?string $logo): self
+    {
+        $this->logo = $logo ?: null;
         return $this;
     }
 
@@ -72,6 +87,11 @@ final class BrandEntity
     }
 
     public function setDescription(?string $description = null): self
+    {
+        return $this->describe($description);
+    }
+
+    public function describe(?string $description): self
     {
         $this->description = $description;
         return $this;
@@ -84,19 +104,35 @@ final class BrandEntity
 
     public function setWebsite(?string $website = null): self
     {
-        $this->website = $website;
+        return $this->changeWebsite($website);
+    }
+
+    public function changeWebsite(?string $website): self
+    {
+        $website = $website !== null ? trim($website) : null;
+        $this->website = $website ?: null;
         return $this;
     }
 
-    public function getSort(): int
+    public function getSort(): ?int
     {
         return $this->sort;
     }
 
     public function setSort(int $sort = 0): self
     {
-        $this->sort = $sort;
+        return $this->applySort($sort);
+    }
+
+    public function applySort(int $sort): self
+    {
+        $this->sort = max(0, $sort);
         return $this;
+    }
+
+    public function needsSort(): bool
+    {
+        return $this->sort === null || $this->sort <= 0;
     }
 
     public function getStatus(): string
@@ -106,13 +142,39 @@ final class BrandEntity
 
     public function setStatus(string $status = 'active'): self
     {
+        return $this->changeStatus($status);
+    }
+
+    public function changeStatus(string $status): self
+    {
+        $values = array_map(static fn (BrandStatus $case) => $case->value, BrandStatus::cases());
+        if (! in_array($status, $values, true)) {
+            throw new DomainException('品牌状态值无效');
+        }
         $this->status = $status;
         return $this;
+    }
+
+    public function activate(): self
+    {
+        return $this->changeStatus(BrandStatus::ACTIVE->value);
+    }
+
+    public function deactivate(): self
+    {
+        return $this->changeStatus(BrandStatus::INACTIVE->value);
     }
 
     public function isActive(): bool
     {
         return $this->status === BrandStatus::ACTIVE->value;
+    }
+
+    public function ensureCanPersist(bool $isCreate = false): void
+    {
+        if ($isCreate && $this->name === null) {
+            throw new DomainException('品牌名称不能为空');
+        }
     }
 
     /**
@@ -123,7 +185,7 @@ final class BrandEntity
     public function toArray(): array
     {
         return array_filter([
-            'name' => $this->getName() ?: null,
+            'name' => $this->getName(),
             'logo' => $this->getLogo(),
             'description' => $this->getDescription(),
             'website' => $this->getWebsite(),

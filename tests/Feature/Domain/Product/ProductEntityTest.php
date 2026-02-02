@@ -15,6 +15,7 @@ namespace HyperfTests\Feature\Domain\Product;
 use App\Domain\Product\Entity\ProductAttributeEntity;
 use App\Domain\Product\Entity\ProductEntity;
 use App\Domain\Product\Entity\ProductSkuEntity;
+use App\Domain\Product\Enum\ProductStatus;
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Relations\HasMany;
@@ -77,5 +78,44 @@ final class ProductEntityTest extends TestCase
         $sku->setSalePrice($price);
         $sku->setStock(10);
         return $sku;
+    }
+
+    public function testEnsureCanPersistRequiresNameAndCategory(): void
+    {
+        $entity = new ProductEntity();
+        $entity->setCategoryId(1);
+        $entity->setSkus([$this->makeSku(1, 99.0)]);
+
+        $this->expectException(\DomainException::class);
+        $entity->ensureCanPersist(true);
+    }
+
+    public function testEnsureCanPersistAllowsPartialUpdate(): void
+    {
+        $entity = new ProductEntity();
+        $entity->setId(1);
+        $entity->setName(null);
+        $entity->setCategoryId(null);
+        $entity->setSkus(null);
+
+        $entity->ensureCanPersist();
+        self::assertTrue(true);
+    }
+
+    public function testChangeStatusRejectsInvalidTransition(): void
+    {
+        $entity = new ProductEntity();
+        $entity->changeStatus(ProductStatus::ACTIVE->value);
+
+        $this->expectException(\DomainException::class);
+        $entity->changeStatus(ProductStatus::DRAFT->value);
+    }
+
+    public function testSetSkusRejectsPlainArrays(): void
+    {
+        $entity = new ProductEntity();
+        $this->expectException(\DomainException::class);
+        /** @phpstan-ignore-next-line intentionally passing invalid data */
+        $entity->setSkus([['id' => 1]]);
     }
 }

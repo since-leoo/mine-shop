@@ -24,7 +24,6 @@ final class BrandCommandService
 {
     public function __construct(
         private readonly BrandService $brandService,
-        private readonly BrandQueryService $queryService
     ) {}
 
     #[CacheEvict(prefix: 'mall:brands', all: true)]
@@ -36,17 +35,12 @@ final class BrandCommandService
     #[CacheEvict(prefix: 'mall:brands', all: true)]
     public function update(BrandEntity $entity): bool
     {
-        $brand = $this->queryService->find($entity->getId());
-        $brand || throw new \InvalidArgumentException('品牌不存在');
         return $this->brandService->update($entity);
     }
 
     #[CacheEvict(prefix: 'mall:brands', all: true)]
     public function delete(int $id): bool
     {
-        $brand = $this->queryService->find($id);
-        $brand || throw new \InvalidArgumentException('品牌不存在');
-        $brand->canDelete() || throw new \RuntimeException('该品牌下还有商品，无法删除');
         return $this->brandService->delete($id);
     }
 

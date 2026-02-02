@@ -18,6 +18,7 @@ use App\Domain\Order\Entity\OrderShipEntity;
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
 use App\Domain\Order\Service\OrderService;
+use Hyperf\DbConnection\Annotation\Transactional;
 
 final class OrderCommandService
 {
@@ -45,6 +46,7 @@ final class OrderCommandService
     /**
      * @return array<string, mixed>
      */
+    #[Transactional]
     public function ship(OrderShipEntity $orderShipEntity): array
     {
         $orderEntity = $this->orderService->getEntityById($orderShipEntity->getOrderId());
@@ -62,6 +64,7 @@ final class OrderCommandService
     /**
      * @return array<string, mixed>
      */
+    #[Transactional]
     public function cancel(OrderCancelEntity $orderCancelEntity): array
     {
         $orderEntity = $this->orderService->getEntityById($orderCancelEntity->getOrderId());

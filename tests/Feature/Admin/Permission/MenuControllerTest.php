@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Admin\Permission;
 
 use App\Infrastructure\Model\Permission\Menu;
+use Hyperf\Collection\Arr;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\CrudControllerCase;
 
@@ -94,7 +95,7 @@ final class MenuControllerTest extends CrudControllerCase
             'icon' => Str::random(10),
             'affix' => (bool) rand(0, 1),
             'hidden' => (bool) rand(0, 1),
-            'type' => Str::random(10),
+            'type' => Arr::random(['M', 'C', 'I', 'L', 'B']),
             'cache' => (bool) rand(0, 1),
             'link' => Str::random(10),
         ];

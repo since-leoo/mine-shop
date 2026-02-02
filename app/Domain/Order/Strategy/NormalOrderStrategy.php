@@ -63,11 +63,8 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
 
         $snapshots = $this->snapshotService->getSkuSnapshots($skuIds);
 
-        $goodsAmount = 0;
         foreach ($itemPayloads as $item) {
-            if ($item->getQuantity() <= 0) {
-                throw new \RuntimeException('商品数量必须大于0');
-            }
+            $item->ensureQuantityPositive();
 
             $snapshot = $snapshots[$item->getSkuId()] ?? null;
             if (! $snapshot) {
@@ -85,11 +82,12 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
                 throw new \RuntimeException(\sprintf('商品 %s 已禁用', $productName));
             }
 
-            $goodsAmount = (float) bcadd((string) $item->getTotalPrice(), (string) $goodsAmount, 2);
+            $item->attachSnapshot($snapshot);
         }
 
-        $priceDetail = new OrderPriceValue();
-        $priceDetail->setGoodsAmount($goodsAmount);
+        $orderEntity->syncPriceDetailFromItems();
+
+        $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setDiscountAmount(0.0);
         $priceDetail->setShippingFee(0.0);
         $orderEntity->setPriceDetail($priceDetail);

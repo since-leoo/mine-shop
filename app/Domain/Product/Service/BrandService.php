@@ -55,9 +55,10 @@ final class BrandService
      */
     public function create(BrandEntity $entity): Brand
     {
-        if ($entity->getSort() === 0) {
-            $entity->setSort(Brand::getNextSort());
+        if ($entity->needsSort()) {
+            $entity->applySort(Brand::getNextSort());
         }
+        $entity->ensureCanPersist(true);
         return $this->repository->store($entity);
     }
 
@@ -66,6 +67,9 @@ final class BrandService
      */
     public function update(BrandEntity $entity): bool
     {
+        $brand = $this->repository->findById($entity->getId());
+        $brand || throw new \InvalidArgumentException('品牌不存在');
+        $entity->ensureCanPersist();
         return $this->repository->update($entity);
     }
 
@@ -74,6 +78,11 @@ final class BrandService
      */
     public function delete(int $id): bool
     {
+        /** @var null|Brand $brand */
+        $brand = $this->repository->findById($id);
+        $brand || throw new \InvalidArgumentException('品牌不存在');
+        $brand->canDelete() || throw new \RuntimeException('该品牌下还有商品，无法删除');
+
         return $this->repository->deleteById($id) > 0;
     }
 
@@ -82,6 +91,20 @@ final class BrandService
      */
     public function updateSort(array $sortData): bool
     {
-        return $this->repository->updateSort($sortData);
+        $sanitized = [];
+        foreach ($sortData as $item) {
+            if (! isset($item['id'], $item['sort'])) {
+                continue;
+            }
+            $entity = (new BrandEntity())
+                ->setId((int) $item['id'])
+                ->applySort((int) $item['sort']);
+            $sanitized[] = [
+                'id' => $entity->getId(),
+                'sort' => $entity->getSort(),
+            ];
+        }
+
+        return $sanitized === [] ? true : $this->repository->updateSort($sanitized);
     }
 }

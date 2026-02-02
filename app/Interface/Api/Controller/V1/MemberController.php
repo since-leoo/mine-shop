@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Member\Service\MemberQueryService;
+use App\Application\Member\Contract\MemberQueryInterface;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Support\CurrentMember;
@@ -28,7 +28,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 final class MemberController extends AbstractController
 {
     public function __construct(
-        private readonly MemberQueryService $queryService,
+        private readonly MemberQueryInterface $queryService,
         private readonly CurrentMember $currentMember
     ) {}
 

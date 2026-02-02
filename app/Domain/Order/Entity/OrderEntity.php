@@ -276,7 +276,27 @@ final class OrderEntity
 
     public function setItems(OrderItemEntity $item): void
     {
+        $this->addItem($item);
+    }
+
+    public function addItem(OrderItemEntity $item): void
+    {
+        $item->ensureQuantityPositive();
         $this->items[] = $item;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     */
+    public function replaceItemsFromPayload(array $items): void
+    {
+        $this->items = [];
+        foreach ($items as $payload) {
+            if (! \is_array($payload)) {
+                continue;
+            }
+            $this->addItem(OrderItemEntity::fromPayload($payload));
+        }
     }
 
     /**
@@ -292,6 +312,14 @@ final class OrderEntity
         $this->address = $address;
     }
 
+    /**
+     * @param array<string, mixed> $payload
+     */
+    public function useAddressPayload(array $payload): void
+    {
+        $this->setAddress(OrderAddressValue::fromArray($payload));
+    }
+
     public function getAddress(): ?OrderAddressValue
     {
         return $this->address;
@@ -300,6 +328,11 @@ final class OrderEntity
     public function setPriceDetail(OrderPriceValue $priceDetail): void
     {
         $this->priceDetail = $priceDetail;
+        $this->setGoodsAmount($priceDetail->getGoodsAmount());
+        $this->setDiscountAmount($priceDetail->getDiscountAmount());
+        $this->setShippingFee($priceDetail->getShippingFee());
+        $this->setTotalAmount($priceDetail->getTotalAmount());
+        $this->setPayAmount($priceDetail->getPayAmount());
     }
 
     public function getPriceDetail(): ?OrderPriceValue
@@ -353,6 +386,16 @@ final class OrderEntity
         return $this;
     }
 
+    public function complete(): void
+    {
+        if (! \in_array($this->getStatus(), [OrderStatus::SHIPPED->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
+            throw new \RuntimeException('当前订单状态不可完成');
+        }
+
+        $this->setStatus(OrderStatus::COMPLETED->value);
+        $this->setShippingStatus(ShippingStatus::DELIVERED->value);
+    }
+
     /**
      * 取消订单.
      */
@@ -371,6 +414,31 @@ final class OrderEntity
         );
     }
 
+    public function markPaid(string $payNo, string $payMethod, ?Carbon $paidAt = null): void
+    {
+        if ($this->getStatus() !== OrderStatus::PENDING->value) {
+            throw new \RuntimeException('当前订单状态不可支付');
+        }
+
+        $this->setPayStatus(PaymentStatus::PAID->value);
+        $this->setStatus(OrderStatus::PAID->value);
+        $this->setPayNo($payNo);
+        $this->setPayMethod($payMethod);
+        $this->setPayTime($paidAt ?? Carbon::now());
+    }
+
+    public function syncPriceDetailFromItems(): void
+    {
+        $sum = '0';
+        foreach ($this->items as $item) {
+            $sum = bcadd($sum, (string) $item->getTotalPrice(), 2);
+        }
+
+        $detail = $this->priceDetail ?? new OrderPriceValue();
+        $detail->setGoodsAmount((float) $sum);
+        $this->setPriceDetail($detail);
+    }
+
     /**
      * 转换成数组.
      */
@@ -385,10 +453,16 @@ final class OrderEntity
             'shipping_fee' => $this->getShippingFee(),
             'discount_amount' => $this->getDiscountAmount(),
             'total_amount' => $this->getTotalAmount(),
+            'pay_amount' => $this->getPayAmount(),
+            'pay_status' => $this->getPayStatus(),
+            'pay_time' => $this->getPayTime()?->toDateTimeString(),
+            'pay_no' => $this->getPayNo(),
+            'pay_method' => $this->getPayMethod(),
             'buyer_remark' => $this->getBuyerRemark(),
             'seller_remark' => $this->getSellerRemark(),
             'expire_time' => $this->getExpireTime(),
             'shipping_status' => $this->getShippingStatus(),
+            'package_count' => $this->getPackageCount(),
         ];
     }
 }

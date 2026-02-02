@@ -189,9 +189,24 @@ final class UserEntity
 
     public function setStatus(Status $status = Status::Normal): self
     {
+        return $this->changeStatus($status);
+    }
+
+    public function changeStatus(Status $status): self
+    {
         $this->status = $status;
         $this->markDirty('status');
         return $this;
+    }
+
+    public function activate(): self
+    {
+        return $this->changeStatus(Status::Normal);
+    }
+
+    public function disable(): self
+    {
+        return $this->changeStatus(Status::DISABLE);
     }
 
     /**
@@ -348,5 +363,22 @@ final class UserEntity
     private function markDirty(string $field): void
     {
         $this->dirty[$field] = true;
+    }
+
+    public function ensureCanPersist(bool $isCreate = false): void
+    {
+        if ($isCreate || isset($this->dirty['username'])) {
+            if (trim($this->username) === '') {
+                throw new \DomainException('用户名不能为空');
+            }
+        }
+        if ($isCreate || isset($this->dirty['nickname'])) {
+            if (trim($this->nickname) === '') {
+                throw new \DomainException('用户昵称不能为空');
+            }
+        }
+        if ($isCreate && ($this->password === null || $this->password === '')) {
+            throw new \DomainException('新增用户必须设置密码');
+        }
     }
 }

@@ -65,13 +65,15 @@ final class CategoryService
      */
     public function create(CategoryEntity $entity): Category
     {
-        $parentId = $entity->getParentId();
-        if ($parentId > 0) {
-            $entity->setLevel($this->calculateLevel($parentId));
+        $parentId = $entity->getParentId() ?? 0;
+        $level = $parentId > 0 ? $this->calculateLevel($parentId) : 1;
+        $entity->setLevel($level);
+
+        if ($entity->needsSort()) {
+            $entity->applySort(Category::getNextSort($parentId));
         }
-        if ($entity->getSort() === 0) {
-            $entity->setSort(Category::getNextSort($parentId));
-        }
+
+        $entity->ensureCanPersist(true);
 
         return $this->repository->store($entity);
     }
@@ -81,10 +83,15 @@ final class CategoryService
      */
     public function update(CategoryEntity $entity): bool
     {
+        $category = $this->repository->findById($entity->getId());
+        $category || throw new \InvalidArgumentException('分类不存在');
+
         $parentId = $entity->getParentId();
-        if ($parentId > 0) {
-            $entity->setLevel($this->calculateLevel($parentId));
+        if ($parentId !== null) {
+            $entity->setLevel($parentId > 0 ? $this->calculateLevel($parentId) : 1);
         }
+
+        $entity->ensureCanPersist();
 
         return $this->repository->update($entity);
     }
@@ -94,6 +101,10 @@ final class CategoryService
      */
     public function delete(int $id): bool
     {
+        $category = $this->repository->findById($id);
+        $category || throw new \InvalidArgumentException('分类不存在');
+        $category->canDelete() || throw new \RuntimeException('该分类下还有子分类，无法删除');
+
         return $this->repository->deleteById($id) > 0;
     }
 
@@ -102,6 +113,16 @@ final class CategoryService
      */
     public function move(int $categoryId, int $newParentId): bool
     {
+        $category = $this->repository->findById($categoryId);
+        $category || throw new \InvalidArgumentException('分类不存在');
+
+        $newParent = $newParentId > 0 ? $this->repository->findById($newParentId) : null;
+        $newParentId > 0 && ! $newParent && throw new \InvalidArgumentException('父级分类不存在');
+
+        if ($newParent && $this->isDescendant($categoryId, $newParentId)) {
+            throw new \InvalidArgumentException('不能移动到子分类下');
+        }
+
         $newLevel = 1;
         if ($newParentId > 0) {
             $newParent = $this->repository->findById($newParentId);
@@ -111,7 +132,7 @@ final class CategoryService
         }
 
         return (bool) Db::transaction(function () use ($categoryId, $newParentId, $newLevel) {
-            $entity = (new CategoryEntity())->setId($categoryId)->setParentId($newParentId)->setLevel($newLevel);
+            $entity = (new CategoryEntity())->setId($categoryId)->moveToParent($newParentId, $newLevel);
             $this->repository->update($entity);
             $this->updateChildrenLevel($categoryId, $newLevel);
             return true;
@@ -123,7 +144,19 @@ final class CategoryService
      */
     public function updateSort(array $sortData): bool
     {
-        return $this->repository->updateSort($sortData);
+        $sanitized = [];
+        foreach ($sortData as $item) {
+            if (! isset($item['id'], $item['sort'])) {
+                continue;
+            }
+            $entity = (new CategoryEntity())->setId((int) $item['id'])->applySort((int) $item['sort']);
+            $sanitized[] = [
+                'id' => $entity->getId(),
+                'sort' => $entity->getSort(),
+            ];
+        }
+
+        return $sanitized === [] || $this->repository->updateSort($sanitized);
     }
 
     /**

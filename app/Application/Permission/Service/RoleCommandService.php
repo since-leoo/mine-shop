@@ -13,34 +13,22 @@ declare(strict_types=1);
 namespace App\Application\Permission\Service;
 
 use App\Domain\Permission\Entity\RoleEntity;
-use App\Domain\Permission\Repository\MenuRepository;
-use App\Domain\Permission\Repository\RoleRepository;
+use App\Domain\Permission\Service\RoleService;
 use App\Infrastructure\Model\Permission\Role;
 use Hyperf\DbConnection\Db;
 
 final class RoleCommandService
 {
-    public function __construct(
-        private readonly RoleRepository $roleRepository,
-        private readonly MenuRepository $menuRepository
-    ) {}
+    public function __construct(private readonly RoleService $roleService) {}
 
     public function create(RoleEntity $entity): Role
     {
-        return Db::transaction(function () use ($entity) {
-            return $this->roleRepository->getModel()->newQuery()->create($entity->toArray());
-        });
+        return Db::transaction(fn () => $this->roleService->create($entity));
     }
 
     public function update(int $id, RoleEntity $entity): bool
     {
-        return Db::transaction(function () use ($id, $entity) {
-            $payload = $entity->toArray();
-            if ($payload === []) {
-                return true;
-            }
-            return $this->roleRepository->updateById($id, $payload);
-        });
+        return Db::transaction(fn () => $this->roleService->update($id, $entity));
     }
 
     /**
@@ -48,7 +36,7 @@ final class RoleCommandService
      */
     public function delete(array $ids): int
     {
-        return $this->roleRepository->deleteByIds($ids);
+        return $this->roleService->delete($ids);
     }
 
     /**
@@ -56,21 +44,6 @@ final class RoleCommandService
      */
     public function grantPermissions(int $roleId, array $permissionCodes): void
     {
-        $role = $this->roleRepository->findById($roleId);
-        if (! $role) {
-            return;
-        }
-
-        if ($permissionCodes === []) {
-            $role->menus()->detach();
-            return;
-        }
-
-        $menuIds = $this->menuRepository
-            ->listByCodes($permissionCodes)
-            ->pluck('id')
-            ->toArray();
-
-        $role->menus()->sync($menuIds);
+        $this->roleService->grantPermissions($roleId, $permissionCodes);
     }
 }

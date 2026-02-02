@@ -15,7 +15,7 @@ namespace HyperfTests\Feature\Domain\Product;
 use App\Application\Product\Assembler\ProductAssembler;
 use App\Domain\Product\Entity\ProductAttributeEntity;
 use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\Product\ValueObject\ProductStatus;
+use App\Domain\Product\Enum\ProductStatus;
 use PHPUnit\Framework\TestCase;
 
 /**

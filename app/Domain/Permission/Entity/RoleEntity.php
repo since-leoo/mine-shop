@@ -58,6 +58,15 @@ final class RoleEntity
 
     public function setName(string $name = ''): self
     {
+        return $this->rename($name);
+    }
+
+    public function rename(string $name): self
+    {
+        $name = trim($name);
+        if ($name === '') {
+            throw new \DomainException('角色名称不能为空');
+        }
         $this->name = $name;
         $this->markDirty('name');
         return $this;
@@ -70,6 +79,15 @@ final class RoleEntity
 
     public function setCode(string $code = ''): self
     {
+        return $this->assignCode($code);
+    }
+
+    public function assignCode(string $code): self
+    {
+        $code = trim($code);
+        if ($code === '') {
+            throw new \DomainException('角色编码不能为空');
+        }
         $this->code = $code;
         $this->markDirty('code');
         return $this;
@@ -81,6 +99,11 @@ final class RoleEntity
     }
 
     public function setStatus(Status $status = Status::Normal): self
+    {
+        return $this->changeStatus($status);
+    }
+
+    public function changeStatus(Status $status): self
     {
         $this->status = $status;
         $this->markDirty('status');
@@ -94,7 +117,12 @@ final class RoleEntity
 
     public function setSort(int $sort = 0): self
     {
-        $this->sort = $sort;
+        return $this->applySort($sort);
+    }
+
+    public function applySort(int $sort): self
+    {
+        $this->sort = max(0, $sort);
         $this->markDirty('sort');
         return $this;
     }
@@ -166,5 +194,19 @@ final class RoleEntity
     private function markDirty(string $field): void
     {
         $this->dirty[$field] = true;
+    }
+
+    public function ensureCanPersist(bool $isCreate = false): void
+    {
+        if ($isCreate || isset($this->dirty['name'])) {
+            if (trim($this->name) === '') {
+                throw new \DomainException('角色名称不能为空');
+            }
+        }
+        if ($isCreate || isset($this->dirty['code'])) {
+            if (trim($this->code) === '') {
+                throw new \DomainException('角色编码不能为空');
+            }
+        }
     }
 }

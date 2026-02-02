@@ -30,7 +30,7 @@ final class MemberLevelService
 
     public function find(int $id): ?MemberLevel
     {
-        /** @var null|MemberLevel $level */
+        /* @var null|MemberLevel $level */
         return $this->repository->findById($id);
     }
 

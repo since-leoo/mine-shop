@@ -17,55 +17,65 @@ namespace App\Domain\Permission\ValueObject;
  */
 final class ButtonPermission
 {
-    private int $id = 0;
+    public function __construct(
+        private readonly int $id,
+        private readonly string $code,
+        private readonly string $title,
+        private readonly ?string $i18n = null
+    ) {
+        if (trim($code) === '') {
+            throw new \DomainException('按钮权限编码不能为空');
+        }
+        if (trim($title) === '') {
+            throw new \DomainException('按钮权限名称不能为空');
+        }
+    }
 
-    private string $code = '';
+    public static function fromArray(array $payload): self
+    {
+        return new self(
+            (int) ($payload['id'] ?? 0),
+            (string) ($payload['code'] ?? ''),
+            (string) ($payload['title'] ?? ''),
+            isset($payload['i18n']) ? (string) $payload['i18n'] : null
+        );
+    }
 
-    private string $title = '';
+    public function withId(int $id): self
+    {
+        return new self($id, $this->code, $this->title, $this->i18n);
+    }
 
-    private ?string $i18n = null;
-
-    public function getId(): int
+    public function id(): int
     {
         return $this->id;
     }
 
-    public function setId(int $id = 0): self
-    {
-        $this->id = $id;
-        return $this;
-    }
-
-    public function getCode(): string
+    public function code(): string
     {
         return $this->code;
     }
 
-    public function setCode(string $code = ''): self
-    {
-        $this->code = $code;
-        return $this;
-    }
-
-    public function getTitle(): string
+    public function title(): string
     {
         return $this->title;
     }
 
-    public function setTitle(string $title = ''): self
-    {
-        $this->title = $title;
-        return $this;
-    }
-
-    public function getI18n(): ?string
+    public function i18n(): ?string
     {
         return $this->i18n;
     }
 
-    public function setI18n(?string $i18n = null): self
+    /**
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
     {
-        $this->i18n = $i18n;
-        return $this;
+        return array_filter([
+            'id' => $this->id ?: null,
+            'code' => $this->code,
+            'title' => $this->title,
+            'i18n' => $this->i18n,
+        ], static fn ($value) => $value !== null);
     }
 }

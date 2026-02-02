@@ -1305,6 +1305,31 @@ onActivated(async () => {
 <style scoped lang="scss">
 .setting-group-root {
   width: 100%;
+  --setting-surface: var(--el-bg-color);
+  --setting-surface-muted: color-mix(in srgb, var(--el-bg-color) 96%, transparent);
+  --setting-card-bg: color-mix(in srgb, var(--el-bg-color) 98%, transparent);
+  --setting-card-border: color-mix(in srgb, var(--el-border-color) 70%, transparent);
+  --setting-card-icon-bg: color-mix(in srgb, var(--el-color-primary) 15%, var(--setting-card-bg));
+  --setting-card-icon-color: var(--el-color-primary);
+  --setting-collection-bg: color-mix(in srgb, var(--el-color-primary) 6%, var(--el-bg-color));
+  --setting-collection-border: color-mix(in srgb, var(--el-border-color) 60%, transparent);
+  --setting-hero-overlay-1: color-mix(in srgb, rgb(var(--ui-primary)) 8%, transparent);
+  --setting-hero-overlay-2: color-mix(in srgb, rgb(var(--ui-primary)) 4%, transparent);
+}
+
+:global(html.dark) {
+  .setting-group-root {
+    --setting-surface: var(--el-bg-color-overlay);
+    --setting-surface-muted: color-mix(in srgb, var(--el-bg-color-overlay) 88%, transparent);
+    --setting-card-bg: color-mix(in srgb, var(--el-bg-color-overlay) 92%, rgba(0, 0, 0, 0.1));
+    --setting-card-border: rgba(255, 255, 255, 0.08);
+    --setting-card-icon-bg: color-mix(in srgb, var(--el-color-primary) 30%, var(--setting-card-bg));
+    --setting-card-icon-color: color-mix(in srgb, var(--el-color-white) 80%, var(--el-color-primary) 20%);
+    --setting-collection-bg: color-mix(in srgb, var(--el-bg-color-overlay) 80%, rgba(255, 255, 255, 0.05));
+    --setting-collection-border: rgba(255, 255, 255, 0.12);
+    --setting-hero-overlay-1: color-mix(in srgb, rgb(var(--ui-primary)) 16%, transparent);
+    --setting-hero-overlay-2: color-mix(in srgb, rgb(var(--ui-primary)) 8%, transparent);
+  }
 }
 
 .setting-group-page {
@@ -1314,9 +1339,9 @@ onActivated(async () => {
   padding: 20px;
   background: linear-gradient(
     180deg,
-    rgb(var(--ui-primary) / 0.06) 0%,
-    rgb(var(--ui-primary) / 0.03) 55%,
-    var(--el-bg-color) 100%
+    var(--setting-hero-overlay-1) 0%,
+    var(--setting-hero-overlay-2) 55%,
+    var(--setting-surface) 100%
   );
   transition: background 0.3s ease;
 }
@@ -1364,7 +1389,7 @@ onActivated(async () => {
 }
 
 .group-body {
-  background: var(--el-bg-color);
+  background: var(--setting-surface-muted);
   border-radius: 16px;
   padding: 18px;
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
@@ -1409,8 +1434,8 @@ onActivated(async () => {
 
 .setting-card {
   border-radius: 16px;
-  border: 1px solid var(--setting-card-border, var(--el-border-color-light));
-  background: var(--setting-card-bg, var(--el-bg-color));
+  border: 1px solid var(--setting-card-border);
+  background: var(--setting-card-bg);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
@@ -1440,8 +1465,8 @@ onActivated(async () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--setting-card-icon-bg, var(--el-color-primary-light-9));
-    color: var(--setting-card-icon-color, var(--el-color-primary));
+    background: var(--setting-card-icon-bg);
+    color: var(--setting-card-icon-color);
     font-size: 18px;
   }
 
@@ -1491,16 +1516,14 @@ onActivated(async () => {
 }
 
 :global(html.dark) {
-  .setting-card {
-    border-color: rgba(255, 255, 255, 0.08);
-    background: rgba(17, 24, 39, 0.85);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
+  .group-body {
+    background: color-mix(in srgb, var(--setting-surface-muted) 85%, rgba(0, 0, 0, 0.2));
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
   }
 
-  .setting-card__icon {
-    background: rgba(255, 255, 255, 0.08);
-    color: var(--el-color-primary-light-3);
+  .setting-card {
+    backdrop-filter: blur(12px);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.65);
   }
 
   .setting-card__footer {
@@ -1560,10 +1583,10 @@ onActivated(async () => {
 }
 
 .collection-form__entry {
-  border: 1px dashed rgba(66, 82, 110, 0.2);
+  border: 1px dashed var(--setting-collection-border);
   border-radius: 10px;
   padding: 12px;
-  background: #f9fbff;
+  background: var(--setting-collection-bg);
 }
 
 .collection-form__header {

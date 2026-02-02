@@ -169,33 +169,34 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .stats-card {
-  --stats-card-bg: var(--el-bg-color);
+  --stats-card-surface: var(--el-bg-color);
+  --stats-card-bg: color-mix(in srgb, var(--stats-card-surface) 92%, transparent);
   --stats-card-color: var(--el-text-color-primary);
   @apply flex items-center justify-between rounded-xl px-4 py-3;
   background: var(--stats-card-bg);
   color: var(--stats-card-color);
-  border: 1px solid var(--el-border-color-lighter);
+  border: 1px solid color-mix(in srgb, var(--el-border-color) 60%, transparent);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
-  transition: background 0.2s ease, color 0.2s ease, border 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
 
   &.slate {
-    --stats-card-bg: rgba(15, 23, 42, 0.05);
-    --stats-card-color: #1e293b;
+    --stats-card-bg: color-mix(in srgb, #1e293b 18%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, var(--el-text-color-primary) 70%, #0f172a 30%);
   }
 
   &.emerald {
-    --stats-card-bg: rgba(16, 185, 129, 0.15);
-    --stats-card-color: #065f46;
+    --stats-card-bg: color-mix(in srgb, #10b981 20%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, #065f46 55%, var(--el-text-color-primary) 45%);
   }
 
   &.gray {
-    --stats-card-bg: rgba(75, 85, 99, 0.08);
-    --stats-card-color: #374151;
+    --stats-card-bg: color-mix(in srgb, #6b7280 18%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, #374151 60%, var(--el-text-color-primary) 40%);
   }
 
   .stats-label {
     font-size: 12px;
-    color: var(--el-text-color-secondary);
+    color: color-mix(in srgb, var(--stats-card-color) 55%, var(--el-text-color-secondary) 45%);
   }
 
   .stats-value {
@@ -207,29 +208,28 @@ onMounted(() => {
 
 :global(html.dark) {
   .stats-card {
+    --stats-card-surface: var(--el-bg-color-overlay);
     border-color: rgba(255, 255, 255, 0.08);
-    background: rgba(15, 23, 42, 0.8);
-    color: var(--el-color-white);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55);
   }
 
   .stats-card.slate {
-    --stats-card-bg: rgba(30, 41, 59, 0.75);
-    --stats-card-color: #e2e8f0;
+    --stats-card-bg: color-mix(in srgb, #1e293b 55%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, var(--el-color-white) 85%, #1e293b 15%);
   }
 
   .stats-card.emerald {
-    --stats-card-bg: rgba(16, 185, 129, 0.25);
-    --stats-card-color: #a7f3d0;
+    --stats-card-bg: color-mix(in srgb, #10b981 45%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, var(--el-color-white) 80%, #d1fae5 20%);
   }
 
   .stats-card.gray {
-    --stats-card-bg: rgba(107, 114, 128, 0.25);
-    --stats-card-color: #e5e7eb;
+    --stats-card-bg: color-mix(in srgb, #6b7280 42%, var(--stats-card-surface));
+    --stats-card-color: color-mix(in srgb, var(--el-color-white) 80%, #e5e7eb 20%);
   }
 
   .stats-card .stats-label {
-    color: rgba(226, 232, 240, 0.85);
+    color: color-mix(in srgb, var(--el-color-white) 75%, transparent);
   }
 }
 </style>

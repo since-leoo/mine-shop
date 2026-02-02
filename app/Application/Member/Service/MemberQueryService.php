@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Application\Member\Service;
 
+use App\Application\Member\Contract\MemberQueryInterface;
 use App\Domain\Member\Service\MemberService;
 
 /**
  * 会员查询应用服务.
  */
-final class MemberQueryService
+final class MemberQueryService implements MemberQueryInterface
 {
     public function __construct(private readonly MemberService $memberService) {}
 

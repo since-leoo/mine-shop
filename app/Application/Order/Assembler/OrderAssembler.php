@@ -63,8 +63,10 @@ final class OrderAssembler
         $command = new OrderEntity();
         $command->setMemberId((int) ($payload['member_id'] ?? 0));
         $command->setOrderType((string) ($payload['order_type'] ?? 'normal'));
-        $command->setItems($payload['items'] ?? []);
-        $command->setAddress($payload['address'] ?? []);
+        $command->replaceItemsFromPayload(\is_array($payload['items'] ?? null) ? $payload['items'] : []);
+        if (\is_array($payload['address'] ?? null)) {
+            $command->useAddressPayload($payload['address']);
+        }
         $command->setBuyerRemark((string) ($payload['remark'] ?? ''));
         return $command;
     }

@@ -12,24 +12,27 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin;
 
+use App\Domain\Auth\Enum\Type;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\Collection\Arr;
 use Hyperf\Stringable\Str;
 use Hyperf\Testing\Assert;
 use HyperfTests\HttpTestCase;
 
-/**
- * @mixin   HttpTestCase
- */
-trait GetTokenTrait
-{
-    public function generatorUser(): User
+    /**
+     * @mixin   HttpTestCase
+     */
+    trait GetTokenTrait
     {
-        return User::create([
-            'username' => Str::random(10),
-            'password' => 123456,
-        ]);
-    }
+        public function generatorUser(): User
+        {
+            return User::create([
+                'username' => Str::random(10),
+                'password' => $this->getPassword(),
+                'user_type' => Type::SYSTEM,
+                'nickname' => Str::random(8),
+            ]);
+        }
 
     public function getToken(User $user): string
     {

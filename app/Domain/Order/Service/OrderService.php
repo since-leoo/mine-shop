@@ -66,12 +66,12 @@ final class OrderService
     /**
      * 预览订单.
      */
-    public function preview(OrderEntity $command): OrderEntity
+    public function preview(OrderEntity $orderEntity): OrderEntity
     {
-        $command->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
-        $strategy = $this->strategyFactory->make($command->getOrderType());
-        $strategy->validate($command);
-        return $strategy->buildDraft($command);
+        $orderEntity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
+        $strategy = $this->strategyFactory->make($orderEntity->getOrderType());
+        $strategy->validate($orderEntity);
+        return $strategy->buildDraft($orderEntity);
     }
 
     /**
@@ -112,18 +112,14 @@ final class OrderService
     public function ship(OrderEntity $entity): OrderEntity
     {
         $entity->ensureShippable($this->mallSettingService->shipping());
-        Db::transaction(function () use ($entity) {
-            $this->repository->ship($entity);
-        });
+        $this->repository->ship($entity);
 
         return $entity;
     }
 
     public function cancel(OrderEntity $entity): OrderEntity
     {
-        Db::transaction(function () use ($entity) {
-            $this->repository->cancel($entity);
-        });
+        $this->repository->cancel($entity);
 
         return $entity;
     }
