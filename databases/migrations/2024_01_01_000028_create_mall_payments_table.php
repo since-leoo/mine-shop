@@ -10,7 +10,7 @@ class CreateMallPaymentsTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_payments', static function (Blueprint $table) {
+        Schema::create('payments', static function (Blueprint $table) {
             $table->id();
             $table->string('payment_no', 50)->unique()->comment('支付单号');
             $table->unsignedBigInteger('order_id')->comment('订单ID');
@@ -43,6 +43,6 @@ class CreateMallPaymentsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_payments');
+        Schema::dropIfExists('payments');
     }
 }

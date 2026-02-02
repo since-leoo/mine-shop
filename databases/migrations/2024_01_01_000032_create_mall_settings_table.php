@@ -12,7 +12,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('mall_settings', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->string('key', 100)->unique()->comment('配置键');
             $table->text('value')->nullable()->comment('配置值');
@@ -33,6 +33,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_settings');
+        Schema::dropIfExists('settings');
     }
 };

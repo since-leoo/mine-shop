@@ -18,11 +18,11 @@ class CreateMallMemberTagRelationsTable extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('mall_member_tag_relations')) {
+        if (Schema::hasTable('member_tag_relations')) {
             return;
         }
 
-        Schema::create('mall_member_tag_relations', static function (Blueprint $table) {
+        Schema::create('member_tag_relations', static function (Blueprint $table) {
             $table->comment('会员标签关联表');
             $table->id();
             $table->unsignedBigInteger('member_id')->comment('会员ID');
@@ -39,6 +39,6 @@ class CreateMallMemberTagRelationsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_member_tag_relations');
+        Schema::dropIfExists('member_tag_relations');
     }
 }

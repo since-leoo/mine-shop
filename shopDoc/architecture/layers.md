@@ -426,7 +426,7 @@ namespace App\Infrastructure\Model\Product;
 
 class Product extends Model
 {
-    protected $table = 'mall_products';
+    protected $table = 'products';
 
     protected $fillable = [
         'product_code',

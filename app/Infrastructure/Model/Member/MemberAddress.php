@@ -32,7 +32,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class MemberAddress extends Model
 {
-    protected ?string $table = 'mall_member_addresses';
+    protected ?string $table = 'member_addresses';
 
     protected array $fillable = [
         'member_id',

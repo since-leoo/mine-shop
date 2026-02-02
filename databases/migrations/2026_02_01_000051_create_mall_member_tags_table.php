@@ -18,11 +18,11 @@ class CreateMallMemberTagsTable extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('mall_member_tags')) {
+        if (Schema::hasTable('member_tags')) {
             return;
         }
 
-        Schema::create('mall_member_tags', static function (Blueprint $table) {
+        Schema::create('member_tags', static function (Blueprint $table) {
             $table->comment('会员标签表');
             $table->id();
             $table->string('name', 50)->comment('标签名称');
@@ -40,6 +40,6 @@ class CreateMallMemberTagsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_member_tags');
+        Schema::dropIfExists('member_tags');
     }
 }

@@ -38,7 +38,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class SeckillOrder extends Model
 {
-    protected ?string $table = 'mall_seckill_session_orders';
+    protected ?string $table = 'seckill_session_orders';
 
     protected array $fillable = [
         'order_id',

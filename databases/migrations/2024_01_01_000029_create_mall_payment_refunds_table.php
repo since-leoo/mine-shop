@@ -10,7 +10,7 @@ class CreateMallPaymentRefundsTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_payment_refunds', static function (Blueprint $table) {
+        Schema::create('payment_refunds', static function (Blueprint $table) {
             $table->id();
             $table->string('refund_no', 50)->unique()->comment('退款单号');
             $table->unsignedBigInteger('payment_id')->comment('支付记录ID');
@@ -42,6 +42,6 @@ class CreateMallPaymentRefundsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_payment_refunds');
+        Schema::dropIfExists('payment_refunds');
     }
 }

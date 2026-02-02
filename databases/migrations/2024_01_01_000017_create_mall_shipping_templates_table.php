@@ -20,7 +20,7 @@ class CreateMallShippingTemplatesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_shipping_templates', static function (Blueprint $table) {
+        Schema::create('shipping_templates', static function (Blueprint $table) {
             $table->comment('运费模板表');
             $table->id();
             $table->string('name', 100)->comment('模板名称');
@@ -41,6 +41,6 @@ class CreateMallShippingTemplatesTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_shipping_templates');
+        Schema::dropIfExists('shipping_templates');
     }
 }

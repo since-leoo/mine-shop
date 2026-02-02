@@ -34,7 +34,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class MemberLevel extends Model
 {
-    protected ?string $table = 'mall_member_levels';
+    protected ?string $table = 'member_levels';
 
     protected array $fillable = [
         'name',

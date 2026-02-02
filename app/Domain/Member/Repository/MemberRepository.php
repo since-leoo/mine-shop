@@ -158,7 +158,7 @@ final class MemberRepository extends IRepository
             ->when(! empty($params['source']), static fn (Builder $q) => $q->where('source', $params['source']))
             ->when(! empty($params['phone']), static fn (Builder $q) => $q->where('phone', 'like', '%' . $params['phone'] . '%'))
             ->when(! empty($params['tag_id']), static fn (Builder $q) => $q->whereHas('tags', static function (Builder $tagQuery) use ($params) {
-                $tagQuery->where('mall_member_tags.id', (int) $params['tag_id']);
+                $tagQuery->where('member_tags.id', (int) $params['tag_id']);
             }))
             ->when(! empty($params['created_start']), static fn (Builder $q) => $q->whereDate('created_at', '>=', $params['created_start']))
             ->when(! empty($params['created_end']), static fn (Builder $q) => $q->whereDate('created_at', '<=', $params['created_end']))

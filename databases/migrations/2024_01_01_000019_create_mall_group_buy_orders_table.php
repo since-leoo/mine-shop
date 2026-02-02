@@ -20,7 +20,7 @@ class CreateMallGroupBuyOrdersTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_group_buy_orders', static function (Blueprint $table) {
+        Schema::create('group_buy_orders', static function (Blueprint $table) {
             $table->comment('团购订单表');
             $table->id();
             $table->unsignedBigInteger('group_buy_id')->comment('团购活动ID');
@@ -64,6 +64,6 @@ class CreateMallGroupBuyOrdersTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_group_buy_orders');
+        Schema::dropIfExists('group_buy_orders');
     }
 }

@@ -20,7 +20,7 @@ class CreateMallWalletTransactionsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_wallet_transactions', static function (Blueprint $table) {
+        Schema::create('wallet_transactions', static function (Blueprint $table) {
             $table->comment('钱包交易记录表');
             $table->id();
             $table->unsignedBigInteger('wallet_id')->nullable()->comment('钱包ID');
@@ -56,6 +56,6 @@ class CreateMallWalletTransactionsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_wallet_transactions');
+        Schema::dropIfExists('wallet_transactions');
     }
 }

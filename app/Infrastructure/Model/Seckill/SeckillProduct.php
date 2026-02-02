@@ -36,7 +36,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class SeckillProduct extends Model
 {
-    protected ?string $table = 'mall_seckill_session_products';
+    protected ?string $table = 'seckill_session_products';
 
     protected array $fillable = [
         'activity_id',

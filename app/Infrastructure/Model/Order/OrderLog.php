@@ -36,7 +36,7 @@ class OrderLog extends Model
 
     public const OPERATOR_SYSTEM = 'system';
 
-    protected ?string $table = 'mall_order_logs';
+    protected ?string $table = 'order_logs';
 
     protected array $fillable = [
         'order_id',

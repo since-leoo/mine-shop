@@ -37,7 +37,7 @@ class Brand extends Model
 
     public const STATUS_INACTIVE = 'inactive';
 
-    protected ?string $table = 'mall_brands';
+    protected ?string $table = 'brands';
 
     protected array $fillable = [
         'name',

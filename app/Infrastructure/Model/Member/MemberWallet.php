@@ -31,7 +31,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class MemberWallet extends Model
 {
-    protected ?string $table = 'mall_wallets';
+    protected ?string $table = 'wallets';
 
     protected array $fillable = [
         'member_id',

@@ -12,7 +12,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('mall_banners', function (Blueprint $table) {
+        Schema::create('banners', function (Blueprint $table) {
             $table->id();
             $table->string('title', 100)->comment('轮播图标题');
             $table->string('image')->comment('轮播图图片');
@@ -41,6 +41,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_banners');
+        Schema::dropIfExists('banners');
     }
 };

@@ -20,7 +20,7 @@ class CreateMallCategoriesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_categories', static function (Blueprint $table) {
+        Schema::create('categories', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('parent_id')->default(0)->comment('父分类ID');
             $table->string('name', 100)->comment('分类名称');
@@ -42,6 +42,6 @@ class CreateMallCategoriesTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_categories');
+        Schema::dropIfExists('categories');
     }
 }

@@ -10,10 +10,10 @@ class UpdateMallProductAttributesTable extends Migration
 {
     public function up(): void
     {
-        Schema::table('mall_product_attributes', static function (Blueprint $table) {
+        Schema::table('product_attributes', static function (Blueprint $table) {
             // 删除旧索引
-            $table->dropIndex('mall_product_attributes_attribute_id_index');
-            $table->dropIndex('mall_product_attributes_product_id_attribute_id_index');
+            $table->dropIndex('product_attributes_attribute_id_index');
+            $table->dropIndex('product_attributes_product_id_attribute_id_index');
             
             // 删除旧字段
             $table->dropColumn(['attribute_id', 'attribute_value_id']);
@@ -29,9 +29,9 @@ class UpdateMallProductAttributesTable extends Migration
 
     public function down(): void
     {
-        Schema::table('mall_product_attributes', static function (Blueprint $table) {
+        Schema::table('product_attributes', static function (Blueprint $table) {
             // 删除新索引
-            $table->dropIndex('mall_product_attributes_product_id_attribute_name_index');
+            $table->dropIndex('product_attributes_product_id_attribute_name_index');
             
             // 删除新字段
             $table->dropColumn('attribute_name');

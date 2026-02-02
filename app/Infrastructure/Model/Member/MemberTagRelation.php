@@ -26,7 +26,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class MemberTagRelation extends Model
 {
-    protected ?string $table = 'mall_member_tag_relations';
+    protected ?string $table = 'member_tag_relations';
 
     protected array $fillable = [
         'member_id',

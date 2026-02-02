@@ -49,7 +49,7 @@ class Order extends Model
 {
     use LoadsRelations;
 
-    protected ?string $table = 'mall_orders';
+    protected ?string $table = 'orders';
 
     protected array $fillable = [
         'order_no',

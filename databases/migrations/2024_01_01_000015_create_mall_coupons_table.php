@@ -20,7 +20,7 @@ class CreateMallCouponsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_coupons', static function (Blueprint $table) {
+        Schema::create('coupons', static function (Blueprint $table) {
             $table->comment('优惠券表');
             $table->id();
             $table->string('name', 100)->comment('优惠券名称');
@@ -46,6 +46,6 @@ class CreateMallCouponsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_coupons');
+        Schema::dropIfExists('coupons');
     }
 }

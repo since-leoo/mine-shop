@@ -62,7 +62,7 @@ final class MemberMiniLoginTest extends ApiControllerCase
         self::assertSame('小程序用户', $data['member']['nickname']);
         self::assertSame('mini_program', $data['member']['source']);
 
-        self::assertDatabaseHas('mall_members', [
+        self::assertDatabaseHas('members', [
             'openid' => 'openid-foo',
             'nickname' => '小程序用户',
             'source' => 'mini_program',

@@ -50,7 +50,7 @@ class Member extends Model
 {
     use LoadsRelations;
 
-    protected ?string $table = 'mall_members';
+    protected ?string $table = 'members';
 
     protected array $fillable = [
         'openid',

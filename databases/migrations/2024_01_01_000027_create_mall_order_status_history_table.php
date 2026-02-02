@@ -10,7 +10,7 @@ class CreateMallOrderStatusHistoryTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_order_status_history', static function (Blueprint $table) {
+        Schema::create('order_status_history', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id')->comment('订单ID');
             $table->string('from_status', 30)->comment('原状态');
@@ -32,6 +32,6 @@ class CreateMallOrderStatusHistoryTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_order_status_history');
+        Schema::dropIfExists('order_status_history');
     }
 }

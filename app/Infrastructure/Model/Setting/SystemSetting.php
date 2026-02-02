@@ -31,7 +31,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class SystemSetting extends Model
 {
-    protected ?string $table = 'mall_settings';
+    protected ?string $table = 'settings';
 
     protected array $fillable = [
         'key',

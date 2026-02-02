@@ -10,7 +10,7 @@ class CreateMallProductAttributesTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_product_attributes', static function (Blueprint $table) {
+        Schema::create('product_attributes', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->unsignedBigInteger('attribute_id')->comment('属性ID');
@@ -28,6 +28,6 @@ class CreateMallProductAttributesTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_product_attributes');
+        Schema::dropIfExists('product_attributes');
     }
 }

@@ -12,22 +12,22 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::table('mall_settings', function (Blueprint $table) {
-            if (! Schema::hasColumn('mall_settings', 'is_sensitive')) {
+        Schema::table('settings', function (Blueprint $table) {
+            if (! Schema::hasColumn('settings', 'is_sensitive')) {
                 $table->boolean('is_sensitive')
                     ->default(false)
                     ->after('description')
                     ->comment('是否包含敏感信息');
             }
 
-            if (! Schema::hasColumn('mall_settings', 'meta')) {
+            if (! Schema::hasColumn('settings', 'meta')) {
                 $table->json('meta')
                     ->nullable()
                     ->after('is_sensitive')
                     ->comment('额外的渲染与校验配置');
             }
 
-            if (Schema::hasColumn('mall_settings', 'value')) {
+            if (Schema::hasColumn('settings', 'value')) {
                 $table->text('value')
                     ->comment('配置值')
                     ->change();
@@ -40,12 +40,12 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::table('mall_settings', function (Blueprint $table) {
-            if (Schema::hasColumn('mall_settings', 'meta')) {
+        Schema::table('settings', function (Blueprint $table) {
+            if (Schema::hasColumn('settings', 'meta')) {
                 $table->dropColumn('meta');
             }
 
-            if (Schema::hasColumn('mall_settings', 'is_sensitive')) {
+            if (Schema::hasColumn('settings', 'is_sensitive')) {
                 $table->dropColumn('is_sensitive');
             }
         });

@@ -20,7 +20,7 @@ class CreateMallSeckillsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_seckills', static function (Blueprint $table) {
+        Schema::create('seckills', static function (Blueprint $table) {
             $table->id();
             $table->string('title', 200)->comment('活动标题');
             $table->text('description')->nullable()->comment('活动描述');
@@ -42,7 +42,7 @@ class CreateMallSeckillsTable extends Migration
             $table->comment('秒杀活动表');
         });
 
-        Schema::create('mall_seckill_products', static function (Blueprint $table) {
+        Schema::create('seckill_products', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('seckill_id')->comment('秒杀活动ID');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
@@ -68,7 +68,7 @@ class CreateMallSeckillsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_seckill_products');
-        Schema::dropIfExists('mall_seckills');
+        Schema::dropIfExists('seckill_products');
+        Schema::dropIfExists('seckills');
     }
 }

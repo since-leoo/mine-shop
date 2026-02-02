@@ -12,7 +12,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('mall_payment_configs', function (Blueprint $table) {
+        Schema::create('payment_configs', function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->comment('支付方式名称');
             $table->string('code', 50)->unique()->comment('支付方式代码：alipay,wechat,balance,cod');
@@ -34,6 +34,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_payment_configs');
+        Schema::dropIfExists('payment_configs');
     }
 };

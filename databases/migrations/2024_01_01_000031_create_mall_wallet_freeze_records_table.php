@@ -10,7 +10,7 @@ class CreateMallWalletFreezeRecordsTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_wallet_freeze_records', static function (Blueprint $table) {
+        Schema::create('wallet_freeze_records', static function (Blueprint $table) {
             $table->id();
             $table->string('freeze_no', 50)->unique()->comment('冻结单号');
             $table->unsignedBigInteger('wallet_id')->comment('钱包ID');
@@ -46,6 +46,6 @@ class CreateMallWalletFreezeRecordsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_wallet_freeze_records');
+        Schema::dropIfExists('wallet_freeze_records');
     }
 }

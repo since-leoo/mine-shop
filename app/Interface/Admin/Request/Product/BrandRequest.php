@@ -78,7 +78,7 @@ class BrandRequest extends BaseRequest
 
     private function uniqueNameRule(?int $ignoreId = null): Unique
     {
-        $rule = Rule::unique('mall_brands', 'name');
+        $rule = Rule::unique('brands', 'name');
         if ($ignoreId) {
             $rule->ignore($ignoreId);
         }

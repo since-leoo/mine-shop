@@ -20,7 +20,7 @@ class CreateMallMemberAddressesTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_member_addresses', static function (Blueprint $table) {
+        Schema::create('member_addresses', static function (Blueprint $table) {
             $table->comment('会员收货地址表');
             $table->id();
             $table->unsignedBigInteger('member_id')->comment('会员ID');
@@ -44,6 +44,6 @@ class CreateMallMemberAddressesTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_member_addresses');
+        Schema::dropIfExists('member_addresses');
     }
 }

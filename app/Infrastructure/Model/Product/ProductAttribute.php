@@ -26,7 +26,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class ProductAttribute extends Model
 {
-    protected ?string $table = 'mall_product_attributes';
+    protected ?string $table = 'product_attributes';
 
     protected array $fillable = [
         'product_id',

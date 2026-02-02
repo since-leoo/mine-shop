@@ -17,7 +17,7 @@ class CreateMallSeckillActivitiesTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_seckill_activities', static function (Blueprint $table) {
+        Schema::create('seckill_activities', static function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title', 200)->comment('活动标题');
             $table->text('description')->nullable()->comment('活动描述');
@@ -34,6 +34,6 @@ class CreateMallSeckillActivitiesTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_seckill_activities');
+        Schema::dropIfExists('seckill_activities');
     }
 }

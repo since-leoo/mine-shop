@@ -20,7 +20,7 @@ class CreateMallBrandsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_brands', static function (Blueprint $table) {
+        Schema::create('brands', static function (Blueprint $table) {
             $table->id();
             $table->string('name', 100)->comment('品牌名称');
             $table->string('logo', 255)->nullable()->comment('品牌Logo');
@@ -40,6 +40,6 @@ class CreateMallBrandsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_brands');
+        Schema::dropIfExists('brands');
     }
 }

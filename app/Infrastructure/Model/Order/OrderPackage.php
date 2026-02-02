@@ -35,7 +35,7 @@ class OrderPackage extends Model
 {
     use LoadsRelations;
 
-    protected ?string $table = 'mall_order_packages';
+    protected ?string $table = 'order_packages';
 
     protected array $fillable = [
         'order_id',

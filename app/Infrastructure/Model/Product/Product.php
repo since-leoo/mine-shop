@@ -59,7 +59,7 @@ class Product extends Model
 
     public const CODE_PREFIX = 'PRD';
 
-    protected ?string $table = 'mall_products';
+    protected ?string $table = 'products';
 
     protected array $fillable = [
         'product_code',

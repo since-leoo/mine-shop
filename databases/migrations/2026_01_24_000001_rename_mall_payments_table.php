@@ -12,14 +12,14 @@ return new class extends Migration {
             return;
         }
 
-        if (Schema::hasTable('mall_payments')) {
-            Schema::rename('mall_payments', 'order_payments');
+        if (Schema::hasTable('payments')) {
+            Schema::rename('payments', 'order_payments');
         }
     }
 
     public function down(): void
     {
-        if (Schema::hasTable('order_payments') && ! Schema::hasTable('mall_payments')) {
+        if (Schema::hasTable('order_payments') && ! Schema::hasTable('payments')) {
             Schema::rename('order_payments', 'mall_payments');
         }
     }

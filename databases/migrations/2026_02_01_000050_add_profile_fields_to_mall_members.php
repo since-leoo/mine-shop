@@ -18,18 +18,18 @@ class AddProfileFieldsToMallMembers extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('mall_members')) {
+        if (! Schema::hasTable('members')) {
             return;
         }
 
-        Schema::table('mall_members', static function (Blueprint $table) {
-            if (! Schema::hasColumn('mall_members', 'source')) {
+        Schema::table('members', static function (Blueprint $table) {
+            if (! Schema::hasColumn('members', 'source')) {
                 $table->string('source', 50)
                     ->default('wechat')
                     ->comment('注册来源：wechat,mini_program,h5,admin')
                     ->after('status');
             }
-            if (! Schema::hasColumn('mall_members', 'remark')) {
+            if (! Schema::hasColumn('members', 'remark')) {
                 $table->string('remark', 255)
                     ->nullable()
                     ->comment('管理员备注')
@@ -40,15 +40,15 @@ class AddProfileFieldsToMallMembers extends Migration
 
     public function down(): void
     {
-        if (! Schema::hasTable('mall_members')) {
+        if (! Schema::hasTable('members')) {
             return;
         }
 
-        Schema::table('mall_members', static function (Blueprint $table) {
-            if (Schema::hasColumn('mall_members', 'remark')) {
+        Schema::table('members', static function (Blueprint $table) {
+            if (Schema::hasColumn('members', 'remark')) {
                 $table->dropColumn('remark');
             }
-            if (Schema::hasColumn('mall_members', 'source')) {
+            if (Schema::hasColumn('members', 'source')) {
                 $table->dropColumn('source');
             }
         });

@@ -36,7 +36,7 @@ class Category extends Model
 {
     public const MAX_LEVEL = 3;
 
-    protected ?string $table = 'mall_categories';
+    protected ?string $table = 'categories';
 
     protected array $fillable = [
         'parent_id',

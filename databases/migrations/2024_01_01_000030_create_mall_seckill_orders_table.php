@@ -10,7 +10,7 @@ class CreateMallSeckillOrdersTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_seckill_orders', static function (Blueprint $table) {
+        Schema::create('seckill_orders', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id')->comment('订单ID');
             $table->unsignedBigInteger('seckill_id')->comment('秒杀活动ID');
@@ -40,6 +40,6 @@ class CreateMallSeckillOrdersTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_seckill_orders');
+        Schema::dropIfExists('seckill_orders');
     }
 }

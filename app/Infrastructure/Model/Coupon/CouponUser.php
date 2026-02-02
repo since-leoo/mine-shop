@@ -32,7 +32,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class CouponUser extends Model
 {
-    protected ?string $table = 'mall_coupon_users';
+    protected ?string $table = 'coupon_users';
 
     protected array $fillable = [
         'coupon_id',

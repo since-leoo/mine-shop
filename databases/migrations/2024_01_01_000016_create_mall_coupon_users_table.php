@@ -20,7 +20,7 @@ class CreateMallCouponUsersTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_coupon_users', static function (Blueprint $table) {
+        Schema::create('coupon_users', static function (Blueprint $table) {
             $table->comment('用户优惠券表');
             $table->id();
             $table->unsignedBigInteger('coupon_id')->comment('优惠券ID');
@@ -44,6 +44,6 @@ class CreateMallCouponUsersTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_coupon_users');
+        Schema::dropIfExists('coupon_users');
     }
 }

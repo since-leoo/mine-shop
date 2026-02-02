@@ -20,7 +20,7 @@ class CreateMallProductSkusTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_product_skus', static function (Blueprint $table) {
+        Schema::create('product_skus', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->string('sku_code', 50)->unique()->comment('SKU编码');
@@ -47,6 +47,6 @@ class CreateMallProductSkusTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_product_skus');
+        Schema::dropIfExists('product_skus');
     }
 }

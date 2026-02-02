@@ -50,7 +50,7 @@ class GroupBuy extends Model
 {
     use SoftDeletes;
 
-    protected ?string $table = 'mall_group_buys';
+    protected ?string $table = 'group_buys';
 
     protected array $fillable = [
         'title',

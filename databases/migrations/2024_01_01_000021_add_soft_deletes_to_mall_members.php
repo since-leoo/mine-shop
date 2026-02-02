@@ -20,8 +20,8 @@ class AddSoftDeletesToMallMembers extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('mall_members') && !Schema::hasColumn('mall_members', 'deleted_at')) {
-            Schema::table('mall_members', static function (Blueprint $table) {
+        if (Schema::hasTable('members') && !Schema::hasColumn('members', 'deleted_at')) {
+            Schema::table('members', static function (Blueprint $table) {
                 $table->softDeletes();
             });
         }
@@ -32,8 +32,8 @@ class AddSoftDeletesToMallMembers extends Migration
      */
     public function down(): void
     {
-        if (Schema::hasTable('mall_members') && Schema::hasColumn('mall_members', 'deleted_at')) {
-            Schema::table('mall_members', static function (Blueprint $table) {
+        if (Schema::hasTable('members') && Schema::hasColumn('members', 'deleted_at')) {
+            Schema::table('members', static function (Blueprint $table) {
                 $table->dropSoftDeletes();
             });
         }

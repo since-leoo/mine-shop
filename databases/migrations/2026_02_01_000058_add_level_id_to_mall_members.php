@@ -18,12 +18,12 @@ class AddLevelIdToMallMembers extends Migration
 {
     public function up(): void
     {
-        if (! Schema::hasTable('mall_members')) {
+        if (! Schema::hasTable('members')) {
             return;
         }
 
-        Schema::table('mall_members', static function (Blueprint $table) {
-            if (! Schema::hasColumn('mall_members', 'level_id')) {
+        Schema::table('members', static function (Blueprint $table) {
+            if (! Schema::hasColumn('members', 'level_id')) {
                 $table->unsignedBigInteger('level_id')
                     ->nullable()
                     ->after('level')
@@ -35,12 +35,12 @@ class AddLevelIdToMallMembers extends Migration
 
     public function down(): void
     {
-        if (! Schema::hasTable('mall_members')) {
+        if (! Schema::hasTable('members')) {
             return;
         }
 
-        Schema::table('mall_members', static function (Blueprint $table) {
-            if (Schema::hasColumn('mall_members', 'level_id')) {
+        Schema::table('members', static function (Blueprint $table) {
+            if (Schema::hasColumn('members', 'level_id')) {
                 $table->dropIndex(['level_id']);
                 $table->dropColumn('level_id');
             }

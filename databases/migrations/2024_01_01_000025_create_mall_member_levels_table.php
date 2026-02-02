@@ -10,7 +10,7 @@ class CreateMallMemberLevelsTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_member_levels', static function (Blueprint $table) {
+        Schema::create('member_levels', static function (Blueprint $table) {
             $table->id();
             $table->string('name', 50)->comment('等级名称');
             $table->unsignedTinyInteger('level')->default(0)->comment('等级值');
@@ -36,6 +36,6 @@ class CreateMallMemberLevelsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_member_levels');
+        Schema::dropIfExists('member_levels');
     }
 }

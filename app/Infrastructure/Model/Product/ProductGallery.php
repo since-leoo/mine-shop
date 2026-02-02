@@ -28,7 +28,7 @@ use Hyperf\DbConnection\Model\Model;
  */
 class ProductGallery extends Model
 {
-    protected ?string $table = 'mall_product_gallery';
+    protected ?string $table = 'product_gallery';
 
     protected array $fillable = [
         'product_id',

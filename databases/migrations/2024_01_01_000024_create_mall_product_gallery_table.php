@@ -10,7 +10,7 @@ class CreateMallProductGalleryTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_product_gallery', static function (Blueprint $table) {
+        Schema::create('product_gallery', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->string('image_url', 500)->comment('图片URL');
@@ -29,6 +29,6 @@ class CreateMallProductGalleryTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_product_gallery');
+        Schema::dropIfExists('product_gallery');
     }
 }

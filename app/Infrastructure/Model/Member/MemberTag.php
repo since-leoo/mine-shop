@@ -32,7 +32,7 @@ class MemberTag extends Model
 
     public const STATUS_INACTIVE = 'inactive';
 
-    protected ?string $table = 'mall_member_tags';
+    protected ?string $table = 'member_tags';
 
     protected array $fillable = [
         'name',

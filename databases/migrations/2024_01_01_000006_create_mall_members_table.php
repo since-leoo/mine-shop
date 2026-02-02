@@ -20,7 +20,7 @@ class CreateMallMembersTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_members', static function (Blueprint $table) {
+        Schema::create('members', static function (Blueprint $table) {
             $table->comment('会员表');
             $table->id();
             $table->string('openid', 100)->unique()->comment('微信OpenID');
@@ -54,6 +54,6 @@ class CreateMallMembersTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_members');
+        Schema::dropIfExists('members');
     }
 }

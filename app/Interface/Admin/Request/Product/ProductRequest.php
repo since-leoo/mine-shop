@@ -24,7 +24,7 @@ class ProductRequest extends BaseRequest
     public function storeRules(): array
     {
         $rules = $this->baseRules();
-        $rules['product_code'][] = Rule::unique('mall_products', 'product_code');
+        $rules['product_code'][] = Rule::unique('products', 'product_code');
         if ($this->input('min_price') !== null) {
             $rules['min_price'][] = 'lte:max_price';
         }
@@ -37,7 +37,7 @@ class ProductRequest extends BaseRequest
     public function updateRules(): array
     {
         $rules = $this->baseRules();
-        $rules['product_code'][] = Rule::unique('mall_products', 'product_code')
+        $rules['product_code'][] = Rule::unique('products', 'product_code')
             ->ignore((int) $this->route('id'));
         $rules['category_id'][0] = 'sometimes';
         $rules['name'][0] = 'sometimes';

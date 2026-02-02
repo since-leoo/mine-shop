@@ -81,7 +81,7 @@ class MemberLevelRequest extends BaseRequest
 
     private function uniqueRule(string $column, ?int $ignoreId = null): Unique
     {
-        $rule = Rule::unique('mall_member_levels', $column);
+        $rule = Rule::unique('member_levels', $column);
         if ($ignoreId) {
             $rule->ignore($ignoreId);
         }

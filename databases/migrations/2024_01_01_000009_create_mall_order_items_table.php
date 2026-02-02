@@ -20,7 +20,7 @@ class CreateMallOrderItemsTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_order_items', static function (Blueprint $table) {
+        Schema::create('order_items', static function (Blueprint $table) {
             $table->comment('订单商品表');
             $table->id();
             $table->unsignedBigInteger('order_id')->comment('订单ID');
@@ -46,6 +46,6 @@ class CreateMallOrderItemsTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_order_items');
+        Schema::dropIfExists('order_items');
     }
 }

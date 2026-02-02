@@ -17,7 +17,7 @@ class CreateMallSeckillSessionProductsTable extends Migration
 {
     public function up(): void
     {
-        Schema::create('mall_seckill_session_products', static function (Blueprint $table) {
+        Schema::create('seckill_session_products', static function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->unsignedBigInteger('activity_id')->comment('活动ID');
             $table->unsignedBigInteger('session_id')->comment('场次ID');
@@ -42,6 +42,6 @@ class CreateMallSeckillSessionProductsTable extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mall_seckill_session_products');
+        Schema::dropIfExists('seckill_session_products');
     }
 }

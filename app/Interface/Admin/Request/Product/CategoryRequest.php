@@ -131,7 +131,7 @@ class CategoryRequest extends BaseRequest
             $parentId = $category ? (int) $category->parent_id : 0;
         }
 
-        $rule = Rule::unique('mall_categories', 'name')->where(static function ($query) use ($parentId) {
+        $rule = Rule::unique('categories', 'name')->where(static function ($query) use ($parentId) {
             return $query->where('parent_id', $parentId);
         });
         if ($ignoreId) {

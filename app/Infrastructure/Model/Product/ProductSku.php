@@ -42,7 +42,7 @@ class ProductSku extends Model
 
     public const CODE_PREFIX = 'SKU';
 
-    protected ?string $table = 'mall_product_skus';
+    protected ?string $table = 'product_skus';
 
     protected array $fillable = [
         'product_id',

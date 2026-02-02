@@ -20,7 +20,7 @@ class CreateMallGroupBuysTable extends Migration
      */
     public function up(): void
     {
-        Schema::create('mall_group_buys', static function (Blueprint $table) {
+        Schema::create('group_buys', static function (Blueprint $table) {
             $table->comment('团购活动表');
             $table->id();
             $table->string('title', 255)->comment('活动标题');
@@ -62,6 +62,6 @@ class CreateMallGroupBuysTable extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('mall_group_buys');
+        Schema::dropIfExists('group_buys');
     }
 }
