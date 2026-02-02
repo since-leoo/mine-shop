@@ -36,7 +36,6 @@ final class ProductCommandService
     /**
      * 创建商品
      */
-    #[Transactional]
     public function create(ProductEntity $entity): Product
     {
         $entity = Db::transaction(fn () => $this->productService->create($entity));
@@ -53,7 +52,6 @@ final class ProductCommandService
     /**
      * 更新商品
      */
-    #[Transactional]
     public function update(ProductEntity $entity): bool
     {
         Db::transaction(fn () => $this->productService->update($entity));
@@ -70,7 +68,6 @@ final class ProductCommandService
     /**
      * 删除商品
      */
-    #[Transactional]
     public function delete(int $id): bool
     {
         $product = $this->queryService->find($id);

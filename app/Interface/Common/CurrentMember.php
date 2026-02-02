@@ -10,10 +10,9 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Api\Support;
+namespace App\Interface\Common;
 
 use App\Infrastructure\Exception\System\BusinessException;
-use App\Interface\Common\ResultCode;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
 use Mine\Jwt\Traits\RequestScopedTokenTrait;

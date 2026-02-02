@@ -365,9 +365,6 @@ final class OrderEntity
         return $entity;
     }
 
-    /**
-     * 发货.
-     */
     public function ship(): self
     {
         if (! \in_array($this->getStatus(), [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
@@ -396,9 +393,6 @@ final class OrderEntity
         $this->setShippingStatus(ShippingStatus::DELIVERED->value);
     }
 
-    /**
-     * 取消订单.
-     */
     public function cancel(): void
     {
         if (! \in_array($this->getStatus(), [OrderStatus::PENDING->value, OrderStatus::PAID->value], true)) {
@@ -439,9 +433,6 @@ final class OrderEntity
         $this->setPriceDetail($detail);
     }
 
-    /**
-     * 转换成数组.
-     */
     public function toArray(): array
     {
         return [

@@ -45,10 +45,7 @@ final class BrandController extends AbstractController
     public function list(BrandRequest $request): Result
     {
         $params = $request->validated();
-        $page = (int) ($params['page'] ?? 1);
-        $pageSize = (int) ($params['page_size'] ?? 15);
-        unset($params['page'], $params['page_size']);
-        return $this->success($this->queryService->page($params, $page, $pageSize));
+        return $this->success($this->queryService->page($params, $this->getCurrentPage(), $this->getPageSize()));
     }
 
     #[GetMapping(path: '{id:\d+}')]

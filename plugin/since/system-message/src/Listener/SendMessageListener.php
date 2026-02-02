@@ -27,7 +27,6 @@ use Plugin\Since\SystemMessage\Service\MessageService;
  * 注意：使用懒加载获取依赖以避免循环依赖
  * EventDispatcher -> SendMessageListener -> MessageService -> DriverFactory -> EventDispatcher
  */
-#[Listener]
 class SendMessageListener implements ListenerInterface
 {
     private ?MessageService $messageService = null;

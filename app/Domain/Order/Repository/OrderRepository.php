@@ -82,14 +82,14 @@ final class OrderRepository extends IRepository
     /**
      * 创建订单.
      */
-    public function save(OrderEntity $draft): void
+    public function save(OrderEntity $entity): void
     {
-        $items = array_map(static function ($item) {return $item->toArray(); }, $draft->getItems());
+        $items = array_map(static function ($item) {return $item->toArray(); }, $entity->getItems());
 
-        $model = $this->model->newQuery()->create($draft->toArray());
+        $model = $this->model->newQuery()->create($entity->toArray());
 
         $model->items()->createMany($items);
-        $model->address()->create($draft->getAddress()->toArray());
+        $model->address()->create($entity->getAddress()->toArray());
 
         $model->refresh();
     }

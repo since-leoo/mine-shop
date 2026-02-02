@@ -14,7 +14,7 @@ namespace HyperfTests\Unit\Interface\Api;
 
 use App\Application\Member\Contract\MemberQueryInterface;
 use App\Interface\Api\Controller\V1\MemberController;
-use App\Interface\Api\Support\CurrentMember;
+use App\Interface\Common\CurrentMember;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
 

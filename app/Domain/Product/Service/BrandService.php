@@ -105,6 +105,6 @@ final class BrandService
             ];
         }
 
-        return $sanitized === [] ? true : $this->repository->updateSort($sanitized);
+        return $sanitized === [] || $this->repository->updateSort($sanitized);
     }
 }

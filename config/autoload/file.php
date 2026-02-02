@@ -18,7 +18,7 @@ use Hyperf\Filesystem\Adapter\QiniuAdapterFactory;
 use Hyperf\Filesystem\Adapter\S3AdapterFactory;
 
 return [
-    'default' => 'local',
+    'default' => 'oss',
     'storage' => [
         'local' => [
             'driver' => LocalAdapterFactory::class,
@@ -27,12 +27,12 @@ return [
         ],
         'oss' => [
             'driver' => AliyunOssAdapterFactory::class,
-            'accessId' => '',
-            'accessSecret' => '',
-            'bucket' => '',
-            'endpoint' => '',
-            'domain' => '',
-            'schema' => 'http://',
+            'accessId' => env('OSS_ACCESS_ID', ''),
+            'accessSecret' => env('OSS_ACCESS_KEY', ''),
+            'bucket' => env('OSS_BUCKET', ''),
+            'endpoint' => env('OSS_ENDPOINT', ''),
+            'domain' => env('OSS_DOMAIN', ''),
+            'schema' => env('OSS_SCHEMA', 'https://'),
             'isCName' => false,
             // 'timeout'        => 3600,
             // 'connectTimeout' => 10,

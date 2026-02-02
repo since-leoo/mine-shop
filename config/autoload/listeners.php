@@ -9,6 +9,8 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+
+use App\Domain\Attachment\Listener\UploadSubscriber;
 use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
@@ -19,7 +21,6 @@ use Mine\Core\Subscriber\DbQueryExecutedSubscriber;
 use Mine\Core\Subscriber\FailToHandleSubscriber;
 use Mine\Core\Subscriber\QueueHandleSubscriber;
 use Mine\Core\Subscriber\ResumeExitCoordinatorSubscriber;
-use Mine\Core\Subscriber\Upload\UploadSubscriber;
 use Mine\Support\Listener\RegisterBlueprintListener;
 
 return [

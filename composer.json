@@ -16,6 +16,7 @@
   "license": "Apache-2.0",
   "require": {
     "php": ">=8.2",
+    "ext-bcmath": "*",
     "ext-fileinfo": "*",
     "ext-json": "*",
     "ext-openssl": "*",
@@ -41,6 +42,7 @@
     "hyperf/engine": "^2.0",
     "hyperf/event": "3.1.*",
     "hyperf/exception-handler": "3.1.*",
+    "hyperf/flysystem-oss": "*",
     "hyperf/framework": "3.1.*",
     "hyperf/guzzle": "^3.1",
     "hyperf/helper": "~3.1",
@@ -66,8 +68,7 @@
     "mineadmin/swagger": "~3.0",
     "mineadmin/upload": "~3.0",
     "w7corp/easywechat": "^6.5",
-    "yansongda/pay": "^3.6",
-    "ext-bcmath": "*"
+    "yansongda/pay": "^3.6"
   },
   "require-dev": {
     "doctrine/dbal": "^3.6",
