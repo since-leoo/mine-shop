@@ -1,562 +1,120 @@
-# 前端接口
+# 前端接口（Frontend API）
 
-前端接口用于移动端和 Web 端的用户功能。
+前端接口以 `/api` 为前缀，供 B2C 网站、小程序、App 等终端调用。部分接口需登录（Bearer Token），其余为开放读取。
 
-## 基础信息
+## 认证与会员
 
-- **基础路径**: `/api`
-- **认证方式**: Bearer Token (部分接口需要)
-- **请求格式**: JSON
-- **响应格式**: JSON
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 手机号注册 | `POST /api/user/register` | `mobile` + `password` + 验证码 |
+| 登录 | `POST /api/user/login` | 支持手机号/密码或第三方登录（可扩展） |
+| 获取个人信息 | `GET /api/user/profile` | 返回昵称、头像、等级、余额、积分等 |
+| 更新信息 | `PUT /api/user/profile` | 支持头像、昵称、生日等 |
+| 刷新 Token / 登出 | 同 Admin，参见 [认证授权](/api/auth) |
 
-## 用户接口
+## 商品 & 内容
 
-### 用户注册
+| 功能 | 方法 & 路径 | 关键参数 |
+| ---- | ----------- | -------- |
+| 商品列表 | `GET /api/product/list` | `page`, `category_id`, `keyword`, `sort` |
+| 商品详情 | `GET /api/product/{id}` | 含图片、详情、SKU、规格、营销标签 |
+| 团购/秒杀列表 | `GET /api/group-buy/list`, `GET /api/seckill/session/{id}/products` | 返回实时库存与倒计时 |
+| 优惠券可领取列表 | `GET /api/coupon/available` | 按频道/活动筛选 |
+| 领取优惠券 | `POST /api/coupon/claim` | 登录后调用，传 `coupon_id` |
 
-**接口**: `POST /api/user/register`
+## 购物车与下单
 
-**请求**:
+| 功能 | 方法 & 路径 |
+| ---- | ----------- |
+| 添加购物车 | `POST /api/cart/add` `{ "sku_id": 1, "quantity": 2 }` |
+| 购物车列表 | `GET /api/cart/list` |
+| 更新数量 | `PUT /api/cart/{id}` |
+| 删除/批量删除 | `DELETE /api/cart/{id}` 或 `POST /api/cart/batch-delete` |
 
-```json
-{
-  "mobile": "13800138000",
-  "password": "password123",
-  "code": "123456"
-}
-```
+### 下单流程
 
-**响应**:
+1. **预览订单**：`POST /api/order/preview`
+   ```json
+   {
+     "items": [{ "sku_id": 1, "quantity": 1 }],
+     "address_id": 3,
+     "coupon_ids": [8],
+     "remark": "请周末送达"
+   }
+   ```
+   返回：商品金额、运费、优惠、合计、可用优惠券列表、预计发货时间等。
 
-```json
-{
-  "code": 200,
-  "message": "注册成功"
-}
-```
+2. **提交订单**：`POST /api/order/submit`
+   - 需登录。
+   - 支持普通订单/团购/秒杀，在 `order_type` 或 SKU 上标记。
+   - 返回 `order_id`、`order_no`、`pay_amount`。
 
-### 用户登录
+3. **订单列表/详情**：`GET /api/order/list`、`GET /api/order/{id}`。
+   - 列表支持按状态过滤（`pending`, `paid`, `shipped`, `completed`, `cancelled`）。
+   - 详情包含订单项、地址、物流信息、支付状态、倒计时等。
 
-**接口**: `POST /api/user/login`
+4. **订单操作**：
+   - 取消：`POST /api/order/{id}/cancel`
+   - 确认收货：`POST /api/order/{id}/confirm`
+   - 查看物流：`GET /api/order/{id}/express` *(如已对接)*
 
-**请求**:
+## 支付
 
-```json
-{
-  "mobile": "13800138000",
-  "password": "password123"
-}
-```
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 创建支付 | `POST /api/payment/create` | `{ "order_id": 1, "payment_method": "alipay" }` |
+| 查询支付状态 | `GET /api/payment/query/{order_id}` | 轮询或前端触发 |
+| 支持方式 | `alipay` / `wechat` / `balance`（根据 `config/autoload/pay.php` 决定） |
 
-**响应**:
+回调地址示例：
 
-```json
-{
-  "code": 200,
-  "message": "登录成功",
-  "data": {
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "expires_in": 7200
-  }
-}
-```
+- `POST /api/payment/alipay/notify`
+- `POST /api/payment/wechat/notify`
 
-### 获取用户信息
+## 会员资产
 
-**接口**: `GET /api/user/profile`
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 钱包流水 | `GET /api/wallet/logs?type=balance` | 余额/积分通用 |
+| 钱包概览 | `GET /api/wallet/summary` | 余额、冻结、累计充值/消费 |
+| 可用优惠券 | `GET /api/coupon/my` | 支持筛选状态（可用/已用/已过期） |
+| 地址管理 | `GET/POST/PUT/DELETE /api/address` | 字段含 `province`、`city`、`district`、`street`、`region_path` |
+| 设置默认地址 | `POST /api/address/{id}/default` | |
 
-**需要认证**: 是
+地址表单数据可通过 `/geo/pcas`、`/geo/search`（无需登录）获取，保证四级地区一致性。
 
-**响应**:
+## Geo 与公共接口
 
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": 1,
-    "mobile": "13800138000",
-    "nickname": "用户昵称",
-    "avatar": "https://...",
-    "level": 1,
-    "balance": 100.00,
-    "points": 1000
-  }
-}
-```
+| 接口 | 是否需登录 | 描述 |
+| ---- | ---------- | ---- |
+| `GET /geo/pcas` | 否 | 返回最新版本的四级联动树 `items[]` 与 `version` |
+| `GET /geo/search?keyword=杭州&limit=10` | 否 | 模糊匹配省、市、区、街，带 `level` 和 `path_codes` |
+| `GET /common/setting` | 否 | 获取商城基础设置（LOGO、客服、公告等） |
 
-### 更新用户信息
-
-**接口**: `PUT /api/user/profile`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "nickname": "新昵称",
-  "avatar": "https://..."
-}
-```
-
-## 产品接口
-
-### 产品列表
-
-**接口**: `GET /api/product/list`
-
-**请求参数**:
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| page | integer | 否 | 页码 |
-| page_size | integer | 否 | 每页数量 |
-| category_id | integer | 否 | 分类 ID |
-| keyword | string | 否 | 搜索关键词 |
-| sort | string | 否 | 排序：price_asc/price_desc/sales |
-
-**响应**:
+## 错误示例
 
 ```json
 {
-  "code": 200,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "name": "商品名称",
-        "main_image": "https://...",
-        "min_price": 99.00,
-        "max_price": 199.00,
-        "sales": 100
-      }
-    ],
-    "total": 100
-  }
+  "code": 400,
+  "message": "库存不足",
+  "data": { "sku_id": 10086 }
 }
 ```
-
-### 产品详情
-
-**接口**: `GET /api/product/{id}`
-
-**响应**:
 
 ```json
 {
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": 1,
-    "name": "商品名称",
-    "description": "商品描述",
-    "main_image": "https://...",
-    "gallery_images": ["https://..."],
-    "min_price": 99.00,
-    "max_price": 199.00,
-    "skus": [
-      {
-        "id": 1,
-        "sku_name": "红色/L",
-        "sale_price": 99.00,
-        "stock": 100,
-        "spec_values": {
-          "颜色": "红色",
-          "尺码": "L"
-        }
-      }
-    ]
-  }
+  "code": 401,
+  "message": "请先登录",
+  "data": null
 }
 ```
 
-## 购物车接口
-
-### 添加到购物车
-
-**接口**: `POST /api/cart/add`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "sku_id": 1,
-  "quantity": 1
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "添加成功"
-}
-```
-
-### 购物车列表
-
-**接口**: `GET /api/cart/list`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "product_id": 1,
-        "sku_id": 1,
-        "product_name": "商品名称",
-        "sku_name": "红色/L",
-        "image": "https://...",
-        "price": 99.00,
-        "quantity": 1,
-        "total": 99.00
-      }
-    ],
-    "total_amount": 99.00
-  }
-}
-```
-
-### 更新购物车
-
-**接口**: `PUT /api/cart/{id}`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "quantity": 2
-}
-```
-
-### 删除购物车项
-
-**接口**: `DELETE /api/cart/{id}`
-
-**需要认证**: 是
-
-## 订单接口
-
-### 订单预览
-
-**接口**: `POST /api/order/preview`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "items": [
-    {
-      "sku_id": 1,
-      "quantity": 1
-    }
-  ],
-  "address_id": 1
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "goods_amount": 99.00,
-    "shipping_fee": 10.00,
-    "discount_amount": 0.00,
-    "total_amount": 109.00,
-    "items": [
-      {
-        "product_name": "商品名称",
-        "sku_name": "红色/L",
-        "quantity": 1,
-        "price": 99.00
-      }
-    ]
-  }
-}
-```
-
-### 提交订单
-
-**接口**: `POST /api/order/submit`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "items": [
-    {
-      "sku_id": 1,
-      "quantity": 1
-    }
-  ],
-  "address_id": 1,
-  "remark": "备注"
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "订单创建成功",
-  "data": {
-    "order_id": 1,
-    "order_no": "ORD20240101120000",
-    "pay_amount": 109.00
-  }
-}
-```
-
-### 订单列表
-
-**接口**: `GET /api/order/list`
-
-**需要认证**: 是
-
-**请求参数**:
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| status | string | 否 | 订单状态 |
-| page | integer | 否 | 页码 |
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "order_no": "ORD20240101120000",
-        "status": "pending",
-        "pay_status": "pending",
-        "total_amount": 109.00,
-        "items": [
-          {
-            "product_name": "商品名称",
-            "sku_name": "红色/L",
-            "quantity": 1,
-            "image": "https://..."
-          }
-        ],
-        "created_at": "2024-01-01 12:00:00"
-      }
-    ]
-  }
-}
-```
-
-### 订单详情
-
-**接口**: `GET /api/order/{id}`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": 1,
-    "order_no": "ORD20240101120000",
-    "status": "pending",
-    "pay_status": "pending",
-    "total_amount": 109.00,
-    "pay_amount": 109.00,
-    "items": [
-      {
-        "product_name": "商品名称",
-        "sku_name": "红色/L",
-        "quantity": 1,
-        "unit_price": 99.00,
-        "total_price": 99.00
-      }
-    ],
-    "address": {
-      "consignee": "张三",
-      "mobile": "13800138000",
-      "address": "北京市朝阳区xxx"
-    },
-    "created_at": "2024-01-01 12:00:00"
-  }
-}
-```
-
-### 取消订单
-
-**接口**: `POST /api/order/{id}/cancel`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "取消成功"
-}
-```
-
-### 确认收货
-
-**接口**: `POST /api/order/{id}/confirm`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "确认收货成功"
-}
-```
-
-## 支付接口
-
-### 创建支付
-
-**接口**: `POST /api/payment/create`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "order_id": 1,
-  "payment_method": "alipay"
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "payment_params": {
-      "order_string": "..."
-    }
-  }
-}
-```
-
-### 查询支付状态
-
-**接口**: `GET /api/payment/query/{order_id}`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "status": "paid",
-    "paid_at": "2024-01-01 12:00:00"
-  }
-}
-```
-
-## 地址接口
-
-### 地址列表
-
-**接口**: `GET /api/address/list`
-
-**需要认证**: 是
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": [
-    {
-      "id": 1,
-      "consignee": "张三",
-      "mobile": "13800138000",
-      "province": "北京市",
-      "city": "北京市",
-      "district": "朝阳区",
-      "address": "xxx街道xxx号",
-      "is_default": true
-    }
-  ]
-}
-```
-
-### 添加地址
-
-**接口**: `POST /api/address`
-
-**需要认证**: 是
-
-**请求**:
-
-```json
-{
-  "consignee": "张三",
-  "mobile": "13800138000",
-  "province": "北京市",
-  "city": "北京市",
-  "district": "朝阳区",
-  "address": "xxx街道xxx号",
-  "is_default": false
-}
-```
-
-### 更新地址
-
-**接口**: `PUT /api/address/{id}`
-
-**需要认证**: 是
-
-### 删除地址
-
-**接口**: `DELETE /api/address/{id}`
-
-**需要认证**: 是
-
-### 设置默认地址
-
-**接口**: `POST /api/address/{id}/default`
-
-**需要认证**: 是
-
-## 下一步
-
-- [后台接口](/api/admin) - 查看后台管理接口
-- [认证授权](/api/auth) - 了解认证机制
+## 最佳实践
+
+1. **Token 续期**：在 `401` 且 message 为 Token 失效时，调用 `/api/auth/refresh` 获取新 Token，再重试一次。
+2. **地区字段**：提交地址/会员资料时使用 `region_path = |省code|市code|区code|街code|`，便于后台地区统计。
+3. **幂等下单**：前端可传 `client_request_id`（定制）放入扩展字段，后端按需做幂等校验。
+4. **网络错误**：支付状态必须以查询接口为准，不要依赖前端跳转。
+5. **灰度发布**：可在 Header 中携带 `X-Client-Version`，后端根据版本控制返回字段或行为（如启用新的运营位）。
+
+更多后台能力参考 [Admin API](/api/admin)，认证细节见 [认证授权](/api/auth)。*** End Patch

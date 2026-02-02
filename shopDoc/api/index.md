@@ -1,265 +1,114 @@
 # API 概览
 
-本系统提供完整的 RESTful API 接口，分为后台管理接口和前端接口两部分。
+Mine Shop 提供一套 RESTful API，覆盖后台管理端（Admin）、前台业务端（Frontend）以及 Geo、认证等通用能力。本页汇总协议规范、通用约束与典型示例。
 
-## 接口分类
+## 基础信息
 
-### 后台管理接口
+| 分类 | Base Path | 说明 |
+| ---- | --------- | ---- |
+| Admin API | `/admin` | 后台管理、配置、运营、Geo 控制台等接口 |
+| Frontend API | `/api` | 对 C 端/小程序/APP 开放的业务接口 |
+| Geo API | `/geo` | PCAS 级联、关键字搜索等只读接口 |
+| Auth API | `/api/auth` & `/admin/auth` | JWT 登录、刷新与登出 |
 
-基础路径：`/admin`
+所有接口默认返回 JSON，使用 UTF-8 编码。
 
-- [产品管理](/api/admin#产品管理)
-- [订单管理](/api/admin#订单管理)
-- [会员管理](/api/admin#会员管理)
-- [秒杀管理](/api/admin#秒杀管理)
-- [团购管理](/api/admin#团购管理)
-- [权限管理](/api/admin#权限管理)
+## 认证与权限
 
-### 前端接口
+- **JWT**：后台与前台均使用 JWT，携带在 `Authorization: Bearer <token>`。
+- **刷新机制**：`/api/auth/refresh` / `/admin/auth/refresh` 提供刷新令牌能力。
+- **权限控制**：Admin API 采用 RBAC + 数据权限（部门/本人）。权限不足返回 `403`。
 
-基础路径：`/api`
+详细流程参考 [认证授权](/api/auth)。
 
-- [用户接口](/api/frontend#用户接口)
-- [产品接口](/api/frontend#产品接口)
-- [订单接口](/api/frontend#订单接口)
-- [支付接口](/api/frontend#支付接口)
-- [地址接口](/api/frontend#地址接口)
-
-## 通用说明
-
-### 请求格式
-
-所有接口均使用 JSON 格式进行数据交互。
-
-**请求头**：
+## 请求/响应格式
 
 ```http
+POST /admin/member/member/list HTTP/1.1
 Content-Type: application/json
-Authorization: Bearer {access_token}
-```
+Authorization: Bearer <token>
 
-### 响应格式
-
-统一的响应格式：
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {}
-}
-```
-
-**字段说明**：
-
-- `code`: 响应码，200 表示成功
-- `message`: 响应消息
-- `data`: 响应数据
-
-### 响应码
-
-| 响应码 | 说明 |
-|-------|------|
-| 200 | 成功 |
-| 400 | 请求参数错误 |
-| 401 | 未授权 |
-| 403 | 无权限 |
-| 404 | 资源不存在 |
-| 500 | 服务器错误 |
-
-### 分页参数
-
-列表接口支持分页查询：
-
-**请求参数**：
-
-```json
 {
   "page": 1,
-  "page_size": 20
+  "page_size": 20,
+  "keyword": "手机"
 }
 ```
-
-**响应格式**：
 
 ```json
 {
   "code": 200,
   "message": "success",
   "data": {
-    "items": [],
-    "total": 100,
-    "page": 1,
-    "page_size": 20,
-    "total_pages": 5
+    "list": [...],
+    "total": 128
   }
 }
 ```
 
-### 排序参数
+| 字段 | 含义 |
+| ---- | ---- |
+| `code` | 业务状态码（200 成功；其余见下文） |
+| `message` | 人类可读提示 |
+| `data` | 真实业务数据；失败时可为空 |
 
-支持排序的接口：
+## 常见状态码
 
-```json
-{
-  "order_by": "created_at",
-  "order_direction": "desc"
-}
+| code | 描述 |
+| ---- | ---- |
+| 200 | 成功 |
+| 201 | 创建成功/异步接受 |
+| 400 | 参数错误或业务校验失败 |
+| 401 | 未认证 / Token 失效 |
+| 403 | 无权限 |
+| 404 | 资源不存在 |
+| 422 | 表单验证失败（附带字段错误） |
+| 429 | 请求过于频繁 |
+| 500 | 服务端异常 |
+
+## 分页 & 筛选
+
+- 通用参数：`page`（默认 1）、`page_size`（默认 20，最大 200）。
+- 响应字段：`list`/`items`、`total`、`page`、`page_size`。
+- 复杂筛选字段随资源不同而异（例如会员列表支持等级/标签/地区；订单支持状态/时间区间等）。
+
+## 限流与幂等
+
+- 登录、支付等敏感接口配置了速率限制，如收到 `429` 请退避重试。
+- 幂等场景需自带业务幂等字段（例如订单号、第三方流水号）。
+
+## Geo API 说明
+
+| 接口 | 描述 |
+| ---- | ---- |
+| `GET /geo/pcas` | 获取最新版本的省-市-区-街四级联动树，含版本号与更新时间 |
+| `GET /geo/search?keyword=杭州&limit=20` | 基于关键字的模糊匹配，返回 `code`、`level`、`full_name`、`path_codes` |
+
+Geo 数据来自自建 `geo_regions` 表，支持 `mall:sync-regions` 命令或 Crontab 定时同步。
+
+## 调用示例
+
+```bash
+curl -H "Authorization: Bearer $TOKEN" \
+     -X GET "https://api.example.com/admin/member/member/overview?trend_days=14"
 ```
-
-- `order_by`: 排序字段
-- `order_direction`: 排序方向（asc/desc）
-
-### 筛选参数
-
-支持筛选的接口：
-
-```json
-{
-  "filters": {
-    "status": "active",
-    "category_id": 1,
-    "keyword": "商品名称"
-  }
-}
-```
-
-## 认证授权
-
-### JWT Token
-
-系统使用 JWT Token 进行身份认证。
-
-#### 获取 Token
-
-**接口**: `POST /api/auth/login`
-
-**请求**：
-
-```json
-{
-  "username": "admin",
-  "password": "password"
-}
-```
-
-**响应**：
 
 ```json
 {
   "code": 200,
-  "message": "success",
   "data": {
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "expires_in": 7200
+    "trend": { "labels": ["01-20", ...], "new_members": [32, ...], "active_members": [58, ...] },
+    "region_breakdown": [
+      { "key": "广东省", "label": "广东省", "value": 1024 },
+      { "key": "未填写地区", "label": "未填写地区", "value": 210 }
+    ],
+    "level_breakdown": [...]
   }
 }
 ```
-
-#### 刷新 Token
-
-**接口**: `POST /api/auth/refresh`
-
-**请求头**：
-
-```http
-Authorization: Bearer {refresh_token}
-```
-
-**响应**：
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
-    "expires_in": 7200
-  }
-}
-```
-
-#### 使用 Token
-
-在请求头中携带 Token：
-
-```http
-Authorization: Bearer {access_token}
-```
-
-### 权限验证
-
-后台接口需要验证用户权限，权限不足时返回 403 错误。
-
-## 错误处理
-
-### 错误响应格式
-
-```json
-{
-  "code": 400,
-  "message": "参数错误",
-  "errors": {
-    "name": ["商品名称不能为空"],
-    "price": ["价格必须大于0"]
-  }
-}
-```
-
-### 常见错误
-
-| 错误码 | 错误信息 | 说明 |
-|-------|---------|------|
-| 1001 | Token 已过期 | 需要刷新 Token |
-| 1002 | Token 无效 | 需要重新登录 |
-| 1003 | 无权限访问 | 权限不足 |
-| 2001 | 参数验证失败 | 请求参数错误 |
-| 3001 | 资源不存在 | 请求的资源不存在 |
-| 4001 | 库存不足 | 商品库存不足 |
-| 5001 | 服务器错误 | 系统内部错误 |
-
-## 接口限流
-
-为保护系统稳定性，部分接口有访问频率限制：
-
-- 普通接口：60 次/分钟
-- 登录接口：5 次/分钟
-- 支付接口：10 次/分钟
-
-超过限制时返回 429 错误：
-
-```json
-{
-  "code": 429,
-  "message": "请求过于频繁，请稍后再试"
-}
-```
-
-## 接口文档
-
-详细的接口文档请查看：
-
-- [后台接口文档](/api/admin)
-- [前端接口文档](/api/frontend)
-- [认证接口文档](/api/auth)
-
-## Swagger 文档
-
-系统提供 Swagger 在线文档，访问地址：
-
-```
-http://your-domain.com/swagger
-```
-
-## Postman 集合
-
-可以导入 Postman 集合进行接口测试：
-
-[下载 Postman 集合](./postman_collection.json)
 
 ## 下一步
 
-- [后台接口](/api/admin) - 查看后台管理接口
-- [前端接口](/api/frontend) - 查看前端接口
-- [认证授权](/api/auth) - 了解认证授权机制
+- [后台接口](/api/admin) – 商品、订单、营销、会员、Geo 管理等所有 Admin 端接口。
+- [前端接口](/api/frontend) – 面向 C 端/小程序的下单、支付、地址、钱包接口。
+- [认证授权](/api/auth) – Token、刷新、权限、数据权限等说明。*** End Patch

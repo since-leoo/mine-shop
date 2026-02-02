@@ -1,624 +1,89 @@
-# DDD 架构
+# DDD 架构实践
 
-本系统采用 **领域驱动设计（Domain-Driven Design, DDD）** 架构，将业务逻辑清晰地组织为四个层次。
+Mine Shop 自创建伊始即以 **领域驱动设计（Domain-Driven Design，DDD）** 为核心方法论。通过战略设计划分业务疆域，战术设计落实到代码结构，最终形成「接口 → 应用 → 领域 → 基础设施」四层协作的高内聚体系。
 
-## 什么是 DDD？
+## 战略设计：业务边界
 
-领域驱动设计是一种软件开发方法论，强调：
+| Bounded Context | 职责 | 代表模块 |
+| --------------- | ---- | -------- |
+| **Commerce** | 商品、订单、库存、支付、履约 | `Product`, `Order`, `Stock`, `Payment` |
+| **Marketing** | 秒杀、团购、优惠券、活动联动 | `Seckill`, `GroupBuy`, `Coupon` |
+| **Member** | 会员生命周期、钱包、积分、标签、概览 | `Member`, `MemberWallet`, `MemberTag` |
+| **Geo** | 四级地区库、地理联动、搜索服务 | `GeoRegion`, `GeoQueryService`, `/geo/*` |
+| **Platform** | 权限、组织、设置、附件、操作日志 | `Permission`, `SystemSetting`, `Attachment` |
 
-- **以业务领域为核心**: 将业务逻辑放在领域层
-- **统一语言**: 开发人员和业务人员使用相同的术语
-- **分层架构**: 清晰的职责划分
-- **领域模型**: 用代码表达业务规则
+各上下文以 **统一语言** 描述模型，在接口层通过 DTO/VO 解耦，在领域层通过实体、值对象、服务与策略保持业务完整性。
 
-## 四层架构
-
-```
-┌─────────────────────────────────────┐
-│      Interface Layer (接口层)        │
-│   HTTP Controllers, Middleware      │
-└─────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────┐
-│    Application Layer (应用层)        │
-│  Command/Query Service, Assembler   │
-└─────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────┐
-│      Domain Layer (领域层)           │
-│  Entity, Service, Repository        │
-└─────────────────────────────────────┘
-              ↓
-┌─────────────────────────────────────┐
-│  Infrastructure Layer (基础设施层)    │
-│   Model, Database, Cache, Queue     │
-└─────────────────────────────────────┘
-```
-
-## Interface Layer (接口层)
-
-### 职责
-
-- 处理 HTTP 请求和响应
-- 参数验证和转换
-- 权限验证
-- 操作日志记录
-- 异常处理
-
-### 目录结构
+## 战术设计：四层模型
 
 ```
-app/Interface/
-├── Admin/              # 后台管理接口
-│   ├── Controller/    # 控制器
-│   ├── Middleware/    # 中间件
-│   ├── Request/       # 请求验证
-│   └── Vo/            # 视图对象
-├── Api/               # 前端 API 接口
-│   ├── Controller/
-│   ├── Middleware/
-│   └── Request/
-└── Common/            # 公共组件
-    ├── Controller/
-    ├── Middleware/
-    ├── Result.php     # 统一响应
-    └── ResultCode.php # 响应码
+Interface  ── Controller / Request / Middleware / VO
+      ↓
+Application ─ CommandService / QueryService / Assembler / Event Handler
+      ↓
+Domain ───── Entity / ValueObject / DomainService / Repository Interface / Strategy
+      ↓
+Infrastructure ─ ORM Model / Repository Impl / Cache / Queue / Lua / Command / Geo Sync
 ```
 
-### 示例代码
+### Interface Layer
 
-```php
-namespace App\Interface\Admin\Controller\Product;
+- **协议适配**：HTTP 控制器、路由、请求验证、JWT + RBAC 中间件。
+- **用户体验**：将复杂查询（如会员概览、地区构成）整理为易用参数。
+- **统一响应**：`Result` / `ResultCode` 保证外部接口稳定。
 
-use App\Application\Product\Service\ProductCommandService;
-use App\Application\Product\Service\ProductQueryService;
-use App\Interface\Admin\Request\Product\ProductCreateRequest;
-use App\Interface\Common\Result;
+### Application Layer
 
-class ProductController
-{
-    public function __construct(
-        private ProductCommandService $commandService,
-        private ProductQueryService $queryService
-    ) {}
+- **CQRS**：`CommandService` 负责写操作与事务，`QueryService` 负责查询、统计、缓存。
+- **Assembler**：在 DTO ⇄ Entity 之间转换，避免 Controller 与 Domain 直接耦合。
+- **流程编排**：如创建团购活动会依次校验 SKU、库存、时间窗并触发事件。
+- **事件调度**：通过 Hyperf 事件系统分发 `MemberBalanceAdjusted`、`OrderCreated` 等领域事件。
 
-    /**
-     * 产品列表
-     */
-    public function list(ProductListRequest $request): Result
-    {
-        $data = $this->queryService->page($request->validated());
-        return Result::success($data);
-    }
+### Domain Layer
 
-    /**
-     * 创建产品
-     */
-    public function create(ProductCreateRequest $request): Result
-    {
-        $product = $this->commandService->create($request->validated());
-        return Result::success($product);
-    }
-}
-```
+- **Entity & Value Object**：`OrderEntity`、`OrderItemEntity`、`OrderAddressValue` 等负责业务规则。
+- **Domain Service**：`OrderService`、`MemberService` 等聚合跨实体的业务动作。
+- **Repository Interface**：定义持久化契约（如 `MemberRepository::overview` 计算地区分布）。
+- **策略/工厂**：订单类型策略、优惠券发放策略、团购成团策略等。
+- **领域事件**：以 `Event` + `Listener` 形式异步解耦库存回滚、日志记录、钱包流水。
 
-## Application Layer (应用层)
+### Infrastructure Layer
 
-### 职责
+- **持久化**：Hyperf ORM 模型、Query Builder、数据库迁移。
+- **缓存与消息**：Redis、Lua 脚本（`lock_and_decrement.lua`、`rollback.lua`）、事件队列。
+- **命令/调度**：`mall:sync-regions`、`system:check-tables`、Crontab 定时任务。
+- **外部服务**：支付（yansongda/pay）、附件、短信、Geo 地址库同步。
 
-- 协调领域服务
-- 实现业务流程编排
-- 事务管理
-- 事件分发
-- 数据转换（Assembler）
+## 数据流示例：会员概览（地区构成）
 
-### CQRS 模式
+1. `GET /admin/member/member/overview` → `MemberController@overview` 解析筛选条件。
+2. `MemberQueryService::overview` 调用 `MemberService::overview`（应用层）。
+3. `MemberRepository::overview` 在领域层执行 Query Builder：
+   - `buildTrendSeries()` 输出新增/活跃曲线（最近 N 天）。
+   - `buildRegionBreakdown()` 聚合 `province` 字段，缺省值归为「未填写地区」。
+   - `buildLevelBreakdown()` 统计等级分布。
+4. 结果返回给前端，`/web/src/modules/member/views/overview/index.vue` 使用 `useEcharts` 绘制折线 + 饼图 + 进度条。
+5. 若地区信息由 Geo 模块更新，通过 `member.region_path`、`/geo/pcas` 级联选择保障一致性。
 
-应用层采用 **CQRS（Command Query Responsibility Segregation）** 模式，将读写操作分离：
+此流程体现：接口层只负责参数与权限，应用层编排与聚合，领域层掌控规则，基础设施层负责 SQL 与缓存。
 
-- **CommandService**: 处理写操作（创建、更新、删除）
-- **QueryService**: 处理读操作（查询、统计）
+## 领域建模要点
 
-### 目录结构
+- **聚合根**：订单、会员、优惠券、团购、地区版本等，每个聚合根提供一致性边界。
+- **值对象**：`OrderAddressValue`、`OrderLogValue`、`GeoPathValue` 等封装不可变数据。
+- **领域事件**：`OrderCreatedEvent`、`MemberBalanceAdjusted`、`ProductStockWarningEvent` 等在领域层触发，监听器运行在基础设施层。
+- **数据权限**：`DataScope` 以 Attribute + AOP 方式织入 Query，属于基础设施对领域的横切增强。
 
-```
-app/Application/
-├── Order/
-│   ├── Assembler/
-│   │   └── OrderAssembler.php
-│   └── Service/
-│       ├── OrderCommandService.php
-│       └── OrderQueryService.php
-├── Product/
-│   ├── Assembler/
-│   │   └── ProductAssembler.php
-│   └── Service/
-│       ├── ProductCommandService.php
-│       └── ProductQueryService.php
-└── ...
-```
+## 与基础设施的协作
 
-### 示例代码
+- **Geo 地址库**：`GeoRegionSyncService` 负责下载、校验、写入 `geo_regions` / `geo_region_versions` 表，并缓存到 `CacheInterface`。领域层只依赖 `GeoQueryService` 暴露的 `getCascadeTree()`/`search()`，无需感知数据来源。
+- **库存系统**：`OrderStockService` 使用 Lua 原子扣减，成功后再由领域服务写库；失败则抛出业务异常并在应用层回滚。
+- **支付与网关**：领域层依赖 `PaymentService` 接口，具体由基础设施封装 yansongda/pay。
 
-#### CommandService (写操作)
+## FAQ
 
-```php
-namespace App\Application\Product\Service;
+- **为什么保留 Repository Interface？** 便于测试与替换实现（如引入 ES、ClickHouse），并保持应用层仅依赖接口。
+- **事件太多会不会难以追踪？** 我们使用命名规范（`模块:动词`）、链路日志、以及 Hyperf 自带的事件监听，另有操作日志记录调用链。
+- **如何扩展新的业务形态？** 添加新的 Bounded Context 或聚合根，遵守 4 层结构，并在应用层提供独立 Command/Query Service，即可无痛扩展。
 
-use App\Application\Product\Assembler\ProductAssembler;
-use App\Domain\Product\Service\ProductService;
-
-class ProductCommandService
-{
-    public function __construct(
-        private ProductService $productService,
-        private ProductAssembler $assembler
-    ) {}
-
-    /**
-     * 创建产品
-     */
-    public function create(array $data): array
-    {
-        // 转换为领域实体
-        $entity = $this->assembler->toCreateEntity($data);
-        
-        // 调用领域服务
-        $product = $this->productService->create($entity);
-        
-        // 返回结果
-        return $product->toArray();
-    }
-
-    /**
-     * 更新产品
-     */
-    public function update(int $id, array $data): array
-    {
-        $entity = $this->assembler->toUpdateEntity($id, $data);
-        $product = $this->productService->update($entity);
-        return $product->toArray();
-    }
-}
-```
-
-#### QueryService (读操作)
-
-```php
-namespace App\Application\Product\Service;
-
-use App\Domain\Product\Repository\ProductRepository;
-
-class ProductQueryService
-{
-    public function __construct(
-        private ProductRepository $repository
-    ) {}
-
-    /**
-     * 分页查询
-     */
-    public function page(array $params): array
-    {
-        return $this->repository->page($params);
-    }
-
-    /**
-     * 查询详情
-     */
-    public function find(int $id): ?array
-    {
-        $product = $this->repository->find($id);
-        return $product?->toArray();
-    }
-
-    /**
-     * 统计数据
-     */
-    public function stats(): array
-    {
-        return $this->repository->stats();
-    }
-}
-```
-
-#### Assembler (数据转换)
-
-```php
-namespace App\Application\Product\Assembler;
-
-use App\Domain\Product\Entity\ProductEntity;
-
-class ProductAssembler
-{
-    /**
-     * 转换为创建实体
-     */
-    public function toCreateEntity(array $data): ProductEntity
-    {
-        return new ProductEntity([
-            'name' => $data['name'],
-            'categoryId' => $data['category_id'],
-            'brandId' => $data['brand_id'],
-            'description' => $data['description'] ?? '',
-            'skus' => $data['skus'] ?? [],
-            // ...
-        ]);
-    }
-
-    /**
-     * 转换为更新实体
-     */
-    public function toUpdateEntity(int $id, array $data): ProductEntity
-    {
-        $entity = $this->toCreateEntity($data);
-        $entity->id = $id;
-        return $entity;
-    }
-}
-```
-
-## Domain Layer (领域层)
-
-### 职责
-
-- 封装核心业务逻辑
-- 维护业务规则和约束
-- 发布领域事件
-- 定义领域模型
-
-### 目录结构
-
-```
-app/Domain/
-├── Order/
-│   ├── Entity/           # 实体
-│   │   ├── OrderEntity.php
-│   │   └── OrderItemEntity.php
-│   ├── Service/          # 领域服务
-│   │   ├── OrderService.php
-│   │   └── OrderStockService.php
-│   ├── Repository/       # 仓储接口
-│   │   └── OrderRepository.php
-│   ├── ValueObject/      # 值对象
-│   │   ├── OrderAddressValue.php
-│   │   └── OrderPriceValue.php
-│   ├── Event/            # 领域事件
-│   │   ├── OrderCreatedEvent.php
-│   │   └── OrderShippedEvent.php
-│   ├── Enum/             # 枚举
-│   │   ├── OrderStatus.php
-│   │   └── PaymentStatus.php
-│   ├── Strategy/         # 策略
-│   │   └── OrderTypeStrategyInterface.php
-│   └── Factory/          # 工厂
-│       └── OrderTypeStrategyFactory.php
-└── ...
-```
-
-### 核心概念
-
-#### Entity (实体)
-
-实体是具有唯一标识的领域对象。
-
-```php
-namespace App\Domain\Order\Entity;
-
-class OrderEntity
-{
-    public ?int $id = null;
-    public string $orderNo;
-    public int $memberId;
-    public string $orderType;
-    public string $status;
-    public float $totalAmount;
-    public array $items = [];
-    public ?OrderAddressValue $address = null;
-
-    /**
-     * 计算订单总金额
-     */
-    public function calculateTotalAmount(): float
-    {
-        $goodsAmount = array_sum(array_map(
-            fn($item) => $item->totalPrice,
-            $this->items
-        ));
-        
-        return $goodsAmount + $this->shippingFee - $this->discountAmount;
-    }
-
-    /**
-     * 验证订单
-     */
-    public function validate(): void
-    {
-        if (empty($this->items)) {
-            throw new \InvalidArgumentException('订单项不能为空');
-        }
-
-        if ($this->totalAmount <= 0) {
-            throw new \InvalidArgumentException('订单金额必须大于0');
-        }
-    }
-}
-```
-
-#### ValueObject (值对象)
-
-值对象是没有唯一标识的领域对象，通过属性值来区分。
-
-```php
-namespace App\Domain\Order\ValueObject;
-
-class OrderAddressValue
-{
-    public function __construct(
-        public string $consignee,
-        public string $mobile,
-        public string $province,
-        public string $city,
-        public string $district,
-        public string $address,
-        public ?string $zipCode = null
-    ) {}
-
-    /**
-     * 获取完整地址
-     */
-    public function getFullAddress(): string
-    {
-        return $this->province . $this->city . $this->district . $this->address;
-    }
-}
-```
-
-#### Service (领域服务)
-
-领域服务封装不属于任何实体的业务逻辑。
-
-```php
-namespace App\Domain\Order\Service;
-
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Order\Event\OrderCreatedEvent;
-
-class OrderService
-{
-    public function __construct(
-        private OrderRepository $repository,
-        private OrderStockService $stockService
-    ) {}
-
-    /**
-     * 提交订单
-     */
-    public function submit(OrderEntity $entity): OrderEntity
-    {
-        // 验证订单
-        $entity->validate();
-
-        // 锁定库存
-        $locks = $this->stockService->acquireLocks($entity->items);
-
-        try {
-            // 扣减库存
-            $this->stockService->reserve($entity->items);
-
-            // 保存订单
-            $order = $this->repository->save($entity);
-
-            // 发布事件
-            event(new OrderCreatedEvent($order));
-
-            return $order;
-        } catch (\Exception $e) {
-            // 回滚库存
-            $this->stockService->rollback($entity->items);
-            throw $e;
-        } finally {
-            // 释放锁
-            $this->stockService->releaseLocks($locks);
-        }
-    }
-}
-```
-
-#### Repository (仓储接口)
-
-仓储接口定义数据访问方法，具体实现在基础设施层。
-
-```php
-namespace App\Domain\Order\Repository;
-
-use App\Domain\Order\Entity\OrderEntity;
-
-interface OrderRepository
-{
-    public function find(int $id): ?OrderEntity;
-    
-    public function save(OrderEntity $entity): OrderEntity;
-    
-    public function page(array $params): array;
-    
-    public function ship(int $id, array $data): bool;
-    
-    public function cancel(int $id, string $reason): bool;
-}
-```
-
-#### Event (领域事件)
-
-领域事件表示领域中发生的重要业务事件。
-
-```php
-namespace App\Domain\Order\Event;
-
-use App\Domain\Order\Entity\OrderEntity;
-
-class OrderCreatedEvent
-{
-    public function __construct(
-        public OrderEntity $order
-    ) {}
-}
-```
-
-#### Enum (枚举)
-
-枚举定义业务状态和类型。
-
-```php
-namespace App\Domain\Order\Enum;
-
-enum OrderStatus: string
-{
-    case PENDING = 'pending';
-    case PAID = 'paid';
-    case SHIPPED = 'shipped';
-    case COMPLETED = 'completed';
-    case CANCELLED = 'cancelled';
-    case REFUNDED = 'refunded';
-
-    public function label(): string
-    {
-        return match($this) {
-            self::PENDING => '待支付',
-            self::PAID => '已支付',
-            self::SHIPPED => '已发货',
-            self::COMPLETED => '已完成',
-            self::CANCELLED => '已取消',
-            self::REFUNDED => '已退款',
-        };
-    }
-}
-```
-
-## Infrastructure Layer (基础设施层)
-
-### 职责
-
-- 数据持久化（数据库操作）
-- 缓存管理
-- 外部服务集成
-- 技术实现细节
-
-### 目录结构
-
-```
-app/Infrastructure/
-├── Model/              # Eloquent 模型
-│   ├── Order/
-│   │   ├── Order.php
-│   │   └── OrderItem.php
-│   └── Product/
-│       ├── Product.php
-│       └── ProductSku.php
-├── Library/            # 工具库
-│   ├── Lua/           # Lua 脚本
-│   └── DataPermission/ # 数据权限
-├── Service/            # 基础设施服务
-│   └── Wechat/
-├── Exception/          # 异常处理
-└── Traits/             # 可复用特性
-```
-
-### Repository 实现
-
-```php
-namespace App\Infrastructure\Repository;
-
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Repository\OrderRepository as OrderRepositoryInterface;
-use App\Infrastructure\Model\Order\Order;
-
-class OrderRepository implements OrderRepositoryInterface
-{
-    /**
-     * 查找订单
-     */
-    public function find(int $id): ?OrderEntity
-    {
-        $model = Order::with(['items', 'address'])->find($id);
-        
-        if (!$model) {
-            return null;
-        }
-
-        return $this->toEntity($model);
-    }
-
-    /**
-     * 保存订单
-     */
-    public function save(OrderEntity $entity): OrderEntity
-    {
-        $model = new Order();
-        $model->fill($entity->toArray());
-        $model->save();
-
-        // 保存订单项
-        foreach ($entity->items as $item) {
-            $model->items()->create($item->toArray());
-        }
-
-        return $this->toEntity($model);
-    }
-
-    /**
-     * 模型转实体
-     */
-    private function toEntity(Order $model): OrderEntity
-    {
-        return new OrderEntity($model->toArray());
-    }
-}
-```
-
-## 依赖关系
-
-```
-Interface Layer
-    ↓ 依赖
-Application Layer
-    ↓ 依赖
-Domain Layer
-    ↑ 实现
-Infrastructure Layer
-```
-
-**依赖规则**：
-
-- 外层依赖内层
-- 内层不依赖外层
-- 领域层定义接口，基础设施层实现接口
-
-## 优势
-
-### 1. 清晰的职责划分
-
-每一层都有明确的职责，代码组织清晰，易于理解和维护。
-
-### 2. 业务逻辑集中
-
-核心业务逻辑集中在领域层，不会分散在各个层次。
-
-### 3. 易于测试
-
-各层独立，可以单独进行单元测试。
-
-### 4. 易于扩展
-
-新增功能只需在相应层次添加代码，不影响其他层次。
-
-### 5. 技术无关
-
-领域层不依赖具体技术实现，可以轻松切换数据库、缓存等技术。
-
-## 下一步
-
-- [分层设计](/architecture/layers) - 详细了解各层设计
-- [设计模式](/architecture/patterns) - 了解使用的设计模式
-- [订单设计](/core/order-design) - 查看订单模块的 DDD 实现
+下一步建议阅读 [分层设计](/architecture/layers) 与 [设计模式](/architecture/patterns) 以获得更细节的实现视角。*** End Patch

@@ -1,204 +1,146 @@
 # 配置说明
 
-本文档详细介绍系统的各项配置。
+Mine Shop 通过 `.env` + `config/autoload/*.php` 管理运行参数。本页列举常用配置项及其作用，帮助快速定制。
 
-## 环境变量配置
+## `.env` 核心变量
 
-环境变量配置文件位于项目根目录的 `.env` 文件。
+```dotenv
+# 应用
+APP_NAME=MineShop
+APP_ENV=prod|local
+APP_DEBUG=false
+APP_URL=https://api.example.com
 
-## 商城配置
+# 数据库
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=mine_shop
+DB_USERNAME=root
+DB_PASSWORD=secret
 
-配置文件：`config/autoload/mall.php`
+# Redis
+REDIS_HOST=127.0.0.1
+REDIS_PORT=6379
+REDIS_AUTH=
 
-### 货币设置
+# JWT
+JWT_SECRET=base64:xxxxxxxx
+JWT_TTL=7200         # Access Token 秒数
+JWT_REFRESH_TTL=604800
 
-```php
-'currency' => [
-    'code' => 'CNY',
-    'symbol' => '¥',
-    'decimal_places' => 2,
-],
+# 日志
+LOG_CHANNEL=stack
+LOG_LEVEL=info
 ```
 
-### 产品设置
+## 商城配置 `config/autoload/mall.php`
+
+| 分组 | 关键字段 | 说明 |
+| ---- | -------- | ---- |
+| `currency` | `code`, `symbol`, `decimal_places` | 货币代码与展示格式 |
+| `product` | `auto_approve`, `max_images`, `max_image_size` | 商品默认状态、图片限制 |
+| `order` | `auto_confirm_days`, `auto_close_minutes`, `order_no_prefix` | 订单自动确认/关闭、订单号前缀 |
+| `member` | `default_level`, `points_ratio` | 会员默认等级、积分兑换比例 |
+| `payment` | `methods` | 控制支付宝/微信/余额是否启用，及展示名称 |
+| `shipping` | `methods` | 快递/自提等配送策略 |
+| `geo` (新增) | `enabled`, `cache_ttl` | Geo 地址缓存配置 |
+
+> 可在后台「系统设置」中通过界面化方式调整，变更将写入数据库 `system_settings`。
+
+## 支付配置 `config/autoload/pay.php`
+
+已在 [支付系统](/core/payment) 章节详述，此处仅补充：
+
+- `mode` 可设置 `normal` / `dev` / `sandbox`。
+- Log 文件默认存储在 `runtime/logs/{channel}.log`，建议确保目录可写。
+
+## Geo 地址库 `config/autoload/geo.php` *(如有)*
+
+示例：
 
 ```php
-'product' => [
-    // 默认状态
-    'default_status' => 'active',
-    
-    // 是否自动审核
-    'auto_approve' => true,
-    
-    // 图片限制
-    'max_images' => 10,
-    'max_image_size' => 5 * 1024 * 1024, // 5MB
-],
-```
-
-### 订单设置
-
-```php
-'order' => [
-    // 自动确认收货天数
-    'auto_confirm_days' => 7,
-    
-    // 自动关闭未支付订单（分钟）
-    'auto_close_minutes' => 30,
-    
-    // 订单号前缀
-    'order_no_prefix' => 'ORD',
-],
-```
-
-### 会员设置
-
-```php
-'member' => [
-    // 默认会员等级
-    'default_level' => 1,
-    
-    // 积分兑换比例（1元 = N积分）
-    'points_ratio' => 100,
-],
-```
-
-### 支付方式配置
-
-```php
-'payment' => [
-    'methods' => [
-        'alipay' => [
-            'name' => '支付宝',
-            'enabled' => false,
-        ],
-        'wechat' => [
-            'name' => '微信支付',
-            'enabled' => false,
-        ],
-        'balance' => [
-            'name' => '余额支付',
-            'enabled' => true,
-        ],
+return [
+    'default_source' => 'modood',
+    'cache_ttl' => 86400,
+    'cron' => [
+        'enabled' => true,
+        'rule' => '30 3 * * *',
     ],
-],
+];
 ```
 
-### 配送方式配置
+结合命令 `mall:sync-regions` 可控制数据源、自定义 URL 与缓存策略。
+
+## Crontab `config/autoload/crontab.php`
+
+用于配置 Hyperf 内建定时任务。示例：
 
 ```php
-'shipping' => [
-    'methods' => [
-        'express' => [
-            'name' => '快递配送',
-            'enabled' => true,
-        ],
-        'self_pickup' => [
-            'name' => '到店自提',
-            'enabled' => false,
-        ],
+return [
+    [
+        'name' => 'geo-sync',
+        'rule' => '30 3 * * *',
+        'callback' => [\App\Infrastructure\Command\Geo\SyncGeoRegionsCommand::class, 'handle'],
     ],
-],
-```
-
-## 支付配置
-
-配置文件：`config/autoload/pay.php`
-
-### 支付宝配置
-
-```php
-'alipay' => [
-    // 应用 ID
-    'app_id' => env('ALIPAY_APP_ID'),
-    
-    // 应用私钥证书路径
-    'app_secret_cert' => env('ALIPAY_APP_SECRET_CERT'),
-    
-    // 支付宝公钥证书路径
-    'alipay_public_cert_path' => env('ALIPAY_PUBLIC_CERT_PATH'),
-    
-    // 支付宝根证书路径
-    'alipay_root_cert_path' => env('ALIPAY_ROOT_CERT_PATH'),
-    
-    // 回调 URL
-    'notify_url' => env('APP_URL') . '/api/payment/alipay/notify',
-    'return_url' => env('APP_URL') . '/api/payment/alipay/return',
-    
-    // 日志配置
-    'log' => [
-        'file' => BASE_PATH . '/runtime/logs/alipay.log',
-        'level' => 'debug',
+    [
+        'name' => 'order-auto-close',
+        'rule' => '*/5 * * * *',
+        'callback' => [\App\Application\Order\Task\OrderAutoCloseTask::class, 'handle'],
     ],
-    
-    // 模式: normal, dev, sandbox
-    'mode' => env('ALIPAY_MODE', 'normal'),
-],
+];
 ```
 
-### 微信支付配置
+## 队列/异步
 
-```php
-'wechat' => [
-    // 应用 ID
-    'app_id' => env('WECHAT_APP_ID'),
-    
-    // 小程序 ID
-    'mini_app_id' => env('WECHAT_MINI_APP_ID'),
-    
-    // 商户号
-    'mch_id' => env('WECHAT_MCH_ID'),
-    
-    // 商户密钥
-    'mch_secret_key' => env('WECHAT_MCH_SECRET_KEY'),
-    
-    // 商户证书路径
-    'mch_secret_cert' => env('WECHAT_MCH_SECRET_CERT'),
-    'mch_public_cert_path' => env('WECHAT_MCH_PUBLIC_CERT_PATH'),
-    
-    // 回调 URL
-    'notify_url' => env('APP_URL') . '/api/payment/wechat/notify',
-    
-    // 日志配置
-    'log' => [
-        'file' => BASE_PATH . '/runtime/logs/wechat.log',
-        'level' => 'debug',
-    ],
-    
-    // 模式: normal, dev, sandbox
-    'mode' => env('WECHAT_MODE', 'normal'),
-],
+如果启用 Hyperf 异步队列，在 `config/autoload/async_queue.php` 或相关配置中设置 Redis 连接、超时、重试次数。
+
+## 日志与审计
+
+`config/autoload/logger.php` 控制日志通道；常见通道：
+
+- `default`：应用日志。
+- `sql`：慢 SQL 记录。
+- `operation`：操作日志（配合 `UserOperationLogService`）。
+
+可将日志投递到 `stdout`、文件或 ELK。
+
+## 缓存
+
+默认使用 Redis（`config/autoload/cache.php`）。Geo、会员概览、权限菜单等都使用 PSR-16 接口。可按需切换 Memcached/文件。
+
+## 任务队列
+
+Hyperf 支持 `crontab` + `async-queue`。如要启用异步任务，请在 `.env` 中配置：
+
+```dotenv
+ASYNC_QUEUE_DRIVER=redis
+ASYNC_QUEUE_CONSUMERS=2
 ```
 
-## 微信配置
+## 第三方服务
 
-配置文件：`config/autoload/wechat.php`
+视项目需求启用以下配置文件：
 
-### 小程序配置
+| 文件 | 作用 |
+| ---- | ---- |
+| `config/autoload/oss.php` | 对象存储（OSS/OBS/COS） |
+| `config/autoload/wechat.php` | 微信小程序/公众号参数 |
+| `config/autoload/mail.php` | 邮件通知 |
+| `config/autoload/attachment.php` | 附件策略（本地/云） |
 
-```php
-'mini_program' => [
-    'app_id' => env('WECHAT_MINI_APP_ID'),
-    'secret' => env('WECHAT_MINI_APP_SECRET'),
-    'token' => env('WECHAT_MINI_APP_TOKEN'),
-    'aes_key' => env('WECHAT_MINI_APP_AES_KEY'),
-],
-```
+## 调试开关
 
-### 公众号配置
+- `APP_DEBUG=true` 可输出详细错误，适用于开发环境。
+- `DB_LOG=true` 记录 SQL，配合 `LOG_LEVEL=debug` 使用。
+- `ENABLE_HTTP_SERVER=false` 可在命令模式下禁用 HTTP Server（例如仅跑 CLI）。
 
-```php
-'official_account' => [
-    'app_id' => env('WECHAT_OFFICIAL_APP_ID'),
-    'secret' => env('WECHAT_OFFICIAL_APP_SECRET'),
-    'token' => env('WECHAT_OFFICIAL_APP_TOKEN'),
-    'aes_key' => env('WECHAT_OFFICIAL_APP_AES_KEY'),
-],
-```
+## 生产加固建议
 
+1. 设置 `APP_ENV=prod`、`APP_DEBUG=false`，关闭报错输出。
+2. 为 Hyperf HTTP Server 配置 Nginx/Ingress 代理，开启 HTTPS。
+3. 为 `.env`、`storage`、`runtime` 目录设置正确权限。
+4. 使用 Supervisor/Systemd 管理进程，防止异常退出。
+5. 配置 Geo、库存、订单等关键任务的监控与告警。
+6. 备份数据库与 Redis，定期执行 `mall:sync-regions --dry-run` 验证外部数据源。
 
-## 下一步
-
-- [DDD 架构](/architecture/ddd) - 了解系统架构设计
-- [订单设计](/core/order-design) - 了解订单系统设计
-- [库存管理](/core/stock-management) - 了解库存管理实现
+更多架构与实现细节见 [DDD 架构](/architecture/ddd) 与 [核心设计](/core/order-design)。*** End Patch

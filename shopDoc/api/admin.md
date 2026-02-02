@@ -1,551 +1,171 @@
-# 后台管理接口
+# 后台管理接口（Admin API）
 
-后台管理接口用于管理商城的各项功能。
+后台接口以 `/admin` 为前缀，供运营、客服、商品/订单/营销/会员等后台页面调用。所有接口采用 JSON，需携带 Admin 侧 JWT。示例省略域名，默认 `https://api.example.com`。
 
-## 基础信息
+## 认证
 
-- **基础路径**: `/admin`
-- **认证方式**: Bearer Token
-- **请求格式**: JSON
-- **响应格式**: JSON
-
-## 认证接口
-
-### 登录
-
-**接口**: `POST /admin/auth/login`
-
-**请求**:
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 登录 | `POST /admin/auth/login` | 账号密码登录，返回 `access_token`/`refresh_token` |
+| 刷新 | `POST /admin/auth/refresh` | 使用 Refresh Token 获取新的 Access Token |
+| 登出 | `POST /admin/auth/logout` | 立即失效当前 Access Token |
 
 ```json
-{
-  "username": "admin",
-  "password": "password"
-}
-```
+POST /admin/auth/login
+{ "username": "admin", "password": "Pass@123" }
 
-**响应**:
-
-```json
+// 响应
 {
   "code": 200,
-  "message": "success",
   "data": {
     "access_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
     "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGc...",
     "expires_in": 7200,
-    "user": {
-      "id": 1,
-      "username": "admin",
-      "nickname": "管理员",
-      "avatar": "https://..."
-    }
+    "user": { "id": 1, "nickname": "超级管理员" }
   }
 }
 ```
 
-### 退出登录
+## 商品管理
 
-**接口**: `POST /admin/auth/logout`
+| 功能 | 方法 & 路径 | 关键参数 |
+| ---- | ----------- | -------- |
+| 商品列表 | `GET /admin/product/product/list` | `page`, `keyword`, `category_id`, `status` |
+| 商品详情 | `GET /admin/product/product/{id}` |  |
+| 创建商品 | `POST /admin/product/product` | 基础信息 + `skus[]`（含价格库存） |
+| 更新商品 | `PUT /admin/product/product/{id}` | 同创建 |
+| 删除商品 | `DELETE /admin/product/product/{id}` | 软删 |
 
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "退出成功"
-}
-```
-
-## 产品管理
-
-### 产品列表
-
-**接口**: `GET /admin/product/product/list`
-
-**请求参数**:
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| page | integer | 否 | 页码，默认 1 |
-| page_size | integer | 否 | 每页数量，默认 20 |
-| keyword | string | 否 | 搜索关键词 |
-| category_id | integer | 否 | 分类 ID |
-| brand_id | integer | 否 | 品牌 ID |
-| status | string | 否 | 状态：active/inactive |
-
-**响应**:
+**SKU 示例**：
 
 ```json
 {
-  "code": 200,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "name": "商品名称",
-        "category_id": 1,
-        "brand_id": 1,
-        "min_price": 99.00,
-        "max_price": 199.00,
-        "status": "active",
-        "created_at": "2024-01-01 12:00:00"
-      }
-    ],
-    "total": 100,
-    "page": 1,
-    "page_size": 20,
-    "total_pages": 5
-  }
-}
-```
-
-### 产品详情
-
-**接口**: `GET /admin/product/product/{id}`
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": 1,
-    "name": "商品名称",
-    "category_id": 1,
-    "brand_id": 1,
-    "description": "商品描述",
-    "min_price": 99.00,
-    "max_price": 199.00,
-    "status": "active",
-    "skus": [
-      {
-        "id": 1,
-        "sku_name": "红色/L",
-        "sale_price": 99.00,
-        "stock": 100
-      }
-    ],
-    "created_at": "2024-01-01 12:00:00"
-  }
-}
-```
-
-### 创建产品
-
-**接口**: `POST /admin/product/product`
-
-**请求**:
-
-```json
-{
-  "name": "商品名称",
-  "category_id": 1,
-  "brand_id": 1,
-  "description": "商品描述",
+  "name": "双拼礼盒",
+  "category_id": 3,
+  "brand_id": 12,
+  "description": "节日必备",
   "skus": [
-    {
-      "sku_name": "红色/L",
-      "sale_price": 99.00,
-      "cost_price": 50.00,
-      "market_price": 199.00,
-      "stock": 100,
-      "weight": 0.5
-    }
+    { "sku_name": "红/XL", "sale_price": 199.00, "cost_price": 88.00, "stock": 500 },
+    { "sku_name": "蓝/L", "sale_price": 189.00, "cost_price": 80.00, "stock": 480 }
   ]
 }
 ```
 
-**响应**:
+## 订单与履约
 
-```json
-{
-  "code": 200,
-  "message": "创建成功",
-  "data": {
-    "id": 1,
-    "name": "商品名称"
-  }
-}
-```
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 订单列表 | `GET /admin/order/order/list` | 支持按订单号、状态、支付状态、时间区间筛选 |
+| 订单详情 | `GET /admin/order/order/{id}` | 包含订单项、收货地址、日志 |
+| 发货 | `POST /admin/order/order/{id}/ship` | 传入 `express_company`、`express_no` |
+| 取消 | `POST /admin/order/order/{id}/cancel` | `reason` |
+| 订单日志 | `GET /admin/order/order/{id}/logs` | （如开启）查看操作轨迹 |
 
-### 更新产品
+## 营销中心
 
-**接口**: `PUT /admin/product/product/{id}`
+### 优惠券
 
-**请求**: 同创建产品
+| 功能 | 方法 & 路径 |
+| ---- | ----------- |
+| 列表/筛选 | `GET /admin/mall/coupon/list` |
+| 详情 | `GET /admin/mall/coupon/{id}` |
+| 创建/更新 | `POST /admin/mall/coupon` / `PUT /admin/mall/coupon/{id}` |
+| 发放 | `POST /admin/mall/coupon/issue`（支持批量或按会员） |
+| 切换状态 | `PUT /admin/mall/coupon/{id}/status` |
 
-**响应**:
+表单默认值：面额、阈值、日期区间、状态开关在前端有 UI 限制，后端需校验开始<结束、库存>=发放量等。
 
-```json
-{
-  "code": 200,
-  "message": "更新成功"
-}
-```
+### 团购
 
-### 删除产品
+| 功能 | 方法 & 路径 | 备注 |
+| ---- | ----------- | ---- |
+| 活动列表 | `GET /admin/mall/group-buy/list` |  |
+| 详情 | `GET /admin/mall/group-buy/{id}` |  |
+| 创建/更新 | `POST /admin/mall/group-buy` / `PUT /admin/mall/group-buy/{id}` | `original_price`、`group_price`、`stock` 默认 0 可编辑；`start_time`/`end_time` 默认当天 |
+| 状态切换 | `PUT /admin/mall/group-buy/{id}/status` | 上/下架 |
 
-**接口**: `DELETE /admin/product/product/{id}`
+后台验证包括价格区间、人数阈值、成团时限等。
 
-**响应**:
+### 秒杀
 
-```json
-{
-  "code": 200,
-  "message": "删除成功"
-}
-```
+- 活动：`/admin/seckill/activity/*`
+- 场次：`/admin/seckill/session/*`
+- 商品：`/admin/seckill/product/*`
 
-## 订单管理
+提供多场次、限购、库存脚本。所有库存操作最终落在 `OrderStockService` + Redis/Lua。
 
-### 订单列表
+## 会员中心
 
-**接口**: `GET /admin/order/order/list`
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 会员列表 | `GET /admin/member/member/list` | 支持关键字、等级、状态、来源、标签、注册/登录时间等筛选 |
+| 会员详情 | `GET /admin/member/member/{id}` | 含钱包、积分、地址、标签、地区路径 |
+| 新建/编辑 | `POST /admin/member/member` / `PUT /admin/member/member/{id}` | 支持 `region_path`、省市区街字段 |
+| 概览驾驶舱 | `GET /admin/member/member/overview` | 返回趋势、地区分布、等级结构 |
+| 统计卡片 | `GET /admin/member/member/stats` | 今日新增、30 天活跃/沉睡、禁用等 |
+| 标签管理 | `GET/POST/PUT/DELETE /admin/member/tag` | 标签选项、颜色、排序 |
+| 钱包日志 | `GET /admin/member/account/wallet/logs` | balance / points 两种钱包 |
+| 调整钱包/积分 | `POST /admin/member/account/adjust` | 需传 `type`、`value`、`source`、`remark` |
 
-**请求参数**:
+### Geo 级联
 
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| page | integer | 否 | 页码 |
-| page_size | integer | 否 | 每页数量 |
-| order_no | string | 否 | 订单号 |
-| status | string | 否 | 订单状态 |
-| pay_status | string | 否 | 支付状态 |
-| start_time | string | 否 | 开始时间 |
-| end_time | string | 否 | 结束时间 |
+- 表单使用 `/common/geo/pcas` 及 `/geo/search` 数据。
+- 后台可在系统任务中调用 `php bin/hyperf.php mall:sync-regions` 或配置 Crontab 自动同步。
 
-**响应**:
+## Geo 管理接口
 
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "items": [
-      {
-        "id": 1,
-        "order_no": "ORD20240101120000",
-        "member_id": 1,
-        "status": "paid",
-        "pay_status": "paid",
-        "total_amount": 99.00,
-        "pay_amount": 99.00,
-        "created_at": "2024-01-01 12:00:00"
-      }
-    ],
-    "total": 100
-  }
-}
-```
+虽然 Geo API 对外暴露 `/geo/*`（见公共 API），后台仍可在系统工具中触发同步：
 
-### 订单详情
+| 功能 | 方法 & 路径 | 说明 |
+| ---- | ----------- | ---- |
+| 地址库版本列表 | `GET /admin/system/geo/version` *(若开放)* | 查看版本与同步时间 |
+| 同步命令 | `php bin/hyperf.php mall:sync-regions --source=modood` | CLI 方式，支持 `--url`、`--force`、`--dry-run` |
+| 定时任务 | `config/autoload/crontab.php` | 示例：每日凌晨 03:30 执行同步 |
 
-**接口**: `GET /admin/order/order/{id}`
+## 系统设置 & 权限
 
-**响应**:
+- 菜单/角色/用户：`/admin/permission/*`
+- 数据权限：`/admin/permission/data-scope`
+- 系统设置：`/admin/system/setting`（商城配置、订单、支付、会员、内容等）
+- 附件：`/admin/attachment/*`
+- 日志：`/admin/logstash/user-login`、`/admin/logstash/user-operation`
 
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "id": 1,
-    "order_no": "ORD20240101120000",
-    "member_id": 1,
-    "status": "paid",
-    "pay_status": "paid",
-    "total_amount": 99.00,
-    "pay_amount": 99.00,
-    "items": [
-      {
-        "product_name": "商品名称",
-        "sku_name": "红色/L",
-        "quantity": 1,
-        "unit_price": 99.00,
-        "total_price": 99.00
-      }
-    ],
-    "address": {
-      "consignee": "张三",
-      "mobile": "13800138000",
-      "address": "北京市朝阳区xxx"
-    }
-  }
-}
-```
+## 仪表盘与统计
 
-### 订单发货
+- `GET /admin/dashboard/stats`：概览 KPI（订单数、GMV、会员数等）。
+- `GET /admin/dashboard/trend`：可扩展为多维可视化接口。
 
-**接口**: `POST /admin/order/order/{id}/ship`
-
-**请求**:
-
-```json
-{
-  "express_company": "顺丰速运",
-  "express_no": "SF1234567890",
-  "remark": "备注"
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "发货成功"
-}
-```
-
-### 取消订单
-
-**接口**: `POST /admin/order/order/{id}/cancel`
-
-**请求**:
-
-```json
-{
-  "reason": "取消原因"
-}
-```
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "取消成功"
-}
-```
-
-## 秒杀管理
-
-### 秒杀活动列表
-
-**接口**: `GET /admin/seckill/activity/list`
-
-**响应**:
+## 通用响应示例
 
 ```json
 {
   "code": 200,
   "message": "success",
   "data": {
-    "items": [
-      {
-        "id": 1,
-        "title": "双11秒杀",
-        "status": "active",
-        "is_enabled": true,
-        "created_at": "2024-01-01 12:00:00"
-      }
-    ]
+    "items": [],
+    "total": 0
+  },
+  "trace_id": "a5b8c7d9..." // 若启用链路追踪
+}
+```
+
+错误示例（422 表单验证失败）：
+
+```json
+{
+  "code": 422,
+  "message": "表单验证失败",
+  "errors": {
+    "start_time": ["开始时间必须早于结束时间"]
   }
 }
 ```
 
-### 创建秒杀活动
+## 小贴士
 
-**接口**: `POST /admin/seckill/activity`
+1. **权限**：Admin API 所有路由默认启用 `PermissionMiddleware`，请在菜单/角色中配置按钮权限码。
+2. **数据权限**：查询接口自动拼接 DataScope 条件（全部/部门/本人）。
+3. **幂等**：钱包调整、券发放、库存操作等敏感接口建议提供业务幂等键。
+4. **调试**：使用 `X-Request-Id` / `trace_id` 关联链路；同时可在操作日志中查看关键管理员行为。
 
-**请求**:
-
-```json
-{
-  "title": "双11秒杀",
-  "description": "活动描述",
-  "is_enabled": true
-}
-```
-
-### 秒杀场次列表
-
-**接口**: `GET /admin/seckill/session/list`
-
-**请求参数**:
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| activity_id | integer | 是 | 活动 ID |
-
-### 创建秒杀场次
-
-**接口**: `POST /admin/seckill/session`
-
-**请求**:
-
-```json
-{
-  "activity_id": 1,
-  "start_time": "2024-01-01 10:00:00",
-  "end_time": "2024-01-01 12:00:00",
-  "max_quantity_per_user": 2,
-  "total_quantity": 100
-}
-```
-
-## 团购管理
-
-### 团购活动列表
-
-**接口**: `GET /admin/groupbuy/activity/list`
-
-### 创建团购活动
-
-**接口**: `POST /admin/groupbuy/activity`
-
-**请求**:
-
-```json
-{
-  "title": "团购活动",
-  "product_id": 1,
-  "sku_id": 1,
-  "original_price": 199.00,
-  "group_price": 99.00,
-  "min_people": 2,
-  "max_people": 10,
-  "start_time": "2024-01-01 00:00:00",
-  "end_time": "2024-01-31 23:59:59",
-  "group_time_limit": 24,
-  "total_quantity": 1000
-}
-```
-
-## 会员管理
-
-### 会员列表
-
-**接口**: `GET /admin/member/member/list`
-
-**参数**
-
-| 字段 | 类型 | 说明 |
-| --- | --- | --- |
-| `keyword` | string | 昵称/手机号/OpenID 模糊搜索 |
-| `status` | string | `active` / `inactive` / `banned` |
-| `level` | string | `bronze` / `silver` / `gold` / `diamond` |
-| `source` | string | `wechat` / `mini_program` / `h5` / `admin` |
-| `tag_id` | int | 标签 ID |
-| `created_start` / `created_end` | date | 注册时间范围 |
-| `page` / `page_size` | int | 分页参数 |
-
-**响应**
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "list": [
-      {
-        "id": 1,
-        "nickname": "小明",
-        "avatar": "https://cdn.example.com/avatar.png",
-        "phone": "13800000000",
-        "level": "gold",
-        "status": "active",
-        "source": "mini_program",
-        "total_orders": 8,
-        "total_amount": 3299.00,
-        "tags": [
-          { "id": 2, "name": "高价值用户", "color": "#f56c6c", "status": "active" }
-        ],
-        "created_at": "2025-12-01 10:20:00",
-        "last_login_at": "2026-01-25 19:30:00"
-      }
-    ],
-    "total": 1
-  }
-}
-```
-
-### 会员统计
-
-**接口**: `GET /admin/member/member/stats`
-
-返回 `total`（累计会员）、`new_today`、`active_30d`、`sleeping_30d`、`banned` 等指标。
-
-### 会员详情
-
-**接口**: `GET /admin/member/member/{id}`
-
-包含基础信息、钱包汇总、标签、收货地址等。
-
-### 更新会员资料
-
-**接口**: `PUT /admin/member/member/{id}`
-
-**请求示例**
-
-```json
-{
-  "nickname": "新的昵称",
-  "phone": "18800000000",
-  "gender": "female",
-  "level": "diamond",
-  "growth_value": 5200,
-  "status": "active",
-  "source": "admin",
-  "remark": "私域高优先级用户"
-}
-```
-
-### 更新会员状态
-
-**接口**: `PUT /admin/member/member/{id}/status`
-
-```json
-{
-  "status": "banned"
-}
-```
-
-### 同步会员标签
-
-**接口**: `PUT /admin/member/member/{id}/tags`
-
-```json
-{
-  "tags": [1, 2, 5]
-}
-```
-
-### 标签管理
-
-| 操作 | 接口 |
-| --- | --- |
-| 标签列表 | `GET /admin/member/tag/list` |
-| 新增标签 | `POST /admin/member/tag` |
-| 更新标签 | `PUT /admin/member/tag/{id}` |
-| 删除标签 | `DELETE /admin/member/tag/{id}` |
-| 可用标签选项 | `GET /admin/member/tag/options` |
-
-## 统计数据
-
-### 首页统计
-
-**接口**: `GET /admin/dashboard/stats`
-
-**响应**:
-
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {
-    "order_count": 1000,
-    "order_amount": 100000.00,
-    "member_count": 5000,
-    "product_count": 500
-  }
-}
-```
-
-## 下一步
-
-- [前端接口](/api/frontend) - 查看前端接口文档
-- [认证授权](/api/auth) - 了解认证机制
+下一步：前往 [前端接口](/api/frontend) / [认证授权](/api/auth) / [Geo API](/api/index#geo-api-说明) 了解更多调用细节。*** End Patch

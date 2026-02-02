@@ -1,627 +1,142 @@
-# 订单设计
+# 订单系统设计
 
-本文档详细介绍订单系统的设计和实现。
+订单是 Mine Shop 的核心聚合根，承担商品、库存、营销、会员资产与履约模块之间的纽带。本页围绕领域模型、状态机、类型策略、流程编排以及扩展点进行阐述。
 
-## 订单模型
-
-### 订单实体 (OrderEntity)
-
-```php
-namespace App\Domain\Order\Entity;
-
-class OrderEntity
-{
-    // 基本信息
-    public ?int $id = null;
-    public string $orderNo;              // 订单号
-    public int $memberId;                // 会员ID
-    public string $orderType;            // 订单类型
-    
-    // 状态信息
-    public string $status;               // 订单状态
-    public string $payStatus;            // 支付状态
-    public string $shippingStatus;       // 发货状态
-    
-    // 金额信息
-    public float $goodsAmount;           // 商品金额
-    public float $shippingFee;           // 运费
-    public float $discountAmount;        // 优惠金额
-    public float $totalAmount;           // 订单总金额
-    public float $payAmount;             // 实付金额
-    
-    // 支付信息
-    public ?string $payTime = null;      // 支付时间
-    public ?string $payNo = null;        // 支付流水号
-    public ?string $payMethod = null;    // 支付方式
-    
-    // 备注信息
-    public ?string $buyerRemark = null;  // 买家备注
-    public ?string $sellerRemark = null; // 卖家备注
-    
-    // 关联数据
-    public array $items = [];            // 订单项
-    public ?OrderAddressValue $address = null;  // 收货地址
-    public ?OrderPriceValue $priceDetail = null; // 价格详情
-    
-    // 其他信息
-    public int $packageCount = 0;        // 包裹数量
-    public ?string $expireTime = null;   // 过期时间
-}
-```
-
-### 订单项实体 (OrderItemEntity)
-
-```php
-namespace App\Domain\Order\Entity;
-
-class OrderItemEntity
-{
-    public ?int $id = null;
-    public int $orderId;                 // 订单ID
-    public int $productId;               // 商品ID
-    public int $skuId;                   // SKU ID
-    
-    // 商品信息快照
-    public string $productName;          // 商品名称
-    public string $skuName;              // SKU名称
-    public string $productImage;         // 商品图片
-    public array $specValues;            // 规格值
-    
-    // 价格和数量
-    public float $unitPrice;             // 单价
-    public int $quantity;                // 数量
-    public float $totalPrice;            // 总价
-    
-    // 其他信息
-    public float $weight;                // 重量
-}
-```
-
-## 订单状态
-
-### 订单状态枚举
-
-```php
-namespace App\Domain\Order\Enum;
-
-enum OrderStatus: string
-{
-    case PENDING = 'pending';           // 待支付
-    case PAID = 'paid';                 // 已支付
-    case SHIPPED = 'shipped';           // 已发货
-    case COMPLETED = 'completed';       // 已完成
-    case CANCELLED = 'cancelled';       // 已取消
-    case REFUNDED = 'refunded';         // 已退款
-}
-```
-
-### 支付状态枚举
-
-```php
-namespace App\Domain\Order\Enum;
-
-enum PaymentStatus: string
-{
-    case PENDING = 'pending';           // 待支付
-    case PAID = 'paid';                 // 已支付
-    case FAILED = 'failed';             // 支付失败
-    case CANCELLED = 'cancelled';       // 已取消
-    case REFUNDED = 'refunded';         // 已退款
-}
-```
-
-### 发货状态枚举
-
-```php
-namespace App\Domain\Order\Enum;
-
-enum ShippingStatus: string
-{
-    case PENDING = 'pending';           // 待发货
-    case PARTIAL_SHIPPED = 'partial_shipped'; // 部分发货
-    case SHIPPED = 'shipped';           // 已发货
-    case DELIVERED = 'delivered';       // 已送达
-}
-```
-
-### 状态流转图
+## 领域模型
 
 ```
-订单状态流转:
+OrderEntity
+├── OrderItemEntity[]      // SKU 快照、单价、数量、优惠信息
+├── OrderAddressValue      // 收货地址快照（含 region_path）
+├── OrderPriceValue        // 金额拆解：商品/运费/优惠/实付
+└── OrderLogValue[]        // 状态日志、操作者、备注
+```
 
+**关键字段**：
+
+| 字段 | 说明 |
+| ---- | ---- |
+| `order_no` | 业务幂等键，由 `OrderFactory` 生成 |
+| `member_id` | 会员 ID，外键指向 `members` |
+| `order_type` | `normal` / `seckill` / `group_buy` 等 |
+| `status` | 订单状态（待支付→已支付→已发货→已完成/取消/退款） |
+| `pay_status` / `shipping_status` | 与订单状态并行的精细状态 |
+| `goods_amount` / `shipping_fee` / `discount_amount` / `pay_amount` | 金额拆解 |
+| `price_detail` | JSON，保存优惠券、积分、余额抵扣等明细 |
+| `extras` | JSON 扩展字段，例如渠道、端类型 |
+
+## 状态机
+
+```
 PENDING (待支付)
-    ↓ 支付成功
-PAID (已支付)
-    ↓ 发货
-SHIPPED (已发货)
-    ↓ 确认收货
-COMPLETED (已完成)
+  ├─ 支付成功 → PAID
+  │     └─ 发货 → SHIPPED → 确认收货 → COMPLETED
+  └─ 超时/取消 → CANCELLED
 
-或者:
-PENDING → CANCELLED (取消订单)
-PAID → REFUNDED (申请退款)
+PAID
+  └─ 退款 → REFUNDED
 ```
 
-## 订单类型
+`pay_status`、`shipping_status` 作为并行状态：
 
-### 订单类型枚举
+- `pay_status`: `pending` / `paid` / `failed` / `refunded`
+- `shipping_status`: `pending` / `partial_shipped` / `shipped` / `delivered`
 
-```php
-namespace App\Domain\Order\Enum;
+状态变更由 `OrderService` 集中处理，并通过 `OrderStatusNotifyListener` 记录日志、推送通知。
 
-enum OrderType: string
-{
-    case NORMAL = 'normal';             // 普通订单
-    case SECKILL = 'seckill';           // 秒杀订单
-    case GROUP_BUY = 'group_buy';       // 团购订单
-}
-```
+## 订单类型策略
 
-### 策略模式实现
+不同订单类型（普通、秒杀、团购）差异主要在**验证逻辑**、**库存扣减**、**后置处理**。使用策略模式解耦：
 
 ```php
-namespace App\Domain\Order\Strategy;
-
 interface OrderTypeStrategyInterface
 {
-    /**
-     * 获取订单类型
-     */
     public function type(): string;
-
-    /**
-     * 验证订单
-     */
     public function validate(OrderEntity $entity): void;
-
-    /**
-     * 构建订单草稿
-     */
-    public function buildDraft(array $data): OrderEntity;
-
-    /**
-     * 订单创建后处理
-     */
+    public function buildDraft(array $payload): OrderEntity;
     public function postCreate(OrderEntity $entity): void;
 }
 ```
 
-### 普通订单策略
+`OrderTypeStrategyFactory` 在构造函数中注册已支持的策略，`OrderService` 根据 `order_type` 选择对应实现：
 
 ```php
-namespace App\Domain\Order\Strategy;
-
-class NormalOrderStrategy implements OrderTypeStrategyInterface
-{
-    public function type(): string
-    {
-        return OrderType::NORMAL->value;
-    }
-
-    public function validate(OrderEntity $entity): void
-    {
-        // 验证商品库存
-        foreach ($entity->items as $item) {
-            $sku = $this->skuRepository->find($item->skuId);
-            
-            if (!$sku || $sku->stock < $item->quantity) {
-                throw new \RuntimeException(
-                    "商品 {$item->productName} 库存不足"
-                );
-            }
-        }
-
-        // 验证收货地址
-        if (!$entity->address) {
-            throw new \RuntimeException('请选择收货地址');
-        }
-    }
-
-    public function buildDraft(array $data): OrderEntity
-    {
-        $entity = new OrderEntity();
-        $entity->orderType = $this->type();
-        $entity->memberId = $data['member_id'];
-        
-        // 构建订单项
-        foreach ($data['items'] as $itemData) {
-            $entity->items[] = $this->buildOrderItem($itemData);
-        }
-        
-        // 计算金额
-        $entity->calculateAmount();
-        
-        return $entity;
-    }
-
-    public function postCreate(OrderEntity $entity): void
-    {
-        // 设置订单过期时间（30分钟）
-        $entity->expireTime = date('Y-m-d H:i:s', time() + 1800);
-    }
-}
+$strategy = $this->strategyFactory->make($command->getOrderType());
+$draft = $strategy->buildDraft($command->toArray());
+$strategy->validate($draft);
+$order = $this->repository->save($draft);
+$strategy->postCreate($order);
 ```
 
-## 订单服务
+新增订单玩法时仅需新增策略类并在工厂注入，无需侵入既有逻辑。
 
-### OrderService (领域服务)
+## 下单流程
+
+1. **构建提交命令**：前端将购物车/立即购买数据整理为 `OrderSubmitCommand`，包含 SKU、数量、优惠、地址、remark 等。
+2. **Assembler 转换**：`OrderAssembler` 根据命令创建 `OrderEntity`、`OrderItemEntity`、`OrderAddressValue`、金额值对象。
+3. **库存预扣**：`OrderStockService` 基于 Redis + Lua (`lock_and_decrement.lua`) 原子扣减库存，并返回结果。
+4. **保存订单**：`OrderRepository->save()`；若失败触发库存回滚脚本 (`rollback.lua`)。
+5. **触发事件**：`OrderCreatedEvent` 通知营销、积分、日志、异步任务等。
+6. **支付**：通过 `PaymentService` 调用 yansongda/pay，对接支付宝/微信/余额。
+7. **履约**：发货、物流、确认收货等操作会更新状态并写入 `OrderLogValue`。
+
+## 金额与优惠
+
+所有金额相关逻辑通过 `OrderPriceValue` 管理，确保精度与可追溯性：
 
 ```php
-namespace App\Domain\Order\Service;
-
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Order\Strategy\OrderTypeStrategyFactory;
-use App\Domain\Order\Event\OrderCreatedEvent;
-
-class OrderService
+class OrderPriceValue
 {
     public function __construct(
-        private OrderRepository $repository,
-        private OrderStockService $stockService,
-        private OrderTypeStrategyFactory $strategyFactory
-    ) {}
-
-    /**
-     * 订单预览
-     */
-    public function preview(array $data): OrderEntity
-    {
-        // 获取订单策略
-        $strategy = $this->strategyFactory->make($data['order_type']);
-        
-        // 构建订单草稿
-        $entity = $strategy->buildDraft($data);
-        
-        // 验证订单
-        $strategy->validate($entity);
-        
-        return $entity;
-    }
-
-    /**
-     * 提交订单
-     */
-    public function submit(OrderEntity $entity): OrderEntity
-    {
-        // 获取订单策略
-        $strategy = $this->strategyFactory->make($entity->orderType);
-        
-        // 验证订单
-        $strategy->validate($entity);
-        
-        // 生成订单号
-        $entity->orderNo = $this->generateOrderNo();
-        
-        // 获取库存锁
-        $locks = $this->stockService->acquireLocks($entity->items);
-        
-        try {
-            // 扣减库存
-            $this->stockService->reserve($entity->items);
-            
-            // 保存订单
-            $order = $this->repository->save($entity);
-            
-            // 后置处理
-            $strategy->postCreate($order);
-            
-            // 发布事件
-            event(new OrderCreatedEvent($order));
-            
-            return $order;
-            
-        } catch (\Exception $e) {
-            // 回滚库存
-            $this->stockService->rollback($entity->items);
-            throw $e;
-            
-        } finally {
-            // 释放锁
-            $this->stockService->releaseLocks($locks);
-        }
-    }
-
-    /**
-     * 发货
-     */
-    public function ship(int $orderId, array $data): bool
-    {
-        $order = $this->repository->find($orderId);
-        
-        if (!$order) {
-            throw new \RuntimeException('订单不存在');
-        }
-        
-        if ($order->status !== OrderStatus::PAID->value) {
-            throw new \RuntimeException('订单状态不正确');
-        }
-        
-        // 更新订单状态
-        $result = $this->repository->ship($orderId, $data);
-        
-        if ($result) {
-            // 发布事件
-            event(new OrderShippedEvent($order));
-        }
-        
-        return $result;
-    }
-
-    /**
-     * 取消订单
-     */
-    public function cancel(int $orderId, string $reason): bool
-    {
-        $order = $this->repository->find($orderId);
-        
-        if (!$order) {
-            throw new \RuntimeException('订单不存在');
-        }
-        
-        if ($order->status !== OrderStatus::PENDING->value) {
-            throw new \RuntimeException('订单状态不正确');
-        }
-        
-        // 恢复库存
-        $this->stockService->rollback($order->items);
-        
-        // 更新订单状态
-        $result = $this->repository->cancel($orderId, $reason);
-        
-        if ($result) {
-            // 发布事件
-            event(new OrderCancelledEvent($order));
-        }
-        
-        return $result;
-    }
-
-    /**
-     * 生成订单号
-     */
-    private function generateOrderNo(): string
-    {
-        return 'ORD' . date('YmdHis') . rand(1000, 9999);
-    }
-}
-```
-
-## 应用层服务
-
-### OrderCommandService (写操作)
-
-```php
-namespace App\Application\Order\Service;
-
-use App\Application\Order\Assembler\OrderAssembler;
-use App\Domain\Order\Service\OrderService;
-
-class OrderCommandService
-{
-    public function __construct(
-        private OrderService $orderService,
-        private OrderAssembler $assembler
-    ) {}
-
-    /**
-     * 订单预览
-     */
-    public function preview(array $data): array
-    {
-        $entity = $this->orderService->preview($data);
-        return $entity->toArray();
-    }
-
-    /**
-     * 提交订单
-     */
-    public function submit(array $data): array
-    {
-        $entity = $this->assembler->toEntity($data);
-        $order = $this->orderService->submit($entity);
-        return $order->toArray();
-    }
-
-    /**
-     * 发货
-     */
-    public function ship(int $orderId, array $data): bool
-    {
-        return $this->orderService->ship($orderId, $data);
-    }
-
-    /**
-     * 取消订单
-     */
-    public function cancel(int $orderId, string $reason): bool
-    {
-        return $this->orderService->cancel($orderId, $reason);
-    }
-}
-```
-
-### OrderQueryService (读操作)
-
-```php
-namespace App\Application\Order\Service;
-
-use App\Domain\Order\Repository\OrderRepository;
-
-class OrderQueryService
-{
-    public function __construct(
-        private OrderRepository $repository
-    ) {}
-
-    /**
-     * 分页查询
-     */
-    public function page(array $params): array
-    {
-        return $this->repository->page($params);
-    }
-
-    /**
-     * 查询详情
-     */
-    public function find(int $id): ?array
-    {
-        $order = $this->repository->find($id);
-        return $order?->toArray();
-    }
-
-    /**
-     * 统计数据
-     */
-    public function stats(): array
-    {
-        return $this->repository->stats();
-    }
-}
-```
-
-## 数据库设计
-
-### 订单表 (mall_orders)
-
-```sql
-CREATE TABLE `mall_orders` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `order_no` varchar(32) NOT NULL COMMENT '订单号',
-  `member_id` bigint unsigned NOT NULL COMMENT '会员ID',
-  `order_type` enum('normal','seckill','group_buy') NOT NULL DEFAULT 'normal' COMMENT '订单类型',
-  
-  -- 状态
-  `status` enum('pending','paid','shipped','completed','cancelled','refunded') NOT NULL DEFAULT 'pending' COMMENT '订单状态',
-  `pay_status` enum('pending','paid','failed','cancelled','refunded') NOT NULL DEFAULT 'pending' COMMENT '支付状态',
-  `shipping_status` enum('pending','partial_shipped','shipped','delivered') NOT NULL DEFAULT 'pending' COMMENT '发货状态',
-  
-  -- 金额
-  `goods_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '商品金额',
-  `shipping_fee` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '运费',
-  `discount_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '优惠金额',
-  `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '订单总金额',
-  `pay_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT '实付金额',
-  
-  -- 支付信息
-  `pay_time` datetime DEFAULT NULL COMMENT '支付时间',
-  `pay_no` varchar(64) DEFAULT NULL COMMENT '支付流水号',
-  `pay_method` varchar(32) DEFAULT NULL COMMENT '支付方式',
-  
-  -- 备注
-  `buyer_remark` varchar(500) DEFAULT NULL COMMENT '买家备注',
-  `seller_remark` varchar(500) DEFAULT NULL COMMENT '卖家备注',
-  
-  -- 其他
-  `package_count` int NOT NULL DEFAULT '0' COMMENT '包裹数量',
-  `expire_time` datetime DEFAULT NULL COMMENT '过期时间',
-  
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  `deleted_at` datetime DEFAULT NULL,
-  
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_order_no` (`order_no`),
-  KEY `idx_member_status` (`member_id`, `status`),
-  KEY `idx_status_created` (`status`, `created_at`),
-  KEY `idx_pay_status_time` (`pay_status`, `pay_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单表';
-```
-
-### 订单项表 (mall_order_items)
-
-```sql
-CREATE TABLE `mall_order_items` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `order_id` bigint unsigned NOT NULL COMMENT '订单ID',
-  `product_id` bigint unsigned NOT NULL COMMENT '商品ID',
-  `sku_id` bigint unsigned NOT NULL COMMENT 'SKU ID',
-  
-  -- 商品信息快照
-  `product_name` varchar(200) NOT NULL COMMENT '商品名称',
-  `sku_name` varchar(200) DEFAULT NULL COMMENT 'SKU名称',
-  `product_image` varchar(500) DEFAULT NULL COMMENT '商品图片',
-  `spec_values` json DEFAULT NULL COMMENT '规格值',
-  
-  -- 价格和数量
-  `unit_price` decimal(10,2) NOT NULL COMMENT '单价',
-  `quantity` int NOT NULL COMMENT '数量',
-  `total_price` decimal(10,2) NOT NULL COMMENT '总价',
-  
-  -- 其他
-  `weight` decimal(10,2) DEFAULT '0.00' COMMENT '重量(kg)',
-  
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  
-  PRIMARY KEY (`id`),
-  KEY `idx_order_id` (`order_id`),
-  KEY `idx_product_id` (`product_id`),
-  KEY `idx_sku_id` (`sku_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单项表';
-```
-
-### 订单地址表 (mall_order_addresses)
-
-```sql
-CREATE TABLE `mall_order_addresses` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `order_id` bigint unsigned NOT NULL COMMENT '订单ID',
-  `consignee` varchar(50) NOT NULL COMMENT '收货人',
-  `mobile` varchar(20) NOT NULL COMMENT '手机号',
-  `province` varchar(50) NOT NULL COMMENT '省份',
-  `city` varchar(50) NOT NULL COMMENT '城市',
-  `district` varchar(50) NOT NULL COMMENT '区县',
-  `address` varchar(200) NOT NULL COMMENT '详细地址',
-  `zip_code` varchar(10) DEFAULT NULL COMMENT '邮编',
-  
-  `created_at` datetime NOT NULL,
-  `updated_at` datetime NOT NULL,
-  
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_order_id` (`order_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='订单地址表';
-```
-
-## 事件驱动
-
-### 订单创建事件
-
-```php
-namespace App\Domain\Order\Event;
-
-class OrderCreatedEvent
-{
-    public function __construct(
-        public OrderEntity $order
+        public float $goodsAmount,
+        public float $shippingFee,
+        public float $discountAmount,
+        public float $pointsAmount,
+        public float $balanceAmount,
+        public float $payAmount,
     ) {}
 }
 ```
 
-### 事件监听器
+Assembler 会在预览/提交阶段计算金额，并持久化到 `price_detail` 字段，以便对账与售后使用。
 
-```php
-namespace App\Domain\Order\Listener;
+## 日志与幂等
 
-use App\Domain\Order\Event\OrderCreatedEvent;
+- **OrderLogValue**：记录每次状态变化与操作者（会员/系统/管理员）。
+- **幂等**：`order_no` + `member_id` 可作为唯一键，防止重复创建；外部支付回调也以 `order_no` 为幂等键。
 
-class OrderStatusNotifyListener
-{
-    public function handle(OrderCreatedEvent $event): void
-    {
-        // 发送订单创建通知
-        $this->notificationService->send(
-            $event->order->memberId,
-            '订单创建成功',
-            "您的订单 {$event->order->orderNo} 已创建成功"
-        );
-    }
-}
+## 关键扩展点
+
+| 扩展点 | 说明 |
+| ------ | ---- |
+| `OrderSubmitCommand` | 可扩展渠道、端类型、活动 ID、业务标记等 |
+| `OrderTypeStrategyInterface` | 新增订单类型（如预售、订阅） |
+| `OrderStockService` | 允许替换为消息队列、分库库表方案 |
+| 领域事件 | `OrderCreated`, `OrderPaid`, `OrderCancelled` 等监听器可扩展通知、积分、CRM |
+| `OrderRepository` | 若需 ES/OLAP 查询，可新增读模型实现 |
+
+## 与其他模块的交互
+
+- **库存模块**：订单提交 → Lua 扣减；取消/失败 → Lua 回滚；发货/完成 → 可与 WMS 对接。
+- **营销模块**：优惠券核销、团购成团、秒杀限购在策略层处理并回写订单。
+- **会员模块**：订单完成触发成长值/积分发放、钱包变更。
+- **Geo 地址**：`OrderAddressValue` 存储 `region_path` 与快照，确保历史订单不受地址变动影响。
+- **支付模块**：`PaymentService` 按支付方式生成参数，回调更新 `pay_status` 并触发相关事件。
+
+## 流程图
+
+```
+[OrderSubmitCommand]
+      ↓ Assembler
+[OrderEntity Draft]
+      ↓ Strategy.validate()
+[库存预占] ──失败→ 回滚并抛错
+      ↓ 成功
+[Repository.save()]
+      ↓
+发布 OrderCreatedEvent
+      ↓
+等待支付 → 支付成功 → OrderPaidEvent → 发货 → 完成
 ```
 
-## 下一步
-
-- [库存管理](/core/stock-management) - 了解库存管理实现
-- [支付系统](/core/payment) - 了解支付系统实现
-- [API 接口](/api/admin) - 查看订单相关 API
+通过上述设计，订单系统可以在保持清晰职责的同时，灵活扩展新的业务玩法并支撑高并发写入。*** End Patch
