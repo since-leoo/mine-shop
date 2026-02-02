@@ -83,8 +83,8 @@ class ProductRequest extends BaseRequest
     {
         return [
             'product_code' => ['nullable', 'string', 'max:100'],
-            'category_id' => ['required', 'integer', 'min:1', 'exists:mall_categories,id'],
-            'brand_id' => ['nullable', 'integer', 'min:1', 'exists:mall_brands,id'],
+            'category_id' => ['required', 'integer', 'min:1', 'exists:categories,id'],
+            'brand_id' => ['nullable', 'integer', 'min:1', 'exists:brands,id'],
             'name' => ['required', 'string', 'max:255'],
             'sub_title' => ['nullable', 'string', 'max:255'],
             'main_image' => ['nullable', 'string', 'max:500'],

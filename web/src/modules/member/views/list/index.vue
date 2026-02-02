@@ -260,6 +260,19 @@
             <el-option v-for="item in sourceOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
+        <el-form-item label="所在地区">
+          <el-cascader
+            v-model="editForm.regionCodes"
+            :options="geoTree"
+            :props="geoCascaderProps"
+            clearable
+            filterable
+            collapse-tags
+            :show-all-levels="false"
+            class="w-full"
+            @change="handleRegionChange"
+          />
+        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="editForm.remark" type="textarea" rows="3" placeholder="可选，管理员备注" />
         </el-form-item>
@@ -308,9 +321,21 @@ import dayjs from 'dayjs'
 import { Check, Collection, EditPen, Lock, Plus, Refresh, Search, View } from '@element-plus/icons-vue'
 import TagManager from './tag-manager.vue'
 import MemberDetail from './detail.vue'
+import { useGeo } from '@/hooks/useGeo.ts'
 import { memberApi, memberTagApi, type MallMember, type MemberTag } from '~/member/api/member'
 
 defineOptions({ name: 'member:list' })
+
+const { geoTree, ensureGeoTree, getRegionNames, getRegionPath } = useGeo()
+const geoCascaderProps = {
+  value: 'code',
+  label: 'name',
+  children: 'children',
+  emitPath: true,
+  checkStrictly: false,
+  expandTrigger: 'hover' as const,
+  showAllLevels: false,
+}
 
 const loading = ref(false)
 const memberList = ref<MallMember[]>([])
@@ -489,6 +514,13 @@ const getDefaultEditForm = () => ({
   status: 'active',
   source: 'admin',
   remark: '',
+  province: '',
+  city: '',
+  district: '',
+  street: '',
+  region_path: '',
+  regionCodes: [] as string[],
+  country: '中国',
 })
 
 const editForm = reactive(getDefaultEditForm())
@@ -506,13 +538,15 @@ const editRules: FormRules = {
   status: [{ required: true, message: '请选择状态', trigger: 'change' }],
 }
 
-const openCreate = () => {
+const openCreate = async () => {
+  await ensureGeoTree()
   resetEditForm()
   isCreateMode.value = true
   editVisible.value = true
 }
 
-const openEdit = (row: MallMember) => {
+const openEdit = async (row: MallMember) => {
+  await ensureGeoTree()
   isCreateMode.value = false
   Object.assign(editForm, {
     id: row.id,
@@ -524,8 +558,36 @@ const openEdit = (row: MallMember) => {
     status: row.status || 'active',
     source: row.source || 'admin',
     remark: row.remark || '',
+    province: row.province || '',
+    city: row.city || '',
+    district: row.district || '',
+    street: row.street || '',
+    region_path: row.region_path || '',
+    country: row.country || '中国',
   })
+  const codes = row.region_path ? row.region_path.split('|').filter(Boolean) : []
+  editForm.regionCodes = codes
+  if (codes.length)
+    applyRegionSelection(codes)
+
   editVisible.value = true
+}
+
+const applyRegionSelection = (codes?: (string | number)[]) => {
+  const normalized = (codes ?? []).map(code => String(code))
+  editForm.regionCodes = normalized
+  const names = getRegionNames(normalized)
+  editForm.province = names[0] || editForm.province || ''
+  editForm.city = names[1] || editForm.city || ''
+  editForm.district = names[2] || editForm.district || ''
+  editForm.street = names[3] || editForm.street || ''
+  editForm.region_path = getRegionPath(normalized)
+  if (!editForm.country)
+    editForm.country = '中国'
+}
+
+const handleRegionChange = (codes: (string | number)[]) => {
+  applyRegionSelection(codes)
 }
 
 const submitEdit = async () => {
@@ -541,6 +603,12 @@ const submitEdit = async () => {
     status: editForm.status,
     source: editForm.source,
     remark: editForm.remark,
+    province: editForm.province || null,
+    city: editForm.city || null,
+    district: editForm.district || null,
+    street: editForm.street || null,
+    region_path: editForm.region_path || null,
+    country: editForm.country || '中国',
   }
   try {
     if (isCreateMode.value) {

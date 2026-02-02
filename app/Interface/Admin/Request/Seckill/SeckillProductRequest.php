@@ -34,10 +34,10 @@ class SeckillProductRequest extends BaseRequest
     public function storeRules(): array
     {
         return [
-            'activity_id' => ['required', 'integer', 'min:1', 'exists:mall_seckill_activities,id'],
-            'session_id' => ['required', 'integer', 'min:1', 'exists:mall_seckill_sessions,id'],
-            'product_id' => ['required', 'integer', 'min:1', 'exists:mall_products,id'],
-            'product_sku_id' => ['required', 'integer', 'min:1', 'exists:mall_product_skus,id'],
+            'activity_id' => ['required', 'integer', 'min:1', 'exists:seckill_activities,id'],
+            'session_id' => ['required', 'integer', 'min:1', 'exists:seckill_sessions,id'],
+            'product_id' => ['required', 'integer', 'min:1', 'exists:products,id'],
+            'product_sku_id' => ['required', 'integer', 'min:1', 'exists:product_skus,id'],
             'original_price' => ['required', 'numeric', 'min:0.01'],
             'seckill_price' => ['required', 'numeric', 'min:0.01', 'lt:original_price'],
             'quantity' => ['required', 'integer', 'min:1'],
@@ -62,11 +62,11 @@ class SeckillProductRequest extends BaseRequest
     public function batchStoreRules(): array
     {
         return [
-            'activity_id' => ['required', 'integer', 'min:1', 'exists:mall_seckill_activities,id'],
-            'session_id' => ['required', 'integer', 'min:1', 'exists:mall_seckill_sessions,id'],
+            'activity_id' => ['required', 'integer', 'min:1', 'exists:seckill_activities,id'],
+            'session_id' => ['required', 'integer', 'min:1', 'exists:seckill_sessions,id'],
             'products' => ['required', 'array', 'min:1'],
-            'products.*.product_id' => ['required', 'integer', 'min:1', 'exists:mall_products,id'],
-            'products.*.product_sku_id' => ['required', 'integer', 'min:1', 'exists:mall_product_skus,id'],
+            'products.*.product_id' => ['required', 'integer', 'min:1', 'exists:products,id'],
+            'products.*.product_sku_id' => ['required', 'integer', 'min:1', 'exists:product_skus,id'],
             'products.*.original_price' => ['required', 'numeric', 'min:0.01'],
             'products.*.seckill_price' => ['required', 'numeric', 'min:0.01'],
             'products.*.quantity' => ['required', 'integer', 'min:1'],

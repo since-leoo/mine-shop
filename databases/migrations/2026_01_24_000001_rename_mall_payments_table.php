@@ -20,7 +20,7 @@ return new class extends Migration {
     public function down(): void
     {
         if (Schema::hasTable('order_payments') && ! Schema::hasTable('payments')) {
-            Schema::rename('order_payments', 'mall_payments');
+            Schema::rename('order_payments', 'payments');
         }
     }
 };

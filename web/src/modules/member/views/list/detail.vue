@@ -31,7 +31,7 @@
         <el-descriptions-item label="性别">{{ genderLabelMap[member.gender || 'unknown'] }}</el-descriptions-item>
         <el-descriptions-item label="生日">{{ member.birthday || '-' }}</el-descriptions-item>
         <el-descriptions-item label="地区">
-          {{ [member.province, member.city, member.country].filter(Boolean).join(' / ') || '-' }}
+          {{ [member.province, member.city, member.district, member.street].filter(Boolean).join(' / ') || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="来源渠道">{{ sourceLabelMap[member.source || 'wechat'] }}</el-descriptions-item>
         <el-descriptions-item label="最近登录">{{ member.last_login_at ? formatDateTime(member.last_login_at) : '暂无' }}</el-descriptions-item>

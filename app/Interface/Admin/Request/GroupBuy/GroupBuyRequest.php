@@ -38,8 +38,8 @@ class GroupBuyRequest extends BaseRequest
         return [
             'title' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
-            'product_id' => ['required', 'integer', 'exists:mall_products,id'],
-            'sku_id' => ['required', 'integer', 'exists:mall_product_skus,id'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'sku_id' => ['required', 'integer', 'exists:product_skus,id'],
             'original_price' => ['required', 'numeric', 'min:0.01'],
             'group_price' => ['required', 'numeric', 'min:0.01', 'lt:original_price'],
             'min_people' => ['required', 'integer', 'min:2', 'max:100'],
@@ -62,8 +62,8 @@ class GroupBuyRequest extends BaseRequest
         return [
             'title' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
-            'product_id' => ['required', 'integer', 'exists:mall_products,id'],
-            'sku_id' => ['required', 'integer', 'exists:mall_product_skus,id'],
+            'product_id' => ['required', 'integer', 'exists:products,id'],
+            'sku_id' => ['required', 'integer', 'exists:product_skus,id'],
             'original_price' => ['required', 'numeric', 'min:0.01'],
             'group_price' => ['required', 'numeric', 'min:0.01', 'lt:original_price'],
             'min_people' => ['required', 'integer', 'min:2', 'max:100'],

@@ -25,7 +25,7 @@ class MemberRequest extends BaseRequest
             'status' => ['nullable', Rule::in(['active', 'inactive', 'banned'])],
             'level' => ['nullable', 'string', 'max:50'],
             'source' => ['nullable', 'string', 'max:50'],
-            'tag_id' => ['nullable', 'integer', 'exists:mall_member_tags,id'],
+            'tag_id' => ['nullable', 'integer', 'exists:member_tags,id'],
             'created_start' => ['nullable', 'date'],
             'created_end' => ['nullable', 'date', 'after_or_equal:created_start'],
             'last_login_start' => ['nullable', 'date'],
@@ -41,7 +41,7 @@ class MemberRequest extends BaseRequest
             'status' => ['nullable', Rule::in(['active', 'inactive', 'banned'])],
             'level' => ['nullable', 'string', 'max:50'],
             'source' => ['nullable', 'string', 'max:50'],
-            'tag_id' => ['nullable', 'integer', 'exists:mall_member_tags,id'],
+            'tag_id' => ['nullable', 'integer', 'exists:member_tags,id'],
             'created_start' => ['nullable', 'date'],
             'created_end' => ['nullable', 'date', 'after_or_equal:created_start'],
         ];
@@ -60,7 +60,7 @@ class MemberRequest extends BaseRequest
             'nickname' => ['required', 'string', 'max:100'],
             'avatar' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', Rule::in(['unknown', 'male', 'female'])],
-            'phone' => ['nullable', 'string', 'max:20', 'unique:mall_members,phone'],
+            'phone' => ['nullable', 'string', 'max:20', 'unique:members,phone'],
             'birthday' => ['nullable', 'date'],
             'city' => ['nullable', 'string', 'max:50'],
             'province' => ['nullable', 'string', 'max:50'],
@@ -74,7 +74,7 @@ class MemberRequest extends BaseRequest
             'source' => ['nullable', Rule::in(['wechat', 'mini_program', 'h5', 'admin'])],
             'remark' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'array'],
-            'tags.*' => ['integer', 'exists:mall_member_tags,id'],
+            'tags.*' => ['integer', 'exists:member_tags,id'],
         ];
     }
 
@@ -111,7 +111,7 @@ class MemberRequest extends BaseRequest
     {
         return [
             'tags' => ['array'],
-            'tags.*' => ['integer', 'exists:mall_member_tags,id'],
+            'tags.*' => ['integer', 'exists:member_tags,id'],
         ];
     }
 

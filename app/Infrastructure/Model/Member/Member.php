@@ -185,13 +185,13 @@ class Member extends Model
 
     public function tags(): BelongsToMany
     {
-        $relation = $this->belongsToMany(MemberTag::class, 'mall_member_tag_relations', 'member_id', 'tag_id')
+        $relation = $this->belongsToMany(MemberTag::class, 'member_tag_relations', 'member_id', 'tag_id')
             ->withTimestamps();
         $relation->select([
-            'mall_member_tags.id',
-            'mall_member_tags.name',
-            'mall_member_tags.color',
-            'mall_member_tags.status',
+            'member_tags.id',
+            'member_tags.name',
+            'member_tags.color',
+            'member_tags.status',
         ]);
 
         return $relation;

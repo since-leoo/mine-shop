@@ -143,8 +143,8 @@ class ProductCreateRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:200',
-            'category_id' => 'required|integer|exists:mall_categories,id',
-            'brand_id' => 'nullable|integer|exists:mall_brands,id',
+            'category_id' => 'required|integer|exists:categories,id',
+            'brand_id' => 'nullable|integer|exists:brands,id',
             'description' => 'nullable|string',
             'skus' => 'required|array|min:1',
             'skus.*.sku_name' => 'required|string',

@@ -49,7 +49,7 @@ class MemberTag extends Model
 
     public function members(): BelongsToMany
     {
-        return $this->belongsToMany(Member::class, 'mall_member_tag_relations', 'tag_id', 'member_id')
+        return $this->belongsToMany(Member::class, 'member_tag_relations', 'tag_id', 'member_id')
             ->withTimestamps();
     }
 }

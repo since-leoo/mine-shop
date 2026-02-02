@@ -50,6 +50,9 @@ export interface MemberVo {
   birthday?: string
   city?: string
   province?: string
+  district?: string
+  street?: string
+  region_path?: string
   country?: string
   level?: string
   growth_value?: number

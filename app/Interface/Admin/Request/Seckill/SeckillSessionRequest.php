@@ -34,7 +34,7 @@ class SeckillSessionRequest extends BaseRequest
     public function storeRules(): array
     {
         return [
-            'activity_id' => ['required', 'integer', 'min:1', 'exists:mall_seckill_activities,id'],
+            'activity_id' => ['required', 'integer', 'min:1', 'exists:seckill_activities,id'],
             'start_time' => ['required', 'date'],
             'end_time' => ['required', 'date', 'after:start_time'],
             'status' => ['nullable', Rule::in(['pending', 'active', 'ended', 'cancelled', 'sold_out'])],
@@ -49,7 +49,7 @@ class SeckillSessionRequest extends BaseRequest
     public function updateRules(): array
     {
         return [
-            'activity_id' => ['nullable', 'integer', 'min:1', 'exists:mall_seckill_activities,id'],
+            'activity_id' => ['nullable', 'integer', 'min:1', 'exists:seckill_activities,id'],
             'start_time' => ['required', 'date'],
             'end_time' => ['required', 'date', 'after:start_time'],
             'status' => ['nullable', Rule::in(['pending', 'active', 'ended', 'cancelled', 'sold_out'])],
