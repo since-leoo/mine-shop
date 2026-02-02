@@ -28,7 +28,7 @@ export default function getTableColumns(
 
   return [
     { type: 'selection', width: '50px' },
-    { label: () => 'ID', prop: 'id', width: '80px' },
+    { label: () => '编号', prop: 'id', width: '80px' },
     { label: () => '优惠券名称', prop: 'name', minWidth: '160px' },
     { label: () => '类型', prop: 'type', width: '90px',
       cellRender: ({ row }: { row: CouponVo }) => (
@@ -54,8 +54,6 @@ export default function getTableColumns(
         <ElSwitch
           modelValue={row.status === 'active'}
           disabled={!hasAuth('coupon:update')}
-          activeText="启用"
-          inactiveText="停用"
           onChange={async () => {
             const res = await couponToggleStatus(row.id as number)
             if (res.code === ResultCode.SUCCESS) {

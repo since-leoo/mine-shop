@@ -7,6 +7,7 @@
  * @Link   https://github.com/mineadmin
  */
 
+import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { CouponVo } from '~/mall/api/coupon'
 
@@ -15,13 +16,93 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
     model.status = 'active'
   }
 
+  const validateCouponValue = () => ({
+    validator: (_: any, value: any, callback: (error?: Error) => void) => {
+      if (value === undefined || value === null || value === '') {
+        callback(new Error('请输入优惠值'))
+        return
+      }
+      if (typeof value !== 'number' || Number.isNaN(value)) {
+        callback(new Error('优惠值必须为数字'))
+        return
+      }
+      if (model.type === 'percent') {
+        if (value <= 0 || value > 100) {
+          callback(new Error('折扣值需在 0-100 之间'))
+          return
+        }
+      }
+      else {
+        if (value <= 0) {
+          callback(new Error('优惠金额必须大于0'))
+          return
+        }
+      }
+      callback()
+    },
+    trigger: ['blur', 'change'],
+  })
+
+  const optionalNonNegative = (label: string) => ({
+    validator: (_: any, value: any, callback: (error?: Error) => void) => {
+      if (value === undefined || value === null || value === '') {
+        callback()
+        return
+      }
+      if (typeof value !== 'number' || Number.isNaN(value)) {
+        callback(new Error(`${label}必须为数字`))
+        return
+      }
+      if (value < 0) {
+        callback(new Error(`${label}不能小于0`))
+        return
+      }
+      callback()
+    },
+    trigger: ['blur', 'change'],
+  })
+
+  const positiveIntegerRule = (label: string, requiredMessage?: string) => ({
+    validator: (_: any, value: any, callback: (error?: Error) => void) => {
+      if (value === undefined || value === null || value === '') {
+        callback(new Error(requiredMessage ?? `请输入${label}`))
+        return
+      }
+      if (typeof value !== 'number' || Number.isNaN(value) || !Number.isInteger(value)) {
+        callback(new Error(`${label}必须为正整数`))
+        return
+      }
+      if (value <= 0) {
+        callback(new Error(`${label}必须大于0`))
+        return
+      }
+      callback()
+    },
+    trigger: ['blur', 'change'],
+  })
+
+  const optionalPositiveInteger = (label: string) => ({
+    validator: (_: any, value: any, callback: (error?: Error) => void) => {
+      if (value === undefined || value === null || value === '') {
+        callback()
+        return
+      }
+      if (typeof value !== 'number' || Number.isNaN(value) || !Number.isInteger(value) || value <= 0) {
+        callback(new Error(`${label}必须为正整数`))
+        return
+      }
+      callback()
+    },
+    trigger: ['blur', 'change'],
+  })
+
   return [
     {
       label: () => '优惠券名称',
       prop: 'name',
       render: 'input',
       renderProps: { placeholder: '请输入优惠券名称', maxlength: 120, showWordLimit: true },
-      itemProps: { rules: [{ required: true, message: '请输入优惠券名称' }] },
+      itemProps: { rules: [{ required: true, message: '请输入优惠券名称', trigger: ['blur', 'change'] }] },
     },
     {
       label: () => '优惠类型',
@@ -34,7 +115,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           <el-option label="折扣" value="percent" />,
         ],
       },
-      itemProps: { rules: [{ required: true, message: '请选择优惠类型' }] },
+      itemProps: { rules: [{ required: true, message: '请选择优惠类型', trigger: ['change'] }] },
     },
     {
       label: () => '优惠值',
@@ -50,7 +131,11 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           class="w-full"
         />
       ),
-      itemProps: { rules: [{ required: true, message: '请输入优惠值' }] },
+      itemProps: {
+        rules: [
+          validateCouponValue(),
+        ],
+      },
     },
     {
       label: () => '最低使用金额',
@@ -66,6 +151,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           class="w-full"
         />
       ),
+      itemProps: { rules: [optionalNonNegative('最低使用金额')] },
     },
     {
       label: () => '发放总数',
@@ -81,7 +167,11 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           class="w-full"
         />
       ),
-      itemProps: { rules: [{ required: true, message: '请输入发放总数' }] },
+      itemProps: {
+        rules: [
+          positiveIntegerRule('发放总数'),
+        ],
+      },
     },
     {
       label: () => '每人限领',
@@ -99,6 +189,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           class="w-full"
         />
       ),
+      itemProps: { rules: [optionalPositiveInteger('每人限领')] },
     },
     {
       label: () => '有效期',
@@ -114,7 +205,24 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           class="w-full"
         />
       ),
-      itemProps: { rules: [{ required: true, message: '请选择有效期' }] },
+      itemProps: {
+        rules: [
+          { required: true, message: '请选择有效期', trigger: ['change'] },
+          {
+            validator: (_: any, value: any, callback: (error?: Error) => void) => {
+              if (Array.isArray(value) && value.length === 2) {
+                const [start, end] = value
+                if (start && end && dayjs(start).isAfter(dayjs(end))) {
+                  callback(new Error('开始时间不能晚于结束时间'))
+                  return
+                }
+              }
+              callback()
+            },
+            trigger: ['change'],
+          },
+        ],
+      },
     },
     {
       label: () => '状态',

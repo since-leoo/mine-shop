@@ -32,7 +32,11 @@ const msg = useMessage()
 const router = useRouter()
 
 const formDialog: UseDialogExpose = useDialog({
-  lgWidth: '620px',
+  xsWidth: '92%',
+  smWidth: '75%',
+  mdWidth: '60%',
+  lgWidth: '480px',
+  xlWidth: '480px',
   ok: ({ formType }, okLoadingState: (state: boolean) => void) => {
     okLoadingState(true)
     const elForm = formRef.value.maForm.getElFormRef()

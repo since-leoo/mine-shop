@@ -60,27 +60,39 @@ watch(() => keys.value, async () => {
   }
 })
 
+function resolveWidth(containerWidth: number) {
+  const xsWidth = (attrs?.xsWidth as string) ?? '90%'
+  const smWidth = (attrs?.smWidth as string) ?? '75%'
+  const mdWidth = (attrs?.mdWidth as string) ?? '65%'
+  const lgWidth = (attrs?.lgWidth as string) ?? '55%'
+  const xlWidth = (attrs?.xlWidth as string) ?? lgWidth
+
+  if (containerWidth < 768) {
+    dialogWidth.value = xsWidth
+    return
+  }
+  if (containerWidth < 992) {
+    dialogWidth.value = smWidth
+    return
+  }
+  if (containerWidth < 1200) {
+    dialogWidth.value = mdWidth
+    return
+  }
+  if (containerWidth < 1920) {
+    dialogWidth.value = lgWidth
+    return
+  }
+  dialogWidth.value = xlWidth
+}
+
 onMounted(() => {
+  const applyWidth = (width: number) => resolveWidth(width)
   useResizeObserver(document.body, (entries) => {
     const [entry] = entries
-    const { width } = entry.contentRect
-    // xs
-    if (width < 768) {
-      dialogWidth.value = (attrs?.xsWidth as string) ?? '90%'
-    }
-    // sm
-    if (width >= 768 && width < 992) {
-      dialogWidth.value = (attrs?.smWidth as string) ?? '75%'
-    }
-    // md
-    if (width >= 992 && width < 1200) {
-      dialogWidth.value = (attrs?.mdWidth as string) ?? '65%'
-    }
-    // lg
-    if (width >= 1200 && width < 1920) {
-      dialogWidth.value = (attrs?.lgWidth as string) ?? '55%'
-    }
+    applyWidth(entry.contentRect.width)
   })
+  applyWidth(document.body.clientWidth)
 })
 </script>
 

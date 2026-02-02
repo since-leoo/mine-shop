@@ -18,9 +18,22 @@
           </el-select>
         </el-form-item>
         <el-form-item label="来源">
-          <el-input v-model="filters.source" placeholder="system/order/manual" clearable @keyup.enter="loadLogs">
-            <template #prefix><el-icon><Link /></el-icon></template>
-          </el-input>
+          <el-select
+            v-model="filters.source"
+            placeholder="全部"
+            clearable
+            filterable
+            allow-create
+            class="w-40"
+            @change="loadLogs"
+          >
+            <el-option
+              v-for="option in sourceOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="操作类型">
           <el-select v-model="filters.operator_type" placeholder="全部" clearable class="w-36" @change="loadLogs">
@@ -118,7 +131,21 @@
           <el-input-number v-model="adjustForm.value" :min="-1000000" :max="1000000" class="w-full" />
         </el-form-item>
         <el-form-item label="来源" prop="source">
-          <el-input v-model="adjustForm.source" placeholder="如 manual" />
+          <el-select
+            v-model="adjustForm.source"
+            placeholder="请选择来源"
+            clearable
+            filterable
+            allow-create
+            class="w-full"
+          >
+            <el-option
+              v-for="option in sourceOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="adjustForm.remark" type="textarea" rows="3" />
@@ -159,6 +186,11 @@ const filters = reactive<MemberAccountLogParams>({
   start_date: '',
   end_date: '',
 })
+const sourceOptions = [
+  { label: '系统', value: 'system' },
+  { label: '订单', value: 'order' },
+  { label: '手动', value: 'manual' },
+]
 const dateRange = ref<[string, string] | null>(null)
 const pagination = reactive({
   page: 1,
@@ -181,7 +213,7 @@ const adjustRules: FormRules = {
   member_id: [{ required: true, message: '请输入会员ID', trigger: 'blur' }],
   type: [{ required: true, message: '请选择钱包类型', trigger: 'change' }],
   value: [{ required: true, message: '请输入变动值', trigger: 'blur' }],
-  source: [{ required: true, message: '请输入来源', trigger: 'blur' }],
+  source: [{ required: true, message: '请选择来源', trigger: ['change', 'blur'] }],
 }
 
 const buildParams = () => ({
