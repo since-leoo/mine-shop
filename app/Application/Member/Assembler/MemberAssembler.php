@@ -32,6 +32,9 @@ final class MemberAssembler
         $entity->setPhone($payload['phone'] ?? null);
         $entity->setCity($payload['city'] ?? null);
         $entity->setProvince($payload['province'] ?? null);
+        $entity->setDistrict($payload['district'] ?? null);
+        $entity->setStreet($payload['street'] ?? null);
+        $entity->setRegionPath($payload['region_path'] ?? null);
         $entity->setCountry($payload['country'] ?? null);
         $entity->setLevel($payload['level'] ?? 'bronze');
         $growthValue = $payload['growth_value'] ?? null;
@@ -60,6 +63,9 @@ final class MemberAssembler
         $entity->setPhone($payload['phone'] ?? null);
         $entity->setCity($payload['city'] ?? null);
         $entity->setProvince($payload['province'] ?? null);
+        $entity->setDistrict($payload['district'] ?? null);
+        $entity->setStreet($payload['street'] ?? null);
+        $entity->setRegionPath($payload['region_path'] ?? null);
         $entity->setCountry($payload['country'] ?? null);
         $entity->setLevel($payload['level'] ?? null);
         $growthValue = $payload['growth_value'] ?? null;

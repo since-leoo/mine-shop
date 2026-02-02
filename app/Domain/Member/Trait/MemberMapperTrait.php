@@ -33,6 +33,9 @@ trait MemberMapperTrait
         }
         $entity->setCity($member->city);
         $entity->setProvince($member->province);
+        $entity->setDistrict($member->district);
+        $entity->setStreet($member->street);
+        $entity->setRegionPath($member->region_path);
         $entity->setCountry($member->country);
         $entity->setLevel($member->level);
         $entity->setLevelId($member->level_id);

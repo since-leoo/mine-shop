@@ -32,6 +32,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|Carbon $birthday
  * @property null|string $city
  * @property null|string $province
+ * @property null|string $district
+ * @property null|string $street
+ * @property null|string $region_path
  * @property null|string $country
  * @property string $level
  * @property null|int $level_id
@@ -62,6 +65,9 @@ class Member extends Model
         'birthday',
         'city',
         'province',
+        'district',
+        'street',
+        'region_path',
         'country',
         'level',
         'level_id',

@@ -39,6 +39,12 @@ final class MemberEntity
 
     private ?string $province = null;
 
+    private ?string $district = null;
+
+    private ?string $street = null;
+
+    private ?string $regionPath = null;
+
     private ?string $country = null;
 
     private ?string $level = null;
@@ -174,6 +180,39 @@ final class MemberEntity
     {
         $this->province = $province;
         $this->markDirty('province', $province);
+    }
+
+    public function getDistrict(): ?string
+    {
+        return $this->district;
+    }
+
+    public function setDistrict(?string $district): void
+    {
+        $this->district = $district;
+        $this->markDirty('district', $district);
+    }
+
+    public function getStreet(): ?string
+    {
+        return $this->street;
+    }
+
+    public function setStreet(?string $street): void
+    {
+        $this->street = $street;
+        $this->markDirty('street', $street);
+    }
+
+    public function getRegionPath(): ?string
+    {
+        return $this->regionPath;
+    }
+
+    public function setRegionPath(?string $regionPath): void
+    {
+        $this->regionPath = $regionPath;
+        $this->markDirty('region_path', $regionPath);
     }
 
     public function getCountry(): ?string
@@ -316,6 +355,9 @@ final class MemberEntity
                 'birthday' => $this->birthday?->toDateString(),
                 'city' => $this->city,
                 'province' => $this->province,
+                'district' => $this->district,
+                'street' => $this->street,
+                'region_path' => $this->regionPath,
                 'country' => $this->country,
                 'level' => $this->level,
                 'level_id' => $this->levelId,
