@@ -76,8 +76,12 @@ cp .env.example .env
 php bin/hyperf.php migrate
 php bin/hyperf.php db:seed
 
-# 3. 同步地区库（可选）
-php bin/hyperf.php mall:sync-regions --source=modood
+# 3. 安装系统消息和微信插件
+php bin/hyperf.php mine-extension:install since/wechat --yes
+php bin/hyperf.php mine-extension:install since/system-message --yes
+
+# 4. 同步地区库
+php bin/hyperf.php mall:sync-regions
 
 # 4. 启动服务
 php bin/hyperf.php start
