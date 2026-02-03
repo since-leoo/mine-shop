@@ -35,10 +35,8 @@ final class CartTransformer
         $totalPrice = 0;
 
         foreach ($items as $item) {
-            /** @var null|ProductSku $sku */
-            $sku = $item['sku'] ?? null;
-            /** @var null|Product $product */
-            $product = $item['product'] ?? null;
+            $sku = \is_array($item['sku'] ?? null) ? $item['sku'] : null;
+            $product = \is_array($item['product'] ?? null) ? $item['product'] : null;
             if (! $sku || ! $product) {
                 $invalidGoods[] = $this->formatInvalidGoods($item, $memberId);
                 continue;
@@ -48,7 +46,7 @@ final class CartTransformer
             $lastJoinTime ??= $goods['joinCartTime'];
 
             if ($this->isSaleable($product, $sku)) {
-                if ((int) ($sku->stock ?? 0) > 0) {
+                if ((int) ($sku['stock'] ?? 0) > 0) {
                     $goodsList[] = $goods;
                     $totalPrice += (int) $goods['price'] * (int) $goods['quantity'];
                 } else {
@@ -102,36 +100,36 @@ final class CartTransformer
         ];
     }
 
-    private function formatGoods(array $item, Product $product, ProductSku $sku, int $memberId): array
+    private function formatGoods(array $item, array $product, array $sku, int $memberId): array
     {
-        $image = $sku->image ?: $product->main_image;
+        $image = $sku['image'] ?? $product['main_image'] ?? null;
         $tags = $this->resolveTags($product);
-        $skuStock = (int) ($sku->stock ?? 0);
+        $skuStock = (int) ($sku['stock'] ?? 0);
 
         return [
-            'cart_id' => (string) $sku->id,
+            'cart_id' => (string) ($sku['id'] ?? ''),
             'uid' => (string) $memberId,
             'saas_id' => 'mine-mall',
             'store_id' => '1',
             'store_name' => $this->mallSettingService->basic()->mallName(),
-            'spu_id' => (string) $product->id,
-            'sku_id' => (string) $sku->id,
+            'spu_id' => (string) ($product['id'] ?? ''),
+            'sku_id' => (string) ($sku['id'] ?? ''),
             'is_selected' => ! empty($item['is_selected']) ? 1 : 0,
             'thumb' => $image,
-            'title' => $product->name,
+            'title' => (string) ($product['name'] ?? ''),
             'primary_image' => $image,
             'quantity' => (int) ($item['quantity'] ?? 0),
             'stock_status' => $skuStock > 0,
             'stock_quantity' => $skuStock,
-            'price' => $this->toCentString($sku->sale_price),
-            'origin_price' => $this->toCentString($sku->market_price ?? $sku->sale_price),
+            'price' => $this->toCentString($sku['sale_price'] ?? 0),
+            'origin_price' => $this->toCentString($sku['market_price'] ?? $sku['sale_price'] ?? 0),
             'tag_price' => null,
             'title_prefix_tags' => $tags,
             'room_id' => null,
-            'spec_info' => $this->formatSpecInfo($sku->spec_values ?? []),
+            'spec_info' => $this->formatSpecInfo($sku['spec_values'] ?? []),
             'join_cart_time' => $item['created_at'] ?? null,
             'available' => $this->isSaleable($product, $sku) ? 1 : 0,
-            'put_on_sale' => $product->status === Product::STATUS_ACTIVE ? 1 : 0,
+            'put_on_sale' => ((string) ($product['status'] ?? '')) === Product::STATUS_ACTIVE ? 1 : 0,
             'etitle' => null,
         ];
     }
@@ -188,16 +186,19 @@ final class CartTransformer
         return $result;
     }
 
-    private function resolveTags(Product $product): array
+    /**
+     * @param array<string, mixed> $product
+     */
+    private function resolveTags(array $product): array
     {
         $tags = [];
-        if ($product->is_new ?? false) {
+        if (! empty($product['is_new'])) {
             $tags[] = ['text' => '新品'];
         }
-        if ($product->is_hot ?? false) {
+        if (! empty($product['is_hot'])) {
             $tags[] = ['text' => '热卖'];
         }
-        if ($product->is_recommend ?? false) {
+        if (! empty($product['is_recommend'])) {
             $tags[] = ['text' => '推荐'];
         }
         return $tags;
@@ -220,8 +221,13 @@ final class CartTransformer
         return (string) ((int) round(((float) $price) * 100));
     }
 
-    private function isSaleable(Product $product, ProductSku $sku): bool
+    /**
+     * @param array<string, mixed> $product
+     * @param array<string, mixed> $sku
+     */
+    private function isSaleable(array $product, array $sku): bool
     {
-        return $product->status === Product::STATUS_ACTIVE && $sku->status === ProductSku::STATUS_ACTIVE;
+        return ((string) ($product['status'] ?? '')) === Product::STATUS_ACTIVE
+            && ((string) ($sku['status'] ?? '')) === ProductSku::STATUS_ACTIVE;
     }
 }

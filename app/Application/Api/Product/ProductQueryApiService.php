@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Api\Product;
 
 use App\Domain\Product\Api\ProductReadService;
+use App\Domain\Product\Contract\ProductSnapshotInterface;
 
 /**
  * 小程序/前台商品读应用服务.
@@ -21,7 +22,8 @@ final class ProductQueryApiService
 {
     public function __construct(
         private readonly ProductReadService $productReadService,
-        private readonly ProductTransformer $transformer
+        private readonly ProductTransformer $transformer,
+        private readonly ProductSnapshotInterface $productSnapshotService
     ) {}
 
     /**
@@ -48,12 +50,6 @@ final class ProductQueryApiService
      */
     public function detail(int $id): ?array
     {
-        $product = $this->productReadService->findDetail($id);
-
-        if ($product === null) {
-            return null;
-        }
-
-        return $product;
+        return $this->productSnapshotService->getProduct($id, ['skus', 'attributes', 'gallery']);
     }
 }

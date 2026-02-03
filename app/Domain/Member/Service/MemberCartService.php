@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
+use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Product\Repository\ProductSkuRepository;
 use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Exception\System\BusinessException;
@@ -29,7 +30,8 @@ final class MemberCartService
 
     public function __construct(
         ICache $cache,
-        private readonly ProductSkuRepository $skuRepository
+        private readonly ProductSkuRepository $skuRepository,
+        private readonly ProductSnapshotInterface $productCache
     ) {
         $this->cache = clone $cache;
         $this->cache->setPrefix(self::CACHE_PREFIX);
@@ -43,16 +45,19 @@ final class MemberCartService
         $items = $this->fetchItems($memberId);
         if ($items === []) {return [];}
 
-        $skuIds = array_column($items, 'sku_id');
-        $skus = $this->skuRepository->findManyWithProduct($skuIds)->keyBy('id');
+        $products = $this->batchFetchProducts($items);
 
         $result = [];
         foreach ($items as $item) {
-            /** @var null|ProductSku $sku */
-            $sku = $skus->get($item['sku_id']);
+            $productId = (int) ($item['product_id'] ?? 0);
+            $product = $products[$productId] ?? null;
+            $sku = $product !== null
+                ? $this->resolveSkuSnapshot($product, (int) ($item['sku_id'] ?? 0))
+                : null;
+
             $result[] = $item + [
                 'sku' => $sku,
-                'product' => $sku?->product,
+                'product' => $product,
             ];
         }
 
@@ -109,7 +114,7 @@ final class MemberCartService
         foreach ($items as $item) {
             $sku = $item['sku'] ?? null;
             $product = $item['product'] ?? null;
-            if ($sku === null || $product === null || ! $this->isSaleable($product, $sku)) {
+            if (! $this->isSaleable($product, $sku)) {
                 $this->removeItem($memberId, (int) $item['sku_id']);
             }
         }
@@ -171,12 +176,74 @@ final class MemberCartService
         return $sku;
     }
 
-    private function isSaleable(Product $product, ProductSku $sku): bool
+    /**
+     * @param array<string, mixed>|Product|null $product
+     * @param array<string, mixed>|ProductSku|null $sku
+     */
+    private function isSaleable(array|Product|null $product, array|ProductSku|null $sku): bool
     {
-        if ($product->status !== Product::STATUS_ACTIVE) {
+        if ($product === null || $sku === null) {
             return false;
         }
 
-        return $sku->status === ProductSku::STATUS_ACTIVE;
+        $productStatus = $product instanceof Product
+            ? $product->status
+            : (string) ($product['status'] ?? '');
+
+        if ($productStatus !== Product::STATUS_ACTIVE) {
+            return false;
+        }
+
+        $skuStatus = $sku instanceof ProductSku
+            ? $sku->status
+            : (string) ($sku['status'] ?? '');
+
+        return $skuStatus === ProductSku::STATUS_ACTIVE;
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $items
+     * @return array<int, array<string, mixed>>
+     */
+    private function batchFetchProducts(array $items): array
+    {
+        $productIds = array_values(array_filter(array_unique(array_map(
+            static fn (array $item) => (int) ($item['product_id'] ?? 0),
+            $items
+        ))));
+
+        if ($productIds === []) {
+            return [];
+        }
+
+        $snapshots = [];
+        foreach ($productIds as $productId) {
+            $snapshot = $this->productCache->getProduct($productId, ['skus']);
+            if ($snapshot !== null) {
+                $snapshots[$productId] = $snapshot;
+            }
+        }
+
+        return $snapshots;
+    }
+
+    /**
+     * @param array<string, mixed> $product
+     * @return null|array<string, mixed>
+     */
+    private function resolveSkuSnapshot(array $product, int $skuId): ?array
+    {
+        $skus = $product['skus'] ?? [];
+        if (! \is_array($skus)) {
+            return null;
+        }
+
+        foreach ($skus as $sku) {
+            if ((int) ($sku['id'] ?? 0) === $skuId) {
+                return $sku;
+            }
+        }
+
+        return null;
     }
 }
