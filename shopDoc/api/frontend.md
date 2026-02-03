@@ -23,6 +23,8 @@
 | 优惠券详情 | `GET /api/v1/coupons/{id}` | 返回单券基础信息、规则、可领状态 |
 | 领取优惠券 | `POST /api/coupon/claim` | 登录后调用，传 `coupon_id` |
 
+> 商品详情接口由 **ProductCacheService** 提供数据：后台事件写入 `spu:%id`/`sku:%id` 缓存，接口优先命中缓存，缺失时自动回源数据库并回写，保证高并发下的稳定读取。
+
 ## 购物车与下单
 
 | 功能 | 方法 & 路径 |
@@ -31,6 +33,8 @@
 | 购物车列表 | `GET /api/cart/list` |
 | 更新数量 | `PUT /api/cart/{id}` |
 | 删除/批量删除 | `DELETE /api/cart/{id}` 或 `POST /api/cart/batch-delete` |
+
+购物车列表同样依赖 `ProductCacheService`：服务端会批量读取 `spu`/`sku` 缓存，只有在单个商品缺失时才回源数据库，因此能在保证一致性的同时减少热点 SKU 的数据库压力。
 
 ### 下单流程
 
