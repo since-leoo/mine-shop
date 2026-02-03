@@ -17,7 +17,9 @@ use App\Domain\Coupon\Trait\CouponMapperTrait;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
+use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
+use Hyperf\Database\Model\Collection;
 
 /**
  * 优惠券仓储.
@@ -101,6 +103,24 @@ final class CouponRepository extends IRepository
         return CouponUser::where('coupon_id', $couponId)
             ->where('member_id', $memberId)
             ->count();
+    }
+
+    public function listAvailable(array $filters = [], int $limit = 20): Collection
+    {
+        $now = Carbon::now();
+        $query = $this->getModel()
+            ->where('status', 'active')
+            ->where('start_time', '<=', $now)
+            ->where('end_time', '>=', $now)
+            ->whereColumn('used_quantity', '<', 'total_quantity')
+            ->limit($limit)
+            ->orderByDesc('id');
+
+        if (isset($filters['spu_id']) && (int) $filters['spu_id'] > 0) {
+            // 预留扩展：按商品筛选可用优惠券
+        }
+
+        return $query->get();
     }
 
     /**

@@ -19,7 +19,8 @@
 | 商品列表 | `GET /api/product/list` | `page`, `category_id`, `keyword`, `sort` |
 | 商品详情 | `GET /api/product/{id}` | 含图片、详情、SKU、规格、营销标签 |
 | 团购/秒杀列表 | `GET /api/group-buy/list`, `GET /api/seckill/session/{id}/products` | 返回实时库存与倒计时 |
-| 优惠券可领取列表 | `GET /api/coupon/available` | 按频道/活动筛选 |
+| 优惠券可领取列表 | `GET /api/v1/coupons/available` | `spu_id`、`limit` 查询可领取优惠券 |
+| 优惠券详情 | `GET /api/v1/coupons/{id}` | 返回单券基础信息、规则、可领状态 |
 | 领取优惠券 | `POST /api/coupon/claim` | 登录后调用，传 `coupon_id` |
 
 ## 购物车与下单

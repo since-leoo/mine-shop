@@ -105,6 +105,26 @@ final class CouponUserRepository extends IRepository
     }
 
     /**
+     * @param int $memberId
+     * @param array<int, int> $couponIds
+     * @return array<int, int>
+     */
+    public function countByMemberForCoupons(int $memberId, array $couponIds): array
+    {
+        if ($couponIds === []) {
+            return [];
+        }
+
+        return CouponUser::query()
+            ->selectRaw('coupon_id, COUNT(*) as total')
+            ->where('member_id', $memberId)
+            ->whereIn('coupon_id', $couponIds)
+            ->groupBy('coupon_id')
+            ->pluck('total', 'coupon_id')
+            ->toArray();
+    }
+
+    /**
      * 根据ID查询.
      */
     public function findById(int $id): ?CouponUserEntity
