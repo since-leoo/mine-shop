@@ -96,10 +96,8 @@ final class OrderService
             $this->stockService->reserve($items);
 
             try {
-                $this->repository->save($strategy->buildDraft($orderEntity));
+                $orderEntity = $this->repository->save($strategy->buildDraft($orderEntity));
                 $strategy->postCreate($orderEntity);
-                event(new OrderCreatedEvent($orderEntity));
-                return $orderEntity;
             } catch (\Throwable $throwable) {
                 $this->stockService->rollback($items);
                 throw $throwable;
@@ -107,6 +105,8 @@ final class OrderService
         } finally {
             $this->stockService->releaseLocks($locks);
         }
+
+        return $orderEntity;
     }
 
     public function ship(OrderEntity $entity): OrderEntity

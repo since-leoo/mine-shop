@@ -9,6 +9,7 @@
  */
 import type { MaFormItem } from '@mineadmin/form'
 import type { CategoryVo } from '~/mall/api/category'
+import MaUploadImage from '@/components/ma-upload-image/index.vue'
 
 export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any): MaFormItem[] {
   const treeData = ref<CategoryVo[]>([])
@@ -60,6 +61,12 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
       prop: 'icon',
       render: 'input',
       renderProps: { placeholder: '请输入图标链接' },
+    },
+    {
+      label: () => '分类图片',
+      prop: 'thumbnail',
+      render: () => MaUploadImage,
+      itemProps: { help: '用于小程序分类宫格展示，建议 1:1 比例。' },
     },
     {
       label: () => '描述',

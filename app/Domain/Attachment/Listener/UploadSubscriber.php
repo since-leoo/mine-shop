@@ -16,5 +16,5 @@ use Mine\Upload\Listener\UploadListener as AbstractUploadListener;
 
 final class UploadSubscriber extends AbstractUploadListener
 {
-    public const ADAPTER_NAME = 'oss';
+    public const ADAPTER_NAME = 'qiniu';
 }

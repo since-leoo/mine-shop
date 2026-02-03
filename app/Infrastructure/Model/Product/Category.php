@@ -24,6 +24,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $parent_id
  * @property string $name
  * @property null|string $icon
+ * @property null|string $thumbnail
  * @property null|string $description
  * @property int $sort
  * @property int $level
@@ -42,6 +43,7 @@ class Category extends Model
         'parent_id',
         'name',
         'icon',
+        'thumbnail',
         'description',
         'sort',
         'level',
@@ -53,6 +55,7 @@ class Category extends Model
         'sort' => 'integer',
         'level' => 'integer',
         'status' => 'string',
+        'thumbnail' => 'string',
     ];
 
     public function children(): HasMany
@@ -134,17 +137,6 @@ class Category extends Model
     public function scopeOrdered($query, string $direction = 'asc')
     {
         return $query->orderBy('sort', $direction)->orderBy('id', $direction);
-    }
-
-    public static function getTree(int $parentId = 0): Collection
-    {
-        return self::where('parent_id', $parentId)
-            ->active()
-            ->ordered()
-            ->with(['allChildren' => static function ($query) {
-                $query->active()->ordered();
-            }])
-            ->get();
     }
 
     public static function getOptions(int $excludeId = 0): array

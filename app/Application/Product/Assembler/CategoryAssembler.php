@@ -31,6 +31,7 @@ final class CategoryAssembler
             ->setParentId((int) ($payload['parent_id'] ?? 0))
             ->setName($payload['name'] ?? '')
             ->setIcon($payload['icon'] ?? null)
+            ->setThumbnail($payload['thumbnail'] ?? ($payload['icon'] ?? null))
             ->setDescription($payload['description'] ?? null)
             ->setSort((int) ($payload['sort'] ?? 0))
             ->setStatus($payload['status'] ?? CategoryStatus::ACTIVE->value);
@@ -48,6 +49,7 @@ final class CategoryAssembler
         isset($payload['parent_id']) && $entity->setParentId((int) $payload['parent_id']);
         isset($payload['name']) && $entity->setName($payload['name']);
         \array_key_exists('icon', $payload) && $entity->setIcon($payload['icon']);
+        \array_key_exists('thumbnail', $payload) && $entity->setThumbnail($payload['thumbnail']);
         \array_key_exists('description', $payload) && $entity->setDescription($payload['description']);
         isset($payload['sort']) && $entity->setSort((int) $payload['sort']);
         isset($payload['status']) && $entity->setStatus($payload['status']);

@@ -86,6 +86,24 @@ final class CouponUserRepository extends IRepository
         return CouponUser::where('coupon_id', $couponId)->count();
     }
 
+    public function countByMember(int $memberId, ?string $status = null): int
+    {
+        return CouponUser::where('member_id', $memberId)
+            ->when($status !== null, static fn ($query) => $query->where('status', $status))
+            ->count();
+    }
+
+    public function listByMember(int $memberId, ?string $status = null, int $limit = 50): array
+    {
+        return CouponUser::with('coupon')
+            ->where('member_id', $memberId)
+            ->when($status !== null, static fn ($query) => $query->where('status', $status))
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
     /**
      * 根据ID查询.
      */

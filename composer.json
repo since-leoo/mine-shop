@@ -67,6 +67,7 @@
     "mineadmin/support": "~3.0",
     "mineadmin/swagger": "~3.0",
     "mineadmin/upload": "~3.0",
+    "overtrue/flysystem-qiniu": "^3.2",
     "w7corp/easywechat": "^6.5",
     "yansongda/pay": "^3.6"
   },

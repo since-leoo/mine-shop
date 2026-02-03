@@ -14,6 +14,7 @@ export interface CategoryVo {
   name?: string
   parent_id?: number
   icon?: string
+  thumbnail?: string
   description?: string
   sort?: number
   status?: string

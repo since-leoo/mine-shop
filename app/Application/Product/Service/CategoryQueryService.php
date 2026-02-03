@@ -35,9 +35,9 @@ final class CategoryQueryService
         return $this->categoryService->page($filters, $page, $pageSize);
     }
 
-    public function tree(int $parentId = 0): Collection
+    public function tree(int $parentId = 0): array
     {
-        return $this->categoryService->getTree($parentId);
+        return $this->convertTreeToArray($this->categoryService->getTree($parentId));
     }
 
     #[Cacheable(prefix: 'mall:category:detail', ttl: 3600)]
@@ -88,5 +88,30 @@ final class CategoryQueryService
             $counts["level{$level}"] = Category::where('level', $level)->count();
         }
         return $counts;
+    }
+
+    private function convertTreeToArray(iterable $categories): array
+    {
+        $result = [];
+        foreach ($categories as $category) {
+            $item = Arr::only($category->toArray(), [
+                'id',
+                'parent_id',
+                'name',
+                'icon',
+                'thumbnail',
+                'description',
+                'sort',
+                'level',
+                'status',
+                'created_at',
+                'updated_at',
+            ]);
+            $item['children'] = ($category->relationLoaded('allChildren') && $category->allChildren->isNotEmpty())
+                ? $this->convertTreeToArray($category->allChildren)
+                : [];
+            $result[] = $item;
+        }
+        return $result;
     }
 }

@@ -28,6 +28,8 @@ final class CategoryEntity
 
     private ?string $icon = null;
 
+    private ?string $thumbnail = null;
+
     private ?string $description = null;
 
     private ?int $sort = null;
@@ -108,6 +110,17 @@ final class CategoryEntity
     public function setDescription(?string $description = null): self
     {
         $this->description = $description;
+        return $this;
+    }
+
+    public function getThumbnail(): ?string
+    {
+        return $this->thumbnail;
+    }
+
+    public function setThumbnail(?string $thumbnail = null): self
+    {
+        $this->thumbnail = $thumbnail;
         return $this;
     }
 
@@ -209,6 +222,7 @@ final class CategoryEntity
             'parent_id' => $this->getParentId(),
             'name' => $this->getName(),
             'icon' => $this->getIcon(),
+            'thumbnail' => $this->getThumbnail(),
             'description' => $this->getDescription(),
             'sort' => $this->getSort(),
             'level' => $this->getLevel(),

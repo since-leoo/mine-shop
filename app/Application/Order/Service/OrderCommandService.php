@@ -35,12 +35,12 @@ final class OrderCommandService
     }
 
     /**
-     * @return array<string, mixed>
+     * @param OrderEntity $command
+     * @return OrderEntity
      */
-    public function preview(OrderEntity $command): array
+    public function preview(OrderEntity $command): OrderEntity
     {
-        $draft = $this->orderService->preview($command);
-        return $draft->toArray();
+        return $this->orderService->preview($command);
     }
 
     /**

@@ -18,7 +18,7 @@ use Hyperf\Filesystem\Adapter\QiniuAdapterFactory;
 use Hyperf\Filesystem\Adapter\S3AdapterFactory;
 
 return [
-    'default' => 'oss',
+    'default' => 'qiniu',
     'storage' => [
         'local' => [
             'driver' => LocalAdapterFactory::class,
@@ -40,10 +40,10 @@ return [
         ],
         'qiniu' => [
             'driver' => QiniuAdapterFactory::class,
-            'accessKey' => '',
-            'secretKey' => '',
-            'bucket' => '',
-            'domain' => '',
+            'accessKey' => env('QINIU_ACCESS_KEY', ''),
+            'secretKey' => env('QINIU_SECRET_KEY', ''),
+            'bucket' => env('QINIU_BUCKET', ''),
+            'domain' => env('QINIU_DOMAIN', ''),
             'schema' => 'http://',
         ],
         'cos' => [

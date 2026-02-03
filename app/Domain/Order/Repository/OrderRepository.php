@@ -82,7 +82,7 @@ final class OrderRepository extends IRepository
     /**
      * 创建订单.
      */
-    public function save(OrderEntity $entity): void
+    public function save(OrderEntity $entity): OrderEntity
     {
         $items = array_map(static function ($item) {return $item->toArray(); }, $entity->getItems());
 
@@ -92,6 +92,10 @@ final class OrderRepository extends IRepository
         $model->address()->create($entity->getAddress()->toArray());
 
         $model->refresh();
+
+        $entity->setOrderNo($model->order_no);
+
+        return $entity;
     }
 
     /**
@@ -136,5 +140,18 @@ final class OrderRepository extends IRepository
         /** @var null|Order $order */
         $order = $this->getQuery()->whereKey($id)->first();
         return $order ? OrderEntity::fromModel($order) : null;
+    }
+
+    /**
+     * 统计指定会员在特定状态集合下的订单数量.
+     *
+     * @param string[] $statuses
+     */
+    public function countByMemberAndStatuses(int $memberId, array $statuses): int
+    {
+        return $this->getQuery()
+            ->where('member_id', $memberId)
+            ->when($statuses !== [], static fn (Builder $query) => $query->whereIn('status', $statuses))
+            ->count();
     }
 }

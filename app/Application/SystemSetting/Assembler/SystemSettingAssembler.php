@@ -18,8 +18,22 @@ final class SystemSettingAssembler
 {
     public function fromRequest(string $key, mixed $value): SystemSettingEntity
     {
-        return (new SystemSettingEntity())
+        $entity = (new SystemSettingEntity())
             ->setKey($key)
-            ->setValue($value);
+            ->setType($this->resolveType($key, $value));
+
+        return $entity->setValue($value);
+    }
+
+    private function resolveType(string $key, mixed $value): string
+    {
+        foreach (config('mall.groups', []) as $group) {
+            $settings = $group['settings'] ?? [];
+            if (isset($settings[$key])) {
+                return (string) ($settings[$key]['type'] ?? '');
+            }
+        }
+
+        return \is_array($value) ? json_encode($value) : '';
     }
 }

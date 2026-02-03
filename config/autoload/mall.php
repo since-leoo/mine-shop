@@ -19,7 +19,7 @@ return [
             'settings' => [
                 'mall.basic.name' => [
                     'label' => '商城名称',
-                    'description' => '用于展示在前台、邮件以及通知中的商城名称。',
+                    'description' => '展示在前台、邮件以及通知中的商城名称。',
                     'type' => 'string',
                     'default' => 'MineMall 商城',
                     'sort' => 10,
@@ -31,7 +31,7 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 64,
+                        'preview_size' => 60,
                     ],
                     'default' => '',
                     'sort' => 20,
@@ -50,6 +50,50 @@ return [
                     'type' => 'string',
                     'default' => '400-888-0000',
                     'sort' => 60,
+                ],
+                'mall.home.banners' => [
+                    'label' => '首页 Banner 图',
+                    'description' => '用于小程序/前台首页轮播，建议 3-6 张，按顺序展示。',
+                    'type' => 'json',
+                    'meta' => [
+                        'component' => 'collection',
+                        'display_span' => ['full'],
+                        'add_label' => '新增 Banner',
+                        'min_items' => 3,
+                        'max_items' => 6,
+                        'fields' => [
+                            [
+                                'key' => 'image',
+                                'label' => '图片地址',
+                                'placeholder' => 'https://example.com/banner.png',
+                                'required' => true,
+                            ],
+                            [
+                                'key' => 'link',
+                                'label' => '跳转链接',
+                                'placeholder' => 'https://example.com/page',
+                            ],
+                        ],
+                    ],
+                    'default' => [
+                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner1.png', 'link' => ''],
+                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner2.png', 'link' => ''],
+                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner3.png', 'link' => ''],
+                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner4.png', 'link' => ''],
+                    ],
+                    'sort' => 70,
+                ],
+                'mall.home.activity_banner' => [
+                    'label' => '首页活动图',
+                    'description' => '首页活动卡片/运营位图片，建议 750×320，留空则回退到商城 LOGO。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 120,
+                    ],
+                    'default' => 'https://we-retail-static-1300977798.cos.ap-guangzhou.myqcloud.com/retail-mp/activity/banner.png',
+                    'sort' => 80,
                 ],
             ],
         ],

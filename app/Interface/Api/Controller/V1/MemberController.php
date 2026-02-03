@@ -12,13 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Member\Contract\MemberQueryInterface;
-use App\Infrastructure\Exception\System\BusinessException;
+use App\Application\Api\Member\MemberCenterQueryApiService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
-use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
@@ -28,19 +26,21 @@ use Hyperf\HttpServer\Annotation\Middleware;
 final class MemberController extends AbstractController
 {
     public function __construct(
-        private readonly MemberQueryInterface $queryService,
+        private readonly MemberCenterQueryApiService $memberCenterService,
         private readonly CurrentMember $currentMember
     ) {}
 
     #[GetMapping(path: 'profile')]
     public function profile(): Result
     {
-        $member = $this->queryService->detail($this->currentMember->id());
+        $profile = $this->memberCenterService->profile($this->currentMember->id());
+        return $this->success(['member' => $profile], '获取成功');
+    }
 
-        if ($member === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
-        }
-
-        return $this->success(['member' => $member], '获取成功');
+    #[GetMapping(path: 'center')]
+    public function center(): Result
+    {
+        $overview = $this->memberCenterService->overview($this->currentMember->id());
+        return $this->success($overview, '获取成功');
     }
 }

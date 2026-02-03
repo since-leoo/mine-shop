@@ -57,7 +57,7 @@ final class CategoryController extends AbstractController
     public function tree(CategoryRequest $request): Result
     {
         $params = $request->validated();
-        return $this->success($this->convertTreeToArray($this->queryService->tree((int) ($params['parent_id'] ?? 0))));
+        return $this->success($this->queryService->tree((int) ($params['parent_id'] ?? 0)));
     }
 
     #[GetMapping(path: '{id:\d+}')]
@@ -132,20 +132,5 @@ final class CategoryController extends AbstractController
     public function breadcrumb(int $id): Result
     {
         return $this->success($this->queryService->breadcrumb($id));
-    }
-
-    private function convertTreeToArray(iterable $categories): array
-    {
-        $result = [];
-        foreach ($categories as $category) {
-            $item = Arr::only($category->toArray(), [
-                'id', 'parent_id', 'name', 'icon', 'description', 'sort', 'level', 'status', 'created_at', 'updated_at',
-            ]);
-            $item['children'] = ($category->relationLoaded('allChildren') && $category->allChildren->isNotEmpty())
-                ? $this->convertTreeToArray($category->allChildren)
-                : [];
-            $result[] = $item;
-        }
-        return $result;
     }
 }
