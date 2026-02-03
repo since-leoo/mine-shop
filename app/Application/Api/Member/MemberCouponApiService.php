@@ -12,17 +12,17 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
-use App\Domain\Coupon\Api\CouponReadService;
+use App\Domain\Coupon\Api\CouponUserReadService;
 
 final class MemberCouponApiService
 {
-    public function __construct(private readonly CouponReadService $couponReadService) {}
+    public function __construct(private readonly CouponUserReadService $couponUserReadService) {}
 
     /**
      * @return array<int, array<string, mixed>>
      */
     public function list(int $memberId, string $status): array
     {
-        return $this->couponReadService->listForMember($memberId, $status);
+        return $this->couponUserReadService->listByMember($memberId, $status);
     }
 }

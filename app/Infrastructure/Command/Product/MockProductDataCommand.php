@@ -15,16 +15,13 @@ namespace App\Infrastructure\Command\Product;
 use App\Infrastructure\Service\Product\ProductMockDataService;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Command\Command as HyperfCommand;
-use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 #[Command]
 class MockProductDataCommand extends HyperfCommand
 {
-    public function __construct(
-        ContainerInterface $container,
-        private readonly ProductMockDataService $service,
-    ) {
+    public function __construct(private readonly ProductMockDataService $service)
+    {
         parent::__construct('mall:mock-products');
     }
 

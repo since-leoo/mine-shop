@@ -91,8 +91,8 @@ final class MemberCartService
         }
 
         $cartItem = $items[$skuId];
-        $cartItem['quantity'] = $this->normalizeQuantity((int) $payload['quantity'] ?? 1);
-        $cartItem['is_selected'] = (bool) $payload['is_selected'] ?? false;
+        $cartItem['quantity'] = $this->normalizeQuantity((int) ($payload['quantity'] ?? 1));
+        $cartItem['is_selected'] = (bool) ($payload['is_selected'] ?? false);
         $cartItem['updated_at'] = Carbon::now()->toIso8601String();
 
         $this->persistItem($memberId, $cartItem);

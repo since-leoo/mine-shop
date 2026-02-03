@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Geo;
 
+use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\DbConnection\Model\Model;
 
@@ -21,8 +22,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $source
  * @property string|null $source_url
  * @property string|null $checksum
- * @property string|null $released_at
- * @property string|null $synced_at
+ * @property Carbon|null $released_at
+ * @property Carbon|null $synced_at
  * @property array|null $meta
  */
 class GeoRegionVersion extends Model
@@ -50,4 +51,3 @@ class GeoRegionVersion extends Model
         return $this->hasMany(GeoRegion::class, 'version_id', 'id');
     }
 }
-

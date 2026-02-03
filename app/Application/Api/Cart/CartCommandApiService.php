@@ -29,7 +29,7 @@ final class CartCommandApiService
     {
         $skuId = (int) ($payload['sku_id'] ?? 0);
         $quantity = (int) ($payload['quantity'] ?? 1);
-        $isSelected = (bool) $payload['is_selected'] ?? false;
+        $isSelected = (bool) ($payload['is_selected'] ?? false);
 
         $this->cartService->addItem($memberId, $skuId, $quantity, $isSelected);
 

@@ -24,6 +24,9 @@ final class CategoryQueryApiService
     public function tree(int $parentId = 0): array
     {
         $collection = $this->readService->tree($parentId);
-        return $this->transformer->transformTree($collection);
+        /** @var array<int, \App\Infrastructure\Model\Product\Category> $categories */
+        $categories = $collection->all();
+
+        return $this->transformer->transformTree($categories);
     }
 }

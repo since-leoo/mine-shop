@@ -14,20 +14,30 @@ namespace App\Domain\Coupon\Api;
 
 use App\Domain\Coupon\Repository\CouponRepository;
 use App\Infrastructure\Model\Coupon\Coupon;
-use Carbon\Carbon;
 use Hyperf\Database\Model\Collection;
 
 final class CouponReadService
 {
     public function __construct(private readonly CouponRepository $couponRepository) {}
 
+    /**
+     * @return Collection<int, Coupon>
+     */
     public function listAvailable(array $filters = [], int $limit = 20): Collection
     {
-       return $this->couponRepository->listAvailable($filters, $limit);
+        return $this->couponRepository->listAvailable($filters, $limit);
+    }
+
+    public function countAvailable(array $filters = []): int
+    {
+        return $this->couponRepository->countAvailable($filters);
     }
 
     public function findOne(int $id): ?Coupon
     {
-        return $this->couponRepository->getQuery()->whereKey($id)->first();
+        /** @var Coupon|null $coupon */
+        $coupon = $this->couponRepository->getQuery()->whereKey($id)->first();
+
+        return $coupon;
     }
 }

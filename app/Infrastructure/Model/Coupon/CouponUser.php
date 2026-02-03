@@ -20,15 +20,15 @@ use Hyperf\DbConnection\Model\Model;
 
 /**
  * @property int $id
- * @property int $coupon_id
- * @property int $member_id
+ * @property int|null $coupon_id
+ * @property int|null $member_id
  * @property null|int $order_id
  * @property string $status
- * @property Carbon $received_at
+ * @property null|Carbon $received_at
  * @property null|Carbon $used_at
- * @property Carbon $expire_at
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property null|Carbon $expire_at
+ * @property null|Carbon $created_at
+ * @property null|Carbon $updated_at
  */
 class CouponUser extends Model
 {

@@ -173,14 +173,14 @@ final class CartTransformer
         foreach ($values as $value) {
             if (\is_array($value)) {
                 $result[] = [
-                    'spec_title' => (string) ($value['title'] ?? $value['specTitle'] ?? $value['name'] ?? ''),
-                    'spec_value' => (string) ($value['value'] ?? $value['specValue'] ?? ''),
+                    'specTitle' => (string) ($value['title'] ?? $value['specTitle'] ?? $value['name'] ?? ''),
+                    'specValue' => (string) ($value['value'] ?? $value['specValue'] ?? ''),
                 ];
             } elseif (\is_string($value) && $value !== '') {
                 $parts = preg_split('/[:：]/', $value);
                 $result[] = [
-                    'spec_title' => (string) ($parts[0] ?? ''),
-                    'spec_value' => (string) ($parts[1] ?? $value),
+                    'specTitle' => (string) ($parts[0] ?? ''),
+                    'specValue' => (string) ($parts[1] ?? $value),
                 ];
             }
         }

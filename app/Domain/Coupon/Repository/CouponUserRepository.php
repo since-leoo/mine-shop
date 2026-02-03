@@ -93,6 +93,13 @@ final class CouponUserRepository extends IRepository
             ->count();
     }
 
+    public function countByMemberForCoupon(int $memberId, int $couponId): int
+    {
+        return CouponUser::where('member_id', $memberId)
+            ->where('coupon_id', $couponId)
+            ->count();
+    }
+
     public function listByMember(int $memberId, ?string $status = null, int $limit = 50): array
     {
         return CouponUser::with('coupon')

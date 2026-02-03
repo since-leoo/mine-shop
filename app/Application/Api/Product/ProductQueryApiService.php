@@ -30,15 +30,16 @@ final class ProductQueryApiService
      */
     public function list(array $filters, int $page = 1, int $pageSize = 20): array
     {
+        /** @var array{list: array<int, array<string, mixed>>, total: int} $result */
         $result = $this->productReadService->paginate($filters, $page, $pageSize);
         $list = array_map(
             fn (array $product): array => $this->transformer->transformListItem($product),
-            $result['list'] ?? [],
+            $result['list'],
         );
 
         return [
             'list' => $list,
-            'total' => $result['total'] ?? 0,
+            'total' => $result['total'],
         ];
     }
 

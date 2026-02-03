@@ -36,10 +36,13 @@ final class MemberAddressRepository extends IRepository
 
     public function findForMember(int $memberId, int $addressId): ?MemberAddress
     {
-        return $this->getQuery()
+        /** @var MemberAddress|null $address */
+        $address = $this->getQuery()
             ->where('member_id', $memberId)
             ->whereKey($addressId)
             ->first();
+
+        return $address;
     }
 
     public function createForMember(int $memberId, array $payload): MemberAddress

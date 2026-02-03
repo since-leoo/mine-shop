@@ -105,22 +105,23 @@ final class CouponRepository extends IRepository
             ->count();
     }
 
+    /**
+     * @return Collection<int, Coupon>
+     */
     public function listAvailable(array $filters = [], int $limit = 20): Collection
     {
-        $now = Carbon::now();
-        $query = $this->getModel()
-            ->where('status', 'active')
-            ->where('start_time', '<=', $now)
-            ->where('end_time', '>=', $now)
-            ->whereColumn('used_quantity', '<', 'total_quantity')
+        /** @var Collection<int, Coupon> $result */
+        $result = $this->buildAvailableQuery($filters)
+            ->orderByDesc('id')
             ->limit($limit)
-            ->orderByDesc('id');
+            ->get();
 
-        if (isset($filters['spu_id']) && (int) $filters['spu_id'] > 0) {
-            // 预留扩展：按商品筛选可用优惠券
-        }
+        return $result;
+    }
 
-        return $query->get();
+    public function countAvailable(array $filters = []): int
+    {
+        return $this->buildAvailableQuery($filters)->count();
     }
 
     /**
@@ -173,5 +174,22 @@ final class CouponRepository extends IRepository
             ->when(isset($params['end_time']), static fn (Builder $q) => $q->where('end_time', '<=', $params['end_time']))
             ->withCount(['users as issued_quantity']) // 统计每个优惠券的发放数量
             ->orderByDesc('id'); // 按ID降序排列
+    }
+
+    private function buildAvailableQuery(array $filters = []): Builder
+    {
+        $now = Carbon::now();
+        $query = $this->getModel()
+            ->newQuery()
+            ->where('status', 'active')
+            ->where('start_time', '<=', $now)
+            ->where('end_time', '>=', $now)
+            ->whereColumn('used_quantity', '<', 'total_quantity');
+
+        if (isset($filters['spu_id']) && (int) $filters['spu_id'] > 0) {
+            // 预留扩展：按商品筛选可用优惠券
+        }
+
+        return $query;
     }
 }

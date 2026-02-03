@@ -231,7 +231,8 @@ class GeoRegionSyncService
             return;
         }
 
-        $concurrency = min($this->parallelWorkers, count($tasks) ?: 1);
+        $taskCount = max(1, count($tasks));
+        $concurrency = min($this->parallelWorkers, $taskCount);
         parallel($tasks, $concurrency);
     }
 

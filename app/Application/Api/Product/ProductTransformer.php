@@ -173,7 +173,7 @@ final class ProductTransformer
     }
 
     /**
-     * @return array<int, array<string, string|null>>
+     * @return array<int, string>
      */
     private function normalizeImages(array $product): array
     {

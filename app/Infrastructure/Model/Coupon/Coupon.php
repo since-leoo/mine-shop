@@ -18,19 +18,19 @@ use Hyperf\DbConnection\Model\Model;
 
 /**
  * @property int $id
- * @property string $name
- * @property string $type
- * @property float $value
- * @property float $min_amount
- * @property int $total_quantity
- * @property int $used_quantity
- * @property int $per_user_limit
- * @property Carbon $start_time
- * @property Carbon $end_time
- * @property string $status
+ * @property null|string $name
+ * @property null|string $type
+ * @property null|float $value
+ * @property null|float $min_amount
+ * @property null|int $total_quantity
+ * @property null|int $used_quantity
+ * @property null|int $per_user_limit
+ * @property null|Carbon $start_time
+ * @property null|Carbon $end_time
+ * @property null|string $status
  * @property null|string $description
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property null|Carbon $created_at
+ * @property null|Carbon $updated_at
  */
 class Coupon extends Model
 {

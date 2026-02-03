@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Common\Request;
 
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\Context\Context;
 use Hyperf\HttpServer\Router\Dispatched;
 use Hyperf\Validation\Request\FormRequest;
 
@@ -102,5 +103,34 @@ abstract class BaseRequest extends FormRequest
     protected function getCommonMessages(): array
     {
         return [];
+    }
+
+    /**
+     * Merge additional input into the underlying parsed body for validation.
+     *
+     * @param array<string, mixed> $input
+     */
+    protected function merge(array $input): void
+    {
+        $current = $this->all();
+        Context::set($this->contextkeys['parsedData'], array_merge($current, $input));
+    }
+
+    protected function filled(string $key): bool
+    {
+        if (! $this->has($key)) {
+            return false;
+        }
+
+        $value = $this->input($key);
+        if (\is_string($value)) {
+            return trim($value) !== '';
+        }
+
+        if (\is_array($value)) {
+            return $value !== [];
+        }
+
+        return $value !== null;
     }
 }
