@@ -11,6 +11,8 @@ declare(strict_types=1);
  */
 
 namespace {
+
+    use App\Interface\Common\CurrentMember;
     use Hyperf\Context\ApplicationContext;
     use Hyperf\Contract\ConfigInterface;
     use Hyperf\Contract\LengthAwarePaginatorInterface;
@@ -30,6 +32,13 @@ namespace {
         }
     }
 
+    if (! function_exists('memberId')) {
+        function memberId(): int
+        {
+            return ApplicationContext::getContainer()->get(CurrentMember::class)->id();
+        }
+    }
+
     if (! function_exists('ip')) {
         function ip(): string
         {
@@ -40,7 +49,7 @@ namespace {
                     $request = $container->get(RequestInterface::class);
                     return $request->getServerParams()['remote_addr'] ?? '127.0.0.1';
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // ignore container errors and fallback to loopback
             }
             return '127.0.0.1';
@@ -48,7 +57,7 @@ namespace {
     }
 
     if (! function_exists('event')) {
-        function event(object $event): EventDispatcherInterface
+        function event(object $event): object
         {
             return ApplicationContext::getContainer()->get(EventDispatcherInterface::class)->dispatch($event);
         }

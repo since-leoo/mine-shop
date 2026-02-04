@@ -16,25 +16,23 @@ use App\Infrastructure\Model\Geo\GeoRegion;
 use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Hyperf\DbConnection\Db;
 use Psr\SimpleCache\CacheInterface;
-use RuntimeException;
 
 class GeoQueryService
 {
     private const CACHE_KEY = 'geo:pcas:%d';
+
     private const CACHE_TTL = 86400; // 1 day
 
-    public function __construct(private readonly CacheInterface $cache)
-    {
-    }
+    public function __construct(private readonly CacheInterface $cache) {}
 
     public function getCascadeTree(): array
     {
         $version = $this->latestVersion();
         if (! $version) {
-            throw new RuntimeException('尚未同步行政区划数据');
+            throw new \RuntimeException('尚未同步行政区划数据');
         }
 
-        $cacheKey = sprintf(self::CACHE_KEY, $version->id);
+        $cacheKey = \sprintf(self::CACHE_KEY, $version->id);
         $items = $this->cache->get($cacheKey);
         if ($items === null) {
             $items = $this->buildTree($version->id);
@@ -129,9 +127,9 @@ class GeoQueryService
             ];
 
             if ($region->parent_code && isset($nodes[$region->parent_code])) {
-                $nodes[$region->parent_code]['children'][] =& $nodes[$region->code];
+                $nodes[$region->parent_code]['children'][] = &$nodes[$region->code];
             } else {
-                $tree[] =& $nodes[$region->code];
+                $tree[] = &$nodes[$region->code];
             }
         }
 
@@ -161,4 +159,3 @@ class GeoQueryService
         return array_values(array_filter(explode('|', $path), static fn ($code) => $code !== ''));
     }
 }
-

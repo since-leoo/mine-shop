@@ -55,7 +55,7 @@ final class MemberMiniLoginTest extends ApiControllerCase
             'iv' => 'iv123',
         ]);
 
-        self::assertSame(200, $response['code'], json_encode($response, JSON_UNESCAPED_UNICODE));
+        self::assertSame(200, $response['code'], json_encode($response, \JSON_UNESCAPED_UNICODE));
         $data = $response['data'];
         self::assertArrayHasKey('token', $data);
         self::assertArrayHasKey('refresh_token', $data);

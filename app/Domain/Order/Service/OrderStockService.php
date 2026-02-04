@@ -20,7 +20,7 @@ use Hyperf\Stringable\Str;
 
 final class OrderStockService
 {
-    private const STOCK_HASH_KEY = 'mall:stock:sku';
+    private const STOCK_HASH_KEY = 'mineshop:product-cache:stock:sku';
 
     private const DEDUCT_SCRIPT = <<<'LUA'
         local stockKey = KEYS[1]

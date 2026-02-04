@@ -69,17 +69,6 @@ final class ProductEntityTest extends TestCase
         self::assertSame([10], $payload['delete_attr_ids']);
     }
 
-    private function makeSku(int $id, float $price): ProductSkuEntity
-    {
-        $sku = new ProductSkuEntity();
-        $sku->setId($id);
-        $sku->setSkuCode('SKU-' . $id);
-        $sku->setSkuName('规格' . $id);
-        $sku->setSalePrice($price);
-        $sku->setStock(10);
-        return $sku;
-    }
-
     public function testEnsureCanPersistRequiresNameAndCategory(): void
     {
         $entity = new ProductEntity();
@@ -115,7 +104,18 @@ final class ProductEntityTest extends TestCase
     {
         $entity = new ProductEntity();
         $this->expectException(\DomainException::class);
-        /** @phpstan-ignore-next-line intentionally passing invalid data */
+        /* @phpstan-ignore-next-line intentionally passing invalid data */
         $entity->setSkus([['id' => 1]]);
+    }
+
+    private function makeSku(int $id, float $price): ProductSkuEntity
+    {
+        $sku = new ProductSkuEntity();
+        $sku->setId($id);
+        $sku->setSkuCode('SKU-' . $id);
+        $sku->setSkuName('规格' . $id);
+        $sku->setSalePrice($price);
+        $sku->setStock(10);
+        return $sku;
     }
 }

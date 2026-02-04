@@ -45,9 +45,13 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:list')]
     public function list(OrderRequest $request): Result
     {
-        $filters = $request->validated();
-        $data = $this->queryService->page($filters, $this->getCurrentPage(), $this->getPageSize());
-        return $this->success($data);
+        try {
+            $filters = $request->validated();
+            $data = $this->queryService->page($filters, $this->getCurrentPage(), $this->getPageSize());
+            return $this->success($data);
+        }catch (\Throwable $e){
+            return $this->error('获取订单列表失败');
+        }
     }
 
     #[GetMapping(path: 'stats')]

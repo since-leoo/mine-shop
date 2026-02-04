@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Product\Entity;
 
 use App\Domain\Product\Enum\BrandStatus;
-use DomainException;
 
 /**
  * 品牌实体.
@@ -59,7 +58,7 @@ final class BrandEntity
     {
         $name = trim($name);
         if ($name === '') {
-            throw new DomainException('品牌名称不能为空');
+            throw new \DomainException('品牌名称不能为空');
         }
         $this->name = $name;
         return $this;
@@ -148,8 +147,8 @@ final class BrandEntity
     public function changeStatus(string $status): self
     {
         $values = array_map(static fn (BrandStatus $case) => $case->value, BrandStatus::cases());
-        if (! in_array($status, $values, true)) {
-            throw new DomainException('品牌状态值无效');
+        if (! \in_array($status, $values, true)) {
+            throw new \DomainException('品牌状态值无效');
         }
         $this->status = $status;
         return $this;
@@ -173,7 +172,7 @@ final class BrandEntity
     public function ensureCanPersist(bool $isCreate = false): void
     {
         if ($isCreate && $this->name === null) {
-            throw new DomainException('品牌名称不能为空');
+            throw new \DomainException('品牌名称不能为空');
         }
     }
 

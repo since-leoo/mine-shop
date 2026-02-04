@@ -59,10 +59,10 @@ final class MemberAddressRequest extends BaseRequest
     private function ruleset(): array
     {
         return [
-            'receiver_name' => ['required_without:name', 'nullable', 'string', 'max:50'],
-            'name' => ['required_without:receiver_name', 'nullable', 'string', 'max:50'],
-            'receiver_phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
-            'phone' => ['required_without:receiver_phone', 'nullable', 'string', 'max:20'],
+            'name' => ['required_without:name', 'nullable', 'string', 'max:50'],
+            'name' => ['required_without:name', 'nullable', 'string', 'max:50'],
+            'phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
+            'phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
             'province' => ['required_without:provinceName', 'nullable', 'string', 'max:50'],
             'provinceName' => ['required_without:province', 'nullable', 'string', 'max:50'],
             'provinceCode' => ['nullable', 'string', 'max:20'],
@@ -88,8 +88,8 @@ final class MemberAddressRequest extends BaseRequest
     private function normalize(array $payload): array
     {
         return [
-            'receiver_name' => $payload['receiver_name'] ?? $payload['name'] ?? '',
-            'receiver_phone' => $payload['receiver_phone'] ?? $payload['phone'] ?? '',
+            'name' => $payload['name'] ?? $payload['name'] ?? '',
+            'phone' => $payload['phone'] ?? $payload['phone'] ?? '',
             'province' => $payload['province'] ?? $payload['provinceName'] ?? '',
             'province_code' => $payload['province_code'] ?? $payload['provinceCode'] ?? null,
             'city' => $payload['city'] ?? $payload['cityName'] ?? '',

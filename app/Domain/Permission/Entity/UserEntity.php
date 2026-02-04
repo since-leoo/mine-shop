@@ -360,11 +360,6 @@ final class UserEntity
         );
     }
 
-    private function markDirty(string $field): void
-    {
-        $this->dirty[$field] = true;
-    }
-
     public function ensureCanPersist(bool $isCreate = false): void
     {
         if ($isCreate || isset($this->dirty['username'])) {
@@ -380,5 +375,10 @@ final class UserEntity
         if ($isCreate && ($this->password === null || $this->password === '')) {
             throw new \DomainException('新增用户必须设置密码');
         }
+    }
+
+    private function markDirty(string $field): void
+    {
+        $this->dirty[$field] = true;
     }
 }

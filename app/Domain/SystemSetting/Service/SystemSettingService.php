@@ -16,6 +16,7 @@ use App\Domain\SystemSetting\Entity\SystemSettingEntity;
 use App\Domain\SystemSetting\Repository\SystemSettingRepository;
 use App\Infrastructure\Abstract\ICache;
 use Hamcrest\Description;
+use Hyperf\Codec\Json;
 
 /**
  * 系统设置服务类
@@ -60,8 +61,8 @@ final class SystemSettingService
     {
         $cacheKey = $this->groupCacheKey($group);
         $cached = $this->cache->get($cacheKey);
-        if (\is_array($cached)) {
-            return $cached;
+        if (! empty($cached)) {
+            return Json::decode($cached, true);
         }
 
         // 从数据库查询并转换为响应格式
@@ -70,7 +71,9 @@ final class SystemSettingService
             $this->repository->findByGroup($group)
         );
 
-        $this->cache->set($cacheKey, $settings, 3600);
+        $settingsCache = Json::encode($settings, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR);
+
+        $this->cache->set($cacheKey, $settingsCache, 3600);
 
         return $settings;
     }

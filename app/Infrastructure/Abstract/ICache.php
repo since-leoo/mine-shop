@@ -49,9 +49,14 @@ class ICache implements InterfaceCache
         return $this->redis->get($this->prefix . ':' . $key);
     }
 
-    public function set(string $key, mixed $value, int $ttl = 0): bool
+    public function set(string $key, mixed $value, int $ttl = -1): bool
     {
-        return (bool) $this->redis->set($this->prefix . ':' . $key, $value, $ttl);
+        $cacheKey = $this->prefix . ':' . $key;
+        if ($ttl <= 0) {
+            return (bool) $this->redis->set($cacheKey, $value);
+        }
+
+        return (bool) $this->redis->set($cacheKey, $value, ['EX' => $ttl]);
     }
 
     public function delete(string ...$key): bool

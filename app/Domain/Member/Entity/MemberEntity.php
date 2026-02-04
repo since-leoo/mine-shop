@@ -132,8 +132,13 @@ final class MemberEntity
         return $this->gender;
     }
 
-    public function setGender(?string $gender): void
+    public function setGender(int|string|null $gender): void
     {
+        \is_int($gender) && $gender = match ($gender) {
+            1 => 'male',
+            2 => 'female',
+            default => 'unknown',
+        };
         $this->gender = $gender;
         $this->markDirty('gender', $gender);
     }

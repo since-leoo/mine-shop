@@ -77,7 +77,7 @@ final class CouponUserService
     }
 
     /**
-     * 优惠券使用
+     * 优惠券使用.
      */
     public function markUsed(CouponUserEntity $entity, ?int $orderId = null): bool
     {
@@ -95,5 +95,13 @@ final class CouponUserService
     {
         $entity->markExpired();
         return $this->couponUserRepository->updateFromEntity($entity);
+    }
+
+    /**
+     * 获取会员优惠券数量.
+     */
+    public function countByMember(int $memberId, ?string $status = null): int
+    {
+        return $this->couponUserRepository->countByMember($memberId, $status);
     }
 }

@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Order;
 
-
 use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Service\OrderService;
 
@@ -36,9 +35,7 @@ final class OrderCheckoutApiService
     }
 
     /**
-     * @param int $memberId
      * @param array<string, mixed> $payload
-     * @return array
      * @throws \Throwable
      */
     public function submit(int $memberId, array $payload): array

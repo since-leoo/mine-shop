@@ -130,7 +130,7 @@
       "co-phpunit --prepend tests/bootstrap.php --group=migrations --colors=always --coverage-xml tests/coverage",
       "co-phpunit --prepend tests/bootstrap.php --exclude-group=migrations --colors=always --coverage-xml tests/coverage"
     ],
-    "cs-fix": "php-cs-fixer fix $1",
+    "cs-fix": "@php vendor/bin/php-cs-fixer fix",
     "analyse": "phpstan analyse --memory-limit 500M -l 5 -c phpstan.neon.dist ./app ./config",
     "start": [
       "Composer\\Config::disableProcessTimeout",

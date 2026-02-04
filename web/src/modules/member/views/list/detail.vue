@@ -78,7 +78,7 @@
             <el-card shadow="never">
               <div class="flex items-center gap-3">
                 <el-tag v-if="address.is_default" size="small" type="success">默认</el-tag>
-                <span class="font-medium">{{ address.receiver_name }} {{ address.receiver_phone }}</span>
+                <span class="font-medium">{{ address.name }} {{ address.phone }}</span>
               </div>
               <div class="text-sm text-gray-500 mt-1">
                 {{ address.province }} {{ address.city }} {{ address.district }} {{ address.detail }}

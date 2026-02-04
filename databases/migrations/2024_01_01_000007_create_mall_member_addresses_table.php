@@ -24,8 +24,8 @@ class CreateMallMemberAddressesTable extends Migration
             $table->comment('会员收货地址表');
             $table->id();
             $table->unsignedBigInteger('member_id')->comment('会员ID');
-            $table->string('receiver_name', 50)->comment('收货人姓名');
-            $table->string('receiver_phone', 20)->comment('收货人电话');
+            $table->string('name', 50)->comment('收货人姓名');
+            $table->string('phone', 20)->comment('收货人电话');
             $table->string('province', 50)->comment('省份');
             $table->string('city', 50)->comment('城市');
             $table->string('district', 50)->comment('区县');

@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Construct;
 
-use EasyWeChat\Exceptions\InvalidArgumentException;
 use EasyWeChat\Kernel\HttpClient\AccessTokenAwareClient;
 use EasyWeChat\MiniApp\Application as MiniApplication;
 use EasyWeChat\OfficialAccount\Application as OfficialApplication;
 use EasyWeChat\OfficialAccount\Server;
 use EasyWeChat\OpenPlatform\Application as OpenPlatformApplication;
+use InvalidArgumentException;
 
 abstract class AbstractWechat
 {

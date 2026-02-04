@@ -28,8 +28,8 @@ export interface MemberWallet {
 
 export interface MemberAddress {
   id: number
-  receiver_name: string
-  receiver_phone: string
+  name: string
+  phone: string
   province: string
   city: string
   district: string

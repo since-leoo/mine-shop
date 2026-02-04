@@ -18,21 +18,21 @@ use Hyperf\DbConnection\Model\Model;
 /**
  * @property int $id
  * @property string $code
- * @property string|null $parent_code
+ * @property null|string $parent_code
  * @property int $version_id
  * @property string $level
  * @property string $name
- * @property string|null $short_name
- * @property string|null $pinyin
- * @property string|null $abbreviation
- * @property string|null $full_name
- * @property string|null $path
- * @property float|null $longitude
- * @property float|null $latitude
+ * @property null|string $short_name
+ * @property null|string $pinyin
+ * @property null|string $abbreviation
+ * @property null|string $full_name
+ * @property null|string $path
+ * @property null|float $longitude
+ * @property null|float $latitude
  * @property int $sort_order
  * @property bool $is_terminal
  * @property bool $is_active
- * @property array|null $extra
+ * @property null|array $extra
  */
 class GeoRegion extends Model
 {
@@ -71,4 +71,3 @@ class GeoRegion extends Model
         return $this->belongsTo(GeoRegionVersion::class, 'version_id', 'id');
     }
 }
-

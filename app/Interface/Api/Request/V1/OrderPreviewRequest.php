@@ -16,6 +16,30 @@ use App\Interface\Common\Request\BaseRequest;
 
 class OrderPreviewRequest extends BaseRequest
 {
+    public function rules(): array
+    {
+        return [
+            'goods_request_list' => ['required', 'array', 'min:1'],
+            'goods_request_list.*.sku_id' => ['required', 'integer', 'min:1'],
+            'goods_request_list.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
+            'user_address' => ['nullable', 'array'],
+            'address_id' => ['nullable', 'integer', 'min:1'],
+            'coupon_list' => ['nullable', 'array'],
+            'coupon_list.*.coupon_id' => ['nullable', 'integer', 'min:1'],
+            'store_info_list' => ['nullable', 'array'],
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'goods_request_list' => '商品列表',
+            'goods_request_list.*.sku_id' => 'SKU',
+            'goods_request_list.*.quantity' => '数量',
+            'address_id' => '地址ID',
+        ];
+    }
+
     protected function prepareForValidation(): void
     {
         $data = $this->all();
@@ -39,29 +63,5 @@ class OrderPreviewRequest extends BaseRequest
         if (isset($data['storeInfoList']) && ! isset($data['store_info_list'])) {
             $this->merge(['store_info_list' => $data['storeInfoList']]);
         }
-    }
-
-    public function rules(): array
-    {
-        return [
-            'goods_request_list' => ['required', 'array', 'min:1'],
-            'goods_request_list.*.sku_id' => ['required', 'integer', 'min:1'],
-            'goods_request_list.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
-            'user_address' => ['nullable', 'array'],
-            'address_id' => ['nullable', 'integer', 'min:1'],
-            'coupon_list' => ['nullable', 'array'],
-            'coupon_list.*.coupon_id' => ['nullable', 'integer', 'min:1'],
-            'store_info_list' => ['nullable', 'array'],
-        ];
-    }
-
-    public function attributes(): array
-    {
-        return [
-            'goods_request_list' => '商品列表',
-            'goods_request_list.*.sku_id' => 'SKU',
-            'goods_request_list.*.quantity' => '数量',
-            'address_id' => '地址ID',
-        ];
     }
 }

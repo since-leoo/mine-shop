@@ -28,14 +28,13 @@ class GeoRegionSyncCrontab
     public function __construct(
         private readonly GeoRegionSyncService $syncService,
         private readonly LoggerInterface $logger
-    ) {
-    }
+    ) {}
 
     public function execute(): void
     {
         try {
             $summary = $this->syncService->sync();
-            $this->logger->info(sprintf(
+            $this->logger->info(\sprintf(
                 '[mall:region-sync] version=%s records=%d source=%s',
                 $summary['version'] ?? 'unknown',
                 $summary['records'] ?? 0,
@@ -48,4 +47,3 @@ class GeoRegionSyncCrontab
         }
     }
 }
-

@@ -19,20 +19,20 @@ use Hyperf\Stringable\Str;
 use Hyperf\Testing\Assert;
 use HyperfTests\HttpTestCase;
 
-    /**
-     * @mixin   HttpTestCase
-     */
-    trait GetTokenTrait
+/**
+ * @mixin   HttpTestCase
+ */
+trait GetTokenTrait
+{
+    public function generatorUser(): User
     {
-        public function generatorUser(): User
-        {
-            return User::create([
-                'username' => Str::random(10),
-                'password' => $this->getPassword(),
-                'user_type' => Type::SYSTEM,
-                'nickname' => Str::random(8),
-            ]);
-        }
+        return User::create([
+            'username' => Str::random(10),
+            'password' => $this->getPassword(),
+            'user_type' => Type::SYSTEM,
+            'nickname' => Str::random(8),
+        ]);
+    }
 
     public function getToken(User $user): string
     {

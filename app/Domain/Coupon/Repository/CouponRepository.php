@@ -110,13 +110,11 @@ final class CouponRepository extends IRepository
      */
     public function listAvailable(array $filters = [], int $limit = 20): Collection
     {
-        /** @var Collection<int, Coupon> $result */
-        $result = $this->buildAvailableQuery($filters)
+        /* @var Collection<int, Coupon> $result */
+        return $this->buildAvailableQuery($filters)
             ->orderByDesc('id')
             ->limit($limit)
             ->get();
-
-        return $result;
     }
 
     public function countAvailable(array $filters = []): int

@@ -19,8 +19,8 @@ use Hyperf\DbConnection\Model\Model;
 /**
  * @property int $id
  * @property int $member_id
- * @property string $receiver_name
- * @property string $receiver_phone
+ * @property string $name
+ * @property string $phone
  * @property string $province
  * @property string $city
  * @property string $district
@@ -36,8 +36,8 @@ class MemberAddress extends Model
 
     protected array $fillable = [
         'member_id',
-        'receiver_name',
-        'receiver_phone',
+        'name',
+        'phone',
         'province',
         'city',
         'district',

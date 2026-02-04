@@ -13,11 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Order\Service;
 
 use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\SystemSetting\Service\MallSettingService;
-use Hyperf\DbConnection\Db;
 
 final class OrderService
 {
@@ -122,5 +120,10 @@ final class OrderService
         $this->repository->cancel($entity);
 
         return $entity;
+    }
+
+    public function countByMemberAndStatuses(int $memberId): array
+    {
+        return $this->repository->countByMemberAndStatuses($memberId);
     }
 }

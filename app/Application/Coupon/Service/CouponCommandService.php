@@ -14,7 +14,6 @@ namespace App\Application\Coupon\Service;
 
 use App\Domain\Coupon\Entity\CouponEntity;
 use App\Domain\Coupon\Service\CouponService;
-use App\Infrastructure\Model\Coupon\Coupon;
 
 /**
  * 优惠券命令服务.

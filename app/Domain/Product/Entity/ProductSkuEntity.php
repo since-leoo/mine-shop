@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Product\Entity;
 
 use App\Infrastructure\Model\Product\ProductSku;
-use DomainException;
 
 /**
  * 商品SKU实体.
@@ -203,42 +202,27 @@ final class ProductSkuEntity
     public function ensureStockAvailable(int $quantity): void
     {
         if ($quantity <= 0) {
-            throw new DomainException('扣减库存数量必须大于0');
+            throw new \DomainException('扣减库存数量必须大于0');
         }
         if ($this->stock < $quantity) {
-            throw new DomainException('SKU库存不足');
+            throw new \DomainException('SKU库存不足');
         }
     }
 
     public function assertIntegrity(): void
     {
-        if (\trim($this->skuName) === '') {
-            throw new DomainException('SKU名称不能为空');
+        if (trim($this->skuName) === '') {
+            throw new \DomainException('SKU名称不能为空');
         }
         if ($this->salePrice < 0 || $this->marketPrice < 0 || $this->costPrice < 0) {
-            throw new DomainException('SKU价格不能小于0');
+            throw new \DomainException('SKU价格不能小于0');
         }
         if ($this->stock < 0) {
-            throw new DomainException('SKU库存不能小于0');
+            throw new \DomainException('SKU库存不能小于0');
         }
         if ($this->warningStock < 0) {
-            throw new DomainException('SKU预警库存不能小于0');
+            throw new \DomainException('SKU预警库存不能小于0');
         }
-    }
-
-    private function adjustStock(int $delta): self
-    {
-        if ($delta === 0) {
-            return $this;
-        }
-
-        $newStock = $this->stock + $delta;
-        if ($newStock < 0) {
-            throw new DomainException('SKU库存不允许为负数');
-        }
-
-        $this->stock = $newStock;
-        return $this;
     }
 
     /**
@@ -260,5 +244,20 @@ final class ProductSkuEntity
             'weight' => $this->getWeight(),
             'status' => $this->getStatus(),
         ], static fn ($value) => $value !== null);
+    }
+
+    private function adjustStock(int $delta): self
+    {
+        if ($delta === 0) {
+            return $this;
+        }
+
+        $newStock = $this->stock + $delta;
+        if ($newStock < 0) {
+            throw new \DomainException('SKU库存不允许为负数');
+        }
+
+        $this->stock = $newStock;
+        return $this;
     }
 }

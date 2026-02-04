@@ -20,8 +20,8 @@ use Hyperf\DbConnection\Model\Model;
 
 /**
  * @property int $id
- * @property int|null $coupon_id
- * @property int|null $member_id
+ * @property null|int $coupon_id
+ * @property null|int $member_id
  * @property null|int $order_id
  * @property string $status
  * @property null|Carbon $received_at

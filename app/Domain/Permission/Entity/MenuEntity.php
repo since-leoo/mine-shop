@@ -302,7 +302,7 @@ final class MenuEntity
             }
         }
 
-        if (! in_array($this->metaType(), ['M', 'C', 'I', 'L', 'B'], true)) {
+        if (! \in_array($this->metaType(), ['M', 'C', 'I', 'L', 'B'], true)) {
             throw new \DomainException('菜单类型不合法');
         }
     }
@@ -346,9 +346,9 @@ final class MenuEntity
 
     private function normalizeMenuType(?string $type): string
     {
-        $type = strtoupper(trim((string) ($type ?? '')));
+        $type = mb_strtoupper(trim((string) ($type ?? '')));
         $allowed = ['M', 'C', 'I', 'L', 'B'];
-        if (! in_array($type, $allowed, true)) {
+        if (! \in_array($type, $allowed, true)) {
             return 'M';
         }
         return $type;

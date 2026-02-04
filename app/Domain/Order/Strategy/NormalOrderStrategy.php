@@ -42,11 +42,6 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         if (empty($orderEntity->getItems())) {
             throw new \RuntimeException('至少选择一件商品');
         }
-
-        $address = $orderEntity->getAddress();
-        if (! $address || $address->getReceiverName() === '' || $address->getReceiverPhone() === '' || $address->getDetail() === '') {
-            throw new \RuntimeException('请完善收货地址信息');
-        }
     }
 
     /**

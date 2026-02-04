@@ -38,7 +38,7 @@ final class CouponControllerTest extends ControllerCase
     {
         $this->forAddPermission('coupon:list');
         $result = $this->get('/admin/coupon/list', [], $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
 
         $this->forAddPermission('coupon:create');
         $payload = [
@@ -52,22 +52,22 @@ final class CouponControllerTest extends ControllerCase
             'end_time' => Carbon::now()->addDays(10)->toDateTimeString(),
         ];
         $result = $this->post('/admin/coupon', $payload, $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
         $couponId = Coupon::query()->latest('id')->value('id');
         self::assertIsInt($couponId);
 
         $this->forAddPermission('coupon:update');
         $payload['name'] = '更新后的优惠券';
         $result = $this->put('/admin/coupon/' . $couponId, $payload, $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
 
         // 已具备 coupon:update 权限，可直接执行状态切换。
         $result = $this->put('/admin/coupon/' . $couponId . '/toggle-status', [], $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
 
         $this->forAddPermission('coupon:delete');
         $result = $this->delete('/admin/coupon/' . $couponId, [], $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
     }
 
     public function testCouponIssue(): void
@@ -101,7 +101,7 @@ final class CouponControllerTest extends ControllerCase
         $result = $this->post('/admin/coupon/' . $coupon->id . '/issue', [
             'member_ids' => [$member->id],
         ], $this->authHeader());
-        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertSame(ResultCode::SUCCESS->value, $result['code'], json_encode($result, \JSON_UNESCAPED_UNICODE));
         self::assertSame(1, CouponUser::count());
     }
 }

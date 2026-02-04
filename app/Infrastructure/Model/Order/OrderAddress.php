@@ -20,8 +20,8 @@ use Hyperf\DbConnection\Model\Model;
 /**
  * @property int $id
  * @property int $order_id
- * @property string $receiver_name
- * @property string $receiver_phone
+ * @property string $name
+ * @property string $phone
  * @property string $province
  * @property string $city
  * @property string $district
@@ -38,8 +38,8 @@ class OrderAddress extends Model
 
     protected array $fillable = [
         'order_id',
-        'receiver_name',
-        'receiver_phone',
+        'name',
+        'phone',
         'province',
         'city',
         'district',
@@ -53,29 +53,8 @@ class OrderAddress extends Model
         'updated_at' => 'datetime',
     ];
 
-    protected array $appends = [
-        'name',
-        'phone',
-        'address',
-    ];
-
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
-    }
-
-    public function getNameAttribute(): string
-    {
-        return (string) $this->receiver_name;
-    }
-
-    public function getPhoneAttribute(): string
-    {
-        return (string) $this->receiver_phone;
-    }
-
-    public function getAddressAttribute(): string
-    {
-        return (string) $this->detail;
     }
 }

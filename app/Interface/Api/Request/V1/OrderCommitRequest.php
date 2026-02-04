@@ -14,6 +14,18 @@ namespace App\Interface\Api\Request\V1;
 
 final class OrderCommitRequest extends OrderPreviewRequest
 {
+    public function rules(): array
+    {
+        $base = parent::rules();
+
+        return array_merge($base, [
+            'total_amount' => ['nullable', 'integer', 'min:0'],
+            'user_name' => ['nullable', 'string', 'max:60'],
+            'invoice_request' => ['nullable', 'array'],
+            'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
+        ]);
+    }
+
     protected function prepareForValidation(): void
     {
         parent::prepareForValidation();
@@ -30,17 +42,5 @@ final class OrderCommitRequest extends OrderPreviewRequest
         if (isset($data['invoiceRequest']) && ! isset($data['invoice_request'])) {
             $this->merge(['invoice_request' => $data['invoiceRequest']]);
         }
-    }
-
-    public function rules(): array
-    {
-        $base = parent::rules();
-
-        return array_merge($base, [
-            'total_amount' => ['nullable', 'integer', 'min:0'],
-            'user_name' => ['nullable', 'string', 'max:60'],
-            'invoice_request' => ['nullable', 'array'],
-            'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
-        ]);
     }
 }

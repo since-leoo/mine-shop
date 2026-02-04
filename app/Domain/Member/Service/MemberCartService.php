@@ -20,6 +20,7 @@ use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
+
 final class MemberCartService
 {
     private const MAX_QUANTITY = 999;
@@ -43,7 +44,9 @@ final class MemberCartService
     public function listDetailed(int $memberId): array
     {
         $items = $this->fetchItems($memberId);
-        if ($items === []) {return [];}
+        if ($items === []) {
+            return [];
+        }
 
         $products = $this->batchFetchProducts($items);
 
@@ -126,7 +129,9 @@ final class MemberCartService
     private function fetchItems(int $memberId): array
     {
         $raw = $this->cache->hGetAll($this->cacheKey($memberId));
-        if ($raw === []) {return [];}
+        if ($raw === []) {
+            return [];
+        }
 
         $items = [];
         foreach ($raw as $field => $value) {
@@ -146,7 +151,9 @@ final class MemberCartService
 
     private function persistItem(int $memberId, array $item): void
     {
-        $this->cache->hSet($this->cacheKey($memberId), (string) $item['sku_id'],
+        $this->cache->hSet(
+            $this->cacheKey($memberId),
+            (string) $item['sku_id'],
             json_encode($item, \JSON_UNESCAPED_UNICODE)
         );
     }
@@ -177,8 +184,8 @@ final class MemberCartService
     }
 
     /**
-     * @param array<string, mixed>|Product|null $product
-     * @param array<string, mixed>|ProductSku|null $sku
+     * @param null|array<string, mixed>|Product $product
+     * @param null|array<string, mixed>|ProductSku $sku
      */
     private function isSaleable(array|Product|null $product, array|ProductSku|null $sku): bool
     {

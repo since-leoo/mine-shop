@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Entity;
 
-use DomainException;
-
 final class OrderItemEntity
 {
     private int $productId = 0;
@@ -195,7 +193,7 @@ final class OrderItemEntity
     public function ensureQuantityPositive(): void
     {
         if ($this->quantity <= 0) {
-            throw new DomainException('订单商品数量必须大于0');
+            throw new \DomainException('订单商品数量必须大于0');
         }
     }
 

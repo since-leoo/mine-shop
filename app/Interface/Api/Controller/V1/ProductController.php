@@ -41,11 +41,15 @@ final class ProductController extends AbstractController
     #[GetMapping(path: '{id}')]
     public function show(int $id): Result
     {
-        $detail = $this->queryService->detail($id);
-        if ($detail === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '商品不存在');
-        }
+        try {
+            $detail = $this->queryService->detail($id);
+            if ($detail === null) {
+                throw new BusinessException(ResultCode::NOT_FOUND, '商品不存在');
+            }
 
-        return $this->success($detail);
+            return $this->success($detail);
+        } catch (BusinessException $e) {
+            return $this->error('获取详情失败', ['code' => $e->getCode(), 'message' => $e->getMessage()]);
+        }
     }
 }

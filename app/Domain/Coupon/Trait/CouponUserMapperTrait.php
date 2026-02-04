@@ -14,6 +14,7 @@ namespace App\Domain\Coupon\Trait;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
 use App\Infrastructure\Model\Coupon\CouponUser;
+use Carbon\Carbon;
 
 trait CouponUserMapperTrait
 {
@@ -27,7 +28,7 @@ trait CouponUserMapperTrait
         $entity->setExpireAt($coupon->expire_at ? $coupon->expire_at->toDateTimeString() : null);
         $entity->setReceivedAt($coupon->received_at ? $coupon->received_at->toDateTimeString() : null);
 
-        /** @var null|\Carbon\Carbon $usedAt */
+        /** @var null|Carbon $usedAt */
         $usedAt = $coupon->used_at;
         $entity->setUsedAt($usedAt?->toDateTimeString());
         $entity->setOrderId($coupon->order_id !== null ? (int) $coupon->order_id : null);

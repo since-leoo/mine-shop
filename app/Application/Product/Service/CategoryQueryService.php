@@ -17,7 +17,6 @@ use App\Domain\Product\Service\CategoryService;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Cache\Annotation\Cacheable;
 use Hyperf\Collection\Arr;
-use Hyperf\Database\Model\Collection;
 
 /**
  * 分类查询服务：处理所有读操作.

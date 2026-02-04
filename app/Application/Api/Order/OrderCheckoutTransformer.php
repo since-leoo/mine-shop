@@ -40,7 +40,7 @@ final class OrderCheckoutTransformer
                 'store_id' => '1',
                 'store_name' => $storeName,
                 'remark' => '',
-                'goods_count' => count($items),
+                'goods_count' => \count($items),
                 'delivery_fee' => $this->toCent($price?->getShippingFee() ?? 0),
                 'delivery_words' => null,
                 'store_total_amount' => $this->toCent($goodsAmount),

@@ -12,11 +12,20 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
+use App\Domain\Coupon\Service\CouponUserService;
 use App\Domain\Member\Api\MemberCenterReadService;
+use App\Domain\Order\Service\OrderService;
+use App\Domain\SystemSetting\Service\MallSettingService;
 
 final class MemberCenterQueryApiService
 {
-    public function __construct(private readonly MemberCenterReadService $readService) {}
+    public function __construct(
+        private readonly MemberCenterReadService $readService,
+        private readonly OrderService $orderService,
+        private readonly CouponUserService $couponUserService,
+        private readonly MallSettingService $mallSettingService,
+        private readonly MemberCenterTransformer $transformer,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -31,6 +40,14 @@ final class MemberCenterQueryApiService
      */
     public function overview(int $memberId): array
     {
-        return $this->readService->overview($memberId);
+        $profile = $this->profile($memberId);
+
+        $orderCounts = $this->orderService->countByMemberAndStatuses($memberId);
+
+        $couponCount = $this->couponUserService->countByMember($memberId, 'unused');
+
+        $servicePhone = $this->mallSettingService->order()->customerServicePhone();
+
+        return $this->transformer->transform($profile, $orderCounts, $couponCount, $servicePhone);
     }
 }

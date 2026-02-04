@@ -112,7 +112,6 @@ final class CouponUserRepository extends IRepository
     }
 
     /**
-     * @param int $memberId
      * @param array<int, int> $couponIds
      * @return array<int, int>
      */

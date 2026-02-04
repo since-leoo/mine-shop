@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Api\Product;
 
 use App\Domain\Product\Api\CategoryReadService;
+use App\Infrastructure\Model\Product\Category;
 
 final class CategoryQueryApiService
 {
@@ -24,7 +25,7 @@ final class CategoryQueryApiService
     public function tree(int $parentId = 0): array
     {
         $collection = $this->readService->tree($parentId);
-        /** @var array<int, \App\Infrastructure\Model\Product\Category> $categories */
+        /** @var array<int, Category> $categories */
         $categories = $collection->all();
 
         return $this->transformer->transformTree($categories);

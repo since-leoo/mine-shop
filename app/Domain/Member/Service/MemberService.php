@@ -104,6 +104,14 @@ final class MemberService
     }
 
     /**
+     * 获取会员信息.
+     */
+    public function getInfoEntity(int $memberId): MemberEntity
+    {
+        return $this->memberRepository->findById($memberId);
+    }
+
+    /**
      * 同步会员标签.
      */
     public function syncTags(MemberEntity $entity): void
@@ -116,11 +124,17 @@ final class MemberService
     /**
      * 小程序登录.
      */
-    public function miniProgramLogin(string $code, string $encryptedData, string $iv, ?string $ip = null): MemberEntity
+    public function miniProgramLogin(string $code, ?string $encryptedData = null, ?string $iv = null, ?string $ip = null, ?string $manualOpenid = null): MemberEntity
     {
-        $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
+        if (! empty($encryptedData) && ! empty($iv)) {
+            $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
+        } else {
+            $payload = $this->miniApp->silentAuthorize($code);
+        }
 
-        if (empty($openid = $payload['openid'])) {
+        $openid = $manualOpenid ?: (string) ($payload['openid'] ?? '');
+
+        if (empty($openid)) {
             throw new \InvalidArgumentException('授权失败');
         }
 
@@ -128,20 +142,47 @@ final class MemberService
 
         if (! $memberEntity) {
             $memberEntity = self::fromMiniProfile($payload);
+            $memberEntity->setLastLoginAt(Carbon::now());
+            $memberEntity->setLastLoginIp($ip ?? '');
             $model = $this->memberRepository->save($memberEntity);
             $memberEntity->setId($model->id);
         } else {
             $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
             $memberEntity->setNickname($payload['nickname'] ?? $memberEntity->getNickname());
-            $memberEntity->setAvatar($payload['avatar'] ?? $memberEntity->getAvatar());
+            $memberEntity->setAvatar($payload['avatarUrl'] ?? $memberEntity->getAvatar());
             $memberEntity->setGender($payload['gender'] ?? $memberEntity->getGender());
             $memberEntity->setSource('mini_program');
             $memberEntity->setLastLoginAt(Carbon::now());
-            $memberEntity->setLastLoginIp($ip);
+            $memberEntity->setLastLoginIp($ip ?? '');
             $this->memberRepository->updateEntity($memberEntity);
         }
 
         return $memberEntity;
+    }
+
+    /**
+     * 绑定会员手机号.
+     *
+     * @return array{phoneNumber: string, purePhoneNumber: string, countryCode: null|string}
+     */
+    public function bindPhoneNumber(MemberEntity $memberEntity, string $code): array
+    {
+        $payload = $this->miniApp->getPhoneNumber($code);
+        $phoneInfo = $payload['phone_info'] ?? $payload;
+        $phoneNumber = (string) ($phoneInfo['phoneNumber'] ?? $phoneInfo['purePhoneNumber'] ?? '');
+
+        if (trim($phoneNumber) === '') {
+            throw new \InvalidArgumentException('获取手机号失败');
+        }
+
+        $memberEntity->setPhone($phoneNumber);
+        $this->memberRepository->updateEntity($memberEntity);
+
+        return [
+            'phoneNumber' => $phoneNumber,
+            'purePhoneNumber' => (string) ($phoneInfo['purePhoneNumber'] ?? $phoneNumber),
+            'countryCode' => $phoneInfo['countryCode'] ?? null,
+        ];
     }
 
     private function ensureMemberExists(int $memberId): void

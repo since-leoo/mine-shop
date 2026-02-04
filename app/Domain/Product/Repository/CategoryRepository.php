@@ -20,7 +20,7 @@ use Hyperf\Database\Model\Collection;
 use Hyperf\DbConnection\Db;
 
 /**
- * 分类数据仓库类
+ * 分类数据仓库类.
  *
  * @extends IRepository<Category>
  */
@@ -29,11 +29,11 @@ final class CategoryRepository extends IRepository
     public function __construct(protected readonly Category $model) {}
 
     /**
-     * 获取分页数据
+     * 获取分页数据.
      *
      * @param array $params 查询参数
-     * @param int|null $page 页码
-     * @param int|null $pageSize 每页大小
+     * @param null|int $page 页码
+     * @param null|int $pageSize 每页大小
      * @return array 包含列表和总数的数组
      */
     public function page(array $params = [], ?int $page = null, ?int $pageSize = null): array
@@ -50,7 +50,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 创建分类
+     * 创建分类.
      *
      * @param CategoryEntity $entity 分类实体对象
      * @return Category 创建后的分类模型实例
@@ -63,7 +63,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 更新分类信息
+     * 更新分类信息.
      *
      * @param CategoryEntity $entity 分类实体对象
      * @return bool 更新是否成功
@@ -75,7 +75,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 获取分类选项数据
+     * 获取分类选项数据.
      *
      * @param int $excludeId 需要排除的分类ID
      * @return array 分类选项数组
@@ -86,7 +86,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 批量更新分类排序
+     * 批量更新分类排序.
      *
      * @param array $sortData 排序数据数组
      * @return bool 更新是否成功
@@ -103,7 +103,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 获取分类树形结构
+     * 获取分类树形结构.
      *
      * @param int $parentId 父级分类ID
      * @return Collection 分类树形集合
@@ -120,7 +120,7 @@ final class CategoryRepository extends IRepository
     }
 
     /**
-     * 处理搜索条件
+     * 处理搜索条件.
      *
      * @param Builder $query 查询构建器
      * @param array $params 搜索参数

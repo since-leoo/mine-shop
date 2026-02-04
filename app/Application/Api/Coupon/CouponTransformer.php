@@ -97,16 +97,16 @@ final class CouponTransformer
         if ($this->normalizeType($coupon) === 'discount') {
             $discount = rtrim(rtrim(number_format((float) $coupon->value, 1, '.', ''), '0'), '.');
             return $minAmount === '0'
-                ? sprintf('%s折', $discount)
-                : sprintf('满%s享%s折', $minAmount, $discount);
+                ? \sprintf('%s折', $discount)
+                : \sprintf('满%s享%s折', $minAmount, $discount);
         }
 
         $discountValue = $this->formatAmount($coupon->value ?? 0);
         if ($minAmount === '0') {
-            return sprintf('立减%s', $discountValue);
+            return \sprintf('立减%s', $discountValue);
         }
 
-        return sprintf('满%s减%s', $minAmount, $discountValue);
+        return \sprintf('满%s减%s', $minAmount, $discountValue);
     }
 
     private function formatAmount(mixed $value): string
@@ -128,7 +128,7 @@ final class CouponTransformer
             return '';
         }
 
-        return sprintf(
+        return \sprintf(
             '%s-%s',
             $coupon->start_time->format('Y.m.d'),
             $coupon->end_time->format('Y.m.d')
@@ -137,11 +137,11 @@ final class CouponTransformer
 
     private function toCent(mixed $price): int
     {
-        if (is_string($price)) {
+        if (\is_string($price)) {
             $price = (float) $price;
         }
 
-        if (! is_int($price) && ! is_float($price)) {
+        if (! \is_int($price) && ! \is_float($price)) {
             $price = 0;
         }
 

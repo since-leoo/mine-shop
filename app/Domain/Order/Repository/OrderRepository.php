@@ -28,7 +28,7 @@ final class OrderRepository extends IRepository
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
-            ->with(['member', 'items', 'address', 'packages'])
+            ->with(['items', 'address'])
             ->when(isset($params['order_no']), static fn (Builder $q) => $q->where('order_no', 'like', '%' . $params['order_no'] . '%'))
             ->when(isset($params['pay_no']), static fn (Builder $q) => $q->where('pay_no', 'like', '%' . $params['pay_no'] . '%'))
             ->when(isset($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))
@@ -144,14 +144,16 @@ final class OrderRepository extends IRepository
 
     /**
      * 统计指定会员在特定状态集合下的订单数量.
-     *
-     * @param string[] $statuses
      */
-    public function countByMemberAndStatuses(int $memberId, array $statuses): int
+    public function countByMemberAndStatuses(int $memberId): array
     {
-        return $this->getQuery()
-            ->where('member_id', $memberId)
-            ->when($statuses !== [], static fn (Builder $query) => $query->whereIn('status', $statuses))
-            ->count();
+        $where = static fn (Builder $query) => $query->where('member_id', $memberId);
+        $pending = $this->model->pending()->where($where)->count();
+        $paid = $this->model->paid()->where($where)->count();
+        $shipped = $this->model->shipped()->where($where)->count();
+        $completed = $this->model->completed()->where($where)->count();
+        $afterSale = $this->model->afterSale()->where($where)->count();
+
+        return [$pending, $paid, $shipped, $completed, $afterSale];
     }
 }

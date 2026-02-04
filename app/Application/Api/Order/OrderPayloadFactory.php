@@ -32,16 +32,12 @@ final class OrderPayloadFactory
         }
 
         $address = $this->resolveAddress($memberId, $payload);
-        if ($address === null) {
-            throw new BusinessException(ResultCode::FAIL, '请先添加收货地址');
-        }
 
         $command = new OrderEntity();
         $command->setMemberId($memberId);
         $command->setOrderType((string) ($payload['orderType'] ?? 'normal'));
-
         $command->replaceItemsFromPayload($items);
-        $command->useAddressPayload($address);
+        $command->useAddressPayload($address ?? []);
 
         $command->setBuyerRemark($this->extractRemark($payload['store_info_list'] ?? $payload['storeInfoList'] ?? []));
 
@@ -117,8 +113,8 @@ final class OrderPayloadFactory
         }
 
         return [
-            'name' => (string) ($address['name'] ?? $address['receiver_name'] ?? ''),
-            'phone' => (string) ($address['phone'] ?? $address['receiver_phone'] ?? ''),
+            'name' => (string) ($address['name'] ?? $address['name'] ?? ''),
+            'phone' => (string) ($address['phone'] ?? $address['phone'] ?? ''),
             'province' => (string) ($address['province'] ?? $address['provinceName'] ?? ''),
             'city' => (string) ($address['city'] ?? $address['cityName'] ?? ''),
             'district' => (string) ($address['district'] ?? $address['districtName'] ?? ''),

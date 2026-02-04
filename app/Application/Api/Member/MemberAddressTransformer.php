@@ -23,8 +23,8 @@ final class MemberAddressTransformer
         return [
             'id' => (string) $address['id'],
             'addressId' => (string) $address['id'],
-            'name' => $address['receiver_name'] ?? '',
-            'phone' => $address['receiver_phone'] ?? '',
+            'name' => $address['name'] ?? '',
+            'phone' => $address['phone'] ?? '',
             'countryName' => $address['country'] ?? '中国',
             'countryCode' => $address['country_code'] ?? 'chn',
             'provinceName' => $address['province'] ?? '',

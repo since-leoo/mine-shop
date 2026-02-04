@@ -16,7 +16,6 @@ use App\Domain\Product\Enum\ProductStatus;
 use App\Domain\Product\Trait\ProductEntityTrait;
 use App\Domain\Product\Trait\ProductSettingsTrait;
 use App\Infrastructure\Model\Product\Product;
-use DomainException;
 
 /**
  * 商品聚合根.
@@ -347,7 +346,7 @@ final class ProductEntity
 
         foreach ($skus as $index => $sku) {
             if (! $sku instanceof ProductSkuEntity) {
-                throw new DomainException('SKU 数据必须通过实体传递');
+                throw new \DomainException('SKU 数据必须通过实体传递');
             }
             $skus[$index] = $sku;
         }
@@ -375,7 +374,7 @@ final class ProductEntity
 
         foreach ($attributes as $index => $attribute) {
             if (! $attribute instanceof ProductAttributeEntity) {
-                throw new DomainException('商品属性必须通过实体传递');
+                throw new \DomainException('商品属性必须通过实体传递');
             }
             $attributes[$index] = $attribute;
         }
@@ -427,7 +426,7 @@ final class ProductEntity
         }
 
         if (! \in_array($targetStatus, ProductStatus::values(), true)) {
-            throw new DomainException('无效的商品状态');
+            throw new \DomainException('无效的商品状态');
         }
 
         $current = $this->status ?? ProductStatus::DRAFT->value;
@@ -438,7 +437,7 @@ final class ProductEntity
 
         $allowed = self::STATUS_TRANSITIONS[$current] ?? [];
         if (! \in_array($targetStatus, $allowed, true)) {
-            throw new DomainException(\sprintf('商品状态不允许从 %s 变更为 %s', $current, $targetStatus));
+            throw new \DomainException(\sprintf('商品状态不允许从 %s 变更为 %s', $current, $targetStatus));
         }
 
         $this->status = $targetStatus;
@@ -469,79 +468,6 @@ final class ProductEntity
         }
 
         $this->ensurePriceRangeIntegrity();
-    }
-
-    private function assertCreateRequirements(): void
-    {
-        $this->assertRequiredString($this->name, '商品名称不能为空');
-        $this->assertPositiveInt($this->categoryId, '请选择商品分类');
-
-        $skus = $this->getSkus();
-        if ($skus === null || $skus === []) {
-            throw new DomainException('请至少添加一个SKU');
-        }
-
-        $this->assertSkuIntegrity($skus);
-    }
-
-    private function assertUpdateRequirements(): void
-    {
-        if ($this->name !== null) {
-            $this->assertRequiredString($this->name, '商品名称不能为空');
-        }
-
-        if ($this->categoryId !== null) {
-            $this->assertPositiveInt($this->categoryId, '商品分类无效');
-        }
-
-        $skus = $this->getSkus();
-        if ($skus === null) {
-            return;
-        }
-
-        if ($skus === []) {
-            throw new DomainException('SKU 列表不能为空');
-        }
-
-        $this->assertSkuIntegrity($skus);
-    }
-
-    private function assertRequiredString(?string $value, string $message): void
-    {
-        if ($value === null || \trim($value) === '') {
-            throw new DomainException($message);
-        }
-    }
-
-    private function assertPositiveInt(?int $value, string $message): void
-    {
-        if ($value === null || $value <= 0) {
-            throw new DomainException($message);
-        }
-    }
-
-    /**
-     * @param ProductSkuEntity[] $skus
-     */
-    private function assertSkuIntegrity(array $skus): void
-    {
-        foreach ($skus as $sku) {
-            if (! $sku instanceof ProductSkuEntity) {
-                throw new DomainException('SKU 数据必须通过实体传递');
-            }
-            $sku->assertIntegrity();
-        }
-    }
-
-    private function ensurePriceRangeIntegrity(): void
-    {
-        if ($this->minPrice === null || $this->maxPrice === null) {
-            return;
-        }
-
-        if ($this->minPrice > $this->maxPrice) {
-            throw new DomainException('最低价不能高于最高价');
-        }
     }
 
     public function syncPriceRange(): void
@@ -598,5 +524,78 @@ final class ProductEntity
             'delete_sku_ids' => $this->getDeleteSkuIds($model),
             'delete_attr_ids' => $this->getDeleteAttributeIds($model),
         ], static fn ($v) => $v !== null);
+    }
+
+    private function assertCreateRequirements(): void
+    {
+        $this->assertRequiredString($this->name, '商品名称不能为空');
+        $this->assertPositiveInt($this->categoryId, '请选择商品分类');
+
+        $skus = $this->getSkus();
+        if ($skus === null || $skus === []) {
+            throw new \DomainException('请至少添加一个SKU');
+        }
+
+        $this->assertSkuIntegrity($skus);
+    }
+
+    private function assertUpdateRequirements(): void
+    {
+        if ($this->name !== null) {
+            $this->assertRequiredString($this->name, '商品名称不能为空');
+        }
+
+        if ($this->categoryId !== null) {
+            $this->assertPositiveInt($this->categoryId, '商品分类无效');
+        }
+
+        $skus = $this->getSkus();
+        if ($skus === null) {
+            return;
+        }
+
+        if ($skus === []) {
+            throw new \DomainException('SKU 列表不能为空');
+        }
+
+        $this->assertSkuIntegrity($skus);
+    }
+
+    private function assertRequiredString(?string $value, string $message): void
+    {
+        if ($value === null || trim($value) === '') {
+            throw new \DomainException($message);
+        }
+    }
+
+    private function assertPositiveInt(?int $value, string $message): void
+    {
+        if ($value === null || $value <= 0) {
+            throw new \DomainException($message);
+        }
+    }
+
+    /**
+     * @param ProductSkuEntity[] $skus
+     */
+    private function assertSkuIntegrity(array $skus): void
+    {
+        foreach ($skus as $sku) {
+            if (! $sku instanceof ProductSkuEntity) {
+                throw new \DomainException('SKU 数据必须通过实体传递');
+            }
+            $sku->assertIntegrity();
+        }
+    }
+
+    private function ensurePriceRangeIntegrity(): void
+    {
+        if ($this->minPrice === null || $this->maxPrice === null) {
+            return;
+        }
+
+        if ($this->minPrice > $this->maxPrice) {
+            throw new \DomainException('最低价不能高于最高价');
+        }
     }
 }

@@ -34,10 +34,6 @@ final class OrderCommandService
         return $this->orderService->findDetail($order->getId()) ?? [];
     }
 
-    /**
-     * @param OrderEntity $command
-     * @return OrderEntity
-     */
     public function preview(OrderEntity $command): OrderEntity
     {
         return $this->orderService->preview($command);

@@ -25,9 +25,6 @@ use Faker\Factory as FakerFactory;
 use Faker\Generator;
 use Hyperf\DbConnection\Db;
 use Hyperf\Stringable\Str;
-use Throwable;
-use function htmlspecialchars;
-use function rawurlencode;
 
 class ProductMockDataService
 {
@@ -61,7 +58,7 @@ class ProductMockDataService
             return [
                 'dry_run' => true,
                 'categories' => $this->countCategoryNodes($this->categoryTemplates()),
-                'brands' => count($this->brandPresets()),
+                'brands' => \count($this->brandPresets()),
                 'products' => $this->countProductPresets($limit),
             ];
         }
@@ -102,7 +99,7 @@ class ProductMockDataService
         foreach ($models as $model) {
             try {
                 $model::truncate();
-            } catch (Throwable $exception) {
+            } catch (\Throwable $exception) {
                 $model::query()->delete();
             }
         }
@@ -142,7 +139,7 @@ class ProductMockDataService
         $walker($this->categoryTemplates());
 
         return [
-            'count' => count($all),
+            'count' => \count($all),
             'path_map' => $pathMap,
         ];
     }
@@ -177,7 +174,7 @@ class ProductMockDataService
 
         return [
             'list' => $list,
-            'count' => count($list),
+            'count' => \count($list),
         ];
     }
 
@@ -195,17 +192,17 @@ class ProductMockDataService
 
             if (! empty($record['skus'])) {
                 $product->skus()->createMany($record['skus']);
-                $skus += count($record['skus']);
+                $skus += \count($record['skus']);
             }
 
             if (! empty($record['attributes'])) {
                 $product->attributes()->createMany($record['attributes']);
-                $attributes += count($record['attributes']);
+                $attributes += \count($record['attributes']);
             }
 
             if (! empty($record['gallery'])) {
                 $product->gallery()->createMany($record['gallery']);
-                $gallery += count($record['gallery']);
+                $gallery += \count($record['gallery']);
             }
 
             ++$products;
@@ -228,7 +225,7 @@ class ProductMockDataService
         foreach ($this->productTemplates() as $template) {
             $iterations = max(1, (int) ($template['count'] ?? 1));
             for ($i = 0; $i < $iterations; ++$i) {
-                if ($limit !== null && count($records) >= $limit) {
+                if ($limit !== null && \count($records) >= $limit) {
                     break 2;
                 }
 
@@ -242,7 +239,7 @@ class ProductMockDataService
                 $category = $categoryMap[$path];
                 $brand = $this->pickBrand($brandList, $template['brand_tags'] ?? []);
                 $name = $this->buildProductName($template);
-                $slug = Str::slug($name, '-') ?: 'product-' . substr(md5($name), 0, 8);
+                $slug = Str::slug($name, '-') ?: 'product-' . mb_substr(md5($name), 0, 8);
                 [$galleryImages, $galleryRecords] = $this->buildGallery($slug, $template['image_hint'] ?? $template['key'], $template['gallery_count'] ?? 4);
                 $attributeRows = $this->buildAttributeRows($template);
                 $detail = $this->buildDetailContent($template, $attributeRows);
@@ -332,15 +329,15 @@ class ProductMockDataService
         $images = [];
         $count = max(2, $count);
         for ($i = 1; $i <= $count; ++$i) {
-            $seed = rawurlencode(sprintf('%s-%s-%d', $hint, $slug, $i));
-            $images[] = sprintf('https://picsum.photos/seed/%s/1200/800', $seed);
+            $seed = rawurlencode(\sprintf('%s-%s-%d', $hint, $slug, $i));
+            $images[] = \sprintf('https://picsum.photos/seed/%s/1200/800', $seed);
         }
 
         $records = [];
         foreach ($images as $index => $url) {
             $records[] = [
                 'image_url' => $url,
-                'alt_text' => sprintf('%s 图 %d', $hint, $index + 1),
+                'alt_text' => \sprintf('%s 图 %d', $hint, $index + 1),
                 'sort_order' => $index + 1,
                 'is_primary' => $index === 0,
             ];
@@ -376,9 +373,9 @@ class ProductMockDataService
             }
 
             $records[] = [
-                'sku_name' => sprintf('%s · %s', $productName, implode(' / ', array_values($combo))),
+                'sku_name' => \sprintf('%s · %s', $productName, implode(' / ', array_values($combo))),
                 'spec_values' => $specValues,
-                'image' => $galleryImages[$index % max(1, count($galleryImages))] ?? $galleryImages[0] ?? null,
+                'image' => $galleryImages[$index % max(1, \count($galleryImages))] ?? $galleryImages[0] ?? null,
                 'cost_price' => $costPrice,
                 'market_price' => $marketPrice,
                 'sale_price' => $salePrice,
@@ -419,7 +416,7 @@ class ProductMockDataService
         }
 
         if ($limit !== null && $limit > 0) {
-            $combinations = array_slice($combinations, 0, $limit);
+            $combinations = \array_slice($combinations, 0, $limit);
         }
 
         return $combinations;
@@ -451,7 +448,7 @@ class ProductMockDataService
 
         $rows[] = [
             'attribute_name' => '上架时间',
-            'value' => sprintf('2025 Q%d', $this->faker->numberBetween(1, 4)),
+            'value' => \sprintf('2025 Q%d', $this->faker->numberBetween(1, 4)),
         ];
         $rows[] = [
             'attribute_name' => '保修',
@@ -469,7 +466,7 @@ class ProductMockDataService
     {
         $audience = $this->faker->randomElement(['创作者', '新婚家庭', '数码发烧友', '精致生活家', '户外玩家', '咖啡爱好者']);
         $base = trim((string) ($template['description'] ?? ''));
-        $suffix = sprintf(' 适合%s使用。', $audience);
+        $suffix = \sprintf(' 适合%s使用。', $audience);
 
         return trim($base . $suffix);
     }
@@ -479,18 +476,18 @@ class ProductMockDataService
         $points = $template['detail_points'] ?? [];
         $html = '<h3>核心亮点</h3><ul>';
         foreach ($points as $point) {
-            $html .= '<li>' . htmlspecialchars((string) $point, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</li>';
+            $html .= '<li>' . htmlspecialchars((string) $point, \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8') . '</li>';
         }
         $html .= '</ul><h3>参数概览</h3><ul>';
         foreach ($attributes as $attribute) {
-            $html .= sprintf(
+            $html .= \sprintf(
                 '<li>%s：%s</li>',
-                htmlspecialchars((string) ($attribute['attribute_name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
-                htmlspecialchars((string) ($attribute['value'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars((string) ($attribute['attribute_name'] ?? ''), \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8'),
+                htmlspecialchars((string) ($attribute['value'] ?? ''), \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8'),
             );
         }
         $html .= '</ul>';
-        $html .= '<p>' . htmlspecialchars((string) ($template['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</p>';
+        $html .= '<p>' . htmlspecialchars((string) ($template['description'] ?? ''), \ENT_QUOTES | \ENT_SUBSTITUTE, 'UTF-8') . '</p>';
 
         return $html;
     }
@@ -534,7 +531,7 @@ class ProductMockDataService
     private function categoryThumbnail(array $path): string
     {
         $seed = Str::slug(implode('-', $path), '-') ?: md5(implode('|', $path));
-        return sprintf('https://picsum.photos/seed/mine-shop-%s/640/640', rawurlencode($seed));
+        return \sprintf('https://picsum.photos/seed/mine-shop-%s/640/640', rawurlencode($seed));
     }
 
     private function categoryTemplates(): array

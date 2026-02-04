@@ -20,7 +20,7 @@ use Hyperf\Codec\Json;
 
 /**
  * 商品缓存服务类
- * 提供商品和SKU快照的缓存管理功能
+ * 提供商品和SKU快照的缓存管理功能.
  */
 final class ProductSnapshotService implements ProductSnapshotInterface
 {
@@ -33,7 +33,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     private const DEFAULT_WITH = ['skus', 'attributes', 'gallery'];
 
     /**
-     * 构造函数
+     * 构造函数.
      *
      * @param ICache $cache 缓存实例
      * @param Product $productModel 商品模型实例
@@ -48,11 +48,11 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 获取商品信息
+     * 获取商品信息.
      *
      * @param int $productId 商品ID
      * @param array $with 关联查询字段
-     * @return array|null 商品数据数组或null
+     * @return null|array 商品数据数组或null
      */
     public function getProduct(int $productId, array $with = []): ?array
     {
@@ -72,7 +72,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 获取SKU快照列表
+     * 获取SKU快照列表.
      *
      * @param array $skuIds SKU ID列表
      * @return array SKU快照数据数组
@@ -118,7 +118,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 缓存商品数据
+     * 缓存商品数据.
      *
      * @param Product $product 商品模型实例
      * @param array $with 关联查询字段
@@ -145,10 +145,10 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 缓存SKU数据
+     * 缓存SKU数据.
      *
      * @param ProductSku $sku SKU模型实例
-     * @param Product|null $product 商品模型实例
+     * @param null|Product $product 商品模型实例
      * @return array 缓存的SKU数据
      */
     public function rememberSku(ProductSku $sku, ?Product $product = null): array
@@ -168,7 +168,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 清除指定商品的缓存
+     * 清除指定商品的缓存.
      *
      * @param int $productId 商品ID
      */
@@ -182,7 +182,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 删除指定SKU的缓存
+     * 删除指定SKU的缓存.
      *
      * @param array $skuIds SKU ID列表
      */
@@ -201,11 +201,11 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 根据商品ID从数据库获取并缓存商品数据
+     * 根据商品ID从数据库获取并缓存商品数据.
      *
      * @param int $productId 商品ID
      * @param array $with 关联查询字段
-     * @return array|null 商品数据或null
+     * @return null|array 商品数据或null
      */
     private function rememberProductById(int $productId, array $with): ?array
     {
@@ -225,7 +225,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 批量缓存SKU数据
+     * 批量缓存SKU数据.
      *
      * @param array<int, int> $skuIds SKU ID列表
      * @return array<int, array<string, mixed>> SKU数据数组
@@ -250,10 +250,10 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 从缓存中获取商品数据
+     * 从缓存中获取商品数据.
      *
      * @param int $productId 商品ID
-     * @return array|null 商品数据或null
+     * @return null|array 商品数据或null
      */
     private function fetchProductFromCache(int $productId): ?array
     {
@@ -266,7 +266,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 检查缓存数据是否包含指定的关系数据
+     * 检查缓存数据是否包含指定的关系数据.
      *
      * @param array $payload 缓存的数据
      * @param array $relations 需要的关系字段
@@ -275,7 +275,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     private function containsRelations(array $payload, array $relations): bool
     {
         foreach ($relations as $relation) {
-            if (! array_key_exists($relation, $payload)) {
+            if (! \array_key_exists($relation, $payload)) {
                 return false;
             }
         }
@@ -284,7 +284,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 持久化商品数据到缓存
+     * 持久化商品数据到缓存.
      *
      * @param int $productId 商品ID
      * @param array $payload 商品数据
@@ -296,7 +296,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 持久化SKU数据到缓存
+     * 持久化SKU数据到缓存.
      *
      * @param int $skuId SKU ID
      * @param array $payload SKU数据
@@ -308,7 +308,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 构建SKU快照数据
+     * 构建SKU快照数据.
      *
      * @param Product $product 商品模型
      * @param ProductSku $sku SKU模型
@@ -339,7 +339,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 规范化关联关系数组
+     * 规范化关联关系数组.
      *
      * @param array $with 原始关联关系数组
      * @return array 规范化后的关联关系数组
@@ -351,10 +351,10 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 解码快照数据
+     * 解码快照数据.
      *
      * @param string $raw 原始快照字符串
-     * @return array|null 解码后的数组或null
+     * @return null|array 解码后的数组或null
      */
     private function decodeSnapshot(string $raw): ?array
     {
@@ -367,7 +367,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 生成商品缓存键
+     * 生成商品缓存键.
      *
      * @param int $productId 商品ID
      * @return string 商品缓存键
@@ -378,7 +378,7 @@ final class ProductSnapshotService implements ProductSnapshotInterface
     }
 
     /**
-     * 生成SKU缓存键
+     * 生成SKU缓存键.
      *
      * @param int $skuId SKU ID
      * @return string SKU缓存键

@@ -16,6 +16,7 @@ use App\Domain\Order\Enum\OrderStatus;
 use App\Infrastructure\Model\Concerns\LoadsRelations;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
+use Hyperf\Database\Model\Builder;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
@@ -44,6 +45,11 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|Carbon $expire_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @method Builder pending() 获取待付款订单
+ * @method Builder paid() 获取已付款订单
+ * @method Builder shipped() 获取已发货订单
+ * @method Builder completed() 获取已完成订单
+ * @method Builder afterSale() 获取售后订单
  */
 class Order extends Model
 {
@@ -132,8 +138,8 @@ class Order extends Model
         $relation->select([
             'id',
             'order_id',
-            'receiver_name',
-            'receiver_phone',
+            'name',
+            'phone',
             'province',
             'city',
             'district',
@@ -165,5 +171,36 @@ class Order extends Model
             'delivered_at',
         ]);
         return $relation;
+    }
+
+    public function scopePending()
+    {
+        return self::where('status', OrderStatus::PENDING->value);
+    }
+
+    public function scopePaid()
+    {
+        return self::where('status', OrderStatus::PAID->value);
+    }
+
+    public function scopeShipped()
+    {
+        return self::whereIn('status', [
+            OrderStatus::PARTIAL_SHIPPED->value,
+            OrderStatus::SHIPPED->value,
+        ]);
+    }
+
+    public function scopeCompleted()
+    {
+        return self::where('status', OrderStatus::COMPLETED->value);
+    }
+
+    public function scopeAfterSale()
+    {
+        return self::whereIn('status', [
+            OrderStatus::REFUNDED->value,
+            OrderStatus::CANCELLED->value,
+        ]);
     }
 }

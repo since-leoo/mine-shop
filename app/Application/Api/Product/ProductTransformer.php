@@ -84,7 +84,7 @@ final class ProductTransformer
         foreach ($skus as $sku) {
             $values = $this->normalizeSpecValues($sku['spec_values'] ?? []);
             foreach ($values as $index => $value) {
-                $specId = sprintf('spec_%d', $index + 1);
+                $specId = \sprintf('spec_%d', $index + 1);
                 $specMap[$specId] ??= [
                     'specId' => $specId,
                     'title' => $value['title'],
@@ -210,7 +210,6 @@ final class ProductTransformer
     }
 
     /**
-     * @param mixed $values
      * @return array<int, array{spec_id: string, title: string, value_id: string, value: string, image: null|string}>
      */
     private function normalizeSpecValues(mixed $values): array
@@ -225,7 +224,7 @@ final class ProductTransformer
 
         $normalized = [];
         foreach (array_values($values) as $index => $value) {
-            $title = sprintf('规格%d', $index + 1);
+            $title = \sprintf('规格%d', $index + 1);
             $realValue = $value;
             $image = null;
 
@@ -242,12 +241,12 @@ final class ProductTransformer
             }
 
             $realValue = (string) $realValue;
-            $specId = sprintf('spec_%d', $index + 1);
-            $valueId = sprintf('%s_%s', $specId, substr(md5($realValue), 0, 8));
+            $specId = \sprintf('spec_%d', $index + 1);
+            $valueId = \sprintf('%s_%s', $specId, mb_substr(md5($realValue), 0, 8));
 
             $normalized[] = [
                 'spec_id' => $specId,
-                'title' => $title !== '' ? $title : sprintf('规格%d', $index + 1),
+                'title' => $title !== '' ? $title : \sprintf('规格%d', $index + 1),
                 'value_id' => $valueId,
                 'value' => $realValue,
                 'image' => $image,

@@ -24,7 +24,7 @@ final class ProductSnapshotListener implements ListenerInterface
 {
     public function __construct(
         private readonly ProductSnapshotService $snapshotService,
-        private readonly LoggerInterface        $logger
+        private readonly LoggerInterface $logger
     ) {}
 
     public function listen(): array

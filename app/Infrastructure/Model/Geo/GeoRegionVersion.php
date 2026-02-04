@@ -20,11 +20,11 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $id
  * @property string $version
  * @property string $source
- * @property string|null $source_url
- * @property string|null $checksum
- * @property Carbon|null $released_at
- * @property Carbon|null $synced_at
- * @property array|null $meta
+ * @property null|string $source_url
+ * @property null|string $checksum
+ * @property null|Carbon $released_at
+ * @property null|Carbon $synced_at
+ * @property null|array $meta
  */
 class GeoRegionVersion extends Model
 {

@@ -14,8 +14,8 @@ namespace App\Application\Api\Coupon;
 
 use App\Domain\Coupon\Api\CouponReadService;
 use App\Domain\Coupon\Api\CouponUserReadService;
-use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Model\Coupon\Coupon;
 use App\Interface\Common\ResultCode;
 
 final class CouponQueryApiService

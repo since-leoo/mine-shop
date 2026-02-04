@@ -15,25 +15,25 @@ namespace App\Infrastructure\Service\Geo;
 use App\Infrastructure\Model\Geo\GeoRegion;
 use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Carbon\Carbon;
-use Generator;
 use Hyperf\DbConnection\Db;
 use Hyperf\Guzzle\ClientFactory;
-use RuntimeException;
+
 use function Hyperf\Coroutine\parallel;
 
 class GeoRegionSyncService
 {
     private int $sequence = 0;
+
     private int $batchSize = 1000;
+
     private int $chunkSize = 200;
+
     private int $parallelWorkers = 4;
 
-    public function __construct(private readonly ClientFactory $clientFactory)
-    {
-    }
+    public function __construct(private readonly ClientFactory $clientFactory) {}
 
     /**
-     * @param array{source?:string,url?:string,version?:string,released_at?:string|null,force?:bool,dry_run?:bool} $options
+     * @param array{source?:string,url?:string,version?:string,released_at?:null|string,force?:bool,dry_run?:bool} $options
      * @return array{version?:string,records?:int,source?:string,url?:string,dry_run?:bool}
      * @throws \JsonException
      */
@@ -47,7 +47,7 @@ class GeoRegionSyncService
         $dryRun = (bool) ($options['dry_run'] ?? false);
 
         if ($url === null || $url === '') {
-            throw new RuntimeException('未找到可用的数据源地址');
+            throw new \RuntimeException('未找到可用的数据源地址');
         }
 
         $payload = $this->fetchPayload($url);
@@ -57,7 +57,7 @@ class GeoRegionSyncService
             $timestamp = Carbon::now()->toDateTimeString();
             $count = 0;
             foreach ($this->flattenGenerator($payload, 0, null, [], $timestamp) as $_) {
-                $count++;
+                ++$count;
             }
 
             return [
@@ -83,18 +83,16 @@ class GeoRegionSyncService
             $version->save();
         }
 
-        $summary = [
+        return [
             'version' => $versionValue,
             'records' => $inserted,
             'source' => $source,
             'url' => $url,
         ];
-
-        return $summary;
     }
 
     /**
-     * @throws \JsonException|RuntimeException
+     * @throws \JsonException|\RuntimeException
      */
     private function fetchPayload(string $url): array
     {
@@ -105,13 +103,13 @@ class GeoRegionSyncService
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            throw new RuntimeException('请求数据源失败，HTTP ' . $response->getStatusCode());
+            throw new \RuntimeException('请求数据源失败，HTTP ' . $response->getStatusCode());
         }
 
         $body = (string) $response->getBody();
-        $decoded = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        if (! is_array($decoded)) {
-            throw new RuntimeException('数据源格式不正确，需为JSON数组');
+        $decoded = json_decode($body, true, 512, \JSON_THROW_ON_ERROR);
+        if (! \is_array($decoded)) {
+            throw new \RuntimeException('数据源格式不正确，需为JSON数组');
         }
 
         return $decoded;
@@ -119,10 +117,10 @@ class GeoRegionSyncService
 
     private function prepareVersion(array $payload, string $source, ?string $url, string $versionValue, ?string $releasedAt, bool $force): int
     {
-        return Db::transaction(function () use ($payload, $source, $url, $versionValue, $releasedAt, $force) {
+        return Db::transaction(static function () use ($payload, $source, $url, $versionValue, $releasedAt, $force) {
             $existing = GeoRegionVersion::query()->where('version', $versionValue)->first();
             if ($existing !== null && ! $force) {
-                throw new RuntimeException(sprintf('版本 %s 已存在，如需覆盖请启用 force 选项', $versionValue));
+                throw new \RuntimeException(\sprintf('版本 %s 已存在，如需覆盖请启用 force 选项', $versionValue));
             }
 
             if ($existing !== null) {
@@ -131,7 +129,7 @@ class GeoRegionSyncService
             }
 
             $now = Carbon::now();
-            $checksum = hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
+            $checksum = hash('sha256', json_encode($payload, \JSON_UNESCAPED_UNICODE));
 
             $version = GeoRegionVersion::query()->create([
                 'version' => $versionValue,
@@ -157,22 +155,22 @@ class GeoRegionSyncService
 
         foreach ($generator as $record) {
             $buffer[] = $record;
-            if (count($buffer) >= $this->batchSize) {
+            if (\count($buffer) >= $this->batchSize) {
                 $this->insertChunk($buffer);
-                $inserted += count($buffer);
+                $inserted += \count($buffer);
                 $buffer = [];
             }
         }
 
         if ($buffer !== []) {
             $this->insertChunk($buffer);
-            $inserted += count($buffer);
+            $inserted += \count($buffer);
         }
 
         return $inserted;
     }
 
-    private function flattenGenerator(array $items, int $versionId, ?string $parentCode, array $ancestors, string $timestamp): Generator
+    private function flattenGenerator(array $items, int $versionId, ?string $parentCode, array $ancestors, string $timestamp): \Generator
     {
         foreach ($items as $item) {
             $code = $this->normalizeCode($item['code'] ?? $item['adcode'] ?? $item['value'] ?? null);
@@ -181,7 +179,7 @@ class GeoRegionSyncService
                 continue;
             }
 
-            $level = $this->resolveLevel(count($ancestors));
+            $level = $this->resolveLevel(\count($ancestors));
             $currentAncestors = array_merge($ancestors, [['code' => $code, 'name' => $name]]);
             $path = '|' . implode('|', array_column($currentAncestors, 'code')) . '|';
             $fullName = implode(' / ', array_column($currentAncestors, 'name'));
@@ -203,14 +201,14 @@ class GeoRegionSyncService
                 'longitude' => $item['lng'] ?? $item['longitude'] ?? null,
                 'latitude' => $item['lat'] ?? $item['latitude'] ?? null,
                 'sort_order' => ++$this->sequence,
-                'is_terminal' => empty($item['children']) || ! is_array($item['children']),
+                'is_terminal' => empty($item['children']) || ! \is_array($item['children']),
                 'is_active' => true,
-                'extra' => $extra === null ? null : json_encode($extra, JSON_UNESCAPED_UNICODE),
+                'extra' => $extra === null ? null : json_encode($extra, \JSON_UNESCAPED_UNICODE),
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ];
 
-            if (! empty($item['children']) && is_array($item['children'])) {
+            if (! empty($item['children']) && \is_array($item['children'])) {
                 yield from $this->flattenGenerator($item['children'], $versionId, $code, $currentAncestors, $timestamp);
             }
         }
@@ -231,7 +229,7 @@ class GeoRegionSyncService
             return;
         }
 
-        $taskCount = max(1, count($tasks));
+        $taskCount = max(1, \count($tasks));
         $concurrency = min($this->parallelWorkers, $taskCount);
         parallel($tasks, $concurrency);
     }
@@ -247,7 +245,7 @@ class GeoRegionSyncService
         };
     }
 
-    private function normalizeCode(null|int|string $code): string
+    private function normalizeCode(int|string|null $code): string
     {
         if ($code === null) {
             return '';

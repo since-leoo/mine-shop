@@ -104,8 +104,8 @@ class Member extends Model
         $relation->select([
             'id',
             'member_id',
-            'receiver_name',
-            'receiver_phone',
+            'name',
+            'phone',
             'province',
             'city',
             'district',

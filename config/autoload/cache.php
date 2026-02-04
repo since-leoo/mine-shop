@@ -16,6 +16,6 @@ return [
     'default' => [
         'driver' => RedisDriver::class,
         'packer' => PhpSerializerPacker::class,
-        'prefix' => env('REDIS_PREFIX', 'mineshop:'),
+        'prefix' => env('REDIS_PREFIX', 'mineshop'),
     ],
 ];
