@@ -29,14 +29,6 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  * 系统消息门面类.
  *
  * 提供简单易用的静态方法，让其他开发者无需实例化即可使用系统消息功能
- *
- * @method static Message create(array $data) 创建消息
- * @method static bool send(int $messageId) 发送消息
- * @method static bool sendToUser(int $userId, string $title, string $content, string $type = 'system') 发送消息给指定用户
- * @method static bool sendToRole(array $roleIds, string $title, string $content, string $type = 'system') 发送消息给指定角色
- * @method static bool sendToAll(string $title, string $content, string $type = 'system') 发送消息给所有用户
- * @method static bool sendWithTemplate(int $templateId, array $variables, array $recipients) 使用模板发送消息
- * @method static Message schedule(array $data, \Carbon\Carbon $scheduledAt) 调度消息
  */
 class SystemMessage
 {
@@ -270,7 +262,7 @@ class SystemMessage
             $data['recipient_type'] = RecipientType::ALL->value;
         }
 
-        return static::sendToUser($userIds ?? [], $title, $content, MessageType::SYSTEM, [
+        return static::sendToAll($title, $content, MessageType::SYSTEM, [
             'channels' => $channels,
         ]);
     }

@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage;
 
-use Plugin\Since\SystemMessage\Listener\SendMessageListener;
 use Plugin\Since\SystemMessage\Repository\MessageRepository;
 use Plugin\Since\SystemMessage\Repository\TemplateRepository;
 use Plugin\Since\SystemMessage\Repository\UserPreferenceRepository;
@@ -46,10 +45,6 @@ class ConfigProvider
 
             // 命令行配置
             'commands' => [],
-
-            'listeners' => [
-                SendMessageListener::class,
-            ],
         ];
     }
 }

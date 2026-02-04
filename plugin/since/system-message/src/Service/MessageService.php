@@ -99,6 +99,7 @@ class MessageService
             // 标记为发送中
             $message->markAsSending();
 
+            var_dump($message->recipient_type);
             // 获取收件人
             $recipients = $message->getRecipients();
             if ($recipients->isEmpty()) {
@@ -151,7 +152,7 @@ class MessageService
 
         return $message->update([
             'scheduled_at' => $scheduledAt,
-            'status' => Message::STATUS_SCHEDULED,
+            'status' => MessageStatus::SCHEDULED->value,
         ]);
     }
 

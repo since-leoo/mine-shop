@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+
 use App\Infrastructure\Model\Permission\Menu;
 use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Migrations\Migration;

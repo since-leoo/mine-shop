@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage;
 
-use App\Infrastructure\Model\Permission\Menu;
-use App\Infrastructure\Model\Permission\Meta;
+use App\Infrastructure\Permission\Model\Menu;
+use App\Infrastructure\Permission\Model\Meta;
 use Hyperf\Command\Concerns\InteractsWithIO;
 use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;

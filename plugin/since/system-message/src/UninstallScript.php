@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage;
 
-use App\Infrastructure\Model\Permission\Menu;
+use App\Infrastructure\Permission\Model\Menu;
 use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
 use Hyperf\Redis\RedisFactory;

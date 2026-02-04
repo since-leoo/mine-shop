@@ -15,6 +15,7 @@ namespace Plugin\Since\SystemMessage\Repository;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
+use Plugin\Since\SystemMessage\Enum\MessageStatus;
 use Plugin\Since\SystemMessage\Model\Message;
 use Plugin\Since\SystemMessage\Model\UserMessage;
 
@@ -123,10 +124,10 @@ class MessageRepository
     public function getStatistics(): array
     {
         $total = Message::count();
-        $sent = Message::where('status', Message::STATUS_SENT)->count();
-        $draft = Message::where('status', Message::STATUS_DRAFT)->count();
-        $scheduled = Message::where('status', Message::STATUS_SCHEDULED)->count();
-        $failed = Message::where('status', Message::STATUS_FAILED)->count();
+        $sent = Message::where('status', MessageStatus::SENT->value)->count();
+        $draft = Message::where('status', MessageStatus::DRAFT->value)->count();
+        $scheduled = Message::where('status', MessageStatus::SCHEDULED->value)->count();
+        $failed = Message::where('status', MessageStatus::FAILED->value)->count();
 
         // 按类型统计
         $byType = Message::selectRaw('type, COUNT(*) as count')
@@ -172,7 +173,7 @@ class MessageRepository
     public function getPopularMessages(int $limit = 10): Collection
     {
         return Message::withCount('userMessages')
-            ->where('status', Message::STATUS_SENT)
+            ->where('status', MessageStatus::SENT->value)
             ->orderBy('user_messages_count', 'desc')
             ->limit($limit)
             ->get();

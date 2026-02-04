@@ -379,7 +379,7 @@ class NotificationService
             'message_id' => $message->id,
             'user_id' => $userId,
             'channel' => $channel,
-            'status' => $success ? MessageDeliveryLog::STATUS_SUCCESS : MessageDeliveryLog::STATUS_FAILED,
+            'status' => $success ? MessageDeliveryLog::STATUS_DELIVERED : MessageDeliveryLog::STATUS_FAILED,
             'error_message' => $error,
             'sent_at' => Carbon::now(),
         ]);
