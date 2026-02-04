@@ -14,13 +14,14 @@ namespace App\Domain\Order\Service;
 
 use App\Domain\Product\Event\ProductStockWarningEvent;
 use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Infrastructure\Abstract\ICache;
 use Hyperf\Redis\Redis;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Stringable\Str;
 
 final class OrderStockService
 {
-    private const STOCK_HASH_KEY = 'mineshop:product-cache:stock:sku';
+    private const STOCK_HASH_KEY = 'product:stock';
 
     private const DEDUCT_SCRIPT = <<<'LUA'
         local stockKey = KEYS[1]
@@ -112,7 +113,9 @@ final class OrderStockService
             $args[] = (string) $quantity;
         }
 
-        $payload = array_merge([self::STOCK_HASH_KEY], $args);
+        $prefix = $this->redis()->setPrefix(self::STOCK_HASH_KEY)->getPrefix();
+        $payload = array_merge([$prefix], $args);
+
         $result = $this->redis()->eval(self::DEDUCT_SCRIPT, $payload, 1);
         if ((int) $result !== 1) {
             throw new \RuntimeException('库存不足或商品已下架');
@@ -150,9 +153,9 @@ final class OrderStockService
         return $result;
     }
 
-    private function redis(): Redis
+    private function redis(): ICache
     {
-        return $this->redisFactory->get('default');
+        return di(ICache::class);
     }
 
     /**

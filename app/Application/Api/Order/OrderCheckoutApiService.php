@@ -14,13 +14,15 @@ namespace App\Application\Api\Order;
 
 use App\Domain\Order\Event\OrderCreatedEvent;
 use App\Domain\Order\Service\OrderService;
+use App\Domain\SystemSetting\Service\MallSettingService;
 
 final class OrderCheckoutApiService
 {
     public function __construct(
         private readonly OrderPayloadFactory $payloadFactory,
         private readonly OrderService $orderService,
-        private readonly OrderCheckoutTransformer $transformer
+        private readonly OrderCheckoutTransformer $transformer,
+        private readonly MallSettingService $mallSettingService
     ) {}
 
     /**
@@ -51,6 +53,39 @@ final class OrderCheckoutApiService
             'channel' => 'wechat',
             'pay_info' => '{}',
             'limit_goods_list' => null,
+            'pay_methods' => $this->resolvePaymentMethods(),
         ];
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function resolvePaymentMethods(): array
+    {
+        $payment = $this->mallSettingService->payment();
+        $methods = [];
+        if ($payment->wechatEnabled()) {
+            $methods[] = [
+                'channel' => 'wechat',
+                'name' => '微信支付',
+                'enabled' => true,
+            ];
+        }
+        if ($payment->alipayEnabled()) {
+            $methods[] = [
+                'channel' => 'alipay',
+                'name' => '支付宝',
+                'enabled' => true,
+            ];
+        }
+        if ($payment->balanceEnabled()) {
+            $methods[] = [
+                'channel' => 'balance',
+                'name' => '钱包',
+                'enabled' => true,
+            ];
+        }
+
+        return $methods;
     }
 }

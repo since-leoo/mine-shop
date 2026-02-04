@@ -22,9 +22,9 @@ use Psr\Log\LoggerInterface;
 
 final class ProductSkuStockListener implements ListenerInterface
 {
-    private const STOCK_HASH_KEY_PREFIX = 'stock';
+    private const STOCK_HASH_KEY_PREFIX = 'product';
 
-    private const STOCK_HASH_KEY = 'sku';
+    private const STOCK_HASH_KEY = 'stock';
 
     public function __construct(
         private readonly LoggerInterface $logger,

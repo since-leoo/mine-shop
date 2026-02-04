@@ -88,6 +88,8 @@ final class MallSettingService
             $this->normalizeArray($this->value('mall.payment.alipay_config', [])),
             (bool) $this->value('mall.payment.refund_review', true),
             (int) $this->value('mall.payment.settlement_cycle_days', 7),
+            (bool) $this->value('mall.payment.balance_enabled', false),
+            $this->normalizeArray($this->value('mall.payment.balance_config', [])),
         );
     }
 

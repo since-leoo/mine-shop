@@ -26,25 +26,25 @@ final class BrandCommandService
         private readonly BrandService $brandService,
     ) {}
 
-    #[CacheEvict(prefix: 'mall:brands', all: true)]
+    #[CacheEvict(prefix: 'brands', all: true)]
     public function create(BrandEntity $entity): Brand
     {
         return $this->brandService->create($entity);
     }
 
-    #[CacheEvict(prefix: 'mall:brands', all: true)]
+    #[CacheEvict(prefix: 'brands', all: true)]
     public function update(BrandEntity $entity): bool
     {
         return $this->brandService->update($entity);
     }
 
-    #[CacheEvict(prefix: 'mall:brands', all: true)]
+    #[CacheEvict(prefix: 'brands', all: true)]
     public function delete(int $id): bool
     {
         return $this->brandService->delete($id);
     }
 
-    #[CacheEvict(prefix: 'mall:brands', all: true)]
+    #[CacheEvict(prefix: 'brands', all: true)]
     public function updateSort(array $sortData): bool
     {
         return $this->brandService->updateSort($sortData);

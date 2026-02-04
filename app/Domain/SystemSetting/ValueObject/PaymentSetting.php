@@ -28,6 +28,8 @@ final class PaymentSetting
         private readonly array $alipayConfig,
         private readonly bool $refundReview,
         private readonly int $settlementCycleDays,
+        private readonly bool $balanceEnabled,
+        private readonly array $balanceConfig,
     ) {}
 
     public function wechatEnabled(): bool
@@ -64,5 +66,18 @@ final class PaymentSetting
     public function settlementCycleDays(): int
     {
         return $this->settlementCycleDays;
+    }
+
+    public function balanceEnabled(): bool
+    {
+        return $this->balanceEnabled;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function balanceConfig(): array
+    {
+        return $this->balanceConfig;
     }
 }

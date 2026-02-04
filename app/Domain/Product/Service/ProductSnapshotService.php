@@ -24,7 +24,7 @@ use Hyperf\Codec\Json;
  */
 final class ProductSnapshotService implements ProductSnapshotInterface
 {
-    private const CACHE_PREFIX = 'product-cache';
+    private const CACHE_PREFIX = 'product';
 
     private const PRODUCT_KEY = 'spu:%d';
 

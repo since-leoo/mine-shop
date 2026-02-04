@@ -33,19 +33,17 @@ final class BrandQueryService
         return $this->brandService->page($filters, $page, $pageSize);
     }
 
-    #[Cacheable(prefix: 'mall:brands:detail', ttl: 3600)]
     public function find(int $id): ?Brand
     {
         return $this->brandService->findById($id);
     }
 
-    #[Cacheable(prefix: 'mall:brands:options', ttl: 3600)]
     public function options(): array
     {
         return $this->brandService->getOptions();
     }
 
-    #[Cacheable(prefix: 'mall:brands:statistics', ttl: 1800)]
+    #[Cacheable(prefix: 'brands:statistics', ttl: 1800)]
     public function statistics(): array
     {
         return [

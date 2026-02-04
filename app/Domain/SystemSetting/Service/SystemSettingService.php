@@ -35,7 +35,9 @@ final class SystemSettingService
     public function __construct(
         private readonly SystemSettingRepository $repository,
         private readonly ICache $cache
-    ) {}
+    ) {
+        $this->cache->setPrefix(self::CACHE_PREFIX);
+    }
 
     /**
      * 根据键名获取配置值
@@ -225,8 +227,8 @@ final class SystemSettingService
     {
         $cacheKey = $this->keyCacheKey($key);
         $cached = $this->cache->get($cacheKey);
-        if (\is_array($cached)) {
-            return $cached;
+        if (! empty($cached)) {
+            return Json::decode($cached, true);
         }
 
         $entity = $this->repository->findEntityByKey($key);
@@ -235,7 +237,7 @@ final class SystemSettingService
         }
 
         $payload = $entity->toResponse();
-        $this->cache->set($cacheKey, $payload, 3600);
+        $this->cache->set($cacheKey, Json::encode($payload, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR), 3600);
 
         return $payload;
     }

@@ -101,7 +101,6 @@ final class OrderController extends AbstractController
             $order = $this->commandService->cancel($entity);
             return $this->success($order, '订单已取消');
         }catch (\Exception $e) {
-            var_dump($e->getFile(), $e->getLine(), $e->getMessage());
             return $this->error('取消订单失败');
         }
     }

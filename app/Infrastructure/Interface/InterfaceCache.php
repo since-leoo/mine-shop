@@ -38,10 +38,10 @@ interface InterfaceCache
      *
      * @param string $key 缓存键
      * @param mixed $value 缓存值
-     * @param int $ttl 过期时间（秒），0表示永不过期
+     * @param mixed $options
      * @return bool 操作是否成功
      */
-    public function set(string $key, mixed $value, int $ttl = 0): bool;
+    public function set(string $key, mixed $value, mixed $options = []): bool;
 
     /**
      * 删除指定缓存.
