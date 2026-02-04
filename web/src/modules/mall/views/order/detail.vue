@@ -34,10 +34,10 @@
 
       <el-descriptions title="买家信息" :column="2" border>
         <el-descriptions-item label="买家昵称">
-          {{ order.member?.nickname || '-' }}
+          {{ order.address?.name || order.member?.nickname || '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="联系电话">
-          {{ order.member?.phone || '-' }}
+          {{ order.address?.phone || order.member?.phone || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 
@@ -46,7 +46,7 @@
           {{ order.address.name }} {{ order.address.phone }}
         </el-descriptions-item>
         <el-descriptions-item label="收货地址">
-          {{ order.address.province }} {{ order.address.city }} {{ order.address.district }} {{ order.address.address }}
+          {{ order.address.province }} {{ order.address.city }} {{ order.address.district }} {{ order.address.detail || order.address.address }}
         </el-descriptions-item>
       </el-descriptions>
 

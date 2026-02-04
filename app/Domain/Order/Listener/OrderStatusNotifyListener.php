@@ -73,6 +73,6 @@ final class OrderStatusNotifyListener implements ListenerInterface
             return;
         }
 
-        SystemMessage::sendToUser($memberId, $title, $content);
+        SystemMessage::notify($title, $content);
     }
 }

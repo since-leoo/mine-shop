@@ -165,13 +165,13 @@
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1">
               <el-icon><User /></el-icon>
-              <span>{{ row.member?.nickname || '-' }}</span>
+              <span>{{ row.address?.name || row.member?.nickname || '-' }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="手机号" width="130">
           <template #default="{ row }">
-            {{ row.member?.phone || '-' }}
+            {{ row.address?.phone || row.member?.phone || '-' }}
           </template>
         </el-table-column>
         <el-table-column label="商品信息" min-width="220">

@@ -91,14 +91,19 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:update')]
     public function cancel(int $id, OrderRequest $request): Result
     {
-        $payload = $request->validated();
-        $operator = [
-            'id' => $this->currentUser->id(),
-            'name' => $this->currentUser->user()?->username ?? '管理员',
-        ];
-        $entity = OrderAssembler::toCancelEntity($id, $payload, $operator);
-        $order = $this->commandService->cancel($entity);
-        return $this->success($order, '订单已取消');
+        try {
+            $payload = $request->validated();
+            $operator = [
+                'id' => $this->currentUser->id(),
+                'name' => $this->currentUser->user()?->username ?? '管理员',
+            ];
+            $entity = OrderAssembler::toCancelEntity($id, $payload, $operator);
+            $order = $this->commandService->cancel($entity);
+            return $this->success($order, '订单已取消');
+        }catch (\Exception $e) {
+            var_dump($e->getFile(), $e->getLine(), $e->getMessage());
+            return $this->error('取消订单失败');
+        }
     }
 
     #[PostMapping(path: 'export')]

@@ -34,7 +34,7 @@ final class OrderRepository extends IRepository
             ->when(isset($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))
             ->when(isset($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
             ->when(isset($params['pay_status']), static fn (Builder $q) => $q->where('pay_status', $params['pay_status']))
-            ->when(isset($params['member_phone']), static fn (Builder $q) => $q->whereHas('member', static function (Builder $memberQuery) use ($params) {
+            ->when(isset($params['member_phone']), static fn (Builder $q) => $q->whereHas('address', static function (Builder $memberQuery) use ($params) {
                 $memberQuery->where('phone', 'like', '%' . $params['member_phone'] . '%');
             }))
             ->when(isset($params['product_name']), static fn (Builder $q) => $q->whereHas('items', static function (Builder $itemQuery) use ($params) {
