@@ -35,7 +35,7 @@ final class CouponReadService
 
     public function findOne(int $id): ?Coupon
     {
-        /* @var null|Coupon $coupon */
+        /** @var null|Coupon $coupon */
         $coupon = $this->couponRepository->getQuery()->whereKey($id)->first();
 
         return $coupon ?: null;

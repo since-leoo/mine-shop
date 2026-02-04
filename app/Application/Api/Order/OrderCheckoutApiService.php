@@ -63,29 +63,18 @@ final class OrderCheckoutApiService
     private function resolvePaymentMethods(): array
     {
         $payment = $this->mallSettingService->payment();
-        $methods = [];
-        if ($payment->wechatEnabled()) {
-            $methods[] = [
+
+        return [
+            [
                 'channel' => 'wechat',
                 'name' => '微信支付',
-                'enabled' => true,
-            ];
-        }
-        if ($payment->alipayEnabled()) {
-            $methods[] = [
-                'channel' => 'alipay',
-                'name' => '支付宝',
-                'enabled' => true,
-            ];
-        }
-        if ($payment->balanceEnabled()) {
-            $methods[] = [
+                'enabled' => $payment->wechatEnabled(),
+            ],
+            [
                 'channel' => 'balance',
                 'name' => '钱包',
-                'enabled' => true,
-            ];
-        }
-
-        return $methods;
+                'enabled' => $payment->balanceEnabled(),
+            ],
+        ];
     }
 }

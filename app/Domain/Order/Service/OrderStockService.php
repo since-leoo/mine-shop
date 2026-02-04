@@ -15,7 +15,6 @@ namespace App\Domain\Order\Service;
 use App\Domain\Product\Event\ProductStockWarningEvent;
 use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Abstract\ICache;
-use Hyperf\Redis\Redis;
 use Hyperf\Redis\RedisFactory;
 use Hyperf\Stringable\Str;
 

@@ -103,7 +103,9 @@ final class OrderRepository extends IRepository
      */
     public function ship(OrderEntity $entity): void
     {
-        $order = $this->getQuery()->whereKey($entity->getId())->lockForUpdate()->first();
+        /** @var Order $order */
+        $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();
+
         if (! $order) {
             throw new \RuntimeException('订单不存在');
         }
@@ -121,7 +123,9 @@ final class OrderRepository extends IRepository
      */
     public function cancel(OrderEntity $entity): void
     {
-        $order = $this->getQuery()->whereKey($entity->getId())->lockForUpdate()->first();
+        /** @var Order $order */
+        $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();
+
         if (! $order) {
             throw new \RuntimeException('订单不存在');
         }
@@ -132,6 +136,23 @@ final class OrderRepository extends IRepository
         $order->save();
     }
 
+    public function paid(OrderEntity $entity)
+    {
+        /** @var Order $order */
+        $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();
+
+        if (! $order) {
+            throw new \RuntimeException('订单不存在');
+        }
+
+        $order->status = $entity->getStatus();
+        $order->pay_status = $entity->getPayStatus();
+        $order->pay_no = $entity->getPayNo();
+        $order->pay_time = $entity->getPayTime();
+        $order->pay_method = $entity->getPayMethod();
+        $order->save();
+    }
+
     /**
      * 通过ID获取订单.
      */
@@ -139,6 +160,16 @@ final class OrderRepository extends IRepository
     {
         /** @var null|Order $order */
         $order = $this->getQuery()->whereKey($id)->first();
+        return $order ? OrderEntity::fromModel($order) : null;
+    }
+
+    /**
+     * 通过订单号获取订单.
+     */
+    public function getEntityByOrderNo(string $orderNo): ?OrderEntity
+    {
+        /** @var null|Order $order */
+        $order = $this->model::where('order_no', $orderNo)->first();
         return $order ? OrderEntity::fromModel($order) : null;
     }
 

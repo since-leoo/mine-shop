@@ -38,7 +38,6 @@ interface InterfaceCache
      *
      * @param string $key 缓存键
      * @param mixed $value 缓存值
-     * @param mixed $options
      * @return bool 操作是否成功
      */
     public function set(string $key, mixed $value, mixed $options = []): bool;

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Order\Service;
 
 use App\Domain\Order\Entity\OrderEntity;
+use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\SystemSetting\Service\MallSettingService;
@@ -27,14 +28,30 @@ final class OrderService
     ) {}
 
     /**
+     * 更新订单.
+     */
+    public function update(OrderEntity $entity)
+    {
+        return $this->repository->updateById($entity->getId(), $entity->toArray());
+    }
+
+    /**
      * 获取订单.
      */
-    public function getEntityById(int $id): OrderEntity
+    public function getEntityById(int $id = 0, string $orderNo = ''): OrderEntity
     {
-        $orderEntity = $this->repository->getEntityById($id);
+        if ($id) {
+            $orderEntity = $this->repository->getEntityById($id);
+        } else {
+            $orderEntity = $this->repository->getEntityByOrderNo($orderNo);
+        }
 
-        if (! $orderEntity) {
+        if (! $orderEntity || $orderEntity->getMemberId() !== memberId()) {
             throw new \RuntimeException('订单不存在');
+        }
+
+        if ($orderEntity->getPayStatus() === OrderStatus::PAID->value) {
+            throw new \RuntimeException('订单已支付');
         }
 
         return $orderEntity;

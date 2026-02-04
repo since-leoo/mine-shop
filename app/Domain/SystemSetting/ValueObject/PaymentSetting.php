@@ -19,13 +19,11 @@ final class PaymentSetting
 {
     /**
      * @param array<string, mixed> $wechatConfig
-     * @param array<string, mixed> $alipayConfig
+     * @param array<string, mixed> $balanceConfig
      */
     public function __construct(
         private readonly bool $wechatEnabled,
         private readonly array $wechatConfig,
-        private readonly bool $alipayEnabled,
-        private readonly array $alipayConfig,
         private readonly bool $refundReview,
         private readonly int $settlementCycleDays,
         private readonly bool $balanceEnabled,
@@ -43,19 +41,6 @@ final class PaymentSetting
     public function wechatConfig(): array
     {
         return $this->wechatConfig;
-    }
-
-    public function alipayEnabled(): bool
-    {
-        return $this->alipayEnabled;
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function alipayConfig(): array
-    {
-        return $this->alipayConfig;
     }
 
     public function refundReview(): bool

@@ -84,11 +84,9 @@ final class MallSettingService
         return $this->payment ??= new PaymentSetting(
             (bool) $this->value('mall.payment.wechat_enabled', false),
             $this->normalizeArray($this->value('mall.payment.wechat_config', [])),
-            (bool) $this->value('mall.payment.alipay_enabled', false),
-            $this->normalizeArray($this->value('mall.payment.alipay_config', [])),
             (bool) $this->value('mall.payment.refund_review', true),
             (int) $this->value('mall.payment.settlement_cycle_days', 7),
-            (bool) $this->value('mall.payment.balance_enabled', false),
+            (bool) $this->value('mall.payment.balance_enabled', true),
             $this->normalizeArray($this->value('mall.payment.balance_config', [])),
         );
     }

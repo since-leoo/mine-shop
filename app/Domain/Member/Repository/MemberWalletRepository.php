@@ -26,13 +26,12 @@ final class MemberWalletRepository
      */
     public function save(MemberWalletEntity $wallet): void
     {
-        $this->model->newQuery()->updateOrCreate(
-            [
-                'member_id' => $wallet->getMemberId(),
-                'type' => $wallet->getType(),
-            ],
-            $wallet->toArray()
-        );
+        /** @var MemberWallet $info */
+        $info = $this->model::where('member_id', $wallet->getMemberId())->lockForUpdate()->first();
+
+        if ($info) {
+            $info->fill($wallet->toArray())->save();
+        }
     }
 
     /**

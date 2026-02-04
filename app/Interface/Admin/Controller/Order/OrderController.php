@@ -49,7 +49,7 @@ final class OrderController extends AbstractController
             $filters = $request->validated();
             $data = $this->queryService->page($filters, $this->getCurrentPage(), $this->getPageSize());
             return $this->success($data);
-        }catch (\Throwable $e){
+        } catch (\Throwable $e) {
             return $this->error('获取订单列表失败');
         }
     }
@@ -100,7 +100,7 @@ final class OrderController extends AbstractController
             $entity = OrderAssembler::toCancelEntity($id, $payload, $operator);
             $order = $this->commandService->cancel($entity);
             return $this->success($order, '订单已取消');
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return $this->error('取消订单失败');
         }
     }

@@ -14,14 +14,14 @@ namespace App\Application\Member\Service;
 
 use App\Application\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Entity\MemberWalletEntity;
-use App\Domain\Member\Service\MemberAccountService;
+use App\Domain\Member\Service\MemberWalletService;
 use Hyperf\DbConnection\Db;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class MemberAccountCommandService
 {
     public function __construct(
-        private readonly MemberAccountService $accountService,
+        private readonly MemberWalletService $accountService,
         private readonly EventDispatcherInterface $dispatcher,
     ) {}
 

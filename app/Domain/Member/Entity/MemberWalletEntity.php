@@ -191,14 +191,14 @@ final class MemberWalletEntity
     public function changeBalance(): void
     {
         if ($this->changeBalance === 0.0) {
-            throw new \InvalidArgumentException('积分变动值不能为 0');
+            throw new \InvalidArgumentException('变动值不能为 0');
         }
 
         $this->setBeforeBalance($this->balance);
         $after = (float) bcadd((string) $this->balance, (string) $this->changeBalance, 2);
 
         if ($after < 0) {
-            throw new \RuntimeException('积分不足，无法扣减');
+            throw new \RuntimeException('余额不足，无法扣减');
         }
 
         $this->setAfterBalance($after);

@@ -11,7 +11,6 @@ declare(strict_types=1);
  */
 
 namespace {
-
     use App\Interface\Common\CurrentMember;
     use Hyperf\Context\ApplicationContext;
     use Hyperf\Contract\ConfigInterface;

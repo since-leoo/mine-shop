@@ -408,7 +408,7 @@ final class OrderEntity
         );
     }
 
-    public function markPaid(string $payNo, string $payMethod, ?Carbon $paidAt = null): void
+    public function markPaid(): void
     {
         if ($this->getStatus() !== OrderStatus::PENDING->value) {
             throw new \RuntimeException('当前订单状态不可支付');
@@ -416,9 +416,7 @@ final class OrderEntity
 
         $this->setPayStatus(PaymentStatus::PAID->value);
         $this->setStatus(OrderStatus::PAID->value);
-        $this->setPayNo($payNo);
-        $this->setPayMethod($payMethod);
-        $this->setPayTime($paidAt ?? Carbon::now());
+        $this->setPayTime(Carbon::now());
     }
 
     public function syncPriceDetailFromItems(): void

@@ -18,7 +18,7 @@ use App\Domain\Member\Repository\MemberWalletRepository;
 /**
  * 会员账户领域服务：负责钱包调整规则及持久化协调.
  */
-final class MemberAccountService
+final class MemberWalletService
 {
     public function __construct(
         private readonly MemberWalletRepository $walletRepository,

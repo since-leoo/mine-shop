@@ -21,6 +21,7 @@ class ICache implements InterfaceCache
     public string $poolName = 'default';
 
     private string $prefix = '';
+
     private string $defaultPrefix = '';
 
     private RedisProxy $redis;
