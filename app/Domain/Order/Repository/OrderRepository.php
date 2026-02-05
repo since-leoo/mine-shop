@@ -76,7 +76,7 @@ final class OrderRepository extends IRepository
             ->with(['member', 'items', 'address', 'packages'])
             ->find($id);
 
-        return $order ? $order->loads(['member', 'items', 'address', 'packages']) : null;
+        return $order?->loads(['member', 'items', 'address', 'packages']);
     }
 
     /**
@@ -136,7 +136,7 @@ final class OrderRepository extends IRepository
         $order->save();
     }
 
-    public function paid(OrderEntity $entity)
+    public function paid(OrderEntity $entity): void
     {
         /** @var Order $order */
         $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();

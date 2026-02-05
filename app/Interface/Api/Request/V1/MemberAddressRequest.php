@@ -36,32 +36,12 @@ final class MemberAddressRequest extends BaseRequest
     }
 
     /**
-     * @param array<string, mixed> $validated
-     * @return array<string, mixed>
-     */
-    public function processStoreData(array $validated): array
-    {
-        return $this->normalize($validated);
-    }
-
-    /**
-     * @param array<string, mixed> $validated
-     * @return array<string, mixed>
-     */
-    public function processUpdateData(array $validated): array
-    {
-        return $this->normalize($validated);
-    }
-
-    /**
      * @return array<string, mixed>
      */
     private function ruleset(): array
     {
         return [
             'name' => ['required_without:name', 'nullable', 'string', 'max:50'],
-            'name' => ['required_without:name', 'nullable', 'string', 'max:50'],
-            'phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
             'phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
             'province' => ['required_without:provinceName', 'nullable', 'string', 'max:50'],
             'provinceName' => ['required_without:province', 'nullable', 'string', 'max:50'],
@@ -78,26 +58,6 @@ final class MemberAddressRequest extends BaseRequest
             'detail' => ['required_without:detailAddress', 'nullable', 'string', 'max:200'],
             'detailAddress' => ['required_without:detail', 'nullable', 'string', 'max:200'],
             'is_default' => ['nullable', 'boolean'],
-        ];
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     * @return array<string, mixed>
-     */
-    private function normalize(array $payload): array
-    {
-        return [
-            'name' => $payload['name'] ?? $payload['name'] ?? '',
-            'phone' => $payload['phone'] ?? $payload['phone'] ?? '',
-            'province' => $payload['province'] ?? $payload['provinceName'] ?? '',
-            'province_code' => $payload['province_code'] ?? $payload['provinceCode'] ?? null,
-            'city' => $payload['city'] ?? $payload['cityName'] ?? '',
-            'city_code' => $payload['city_code'] ?? $payload['cityCode'] ?? null,
-            'district' => $payload['district'] ?? $payload['districtName'] ?? '',
-            'district_code' => $payload['district_code'] ?? $payload['districtCode'] ?? null,
-            'detail' => $payload['detail'] ?? $payload['detailAddress'] ?? '',
-            'is_default' => (bool) ($payload['is_default'] ?? $payload['isDefault'] ?? false),
         ];
     }
 }

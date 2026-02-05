@@ -15,7 +15,6 @@ namespace App\Domain\Order\Service;
 use App\Domain\Product\Event\ProductStockWarningEvent;
 use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Abstract\ICache;
-use Hyperf\Redis\RedisFactory;
 use Hyperf\Stringable\Str;
 
 final class OrderStockService
@@ -41,7 +40,6 @@ final class OrderStockService
         LUA;
 
     public function __construct(
-        private readonly RedisFactory $redisFactory,
         private readonly MallSettingService $mallSettingService,
         private readonly int $lockTtl = 3000,
         private readonly int $lockRetry = 5

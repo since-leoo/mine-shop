@@ -21,10 +21,7 @@ class OrderPaymentRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'order_no' => ['required', 'string', Rule::exists('orders', 'order_no')
-                ->where('status', OrderStatus::PENDING->value)
-                ->where('member_id', memberId()),
-            ],
+            'order_no' => ['required', 'string', Rule::exists('orders', 'order_no')],
             'pay_method' => ['required', 'string', 'in:wechat,balance'],
         ];
     }

@@ -29,9 +29,7 @@ final class MemberWalletRepository
         /** @var MemberWallet $info */
         $info = $this->model::where('member_id', $wallet->getMemberId())->lockForUpdate()->first();
 
-        if ($info) {
-            $info->fill($wallet->toArray())->save();
-        }
+        $info?->fill($wallet->toArray())->save();
     }
 
     /**

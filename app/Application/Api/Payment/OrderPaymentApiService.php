@@ -44,7 +44,7 @@ final class OrderPaymentApiService
         $payService = $this->payService->init($orderEntity, $memberEntity);
 
         if ($orderEntity->getPayMethod() === 'balance') {
-            return $payService->payByBalance($orderEntity, $memberEntity);
+            return $payService->payByBalance();
         }
         return $payService->payByWechat($systemPayment->wechatConfig());
     }

@@ -25,7 +25,6 @@ use App\Infrastructure\Service\Pay\YsdPayService;
 use App\Infrastructure\Traits\PaymentTrait;
 use App\Interface\Common\ResultCode;
 use Yansongda\Artful\Exception\ContainerException;
-use Yansongda\Pay\Pay;
 
 class PayService
 {
@@ -34,8 +33,6 @@ class PayService
     private OrderEntity $orderEntity;
 
     private MemberEntity $memberEntity;
-
-    private Pay $pay;
 
     public function __construct(
         private readonly OrderService $orderService,
@@ -84,22 +81,22 @@ class PayService
     /**
      * 余额支付.
      */
-    public function payByBalance(OrderEntity $orderEntity, MemberEntity $memberEntity): array
+    public function payByBalance(): array
     {
-        $walletEntity = $memberEntity->getWallet();
+        $walletEntity = $this->memberEntity->getWallet();
 
         $walletEntity->changeBalance();
-        $walletEntity->setChangeBalance($orderEntity->getPayAmount());
+        $walletEntity->setChangeBalance($this->orderEntity->getPayAmount());
         $walletEntity->setSource(MemberWalletTransactionType::Consume->value);
-        $walletEntity->setRemark('余额支付:' . $orderEntity->getOrderNo() . '订单支付成功');
+        $walletEntity->setRemark('余额支付:' . $this->orderEntity->getOrderNo() . '订单支付成功');
 
-        $orderEntity->setPayMethod(PayType::BALANCE->value);
-        $orderEntity->setPayMethod(PayType::WECHAT->value);
-        $orderEntity->setPayNo(uniqid());
-        $orderEntity->setPayAmount($orderEntity->getTotalAmount());
-        $orderEntity->markPaid();
+        $this->orderEntity->setPayMethod(PayType::BALANCE->value);
+        $this->orderEntity->setPayMethod(PayType::WECHAT->value);
+        $this->orderEntity->setPayNo(uniqid());
+        $this->orderEntity->setPayAmount($this->orderEntity->getTotalAmount());
+        $this->orderEntity->markPaid();
 
-        $this->orderService->update($orderEntity);
+        $this->orderService->update($this->orderEntity);
         // 调整余额
         $this->walletService->adjustBalance($walletEntity);
 
