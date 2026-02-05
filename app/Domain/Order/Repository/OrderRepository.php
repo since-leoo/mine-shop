@@ -25,26 +25,6 @@ final class OrderRepository extends IRepository
 {
     public function __construct(protected readonly Order $model) {}
 
-    public function handleSearch(Builder $query, array $params): Builder
-    {
-        return $query
-            ->with(['items', 'address'])
-            ->when(isset($params['order_no']), static fn (Builder $q) => $q->where('order_no', 'like', '%' . $params['order_no'] . '%'))
-            ->when(isset($params['pay_no']), static fn (Builder $q) => $q->where('pay_no', 'like', '%' . $params['pay_no'] . '%'))
-            ->when(isset($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))
-            ->when(isset($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
-            ->when(isset($params['pay_status']), static fn (Builder $q) => $q->where('pay_status', $params['pay_status']))
-            ->when(isset($params['member_phone']), static fn (Builder $q) => $q->whereHas('address', static function (Builder $memberQuery) use ($params) {
-                $memberQuery->where('phone', 'like', '%' . $params['member_phone'] . '%');
-            }))
-            ->when(isset($params['product_name']), static fn (Builder $q) => $q->whereHas('items', static function (Builder $itemQuery) use ($params) {
-                $itemQuery->where('product_name', 'like', '%' . $params['product_name'] . '%');
-            }))
-            ->when(isset($params['start_date']), static fn (Builder $q) => $q->whereDate('created_at', '>=', $params['start_date']))
-            ->when(isset($params['end_date']), static fn (Builder $q) => $q->whereDate('created_at', '<=', $params['end_date']))
-            ->orderByDesc('id');
-    }
-
     public function handleItems(Collection $items): Collection
     {
         return $items->map(static fn (Order $order) => $order->loads(['member', 'items', 'address', 'packages']));
@@ -186,5 +166,25 @@ final class OrderRepository extends IRepository
         $afterSale = $this->model->afterSale()->where($where)->count();
 
         return [$pending, $paid, $shipped, $completed, $afterSale];
+    }
+
+    public function handleSearch(Builder $query, array $params): Builder
+    {
+        return $query
+            ->with(['items', 'address'])
+            ->when(! empty($params['order_no']), static fn (Builder $q) => $q->where('order_no', 'like', '%' . $params['order_no'] . '%'))
+            ->when(! empty($params['pay_no']), static fn (Builder $q) => $q->where('pay_no', 'like', '%' . $params['pay_no'] . '%'))
+            ->when(! empty($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))
+            ->when(! empty($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
+            ->when(! empty($params['pay_status']), static fn (Builder $q) => $q->where('pay_status', $params['pay_status']))
+            ->when(! empty($params['member_phone']), static fn (Builder $q) => $q->whereHas('address', static function (Builder $memberQuery) use ($params) {
+                $memberQuery->where('phone', 'like', '%' . $params['member_phone'] . '%');
+            }))
+            ->when(! empty($params['product_name']), static fn (Builder $q) => $q->whereHas('items', static function (Builder $itemQuery) use ($params) {
+                $itemQuery->where('product_name', 'like', '%' . $params['product_name'] . '%');
+            }))
+            ->when(! empty($params['start_date']), static fn (Builder $q) => $q->whereDate('created_at', '>=', $params['start_date']))
+            ->when(! empty($params['end_date']), static fn (Builder $q) => $q->whereDate('created_at', '<=', $params['end_date']))
+            ->orderByDesc('id');
     }
 }
