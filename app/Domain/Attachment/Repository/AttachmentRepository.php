@@ -41,39 +41,25 @@ final class AttachmentRepository extends IRepository
 
     public function findByHash(string $hash): ?AttachmentEntity
     {
+        /** @var ?Attachment $model */
         $model = Attachment::where('hash', $hash)->first();
         return $model ? self::mapper($model) : null;
     }
 
     public function save(AttachmentEntity $entity): AttachmentEntity
     {
+        $info = $this->findById($entity->getId());
         $data = $entity->toArray();
         unset($data['id']);
 
-        if ($entity->getId() > 0) {
-            Attachment::where('id', $entity->getId())->update($data);
+        if ($info) {
+            $info->fill($data)->save();
             return $entity;
         }
 
         $model = Attachment::create($data);
         $entity->setId((int) $model->id);
         return $entity;
-    }
-
-    public function page(array $params = [], ?int $page = null, ?int $pageSize = null): array
-    {
-        $query = $this->handleSearch($this->getQuery(), $params)->orderByDesc('id');
-        $paginator = $query->paginate($pageSize, ['*'], self::PER_PAGE_PARAM_NAME, $page);
-
-        return [
-            'list' => $paginator->items(),
-            'total' => $paginator->total(),
-        ];
-    }
-
-    public function deleteByIds(array $ids): int
-    {
-        return Attachment::destroy($ids);
     }
 
     public function handleSearch(Builder $query, array $params): Builder
@@ -87,10 +73,5 @@ final class AttachmentRepository extends IRepository
             ->when(Arr::get($params, 'url'), static fn (Builder $q, $v) => $q->where('url', $v))
             ->when(Arr::get($params, 'hash'), static fn (Builder $q, $v) => $q->where('hash', $v))
             ->when(Arr::get($params, 'origin_name'), static fn (Builder $q, $v) => $q->where('origin_name', 'like', '%' . $v . '%'));
-    }
-
-    public function mapToEntity(Attachment $model): AttachmentEntity
-    {
-        return self::mapper($model);
     }
 }
