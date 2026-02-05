@@ -31,7 +31,7 @@ final class MemberTagQueryService
      */
     public function all(array $filters = []): array
     {
-        return $this->memberTagService->all($filters);
+        return $this->memberTagService->getList($filters)->toArray();
     }
 
     /**

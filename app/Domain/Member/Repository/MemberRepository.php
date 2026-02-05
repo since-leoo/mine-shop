@@ -15,7 +15,7 @@ namespace App\Domain\Member\Repository;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Enum\MemberLevel as MemberLevelEnum;
 use App\Domain\Member\Enum\MemberSource;
-use App\Domain\Member\Trait\MemberMapperTrait;
+use App\Domain\Member\Mapper\MemberMapper;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
@@ -27,7 +27,6 @@ use Hyperf\Database\Model\Builder;
  */
 final class MemberRepository extends IRepository
 {
-    use MemberMapperTrait;
 
     public function __construct(protected readonly Member $model) {}
 
@@ -100,22 +99,11 @@ final class MemberRepository extends IRepository
         return $member->loads('wallet', 'pointsWallet', 'tags', 'levelDefinition');
     }
 
-    public function findById(int $id): ?MemberEntity
-    {
-        /** @var null|Member $member */
-        $member = $this->model->newQuery()->find($id);
-        if (! $member) {
-            return null;
-        }
-
-        return self::mapper($member);
-    }
-
     public function findByOpenid(string $openid): ?MemberEntity
     {
         /** @var null|Member $member */
         $member = $this->getQuery()->where('openid', $openid)->first();
-        return $member ? self::mapper($member) : null;
+        return $member ? MemberMapper::fromModel($member) : null;
     }
 
     public function save(MemberEntity $entity): Member

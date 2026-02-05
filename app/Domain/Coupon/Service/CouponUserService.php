@@ -13,30 +13,38 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Service;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
+use App\Domain\Coupon\Mapper\CouponMapper;
+use App\Domain\Coupon\Mapper\CouponUserMapper;
 use App\Domain\Coupon\Repository\CouponRepository;
 use App\Domain\Coupon\Repository\CouponUserRepository;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
+use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 
 /**
  * 用户优惠券领域服务.
  */
-final class CouponUserService
+final class CouponUserService extends IService
 {
     public function __construct(
         private readonly CouponRepository $couponRepository,
-        private readonly CouponUserRepository $couponUserRepository
+        public readonly CouponUserRepository $repository,
+        private readonly CouponService $couponService,
     ) {}
 
-    public function page(array $filters, int $page, int $pageSize): array
+    public function getEntity(int $id): CouponUserEntity
     {
-        return $this->couponUserRepository->page($filters, $page, $pageSize);
-    }
+        /** @var null|CouponUser $couponUser */
+        $couponUser = $this->findById($id);
+        if (! $couponUser) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '用户优惠券不存在');
+        }
 
-    public function findById(int $id): ?CouponUserEntity
-    {
-        return $this->couponUserRepository->findById($id);
+        return CouponUserMapper::fromModel($couponUser);
     }
 
     /**
@@ -44,10 +52,7 @@ final class CouponUserService
      */
     public function issue(int $couponId, array $memberIds, ?string $expireAt = null): array
     {
-        $coupon = $this->couponRepository->findById($couponId);
-        if (! $coupon) {
-            throw new \InvalidArgumentException('优惠券不存在');
-        }
+        $coupon = $this->couponService->getEntity($couponId);
 
         $now = Carbon::now();
         $coupon->assertActive()->assertEffectiveAt($now);
@@ -70,7 +75,7 @@ final class CouponUserService
             }
 
             $entity = CouponUserEntity::issue($couponId, (int) $memberId, $now->toDateTimeString(), $finalExpire);
-            $created[] = $this->couponUserRepository->createFromEntity($entity);
+            $created[] = $this->repository->createFromEntity($entity);
         }
 
         return $created;
@@ -83,7 +88,7 @@ final class CouponUserService
     {
         $entity->markUsed(Carbon::now()->toDateTimeString(), $orderId);
 
-        $result = $this->couponUserRepository->updateFromEntity($entity);
+        $result = $this->repository->updateFromEntity($entity);
         $this->couponRepository->syncUsageStatistics((int) $entity->getCouponId());
         return $result;
     }
@@ -94,7 +99,7 @@ final class CouponUserService
     public function markExpired(CouponUserEntity $entity): bool
     {
         $entity->markExpired();
-        return $this->couponUserRepository->updateFromEntity($entity);
+        return $this->repository->updateFromEntity($entity);
     }
 
     /**
@@ -102,6 +107,6 @@ final class CouponUserService
      */
     public function countByMember(int $memberId, ?string $status = null): int
     {
-        return $this->couponUserRepository->countByMember($memberId, $status);
+        return $this->repository->countByMember($memberId, $status);
     }
 }

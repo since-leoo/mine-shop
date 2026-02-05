@@ -10,14 +10,14 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Domain\Coupon\Trait;
+namespace App\Domain\Coupon\Mapper;
 
 use App\Domain\Coupon\Entity\CouponEntity;
 use App\Infrastructure\Model\Coupon\Coupon;
 
-trait CouponMapperTrait
+final class CouponMapper
 {
-    public static function mapper(Coupon $coupon): CouponEntity
+    public static function fromModel(Coupon $coupon): CouponEntity
     {
         $entity = new CouponEntity();
         $entity->setId((int) $coupon->id);
@@ -37,5 +37,13 @@ trait CouponMapperTrait
         $entity->setDescription($coupon->description);
 
         return $entity;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function toArray(CouponEntity $entity): array
+    {
+        return $entity->toArray();
     }
 }

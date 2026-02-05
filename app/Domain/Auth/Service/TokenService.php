@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Auth\Service;
 
+use App\Infrastructure\Abstract\IService;
 use Lcobucci\JWT\UnencryptedToken;
 use Mine\Jwt\Factory;
 use Mine\Jwt\JwtInterface;
@@ -19,7 +20,7 @@ use Mine\Jwt\JwtInterface;
 /**
  * 封装 JWT 相关的令牌生成与黑名单操作.
  */
-final class TokenService
+final class TokenService extends IService
 {
     private string $jwt = 'default';
 

@@ -13,13 +13,17 @@ declare(strict_types=1);
 namespace App\Application\Api\Member;
 
 use App\Domain\Auth\Service\TokenService;
+use App\Domain\Member\Service\MemberAuthService;
 use App\Domain\Member\Service\MemberService;
+use Plugin\Wechat\Interfaces\MiniAppInterface;
 
 final class MemberAuthApiService
 {
     public function __construct(
         private readonly MemberService $memberService,
-        private readonly TokenService $tokenService
+        private readonly MemberAuthService $authService,
+        private readonly TokenService $tokenService,
+        private readonly MiniAppInterface $miniApp,
     ) {}
 
     /**
@@ -27,14 +31,25 @@ final class MemberAuthApiService
      */
     public function miniProgramLogin(string $code, ?string $encryptedData = null, ?string $iv = null, ?string $ip = null, ?string $openid = null): array
     {
-        $member = $this->memberService->miniProgramLogin($code, $encryptedData, $iv, $ip, $openid);
+        if (! empty($encryptedData) && ! empty($iv)) {
+            $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
+        } else {
+            $payload = $this->miniApp->silentAuthorize($code);
+        }
 
+        $openid = $openid ?: (string) ($payload['openid'] ?? '');
+
+        if (empty($openid)) {
+            throw new \InvalidArgumentException('授权失败');
+        }
+
+        // 登录
+        $member = $this->authService->miniProgramLogin($openid, $ip, $payload);
         $tokenService = $this->tokenService->using('api');
-        $identifier = 'member:' . $member->getId();
 
         return [
-            'token' => $tokenService->buildAccessToken($identifier),
-            'refresh_token' => $tokenService->buildRefreshToken($identifier),
+            'token' => $tokenService->buildAccessToken('member:' . $member->getId()),
+            'refresh_token' => $tokenService->buildRefreshToken('member:' . $member->getId()),
             'expires_in' => $tokenService->getTtl(),
             'member' => [
                 'id' => $member->getId(),
@@ -50,13 +65,27 @@ final class MemberAuthApiService
     /**
      * 绑定手机号.
      *
-     * @return array{phoneNumber: string, purePhoneNumber: string, countryCode: null|string}
+     * @param int $memberId
+     * @param string $code
+     * @return void
      */
-    public function bindPhoneNumber(int $memberId, string $code): array
+    public function bindPhoneNumber(int $memberId, string $code): void
     {
-        $memberEntity = $this->memberService->getInfoEntity($memberId);
+        $memberEntity = $this->memberService->getEntity($memberId);
 
-        return $this->memberService->bindPhoneNumber($memberEntity, $code);
+        $payload = $this->miniApp->getPhoneNumber($code);
+
+        // 兼容旧版
+        $phoneInfo = $payload['phone_info'] ?? $payload;
+        $phoneNumber = (string) ($phoneInfo['phoneNumber'] ?? $phoneInfo['purePhoneNumber'] ?? '');
+
+        if (trim($phoneNumber) === '') {
+            throw new \InvalidArgumentException('获取手机号失败');
+        }
+
+        $memberEntity->bindPhone($phoneNumber);
+
+        $this->memberService->update($memberEntity);
     }
 
     /**
@@ -64,7 +93,7 @@ final class MemberAuthApiService
      */
     public function authorizeProfile(int $memberId, array $payload): void
     {
-        $memberEntity = $this->memberService->getInfoEntity($memberId);
+        $memberEntity = $this->memberService->getEntity($memberId);
 
         $memberEntity->setAvatar($payload['avatar_url'] ?? $memberEntity->getAvatar());
         $memberEntity->setNickname($payload['nickname'] ?? $memberEntity->getNickname());

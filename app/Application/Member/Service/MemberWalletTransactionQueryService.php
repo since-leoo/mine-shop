@@ -17,7 +17,7 @@ use App\Domain\Member\Repository\MemberWalletTransactionRepository;
 final class MemberWalletTransactionQueryService
 {
     public function __construct(
-        private readonly MemberWalletTransactionRepository $repository,
+        public readonly MemberWalletTransactionRepository $repository,
     ) {}
 
     /**

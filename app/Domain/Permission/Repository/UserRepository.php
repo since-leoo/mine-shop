@@ -43,11 +43,6 @@ final class UserRepository extends IRepository
         return (bool) $this->getQuery()->whereKey($id)->first()?->update($data);
     }
 
-    public function deleteByIds(array $ids): int
-    {
-        return $this->deleteById($ids);
-    }
-
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query

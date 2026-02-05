@@ -15,33 +15,18 @@ namespace App\Domain\Seckill\Service;
 use App\Domain\Seckill\Entity\SeckillProductEntity;
 use App\Domain\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 
 /**
  * 秒杀商品领域服务.
  */
-final class SeckillProductService
+final class SeckillProductService extends IService
 {
     public function __construct(
-        private readonly SeckillProductRepository $repository,
+        public readonly SeckillProductRepository $repository,
         private readonly SeckillSessionRepository $sessionRepository
     ) {}
-
-    /**
-     * 分页查询商品.
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找商品.
-     */
-    public function findById(int $id): ?SeckillProduct
-    {
-        return $this->repository->findById($id);
-    }
 
     /**
      * 获取指定场次的商品列表.

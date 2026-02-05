@@ -38,6 +38,7 @@ final class SeckillProductQueryService
      */
     public function find(int $id): ?SeckillProduct
     {
+        /** @var null|SeckillProduct $product */
         $product = $this->productService->findById($id);
         $product?->load(['session', 'product', 'productSku']);
         return $product;

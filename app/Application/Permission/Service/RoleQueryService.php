@@ -19,7 +19,7 @@ use Hyperf\Collection\Collection;
 
 final class RoleQueryService
 {
-    public function __construct(private readonly RoleRepository $repository) {}
+    public function __construct(public readonly RoleRepository $repository) {}
 
     public function paginate(PageQuery $query): array
     {

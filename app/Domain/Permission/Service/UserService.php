@@ -15,9 +15,10 @@ namespace App\Domain\Permission\Service;
 use App\Domain\Permission\Entity\UserEntity;
 use App\Domain\Permission\Repository\RoleRepository;
 use App\Domain\Permission\Repository\UserRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\User;
 
-final class UserService
+final class UserService extends IService
 {
     public function __construct(
         private readonly UserRepository $userRepository,

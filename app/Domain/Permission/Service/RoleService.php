@@ -15,9 +15,10 @@ namespace App\Domain\Permission\Service;
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Domain\Permission\Repository\RoleRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\Role;
 
-final class RoleService
+final class RoleService extends IService
 {
     public function __construct(
         private readonly RoleRepository $roleRepository,

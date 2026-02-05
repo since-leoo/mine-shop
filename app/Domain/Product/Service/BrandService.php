@@ -14,33 +14,15 @@ namespace App\Domain\Product\Service;
 
 use App\Domain\Product\Entity\BrandEntity;
 use App\Domain\Product\Repository\BrandRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Product\Brand;
 
 /**
  * 品牌领域服务：封装品牌相关的核心业务逻辑.
  */
-final class BrandService
+final class BrandService extends IService
 {
-    public function __construct(private readonly BrandRepository $repository) {}
-
-    /**
-     * 分页查询品牌.
-     *
-     * @param array<string, mixed> $filters
-     * @return array<string, mixed>
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找品牌.
-     */
-    public function findById(int $id): ?Brand
-    {
-        return $this->repository->findById($id);
-    }
+    public function __construct(public readonly BrandRepository $repository) {}
 
     /**
      * 获取品牌选项.

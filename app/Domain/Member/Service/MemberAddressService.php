@@ -13,13 +13,14 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Repository\MemberAddressRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Hyperf\Collection\Collection;
 
-final class MemberAddressService
+final class MemberAddressService extends IService
 {
-    public function __construct(private readonly MemberAddressRepository $repository) {}
+    public function __construct(public readonly MemberAddressRepository $repository) {}
 
     public function list(int $memberId, int $limit = 20): array
     {

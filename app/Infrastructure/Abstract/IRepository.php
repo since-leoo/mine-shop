@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Abstract;
 
+use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Traits\BootTrait;
 use App\Infrastructure\Traits\RepositoryOrderByTrait;
 use Hyperf\Collection\Collection;
@@ -77,7 +78,7 @@ abstract class IRepository
         return $this->handlePage($result);
     }
 
-    public function findById(int $id)
+    public function findById(int $id): ?object
     {
         return $this->getQuery()->whereKey($id)->first();
     }
@@ -114,6 +115,16 @@ abstract class IRepository
     {
         // @phpstan-ignore-next-line
         return $this->model::destroy($id);
+    }
+
+    public function deleteByIds(array $ids): int
+    {
+        array_map(function ($id) {
+            $info = $this->findById($id);
+            $info && $info->delete();
+        }, $ids);
+
+        return count($ids);
     }
 
     public function forceDeleteById(mixed $id): bool

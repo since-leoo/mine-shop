@@ -10,15 +10,15 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Domain\Member\Trait;
+namespace App\Domain\Member\Mapper;
 
 use App\Domain\Member\Entity\MemberEntity;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 
-trait MemberMapperTrait
+final class MemberMapper
 {
-    public static function mapper(Member $member): MemberEntity
+    public static function fromModel(Member $member): MemberEntity
     {
         $entity = new MemberEntity();
         $entity->setId($member->id);
@@ -48,7 +48,10 @@ trait MemberMapperTrait
         return $entity;
     }
 
-    protected static function fromMiniProfile(array $profile): MemberEntity
+    /**
+     * @param array<string, mixed> $profile
+     */
+    public static function fromMiniProfile(array $profile): MemberEntity
     {
         $openid = (string) ($profile['openid'] ?? '');
         if (trim($openid) === '') {

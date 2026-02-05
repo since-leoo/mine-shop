@@ -18,7 +18,7 @@ use Hyperf\DbConnection\Db;
 
 final class DepartmentCommandService
 {
-    public function __construct(private readonly DepartmentRepository $repository) {}
+    public function __construct(public readonly DepartmentRepository $repository) {}
 
     /**
      * @param array<string, mixed> $payload

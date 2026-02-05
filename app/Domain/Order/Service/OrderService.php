@@ -17,11 +17,15 @@ use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Model\Order\Order;
+use App\Interface\Common\ResultCode;
 
-final class OrderService
+final class OrderService extends IService
 {
     public function __construct(
-        private readonly OrderRepository $repository,
+        public readonly OrderRepository $repository,
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly OrderStockService $stockService,
         private readonly MallSettingService $mallSettingService,
@@ -40,29 +44,26 @@ final class OrderService
      */
     public function getEntityById(int $id = 0, string $orderNo = ''): OrderEntity
     {
-        if ($id) {
-            $orderEntity = $this->repository->getEntityById($id);
-        } else {
-            $orderEntity = $this->repository->getEntityByOrderNo($orderNo);
+        /** @var null|Order $order */
+        $order = $id
+            ? parent::findById($id)
+            : $this->repository->findByOrderNo($orderNo);
+
+        if (! $order) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '订单不存在');
         }
 
-        if (! $orderEntity || $orderEntity->getMemberId() !== memberId()) {
-            throw new \RuntimeException('订单不存在');
+        $orderEntity = OrderEntity::fromModel($order);
+
+        if ($orderEntity->getMemberId() !== memberId()) {
+            throw new BusinessException(ResultCode::FORBIDDEN, '订单不存在');
         }
 
         if ($orderEntity->getPayStatus() === OrderStatus::PAID->value) {
-            throw new \RuntimeException('订单已支付');
+            throw new BusinessException(ResultCode::FORBIDDEN, '订单已支付');
         }
 
         return $orderEntity;
-    }
-
-    /**
-     * @param array<string, mixed> $filters
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
     }
 
     /**

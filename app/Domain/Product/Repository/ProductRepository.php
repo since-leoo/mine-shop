@@ -13,11 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Product\Repository;
 
 use App\Domain\Product\Entity\ProductEntity;
-use App\Domain\Product\Trait\ProductMapperTrait;
+use App\Domain\Product\Mapper\ProductMapper;
 use App\Infrastructure\Abstract\IRepository;
-use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
-use App\Interface\Common\ResultCode;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -25,19 +23,7 @@ use Hyperf\Database\Model\Builder;
  */
 final class ProductRepository extends IRepository
 {
-    use ProductMapperTrait;
-
     public function __construct(protected readonly Product $model) {}
-
-    /**
-     * 通过ID获取商品实体.
-     */
-    public function getEntityById(int $id): ?ProductEntity
-    {
-        /** @var null|Product $model */
-        $model = $this->findById($id);
-        return $model ? self::mapper($model) : throw new BusinessException(ResultCode::FORBIDDEN, '商品不存在');
-    }
 
     /**
      * 保存商品
@@ -45,7 +31,7 @@ final class ProductRepository extends IRepository
     public function save(ProductEntity $entity): ProductEntity
     {
         /** @var Product $model */
-        $model = $this->create($entity->toArray());
+        $model = $this->create(ProductMapper::toArray($entity));
         $model->skus()->createMany(array_map(static function ($sku) {return $sku->toArray(); }, $entity->getSkus()));
         $model->attributes()->createMany(array_map(static function ($attr) {return $attr->toArray(); }, $entity->getAttributes()));
 
@@ -62,7 +48,7 @@ final class ProductRepository extends IRepository
     {
         /** @var Product $model */
         $model = $this->findById($entity->getId());
-        $data = $entity->toArray($model);
+        $data = ProductMapper::toArray($entity, $model);
         $model->update($data);
 
         if ($entity->getSkus()) {

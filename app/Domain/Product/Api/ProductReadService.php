@@ -22,7 +22,7 @@ use App\Infrastructure\Model\Product\Product;
 final class ProductReadService
 {
     public function __construct(
-        private readonly ProductRepository $repository,
+        public readonly ProductRepository $repository,
         private readonly ProductService $productService
     ) {}
 
@@ -40,7 +40,7 @@ final class ProductReadService
      */
     public function findDetail(int $id): ?array
     {
-        $product = $this->productService->getInfoById($id);
+        $product = $this->productService->findById($id);
         if (! $product instanceof Product) {
             return null;
         }

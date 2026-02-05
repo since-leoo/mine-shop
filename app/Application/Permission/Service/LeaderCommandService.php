@@ -16,7 +16,7 @@ use App\Domain\Permission\Repository\LeaderRepository;
 
 final class LeaderCommandService
 {
-    public function __construct(private readonly LeaderRepository $repository) {}
+    public function __construct(public readonly LeaderRepository $repository) {}
 
     /**
      * @param array<string, mixed> $payload

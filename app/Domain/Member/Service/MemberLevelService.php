@@ -14,25 +14,12 @@ namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Entity\MemberLevelEntity;
 use App\Domain\Member\Repository\MemberLevelRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Member\MemberLevel;
 
-final class MemberLevelService
+final class MemberLevelService extends IService
 {
-    public function __construct(private readonly MemberLevelRepository $repository) {}
-
-    /**
-     * @return array<string, mixed>
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    public function find(int $id): ?MemberLevel
-    {
-        /* @var null|MemberLevel $level */
-        return $this->repository->findById($id);
-    }
+    public function __construct(public readonly MemberLevelRepository $repository) {}
 
     /**
      * @return array<string, mixed>

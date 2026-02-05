@@ -20,7 +20,7 @@ use App\Domain\Attachment\Repository\AttachmentRepository;
  */
 final class AttachmentQueryService
 {
-    public function __construct(private readonly AttachmentRepository $repository) {}
+    public function __construct(public readonly AttachmentRepository $repository) {}
 
     /**
      * @param array<string, mixed> $filters

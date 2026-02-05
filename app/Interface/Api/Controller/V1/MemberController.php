@@ -53,8 +53,8 @@ final class MemberController extends AbstractController
     public function bindPhone(PhoneAuthorizeRequest $request): Result
     {
         $payload = $request->validated();
-        $result = $this->memberAuthService->bindPhoneNumber($this->currentMember->id(), $payload['code']);
-        return $this->success($result, '手机号授权成功');
+        $this->memberAuthService->bindPhoneNumber($this->currentMember->id(), $payload['code']);
+        return $this->success([], '手机号授权成功');
     }
 
     #[PostMapping(path: 'profile/authorize')]

@@ -14,6 +14,7 @@ namespace App\Domain\Product\Service;
 
 use App\Domain\Product\Entity\CategoryEntity;
 use App\Domain\Product\Repository\CategoryRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Database\Model\Collection;
 use Hyperf\DbConnection\Db;
@@ -21,20 +22,9 @@ use Hyperf\DbConnection\Db;
 /**
  * 分类领域服务：封装分类相关的核心业务逻辑.
  */
-final class CategoryService
+final class CategoryService extends IService
 {
-    public function __construct(private readonly CategoryRepository $repository) {}
-
-    /**
-     * 分页查询分类.
-     *
-     * @param array<string, mixed> $filters
-     * @return array<string, mixed>
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
+    public function __construct(public readonly CategoryRepository $repository) {}
 
     /**
      * 获取分类树结构.
@@ -42,14 +32,6 @@ final class CategoryService
     public function getTree(int $parentId = 0): Collection
     {
         return $this->repository->getTree($parentId);
-    }
-
-    /**
-     * 根据ID查找分类.
-     */
-    public function findById(int $id): ?Category
-    {
-        return $this->repository->findById($id);
     }
 
     /**

@@ -14,11 +14,12 @@ namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Entity\MemberWalletEntity;
 use App\Domain\Member\Repository\MemberWalletRepository;
+use App\Infrastructure\Abstract\IService;
 
 /**
  * 会员账户领域服务：负责钱包调整规则及持久化协调.
  */
-final class MemberWalletService
+final class MemberWalletService extends IService
 {
     public function __construct(
         private readonly MemberWalletRepository $walletRepository,

@@ -20,13 +20,14 @@ use App\Domain\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\SystemSetting\ValueObject\PaymentSetting;
 use App\Domain\SystemSetting\ValueObject\ProductSetting;
 use App\Domain\SystemSetting\ValueObject\ShippingSetting;
+use App\Infrastructure\Abstract\IService;
 
 /**
  * 商城配置聚合服务.
  *
  * 以值对象的形式对外暴露商城相关配置，避免业务层直接依赖数组。
  */
-final class MallSettingService
+final class MallSettingService extends IService
 {
     private ?BasicSetting $basic = null;
 

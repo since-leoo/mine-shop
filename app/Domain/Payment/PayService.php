@@ -36,7 +36,6 @@ class PayService
 
     public function __construct(
         private readonly OrderService $orderService,
-        private readonly MemberService $memberService,
         private readonly YsdPayService $payService,
         private readonly MemberWalletService $walletService,
     ) {}

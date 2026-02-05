@@ -13,39 +13,57 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Entity\MemberEntity;
+use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Repository\MemberTagRepository;
-use App\Domain\Member\Trait\MemberMapperTrait;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Model\Member\Member;
+use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Plugin\Wechat\Interfaces\MiniAppInterface;
 
 /**
  * 会员领域服务.
  */
-final class MemberService
+final class MemberService extends IService
 {
-    use MemberMapperTrait;
 
     public function __construct(
-        private readonly MemberRepository $memberRepository,
+        protected readonly MemberRepository $repository,
         private readonly MemberTagRepository $memberTagRepository,
         private readonly MiniAppInterface $miniApp,
     ) {}
 
     /**
-     * @return array<string, mixed>
+     * @param string $openId
+     * @return null|Member
      */
-    public function page(array $filters, int $page, int $pageSize): array
+    public function getInfoByOpenId(string $openId): ?Member
     {
-        return $this->memberRepository->page($filters, $page, $pageSize);
+        /** @var null|Member $member */
+        $member = $this->repository->findByOpenid($openId);
+        return $member;
     }
+
+    public function getEntity(int $memberId): MemberEntity
+    {
+        /** @var null|Member $member */
+        $member = $this->findById($memberId);
+        if (! $member) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+        }
+
+        return MemberMapper::fromModel($member);
+    }
+
 
     /**
      * @return array<string, int>
      */
     public function stats(array $filters): array
     {
-        return $this->memberRepository->stats($filters);
+        return $this->repository->stats($filters);
     }
 
     /**
@@ -53,7 +71,7 @@ final class MemberService
      */
     public function overview(array $filters): array
     {
-        return $this->memberRepository->overview($filters);
+        return $this->repository->overview($filters);
     }
 
     /**
@@ -61,7 +79,7 @@ final class MemberService
      */
     public function detail(int $id): ?array
     {
-        return $this->memberRepository->detail($id);
+        return $this->repository->detail($id);
     }
 
     public function create(MemberEntity $entity): void
@@ -70,7 +88,7 @@ final class MemberService
             $entity->setSource('admin');
         }
 
-        $member = $this->memberRepository->save($entity);
+        $member = $this->repository->save($entity);
 
         $entity->setId($member->id);
 
@@ -85,7 +103,7 @@ final class MemberService
     public function update(MemberEntity $entity): void
     {
         $this->ensureMemberExists($entity->getId());
-        $this->memberRepository->updateEntity($entity);
+        $this->repository->updateEntity($entity);
     }
 
     /**
@@ -100,7 +118,7 @@ final class MemberService
             throw new \InvalidArgumentException('会员状态不能为空');
         }
 
-        $this->memberRepository->updateEntity($entity);
+        $this->repository->updateEntity($entity);
     }
 
     /**
@@ -108,7 +126,7 @@ final class MemberService
      */
     public function getInfoEntity(int $memberId): MemberEntity
     {
-        return $this->memberRepository->findById($memberId);
+        return $this->getEntity($memberId);
     }
 
     /**
@@ -138,13 +156,13 @@ final class MemberService
             throw new \InvalidArgumentException('授权失败');
         }
 
-        $memberEntity = $this->memberRepository->findByOpenid($openid);
+        $memberEntity = $this->repository->findByOpenid($openid);
 
         if (! $memberEntity) {
-            $memberEntity = self::fromMiniProfile($payload);
+            $memberEntity = MemberMapper::fromMiniProfile($payload);
             $memberEntity->setLastLoginAt(Carbon::now());
             $memberEntity->setLastLoginIp($ip ?? '');
-            $model = $this->memberRepository->save($memberEntity);
+            $model = $this->repository->save($memberEntity);
             $memberEntity->setId($model->id);
         } else {
             $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
@@ -154,7 +172,7 @@ final class MemberService
             $memberEntity->setSource('mini_program');
             $memberEntity->setLastLoginAt(Carbon::now());
             $memberEntity->setLastLoginIp($ip ?? '');
-            $this->memberRepository->updateEntity($memberEntity);
+            $this->repository->updateEntity($memberEntity);
         }
 
         return $memberEntity;
@@ -176,7 +194,7 @@ final class MemberService
         }
 
         $memberEntity->setPhone($phoneNumber);
-        $this->memberRepository->updateEntity($memberEntity);
+        $this->repository->updateEntity($memberEntity);
 
         return [
             'phoneNumber' => $phoneNumber,
@@ -187,7 +205,7 @@ final class MemberService
 
     private function ensureMemberExists(int $memberId): void
     {
-        if (! $this->memberRepository->existsById($memberId)) {
+        if (! $this->repository->existsById($memberId)) {
             throw new \RuntimeException('会员不存在');
         }
     }
@@ -201,6 +219,6 @@ final class MemberService
             ->map(static fn ($id) => (int) $id)
             ->toArray();
 
-        $this->memberRepository->syncTags($memberId, $available);
+        $this->repository->syncTags($memberId, $available);
     }
 }

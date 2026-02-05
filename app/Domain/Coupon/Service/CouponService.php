@@ -13,48 +13,33 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Service;
 
 use App\Domain\Coupon\Entity\CouponEntity;
+use App\Domain\Coupon\Mapper\CouponMapper;
 use App\Domain\Coupon\Repository\CouponRepository;
 use App\Domain\Coupon\Repository\CouponUserRepository;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Model\Coupon\Coupon;
+use App\Interface\Common\ResultCode;
 
 /**
  * 优惠券领域服务.
  */
-final class CouponService
+final class CouponService extends IService
 {
     public function __construct(
-        private readonly CouponRepository $repository,
+        public readonly CouponRepository $repository,
         private readonly CouponUserRepository $couponUserRepository
     ) {}
 
-    /**
-     * 分页查询优惠券列表.
-     *
-     * @param array $filters 查询条件
-     * @param int $page 页码
-     * @param int $pageSize 每页大小
-     * @return array 分页结果数组
-     */
-    public function page(array $filters, int $page, int $pageSize): array
+    public function getEntity(int $id): CouponEntity
     {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找优惠券.
-     *
-     * @param int $id 优惠券ID
-     * @return CouponEntity 优惠券对象或null
-     * @throws \Exception
-     */
-    public function findById(int $id): CouponEntity
-    {
-        $info = $this->repository->findById($id);
-
-        if ($info === null) {
-            throw new \RuntimeException('优惠券不存在');
+        /** @var Coupon|null $coupon */
+        $coupon = $this->findById($id);
+        if (! $coupon) {
+            throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');
         }
 
-        return $info;
+        return CouponMapper::fromModel($coupon);
     }
 
     /**
@@ -114,11 +99,7 @@ final class CouponService
      */
     public function toggleStatus(CouponEntity $entity): bool
     {
-        $stored = $this->repository->findById($entity->getId());
-        if (! $stored) {
-            throw new \InvalidArgumentException('优惠券不存在');
-        }
-
+        $stored = $this->getEntity($entity->getId());
         $stored->toggleStatus();
         return $this->repository->updateFromEntity($stored);
     }

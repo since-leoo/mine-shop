@@ -15,6 +15,7 @@ namespace App\Domain\Auth\Service;
 use App\Domain\Auth\Entity\LoginEntity;
 use App\Domain\Auth\ValueObject\TokenPair;
 use App\Domain\Permission\Repository\UserRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\Auth\JwtInBlackException;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
@@ -26,7 +27,7 @@ use Psr\EventDispatcher\EventDispatcherInterface;
 /**
  * 认证领域服务，封装登录/登出等核心逻辑.
  */
-final class AuthService
+final class AuthService extends IService
 {
     public function __construct(
         private readonly UserRepository $userRepository,

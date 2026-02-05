@@ -38,6 +38,7 @@ final class SeckillActivityQueryService
      */
     public function find(int $id): ?SeckillActivity
     {
+        /** @var null|SeckillActivity $activity */
         $activity = $this->activityService->findById($id);
         $activity?->load(['sessions']);
         return $activity;

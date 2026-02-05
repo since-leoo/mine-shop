@@ -22,11 +22,6 @@ final class RoleRepository extends IRepository
 {
     public function __construct(protected readonly Role $model) {}
 
-    public function deleteByIds(array $ids): int
-    {
-        return $this->deleteById($ids);
-    }
-
     public function listByCodes(array $roleCodes): Collection
     {
         return $this->list(['code' => $roleCodes]);

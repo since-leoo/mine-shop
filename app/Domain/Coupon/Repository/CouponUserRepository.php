@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Repository;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
-use App\Domain\Coupon\Trait\CouponUserMapperTrait;
+use App\Domain\Coupon\Mapper\CouponUserMapper;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
@@ -27,7 +27,6 @@ use Hyperf\Database\Model\Builder;
  */
 final class CouponUserRepository extends IRepository
 {
-    use CouponUserMapperTrait;
 
     public function __construct(protected readonly CouponUser $model) {}
 
@@ -130,16 +129,4 @@ final class CouponUserRepository extends IRepository
             ->toArray();
     }
 
-    /**
-     * 根据ID查询.
-     */
-    public function findById(int $id): ?CouponUserEntity
-    {
-        $info = $this->getQuery()->whereKey($id)->first();
-        if (! $info instanceof CouponUser) {
-            return null;
-        }
-
-        return self::mapper($info);
-    }
 }

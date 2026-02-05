@@ -21,7 +21,7 @@ use Psr\SimpleCache\CacheInterface;
 final class UserQueryService
 {
     public function __construct(
-        private readonly UserRepository $repository,
+        public readonly UserRepository $repository,
         private readonly CacheInterface $cache
     ) {}
 

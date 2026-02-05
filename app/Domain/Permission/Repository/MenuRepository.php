@@ -28,16 +28,6 @@ final class MenuRepository extends IRepository
         return $this->model->newQuery()->create($payload);
     }
 
-    public function updateById(mixed $id, array $payload): bool
-    {
-        return (bool) $this->getQuery()->whereKey($id)->first()?->update($payload);
-    }
-
-    public function deleteByIds(array $ids): int
-    {
-        return $this->deleteById($ids);
-    }
-
     public function enablePageOrderBy(): bool
     {
         return false;

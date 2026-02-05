@@ -345,6 +345,16 @@ final class MemberEntity
         $this->wallet = $wallet;
     }
 
+    public function bindPhone(string $phone)
+    {
+        $this->phone = $phone;
+    }
+
+    public function login(string $openId)
+    {
+
+    }
+
     public function toArray(): array
     {
         $data = [];

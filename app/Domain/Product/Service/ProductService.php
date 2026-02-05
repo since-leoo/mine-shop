@@ -13,30 +13,23 @@ declare(strict_types=1);
 namespace App\Domain\Product\Service;
 
 use App\Domain\Product\Entity\ProductEntity;
+use App\Domain\Product\Mapper\ProductMapper;
 use App\Domain\Product\Repository\ProductRepository;
 use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
+use App\Interface\Common\ResultCode;
 
 /**
  * 商品领域服务：封装商品相关的核心业务逻辑.
  */
-final class ProductService
+final class ProductService extends IService
 {
     public function __construct(
-        private readonly ProductRepository $repository,
+        public readonly ProductRepository $repository,
         private readonly MallSettingService $mallSettingService,
     ) {}
-
-    /**
-     * 分页查询商品.
-     *
-     * @param array<string, mixed> $filters
-     * @return array<string, mixed>
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
 
     /**
      * 创建商品.
@@ -85,16 +78,17 @@ final class ProductService
     }
 
     /**
-     * 根据ID获取商品信息.
+     * 获取商品实体.
      */
-    public function getInfoById(int $id): ?Product
+    public function getEntity(int $id): ProductEntity
     {
         /** @var null|Product $product */
-        $product = $this->repository->findById($id);
+        $product = $this->findById($id);
+        if (! $product) {
+            throw new BusinessException(ResultCode::FORBIDDEN, '商品不存在');
+        }
 
-        $product?->load(['category', 'brand', 'skus', 'attributes', 'gallery']);
-
-        return $product;
+        return ProductMapper::fromModel($product);
     }
 
     private function applyProductSettings(ProductEntity $entity): void

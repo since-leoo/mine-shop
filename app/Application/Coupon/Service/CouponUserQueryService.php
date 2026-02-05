@@ -30,14 +30,8 @@ final class CouponUserQueryService
         return $this->couponUserService->page($filters, $page, $pageSize);
     }
 
-    public function find(int $id): ?CouponUserEntity
+    public function find(int $id): CouponUserEntity
     {
-        $entity = $this->couponUserService->findById($id);
-
-        if (! $entity) {
-            throw new \InvalidArgumentException('用户优惠券不存在');
-        }
-
-        return $entity;
+        return $this->couponUserService->getEntity($id);
     }
 }

@@ -35,7 +35,7 @@ final class CouponQueryService
      */
     public function find(int $id): array
     {
-        return $this->couponService->findById($id)->toArray();
+        return $this->couponService->getEntity($id)->toArray();
     }
 
     /**
@@ -43,7 +43,7 @@ final class CouponQueryService
      */
     public function findEntity(int $id): CouponEntity
     {
-        return $this->couponService->findById($id);
+        return $this->couponService->getEntity($id);
     }
 
     public function stats(): array

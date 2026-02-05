@@ -23,11 +23,6 @@ final class PositionRepository extends IRepository
 {
     public function __construct(protected readonly Position $model) {}
 
-    public function deleteByIds(array $ids): int
-    {
-        return $this->deleteById($ids);
-    }
-
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query

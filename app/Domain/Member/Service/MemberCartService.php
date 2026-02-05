@@ -15,13 +15,14 @@ namespace App\Domain\Member\Service;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Product\Repository\ProductSkuRepository;
 use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 
-final class MemberCartService
+final class MemberCartService extends IService
 {
     private const MAX_QUANTITY = 999;
 

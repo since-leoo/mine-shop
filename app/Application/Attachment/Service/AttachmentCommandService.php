@@ -14,6 +14,7 @@ namespace App\Application\Attachment\Service;
 
 use App\Domain\Attachment\Entity\AttachmentEntity;
 use App\Domain\Attachment\Repository\AttachmentRepository;
+use App\Infrastructure\Abstract\IService;
 use Mine\Upload\UploadInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -21,10 +22,10 @@ use Symfony\Component\Finder\SplFileInfo;
 /**
  * 附件命令服务：处理所有写操作.
  */
-final class AttachmentCommandService
+final class AttachmentCommandService extends IService
 {
     public function __construct(
-        private readonly AttachmentRepository $repository,
+        public readonly AttachmentRepository $repository,
         private readonly AttachmentQueryService $queryService,
         private readonly UploadInterface $upload
     ) {}
@@ -60,10 +61,5 @@ final class AttachmentCommandService
         $attachment = $this->queryService->find($id);
         $attachment || throw new \InvalidArgumentException(trans('attachment.attachment_not_exist'));
         return $this->repository->deleteByIds([$id]) > 0;
-    }
-
-    public function deleteByIds(array $ids): int
-    {
-        return $this->repository->deleteByIds($ids);
     }
 }

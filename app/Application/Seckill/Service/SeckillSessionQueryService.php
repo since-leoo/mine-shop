@@ -38,6 +38,7 @@ final class SeckillSessionQueryService
      */
     public function find(int $id): ?SeckillSession
     {
+        /** @var null|SeckillSession $session */
         $session = $this->sessionService->findById($id);
         $session?->load(['activity', 'products']);
         return $session;

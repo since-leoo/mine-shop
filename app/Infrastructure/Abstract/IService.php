@@ -40,22 +40,6 @@ abstract class IService
     }
 
     /**
-     * @return T
-     */
-    public function create(array $data): mixed
-    {
-        return $this->repository->create($data);
-    }
-
-    /**
-     * @return T
-     */
-    public function save(array $data): mixed
-    {
-        return $this->create($data);
-    }
-
-    /**
      * @return null|mixed|T
      */
     public function updateById(mixed $id, array $data): mixed

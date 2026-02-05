@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Repository;
 
 use App\Domain\Coupon\Entity\CouponEntity;
-use App\Domain\Coupon\Trait\CouponMapperTrait;
+use App\Domain\Coupon\Mapper\CouponMapper;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
@@ -28,7 +28,6 @@ use Hyperf\Database\Model\Collection;
  */
 final class CouponRepository extends IRepository
 {
-    use CouponMapperTrait;
 
     /**
      * 构造函数.
@@ -120,22 +119,6 @@ final class CouponRepository extends IRepository
     public function countAvailable(array $filters = []): int
     {
         return $this->buildAvailableQuery($filters)->count();
-    }
-
-    /**
-     * 根据ID查找优惠券信息.
-     *
-     * @param int $id 优惠券ID
-     * @return null|CouponEntity 优惠券信息实体对象，找不到则返回null
-     */
-    public function findById(int $id): ?CouponEntity
-    {
-        $info = parent::findById($id);
-        if (! $info instanceof Coupon) {
-            return null;
-        }
-
-        return self::mapper($info);
     }
 
     /**

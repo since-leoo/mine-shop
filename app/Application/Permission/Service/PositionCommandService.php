@@ -17,7 +17,7 @@ use App\Infrastructure\Model\Permission\Position;
 
 final class PositionCommandService
 {
-    public function __construct(private readonly PositionRepository $repository) {}
+    public function __construct(public readonly PositionRepository $repository) {}
 
     /**
      * @param array<string, mixed> $payload

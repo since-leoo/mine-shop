@@ -34,7 +34,7 @@ final class ProductQueryService
 
     public function find(int $id): ?Product
     {
-        return $this->productService->getInfoById($id);
+        return $this->productService->findById($id);
     }
 
     /**

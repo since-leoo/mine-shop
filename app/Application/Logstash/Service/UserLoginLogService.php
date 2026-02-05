@@ -17,7 +17,7 @@ use App\Domain\Shared\ValueObject\PageQuery;
 
 final class UserLoginLogService
 {
-    public function __construct(private readonly UserLoginLogRepository $repository) {}
+    public function __construct(public readonly UserLoginLogRepository $repository) {}
 
     /**
      * @param array<string, mixed> $payload

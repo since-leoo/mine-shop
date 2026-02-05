@@ -62,8 +62,8 @@ final class MemberTagController extends AbstractController
     {
         $payload = $request->validated();
         $entity = MemberTagAssembler::toCreateEntity($payload);
-        $tag = $this->commandService->create($entity);
-        return $this->success($tag, '标签创建成功', 201);
+        $this->commandService->create($entity);
+        return $this->success([], '标签创建成功', 201);
     }
 
     #[PutMapping(path: '{id:\d+}')]
@@ -72,8 +72,8 @@ final class MemberTagController extends AbstractController
     {
         $payload = $request->validated();
         $entity = MemberTagAssembler::toUpdateEntity($id, $payload);
-        $tag = $this->commandService->update($entity);
-        return $this->success($tag, '标签更新成功');
+        $this->commandService->update($entity);
+        return $this->success([], '标签更新成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

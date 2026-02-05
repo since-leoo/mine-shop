@@ -15,33 +15,18 @@ namespace App\Domain\Seckill\Service;
 use App\Domain\Seckill\Entity\SeckillActivityEntity;
 use App\Domain\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 
 /**
  * 秒杀活动领域服务.
  */
-final class SeckillActivityService
+final class SeckillActivityService extends IService
 {
     public function __construct(
-        private readonly SeckillActivityRepository $repository,
+        public readonly SeckillActivityRepository $repository,
         private readonly SeckillSessionRepository $sessionRepository
     ) {}
-
-    /**
-     * 分页查询活动.
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找活动.
-     */
-    public function findById(int $id): ?SeckillActivity
-    {
-        return $this->repository->findById($id);
-    }
 
     /**
      * 创建活动.

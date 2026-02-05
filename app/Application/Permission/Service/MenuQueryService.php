@@ -17,7 +17,7 @@ use Hyperf\Collection\Collection;
 
 final class MenuQueryService
 {
-    public function __construct(private readonly MenuRepository $repository) {}
+    public function __construct(public readonly MenuRepository $repository) {}
 
     public function list(array $filters = []): Collection
     {

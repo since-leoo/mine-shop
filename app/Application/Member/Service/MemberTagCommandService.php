@@ -20,19 +20,21 @@ final class MemberTagCommandService
     public function __construct(private readonly MemberTagService $memberTagService) {}
 
     /**
-     * @return array<string, mixed>
+     * @param MemberTagEntity $entity
+     * @return void
      */
-    public function create(MemberTagEntity $entity): array
+    public function create(MemberTagEntity $entity): void
     {
-        return $this->memberTagService->create($entity);
+        $this->memberTagService->create($entity);
     }
 
     /**
-     * @return array<string, mixed>
+     * @param MemberTagEntity $entity
+     * @return void
      */
-    public function update(MemberTagEntity $entity): array
+    public function update(MemberTagEntity $entity): void
     {
-        return $this->memberTagService->update($entity);
+        $this->memberTagService->update($entity);
     }
 
     public function delete(int $id): bool

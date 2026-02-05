@@ -17,7 +17,7 @@ use App\Domain\Shared\ValueObject\PageQuery;
 
 final class UserOperationLogService
 {
-    public function __construct(private readonly UserOperationLogRepository $repository) {}
+    public function __construct(public readonly UserOperationLogRepository $repository) {}
 
     /**
      * @param array<string, mixed> $payload

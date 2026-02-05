@@ -15,6 +15,7 @@ namespace App\Domain\SystemSetting\Service;
 use App\Domain\SystemSetting\Entity\SystemSettingEntity;
 use App\Domain\SystemSetting\Repository\SystemSettingRepository;
 use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Abstract\IService;
 use Hamcrest\Description;
 use Hyperf\Codec\Json;
 
@@ -22,7 +23,7 @@ use Hyperf\Codec\Json;
  * 系统设置服务类
  * 提供系统配置的获取、更新、缓存管理等功能.
  */
-final class SystemSettingService
+final class SystemSettingService extends IService
 {
     private const CACHE_PREFIX = 'system:settings';
 
@@ -33,7 +34,7 @@ final class SystemSettingService
      * @param ICache $cache 缓存接口
      */
     public function __construct(
-        private readonly SystemSettingRepository $repository,
+        public readonly SystemSettingRepository $repository,
         private readonly ICache $cache
     ) {
         $this->cache->setPrefix(self::CACHE_PREFIX);

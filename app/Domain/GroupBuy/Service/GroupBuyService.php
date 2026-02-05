@@ -14,32 +14,18 @@ namespace App\Domain\GroupBuy\Service;
 
 use App\Domain\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\GroupBuy\Repository\GroupBuyRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
 /**
  * 团购活动领域服务.
  */
-final class GroupBuyService
+final class GroupBuyService extends IService
 {
     public function __construct(
-        private readonly GroupBuyRepository $repository
+        public readonly GroupBuyRepository $repository
     ) {}
 
-    /**
-     * 分页查询团购活动.
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找团购活动.
-     */
-    public function findById(int $id): ?GroupBuy
-    {
-        return $this->repository->findById($id);
-    }
 
     /**
      * 创建团购活动.

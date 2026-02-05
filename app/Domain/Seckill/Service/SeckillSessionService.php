@@ -15,34 +15,19 @@ namespace App\Domain\Seckill\Service;
 use App\Domain\Seckill\Entity\SeckillSessionEntity;
 use App\Domain\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillSession;
 use Hyperf\DbConnection\Db;
 
 /**
  * 秒杀场次领域服务.
  */
-final class SeckillSessionService
+final class SeckillSessionService extends IService
 {
     public function __construct(
-        private readonly SeckillSessionRepository $repository,
+        public readonly SeckillSessionRepository $repository,
         private readonly SeckillProductRepository $productRepository
     ) {}
-
-    /**
-     * 分页查询场次.
-     */
-    public function page(array $filters, int $page, int $pageSize): array
-    {
-        return $this->repository->page($filters, $page, $pageSize);
-    }
-
-    /**
-     * 根据ID查找场次.
-     */
-    public function findById(int $id): ?SeckillSession
-    {
-        return $this->repository->findById($id);
-    }
 
     /**
      * 获取指定活动的场次列表.
@@ -86,9 +71,6 @@ final class SeckillSessionService
     public function toggleStatus(int $id): bool
     {
         $session = $this->repository->findById($id);
-        if (! $session) {
-            throw new \InvalidArgumentException('场次不存在');
-        }
 
         $entity = new SeckillSessionEntity();
         $entity->setId($id);
