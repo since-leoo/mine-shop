@@ -27,10 +27,10 @@ final class LeaderCommandService
     }
 
     /**
-     * @param array<int|string> $userIds
+     * @param \App\Domain\Permission\Contract\Leader\LeaderDeleteInput $input
      */
-    public function delete(int $deptId, array $userIds): void
+    public function delete(\App\Domain\Permission\Contract\Leader\LeaderDeleteInput $input): void
     {
-        $this->repository->deleteByDoubleKey($deptId, $userIds);
+        $this->repository->deleteByDoubleKey($input->getDeptId(), $input->getUserIds());
     }
 }

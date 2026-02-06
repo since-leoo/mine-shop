@@ -84,7 +84,13 @@ class DepartmentController extends AbstractController
     #[Permission(code: 'permission:department:delete')]
     public function delete(): Result
     {
-        $this->commandService->delete($this->getRequestData());
+        $requestData = $this->getRequestData();
+        $ids = $requestData['ids'] ?? [];
+        $dto = new \App\Interface\Admin\DTO\Permission\DeleteDto();
+        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto->operator_id = $this->currentUser->id();
+        
+        $this->commandService->delete($dto);
         return $this->success();
     }
 }

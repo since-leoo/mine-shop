@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Domain\Permission\Contract\User\UserGrantRolesInput;
 use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Contract\User\UserResetPasswordInput;
@@ -47,12 +48,12 @@ final class UserCommandService
     }
 
     /**
-     * @param array<int> $ids
+     * @param DeleteInput $input
      */
-    public function delete(array $ids): int
+    public function delete(DeleteInput $input): int
     {
-        $deleted = $this->userService->delete($ids);
-        foreach ($ids as $id) {
+        $deleted = $this->userService->delete($input->getIds());
+        foreach ($input->getIds() as $id) {
             $this->forgetCache((int) $id);
         }
         return $deleted;

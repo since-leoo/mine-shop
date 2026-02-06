@@ -70,7 +70,14 @@ class LeaderController extends AbstractController
     #[Permission(code: 'permission:leader:delete')]
     public function delete(): Result
     {
-        $this->commandService->delete($this->getRequestData()['dept_id'], $this->getRequestData()['user_ids']);
+        $requestData = $this->getRequestData();
+        $userIds = $requestData['user_ids'] ?? [];
+        $dto = new \App\Interface\Admin\DTO\Permission\LeaderDeleteDto();
+        $dto->dept_id = $requestData['dept_id'] ?? 0;
+        $dto->user_ids = is_array($userIds) ? $userIds : [$userIds];
+        $dto->operator_id = $this->currentUser->id();
+        
+        $this->commandService->delete($dto);
         return $this->success();
     }
 }

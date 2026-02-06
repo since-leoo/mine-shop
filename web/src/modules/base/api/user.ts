@@ -51,7 +51,7 @@ export function save(id: number, data: UserVo): Promise<ResponseStruct<null>> {
 }
 
 export function deleteByIds(ids: number[]): Promise<ResponseStruct<null>> {
-  return useHttp().delete('/admin/user', { data: ids })
+  return useHttp().delete('/admin/user', { data: { ids } })
 }
 
 export function resetPassword(id: number): Promise<ResponseStruct<null>> {

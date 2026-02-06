@@ -32,10 +32,10 @@ final class MenuCommandService
     }
 
     /**
-     * @param array<int> $ids
+     * @param \App\Domain\Permission\Contract\Common\DeleteInput $input
      */
-    public function delete(array $ids): int
+    public function delete(\App\Domain\Permission\Contract\Common\DeleteInput $input): int
     {
-        return $this->menuService->delete($ids);
+        return $this->menuService->delete($input->getIds());
     }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Domain\Permission\Contract\Role\RoleGrantPermissionsInput;
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Domain\Permission\Service\RoleService;
@@ -33,11 +34,11 @@ final class RoleCommandService
     }
 
     /**
-     * @param array<int> $ids
+     * @param DeleteInput $input
      */
-    public function delete(array $ids): int
+    public function delete(DeleteInput $input): int
     {
-        return $this->roleService->delete($ids);
+        return $this->roleService->delete($input->getIds());
     }
 
     public function grantPermissions(RoleGrantPermissionsInput $input): void

@@ -39,7 +39,7 @@ export function save(id: number, data: RoleVo): Promise<ResponseStruct<null>> {
 }
 
 export function deleteByIds(ids: number[]): Promise<ResponseStruct<null>> {
-  return useHttp().delete('/admin/role', { data: ids })
+  return useHttp().delete('/admin/role', { data: { ids } })
 }
 
 export function getRolePermission(id: number): Promise<ResponseStruct<null>> {

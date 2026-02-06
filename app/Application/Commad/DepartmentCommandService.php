@@ -48,10 +48,10 @@ final class DepartmentCommandService
     }
 
     /**
-     * @param array<int|string> $ids
+     * @param \App\Domain\Permission\Contract\Common\DeleteInput $input
      */
-    public function delete(array $ids): int
+    public function delete(\App\Domain\Permission\Contract\Common\DeleteInput $input): int
     {
-        return $this->repository->deleteByIds($ids);
+        return $this->repository->deleteByIds($input->getIds());
     }
 }

@@ -77,7 +77,13 @@ final class MenuController extends AbstractController
     #[Permission(code: 'permission:menu:delete')]
     public function delete(): Result
     {
-        $this->commandService->delete($this->getRequestData());
+        $requestData = $this->getRequestData();
+        $ids = $requestData['ids'] ?? [];
+        $dto = new \App\Interface\Admin\DTO\Permission\DeleteDto();
+        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto->operator_id = $this->user->id();
+        
+        $this->commandService->delete($dto);
         return $this->success();
     }
 }

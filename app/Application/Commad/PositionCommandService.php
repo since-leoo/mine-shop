@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Domain\Permission\Contract\Position\PositionSetDataPermissionInput;
 use App\Domain\Permission\Repository\PositionRepository;
 use App\Infrastructure\Model\Permission\Position;
@@ -37,11 +38,11 @@ final class PositionCommandService
     }
 
     /**
-     * @param array<int|string> $ids
+     * @param DeleteInput $input
      */
-    public function delete(array $ids): int
+    public function delete(DeleteInput $input): int
     {
-        return $this->repository->deleteByIds($ids);
+        return $this->repository->deleteByIds($input->getIds());
     }
 
     public function setDataPermission(PositionSetDataPermissionInput $input): bool

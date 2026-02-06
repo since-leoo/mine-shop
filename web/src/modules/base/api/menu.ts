@@ -37,5 +37,5 @@ export function save(id: number, data: MenuVo): Promise<ResponseStruct<null>> {
 }
 
 export function deleteByIds(ids: number[]): Promise<ResponseStruct<null>> {
-  return useHttp().delete('/admin/menu', { data: ids })
+  return useHttp().delete('/admin/menu', { data: { ids } })
 }

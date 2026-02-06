@@ -39,5 +39,5 @@ export function setDataScope(id: number, data: PositionVo): Promise<ResponseStru
 }
 
 export function deleteByIds(ids: number[]): Promise<ResponseStruct<null>> {
-  return useHttp().delete('/admin/position', { data: ids })
+  return useHttp().delete('/admin/position', { data: { ids } })
 }
