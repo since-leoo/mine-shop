@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Auth\Service;
 
+use App\Domain\Auth\Contract\LoginInput;
+
 use App\Domain\Auth\ValueObject\TokenPair;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\Auth\JwtInBlackException;
 use App\Infrastructure\Exception\System\BusinessException;
-use App\Interface\Admin\DTO\PassportLoginDto;
 use App\Interface\Common\ResultCode;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
@@ -42,21 +43,21 @@ final class AuthService extends IService
     /**
      * 用户登录方法，验证用户凭据并生成访问令牌和刷新令牌.
      *
-     * @param PassportLoginDto $dto 登录数据传输对象，包含用户名、密码等信息
+     * @param LoginInput $input 登录数据传输对象，包含用户名、密码等信息
      * @return TokenPair 返回包含访问令牌和刷新令牌的对象
      * @throws BusinessException 当用户不存在、密码错误或账户被禁用时抛出异常
      */
-    public function login(PassportLoginDto $dto): TokenPair
+    public function login(LoginInput $input): TokenPair
     {
         // 获取用户信息
-        $user = $this->repository->findByUnameType($dto->username, $dto->userType);
+        $user = $this->repository->findByUnameType($input->getUsername(), $input->getUserType());
 
         if (! $user) {
             throw new BusinessException(ResultCode::NOT_FOUND, trans('auth.password_error'));
         }
         $userEntity = UserMapper::fromModel($user);
 
-        if (! $userEntity->verifyPassword($dto)) {
+        if (! $userEntity->verifyPassword($input->getPassword())) {
             throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, trans('auth.password_error'));
         }
 
@@ -64,7 +65,7 @@ final class AuthService extends IService
             throw new BusinessException(ResultCode::DISABLED);
         }
 
-        event(new UserLoginEvent($user, $dto->ip, $dto->os, $dto->browser));
+        event(new UserLoginEvent($user, $input->getClientInfo()->getIp(), $input->getClientInfo()->getOs(), $input->getClientInfo()->getBrowser()));
 
         return $this->buildTokenPair((string) $user->id);
     }

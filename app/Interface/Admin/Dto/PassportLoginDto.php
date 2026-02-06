@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\DTO;
 
+use App\Domain\Auth\Contract\LoginInput;
 use App\Domain\Auth\Enum\Type;
+use App\Domain\Auth\ValueObject\ClientInfo;
 
-final class PassportLoginDto
+final class PassportLoginDto implements LoginInput
 {
     public string $username = '';
 
@@ -43,5 +45,29 @@ final class PassportLoginDto
             'browser' => $this->browser,
             'os' => $this->os,
         ];
+    }
+
+    // -- LoginInput contract implementation --
+    public function getUsername(): string
+    {
+        return $this->username;
+    }
+
+    public function getPassword(): string
+    {
+        return $this->password;
+    }
+
+    public function getUserType(): Type
+    {
+        return $this->userType;
+    }
+
+    public function getClientInfo(): ClientInfo
+    {
+        return (new ClientInfo())
+            ->setIp($this->ip)
+            ->setBrowser($this->browser)
+            ->setOs($this->os);
     }
 }

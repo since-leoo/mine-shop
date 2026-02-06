@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Auth\Contract\LoginInput;
 use App\Domain\Auth\Service\AuthService;
 use App\Domain\Auth\ValueObject\TokenPair;
-use App\Interface\Admin\DTO\PassportLoginDto;
 use Lcobucci\JWT\UnencryptedToken;
 
 /**
@@ -32,10 +32,10 @@ final class AuthCommandService
     /**
      * 用户登录方法，通过传递的登录数据进行身份验证并返回令牌对。
      *
-     * @param PassportLoginDto $dto 登录数据传输对象，包含用户凭证信息
+     * @param LoginInput $dto 登录数据传输对象，包含用户凭证信息
      * @return TokenPair 返回包含访问令牌和刷新令牌的令牌对
      */
-    public function login(PassportLoginDto $dto): TokenPair
+    public function login(LoginInput $dto): TokenPair
     {
         return $this->authService->login($dto);
     }
