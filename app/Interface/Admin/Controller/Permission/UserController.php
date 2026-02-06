@@ -14,7 +14,6 @@ namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\UserCommandService;
 use App\Application\Mapper\PermissionQueryAssembler;
-use App\Application\Mapper\UserAssembler;
 use App\Application\Query\UserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
@@ -25,7 +24,6 @@ use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
-use Hyperf\Collection\Arr;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
@@ -65,11 +63,7 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:update')]
     public function updateInfo(UserRequest $request): Result
     {
-        $entity = UserAssembler::toUpdateEntity(
-            $this->currentUser->id(),
-            Arr::except($request->validated(), ['password'])
-        );
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($this->currentUser->id()));
         return $this->success();
     }
 
@@ -86,10 +80,7 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:save')]
     public function create(UserRequest $request): Result
     {
-        $entity = UserAssembler::toCreateEntity(array_merge($request->validated(), [
-            'created_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->create($entity);
+        $this->commandService->create($request->toDto($this->currentUser->id()));
         return $this->success();
     }
 
@@ -105,10 +96,7 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:update')]
     public function save(int $userId, UserRequest $request): Result
     {
-        $entity = UserAssembler::toUpdateEntity($userId, array_merge($request->validated(), [
-            'updated_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($userId));
         return $this->success();
     }
 
@@ -116,11 +104,13 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:getRole')]
     public function getUserRole(int $userId): Result
     {
-        return $this->success($this->queryService->getRoles($userId)->map(static fn (Role $role) => $role->only([
-            'id',
-            'code',
-            'name',
-        ])));
+        return $this->success($this->queryService->getRoles($userId)->map(
+            static fn (Role $role) => $role->only([
+                'id',
+                'code',
+                'name',
+            ])
+        ));
     }
 
     #[PutMapping(path: '{userId}/roles')]

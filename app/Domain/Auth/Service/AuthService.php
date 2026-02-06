@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Auth\Service;
 
 use App\Domain\Auth\Contract\LoginInput;
-
 use App\Domain\Auth\ValueObject\TokenPair;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\UserRepository;

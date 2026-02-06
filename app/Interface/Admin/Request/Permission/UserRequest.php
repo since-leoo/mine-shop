@@ -12,9 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Domain\Auth\Enum\Status;
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
+use App\Interface\Admin\DTO\Permission\UserDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class UserRequest extends BaseRequest
@@ -54,6 +57,16 @@ class UserRequest extends BaseRequest
             'remark' => trans('user.remark'),
             'department' => trans('user.department'),
         ];
+    }
+
+    public function toDto(int $createdById): UserDto
+    {
+        $params = $this->validated();
+        $params['status'] = $params['status'] === 1 ? Status::Normal : Status::DISABLE;
+        $params['created_by'] = $createdById;
+        $params['updated_by'] = $createdById;
+        $params['id'] = $createdById;
+        return Mapper::map($params, new UserDto());
     }
 
     /**

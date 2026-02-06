@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Service;
 
 use App\Domain\Permission\Entity\UserEntity;
+use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\RoleRepository;
 use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Abstract\IService;
@@ -81,6 +82,17 @@ final class UserService extends IService
         }
         $roleIds = $this->roleRepository->listByCodes($roleCodes)->pluck('id')->toArray();
         $user->roles()->sync($roleIds);
+    }
+
+    /**
+     * 获取用户实体.
+     */
+    public function getEntity(int $id): UserEntity
+    {
+        /** @var null|User $info */
+        $info = $this->userRepository->findById($id);
+
+        return UserMapper::fromModel($info);
     }
 
     private function syncRelations(User $user, UserEntity $entity): void

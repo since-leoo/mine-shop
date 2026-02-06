@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Permission\Entity\UserEntity;
+use App\Domain\Permission\Contract\User\UserInput;
+use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Service\UserService;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\DbConnection\Db;
@@ -25,15 +26,17 @@ final class UserCommandService
         private readonly CacheInterface $cache
     ) {}
 
-    public function create(UserEntity $entity): User
+    public function create(UserInput $input): User
     {
+        $entity = UserMapper::getNewEntity()->create($input);
         $user = Db::transaction(fn () => $this->userService->create($entity));
         $this->forgetCache((int) $user->id);
         return $user;
     }
 
-    public function update(UserEntity $entity): ?User
+    public function update(UserInput $input): ?User
     {
+        $entity = $this->userService->getEntity($input->getId())->update($input);
         $user = Db::transaction(fn () => $this->userService->update($entity));
         if ($user) {
             $this->forgetCache((int) $user->id);

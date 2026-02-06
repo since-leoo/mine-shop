@@ -18,15 +18,9 @@ use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\Collection\Arr;
 use Hyperf\DTO\Mapper;
-use Hyperf\Swagger\Annotation\Property;
-use Hyperf\Swagger\Annotation\Schema;
 use Mine\Support\Request\ClientIpRequestTrait;
 use Mine\Support\Request\ClientOsTrait;
 
-#[Schema(title: '登录请求', description: '登录请求参数', properties: [
-    new Property('username', description: '用户名', type: 'string'),
-    new Property('password', description: '密码', type: 'string'),
-])]
 class PassportLoginRequest extends BaseRequest
 {
     use ClientIpRequestTrait;

@@ -14,8 +14,9 @@ namespace App\Domain\Permission\Entity;
 
 use App\Domain\Auth\Enum\Status;
 use App\Domain\Auth\Enum\Type;
+use App\Domain\Permission\Contract\User\UserInput;
+use App\Domain\Permission\Enum\DataPermission\PolicyType;
 use App\Domain\Permission\ValueObject\DataPolicy;
-use App\Interface\Admin\DTO\PassportLoginDto;
 
 /**
  * 用户实体.
@@ -327,9 +328,9 @@ final class UserEntity
         return $this->policyDirty;
     }
 
-    public function verifyPassword(PassportLoginDto $dto): bool
+    public function verifyPassword(string $raw): bool
     {
-        return password_verify($dto->password, $this->password);
+        return $this->password !== null && password_verify($raw, $this->password);
     }
 
     /**
@@ -381,6 +382,66 @@ final class UserEntity
         if ($isCreate && ($this->password === null || $this->password === '')) {
             throw new \DomainException('新增用户必须设置密码');
         }
+    }
+
+    /**
+     * 创建.
+     */
+    public function create(UserInput $input): self
+    {
+        $input->getUsername() && $this->setUsername($input->getUsername());
+        $input->getPassword() && $this->setPassword($input->getPassword());
+        $input->getNickname() && $this->setNickname($input->getNickname());
+        $input->getPhone() && $this->setPhone($input->getPhone());
+        $input->getEmail() && $this->setEmail($input->getEmail());
+        $input->getAvatar() && $this->setAvatar($input->getAvatar());
+        $input->getSigned() && $this->setSigned($input->getSigned());
+        $input->getRemark() && $this->setRemark($input->getRemark());
+        $input->getUserType() && $this->setUserType($input->getUserType());
+        $input->getStatus() && $this->setStatus($input->getStatus());
+        $input->getBackendSetting() && $this->setBackendSetting($input->getBackendSetting());
+        $input->getCreatedBy() && $this->setCreatedBy($input->getCreatedBy());
+        $input->getUpdatedBy() && $this->setUpdatedBy($input->getUpdatedBy());
+        $input->getDepartmentIds() && $this->setDepartmentIds(array_map('intval', $input->getDepartmentIds()));
+        $input->getPositionIds() && $this->setPositionIds(array_map('intval', $input->getPositionIds()));
+
+        // 数据权限策略
+        if ($policy = $input->getPolicy()) {
+            $vo = new DataPolicy();
+            ! empty($policy['id']) && $vo->setId((int) $policy['id']);
+            ! empty($policy['policy_type']) && $vo->setType(PolicyType::from((string) $policy['policy_type']));
+            ! empty($policy['value']) && $vo->setValue((array) $policy['value']);
+            $this->setPolicy($vo);
+        }
+        return $this;
+    }
+
+    public function update(UserInput $input): self
+    {
+        $input->getUsername() && $this->setUsername($input->getUsername());
+        $input->getPassword() && $this->setPassword($input->getPassword());
+        $input->getNickname() && $this->setNickname($input->getNickname());
+        $input->getPhone() && $this->setPhone($input->getPhone());
+        $input->getEmail() && $this->setEmail($input->getEmail());
+        $input->getAvatar() && $this->setAvatar($input->getAvatar());
+        $input->getSigned() && $this->setSigned($input->getSigned());
+        $input->getRemark() && $this->setRemark($input->getRemark());
+        $input->getUserType() && $this->setUserType($input->getUserType());
+        $input->getStatus() && $this->setStatus($input->getStatus());
+        $input->getBackendSetting() && $this->setBackendSetting($input->getBackendSetting());
+        $input->getUpdatedBy() && $this->setUpdatedBy($input->getUpdatedBy());
+        $input->getDepartmentIds() && $this->setDepartmentIds(array_map('intval', $input->getDepartmentIds()));
+        $input->getPositionIds() && $this->setPositionIds(array_map('intval', $input->getPositionIds()));
+
+        // 数据权限策略
+        if ($policy = $input->getPolicy()) {
+            $vo = new DataPolicy();
+            ! empty($policy['id']) && $vo->setId((int) $policy['id']);
+            ! empty($policy['policy_type']) && $vo->setType(PolicyType::from((string) $policy['policy_type']));
+            ! empty($policy['value']) && $vo->setValue((array) $policy['value']);
+            $this->setPolicy($vo);
+        }
+        return $this;
     }
 
     private function markDirty(string $field): void

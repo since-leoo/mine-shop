@@ -34,16 +34,16 @@ class UserMapper
         // 将模型中的属性逐个映射到实体对象中
         $entity->setId($model->id);
         $entity->setUsername($model->username);
-        $entity->setAvatar($model->avatar);
-        $entity->setEmail($model->email);
-        $entity->setBackendSetting($model->backend_setting);
-        $entity->setRemark($model->remark);
-        $entity->setNickname($model->nickname);
+        $entity->setAvatar($model->avatar ?? '');
+        $entity->setEmail($model->email ?? '');
+        $entity->setBackendSetting($model->backend_setting ?? []);
+        $entity->setRemark($model->remark ?? '');
+        $entity->setNickname($model->nickname ?? '');
         $entity->setPassword($model->password);
-        $entity->setCreatedBy($model->created_by);
-        $entity->setPhone($model->phone);
-        $entity->setSigned($model->signed);
-        $entity->setUpdatedBy($model->updated_by);
+        $entity->setCreatedBy($model->created_by ?? 1);
+        $entity->setPhone($model->phone ?? '');
+        $entity->setSigned($model->signed ?? '');
+        $entity->setUpdatedBy($model->updated_by ?? 1);
         $entity->setUserType($model->user_type);
         $entity->setStatus($model->status);
 
@@ -58,7 +58,6 @@ class UserMapper
      */
     public static function getNewEntity(): UserEntity
     {
-        // 直接返回一个新的 UserEntity 对象
         return new UserEntity();
     }
 }
