@@ -12,14 +12,21 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request;
 
+use App\Domain\Auth\Enum\Type;
+use App\Interface\Admin\Dto\PassportLoginDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\Collection\Arr;
+use Hyperf\DTO\Mapper;
 use Hyperf\Swagger\Annotation\Property;
 use Hyperf\Swagger\Annotation\Schema;
 use Mine\Support\Request\ClientIpRequestTrait;
 use Mine\Support\Request\ClientOsTrait;
 
+#[Schema(title: '登录请求', description: '登录请求参数', properties: [
+    new Property('username', description: '用户名', type: 'string'),
+    new Property('password', description: '密码', type: 'string'),
+])]
 class PassportLoginRequest extends BaseRequest
 {
     use ClientIpRequestTrait;
@@ -45,5 +52,17 @@ class PassportLoginRequest extends BaseRequest
     public function ip(): string
     {
         return Arr::first($this->getClientIps(), static fn ($ip) => $ip, '0.0.0.0');
+    }
+
+    public function toDto(): PassportLoginDto
+    {
+        $dto = Mapper::map($this->validated(), new PassportLoginDto());
+        $dto->userType = Type::SYSTEM;
+
+        return $dto->withClient(
+            $this->ip(),
+            $this->header('User-Agent') ?: 'unknown',
+            $this->os()
+        );
     }
 }

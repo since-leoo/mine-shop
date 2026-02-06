@@ -12,10 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Mapper\AuthAssembler;
 use App\Application\Commad\AuthCommandService;
-use App\Domain\Auth\Enum\Type;
 use App\Interface\Admin\Request\PassportLoginRequest;
+use App\Interface\Admin\Vo\PassportLoginVo;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
@@ -27,6 +26,7 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Mine\Jwt\Traits\RequestScopedTokenTrait;
+use Mine\Swagger\Attributes\ResultResponse;
 
 #[Controller(prefix: '/admin/passport')]
 final class PassportController extends AbstractController
@@ -41,15 +41,8 @@ final class PassportController extends AbstractController
     #[PostMapping(path: 'login')]
     public function login(PassportLoginRequest $request): Result
     {
-        $entity = AuthAssembler::toLoginEntity([
-            'username' => (string) $request->input('username'),
-            'password' => (string) $request->input('password'),
-            'user_type' => Type::SYSTEM,
-            'ip' => $request->ip(),
-            'browser' => $request->header('User-Agent') ?: 'unknown',
-            'os' => $request->os(),
-        ]);
-        return $this->success($this->authCommandService->login($entity)->toArray());
+        $dto = $request->toDto();
+        return $this->success($this->authCommandService->login($dto)->toArray());
     }
 
     #[PostMapping(path: 'logout')]
@@ -74,6 +67,9 @@ final class PassportController extends AbstractController
 
     #[PostMapping(path: 'refresh')]
     #[Middleware(RefreshTokenMiddleware::class)]
+    #[ResultResponse(
+        instance: new Result(data: new PassportLoginVo())
+    )]
     public function refresh(): Result
     {
         return $this->success($this->authCommandService->refresh($this->getToken())->toArray());

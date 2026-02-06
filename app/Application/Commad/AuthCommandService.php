@@ -12,18 +12,18 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Auth\Entity\LoginEntity;
 use App\Domain\Auth\Service\AuthService;
 use App\Domain\Auth\ValueObject\TokenPair;
+use App\Interface\Admin\Dto\PassportLoginDto;
 use Lcobucci\JWT\UnencryptedToken;
 
 final class AuthCommandService
 {
     public function __construct(private readonly AuthService $authService) {}
 
-    public function login(LoginEntity $entity): TokenPair
+    public function login(PassportLoginDto $dto): TokenPair
     {
-        return $this->authService->login($entity);
+        return $this->authService->login($dto);
     }
 
     public function logout(UnencryptedToken $token): void
