@@ -43,21 +43,12 @@ interface UserInput
 
     public function getRemark(): ?string;
 
-    /**
-     * @return array<int>
-     */
     public function getDepartmentIds(): array;
 
-    /**
-     * @return array<int>
-     */
     public function getPositionIds(): array;
 
     public function getStatus(): Status;
 
-    /**
-     * @return array<string, mixed>
-     */
     public function getBackendSetting(): array;
 
     public function getCreatedBy(): int;

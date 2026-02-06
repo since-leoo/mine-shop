@@ -40,7 +40,6 @@ final class BrandService extends IService
         if ($entity->needsSort()) {
             $entity->applySort(Brand::getNextSort());
         }
-        $entity->ensureCanPersist(true);
         return $this->repository->store($entity);
     }
 
@@ -51,7 +50,6 @@ final class BrandService extends IService
     {
         $brand = $this->repository->findById($entity->getId());
         $brand || throw new \InvalidArgumentException('品牌不存在');
-        $entity->ensureCanPersist();
         return $this->repository->update($entity);
     }
 

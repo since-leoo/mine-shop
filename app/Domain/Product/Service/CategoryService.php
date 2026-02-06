@@ -55,8 +55,6 @@ final class CategoryService extends IService
             $entity->applySort(Category::getNextSort($parentId));
         }
 
-        $entity->ensureCanPersist(true);
-
         return $this->repository->store($entity);
     }
 
@@ -72,8 +70,6 @@ final class CategoryService extends IService
         if ($parentId !== null) {
             $entity->setLevel($parentId > 0 ? $this->calculateLevel($parentId) : 1);
         }
-
-        $entity->ensureCanPersist();
 
         return $this->repository->update($entity);
     }

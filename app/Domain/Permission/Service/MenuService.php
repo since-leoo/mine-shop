@@ -24,7 +24,6 @@ final class MenuService extends IService
 
     public function create(MenuEntity $entity): Menu
     {
-        $entity->ensureCanPersist(true);
         $menu = $this->repository->create($entity->toArray());
         $this->syncButtons((int) $menu->id, $entity);
         return $menu;
@@ -32,7 +31,6 @@ final class MenuService extends IService
 
     public function update(int $id, MenuEntity $entity): bool
     {
-        $entity->ensureCanPersist();
         $payload = $entity->toArray();
         if ($payload !== []) {
             $updated = $this->repository->updateById($id, $payload);

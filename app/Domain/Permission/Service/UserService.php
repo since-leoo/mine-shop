@@ -28,7 +28,6 @@ final class UserService extends IService
 
     public function create(UserEntity $entity): User
     {
-        $entity->ensureCanPersist(true);
         /** @var User $user */
         $user = $this->userRepository->create($entity->toArray());
         $this->syncRelations($user, $entity);
@@ -37,7 +36,6 @@ final class UserService extends IService
 
     public function update(UserEntity $entity): ?User
     {
-        $entity->ensureCanPersist();
         /** @var null|User $user */
         $user = $this->userRepository->findById($entity->getId());
         if (! $user) {

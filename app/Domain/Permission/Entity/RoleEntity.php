@@ -191,20 +191,6 @@ final class RoleEntity
         );
     }
 
-    public function ensureCanPersist(bool $isCreate = false): void
-    {
-        if ($isCreate || isset($this->dirty['name'])) {
-            if (trim($this->name) === '') {
-                throw new \DomainException('角色名称不能为空');
-            }
-        }
-        if ($isCreate || isset($this->dirty['code'])) {
-            if (trim($this->code) === '') {
-                throw new \DomainException('角色编码不能为空');
-            }
-        }
-    }
-
     private function markDirty(string $field): void
     {
         $this->dirty[$field] = true;

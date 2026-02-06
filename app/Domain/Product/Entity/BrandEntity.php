@@ -169,13 +169,6 @@ final class BrandEntity
         return $this->status === BrandStatus::ACTIVE->value;
     }
 
-    public function ensureCanPersist(bool $isCreate = false): void
-    {
-        if ($isCreate && $this->name === null) {
-            throw new \DomainException('品牌名称不能为空');
-        }
-    }
-
     /**
      * 转换为数组（用于持久化）.
      *

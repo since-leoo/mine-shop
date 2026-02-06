@@ -198,13 +198,6 @@ final class CategoryEntity
         return $this->status === CategoryStatus::ACTIVE->value;
     }
 
-    public function ensureCanPersist(bool $isCreate = false): void
-    {
-        if (($isCreate || $this->name !== null) && ($this->name === null || trim($this->name) === '')) {
-            throw new \DomainException('分类名称不能为空');
-        }
-    }
-
     public function isRoot(): bool
     {
         return (int) $this->parentId === 0;

@@ -290,23 +290,6 @@ final class MenuEntity
         );
     }
 
-    public function ensureCanPersist(bool $isCreate = false): void
-    {
-        if ($isCreate && $this->id !== 0) {
-            throw new \DomainException('新增菜单不应提前设置ID');
-        }
-
-        if ($isCreate || isset($this->dirty['name'])) {
-            if (trim($this->name) === '') {
-                throw new \DomainException('菜单名称不能为空');
-            }
-        }
-
-        if (! \in_array($this->metaType(), ['M', 'C', 'I', 'L', 'B'], true)) {
-            throw new \DomainException('菜单类型不合法');
-        }
-    }
-
     /**
      * @return array<string, mixed>
      */

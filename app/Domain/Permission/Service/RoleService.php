@@ -27,13 +27,11 @@ final class RoleService extends IService
 
     public function create(RoleEntity $entity): Role
     {
-        $entity->ensureCanPersist(true);
         return $this->roleRepository->create($entity->toArray());
     }
 
     public function update(int $id, RoleEntity $entity): bool
     {
-        $entity->ensureCanPersist();
         $payload = $entity->toArray();
         if ($payload === []) {
             return true;

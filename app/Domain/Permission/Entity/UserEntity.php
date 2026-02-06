@@ -367,23 +367,6 @@ final class UserEntity
         );
     }
 
-    public function ensureCanPersist(bool $isCreate = false): void
-    {
-        if ($isCreate || isset($this->dirty['username'])) {
-            if (trim($this->username) === '') {
-                throw new \DomainException('用户名不能为空');
-            }
-        }
-        if ($isCreate || isset($this->dirty['nickname'])) {
-            if (trim($this->nickname) === '') {
-                throw new \DomainException('用户昵称不能为空');
-            }
-        }
-        if ($isCreate && ($this->password === null || $this->password === '')) {
-            throw new \DomainException('新增用户必须设置密码');
-        }
-    }
-
     /**
      * 创建.
      */
