@@ -13,23 +13,22 @@ declare(strict_types=1);
 namespace App\Interface\Api\Request\V1;
 
 use App\Interface\Common\Request\BaseRequest;
-use Hyperf\Validation\Rule;
 
-class OrderPaymentRequest extends BaseRequest
+class ProfileAuthorizeRequest extends BaseRequest
 {
-    public function rules(): array
+    public function authorizeProfileRule(): array
     {
         return [
-            'order_no' => ['required', 'string', Rule::exists('orders', 'order_no')],
-            'pay_method' => ['required', 'string', 'in:wechat,balance'],
+            'avatar_url' => 'required|url',
+            'nickname' => 'required|string',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'order_no' => '订单号',
-            'pay_method' => '支付方式',
+            'avatar_url' => '头像',
+            'nickname' => '昵称',
         ];
     }
 }

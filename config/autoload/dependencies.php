@@ -9,9 +9,7 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Application\Query\JwtTokenChecker;
-use App\Application\Query\MemberQueryService;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Product\Service\ProductSnapshotService;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;

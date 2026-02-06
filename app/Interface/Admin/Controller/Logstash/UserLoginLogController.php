@@ -33,7 +33,7 @@ final class UserLoginLogController extends AbstractController
 {
     public function __construct(
         protected readonly UserLoginLogQueryService $service,
-        protected readonly CurrentUser              $currentUser
+        protected readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]

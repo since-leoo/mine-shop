@@ -350,10 +350,7 @@ final class MemberEntity
         $this->phone = $phone;
     }
 
-    public function login(string $openId)
-    {
-
-    }
+    public function login(string $openId) {}
 
     public function toArray(): array
     {

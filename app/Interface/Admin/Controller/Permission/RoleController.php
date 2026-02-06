@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
+use App\Application\Commad\RoleCommandService;
 use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Mapper\RoleAssembler;
-use App\Application\Commad\RoleCommandService;
 use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;

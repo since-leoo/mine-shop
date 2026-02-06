@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Mapper\CategoryAssembler;
 use App\Application\Commad\CategoryCommandService;
+use App\Application\Mapper\CategoryAssembler;
 use App\Application\Query\CategoryQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

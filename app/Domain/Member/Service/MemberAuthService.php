@@ -23,7 +23,6 @@ use Carbon\Carbon;
  */
 final class MemberAuthService extends IService
 {
-
     public function __construct(
         private readonly MemberRepository $memberRepository,
     ) {}

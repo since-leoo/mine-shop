@@ -28,22 +28,16 @@ use Plugin\Wechat\Interfaces\MiniAppInterface;
  */
 final class MemberService extends IService
 {
-
     public function __construct(
         protected readonly MemberRepository $repository,
         private readonly MemberTagRepository $memberTagRepository,
         private readonly MiniAppInterface $miniApp,
     ) {}
 
-    /**
-     * @param string $openId
-     * @return null|Member
-     */
     public function getInfoByOpenId(string $openId): ?Member
     {
-        /** @var null|Member $member */
-        $member = $this->repository->findByOpenid($openId);
-        return $member;
+        /* @var null|Member $member */
+        return $this->repository->findByOpenid($openId);
     }
 
     public function getEntity(int $memberId): MemberEntity
@@ -56,7 +50,6 @@ final class MemberService extends IService
 
         return MemberMapper::fromModel($member);
     }
-
 
     /**
      * @return array<string, int>

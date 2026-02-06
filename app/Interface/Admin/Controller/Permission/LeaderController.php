@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Commad\LeaderCommandService;
+use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\LeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
+use App\Application\Commad\UserCommandService;
 use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Mapper\UserAssembler;
-use App\Application\Commad\UserCommandService;
 use App\Application\Query\UserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;

@@ -34,7 +34,7 @@ final class OrderPaymentApiService
     public function payment(int $memberId, array $payload): array
     {
         // 获取订单数据
-        $orderEntity = $this->orderService->getEntityById(0, $payload['order_no']);
+        $orderEntity = $this->orderService->getEntity(0, $payload['order_no']);
         $memberEntity = $this->memberService->getEntity($memberId);
 
         $systemPayment = $this->mallSettingService->payment();

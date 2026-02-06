@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Api\Order;
 
 use App\Domain\Order\Event\OrderCreatedEvent;
+use App\Domain\Order\Mapper\OrderMapper;
 use App\Domain\Order\Service\OrderService;
 use App\Domain\SystemSetting\Service\MallSettingService;
 
@@ -25,13 +26,11 @@ final class OrderCommandApiService
         private readonly MallSettingService $mallSettingService
     ) {}
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function preview(int $memberId, array $payload): array
+    public function preview(OrderCreateDto $dto): array
     {
-        $command = $this->payloadFactory->make($memberId, $payload);
-        $draft = $this->orderService->preview($command);
+        $orderEntity = OrderMapper::getNewEntity();
+        $orderEntity->create($dto);
+        $draft = $this->orderService->preview($orderEntity);
 
         return $this->transformer->transform($draft);
     }

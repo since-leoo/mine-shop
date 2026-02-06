@@ -13,13 +13,11 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Service;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
-use App\Domain\Coupon\Mapper\CouponMapper;
 use App\Domain\Coupon\Mapper\CouponUserMapper;
 use App\Domain\Coupon\Repository\CouponRepository;
 use App\Domain\Coupon\Repository\CouponUserRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
-use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;

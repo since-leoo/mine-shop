@@ -27,7 +27,7 @@ final class OrderItemEntity
     /**
      * @var array<string, mixed>
      */
-    private array $specValues = [];
+    private ?array $specValues = [];
 
     private float $unitPrice = 0.0;
 
@@ -90,9 +90,9 @@ final class OrderItemEntity
     /**
      * @param array<string, mixed> $specValues
      */
-    public function setSpecValues(array $specValues): void
+    public function setSpecValues(?array $specValues): void
     {
-        $this->specValues = $specValues;
+        $this->specValues = $specValues ?? [];
     }
 
     /**

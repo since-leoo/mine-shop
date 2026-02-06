@@ -38,7 +38,7 @@ final class GroupBuyQueryService
      */
     public function find(int $id): ?GroupBuy
     {
-        /** @var GroupBuy|null $groupBuy */
+        /** @var null|GroupBuy $groupBuy */
         $groupBuy = $this->groupBuyService->findById($id);
         $groupBuy?->load(['product:id,name,main_image', 'sku:id,sku_name,sale_price']);
         return $groupBuy;

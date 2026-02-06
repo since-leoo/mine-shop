@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Domain\Order\Entity\OrderCancelEntity;
-use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Entity\OrderShipEntity;
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
@@ -26,26 +25,11 @@ final class OrderCommandService
 
     /**
      * @return array<string, mixed>
-     * @throws \Throwable
-     */
-    public function submit(OrderEntity $command): array
-    {
-        $order = $this->orderService->submit($command);
-        return $this->orderService->findDetail($order->getId()) ?? [];
-    }
-
-    public function preview(OrderEntity $command): OrderEntity
-    {
-        return $this->orderService->preview($command);
-    }
-
-    /**
-     * @return array<string, mixed>
      */
     #[Transactional]
     public function ship(OrderShipEntity $orderShipEntity): array
     {
-        $orderEntity = $this->orderService->getEntityById($orderShipEntity->getOrderId());
+        $orderEntity = $this->orderService->getEntity($orderShipEntity->getOrderId());
 
         $orderEntity->setShipEntity($orderShipEntity);
         $orderEntity->ship();
@@ -63,7 +47,7 @@ final class OrderCommandService
     #[Transactional]
     public function cancel(OrderCancelEntity $orderCancelEntity): array
     {
-        $orderEntity = $this->orderService->getEntityById($orderCancelEntity->getOrderId());
+        $orderEntity = $this->orderService->getEntity($orderCancelEntity->getOrderId());
 
         $orderEntity->cancel();
 

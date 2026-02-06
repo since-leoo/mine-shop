@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Repository;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
-use App\Domain\Coupon\Mapper\CouponUserMapper;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
@@ -27,7 +26,6 @@ use Hyperf\Database\Model\Builder;
  */
 final class CouponUserRepository extends IRepository
 {
-
     public function __construct(protected readonly CouponUser $model) {}
 
     public function createFromEntity(CouponUserEntity $entity): CouponUser
@@ -128,5 +126,4 @@ final class CouponUserRepository extends IRepository
             ->pluck('total', 'coupon_id')
             ->toArray();
     }
-
 }

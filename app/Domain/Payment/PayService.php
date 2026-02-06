@@ -14,7 +14,6 @@ namespace App\Domain\Payment;
 
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
-use App\Domain\Member\Service\MemberService;
 use App\Domain\Member\Service\MemberWalletService;
 use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Enum\OrderStatus;

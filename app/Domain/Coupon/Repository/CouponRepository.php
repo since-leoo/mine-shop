@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Coupon\Repository;
 
 use App\Domain\Coupon\Entity\CouponEntity;
-use App\Domain\Coupon\Mapper\CouponMapper;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
@@ -28,7 +27,6 @@ use Hyperf\Database\Model\Collection;
  */
 final class CouponRepository extends IRepository
 {
-
     /**
      * 构造函数.
      *

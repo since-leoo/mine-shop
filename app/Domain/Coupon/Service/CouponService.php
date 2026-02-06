@@ -33,7 +33,7 @@ final class CouponService extends IService
 
     public function getEntity(int $id): CouponEntity
     {
-        /** @var Coupon|null $coupon */
+        /** @var null|Coupon $coupon */
         $coupon = $this->findById($id);
         if (! $coupon) {
             throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');

@@ -24,7 +24,7 @@ class UserOperationSubscriber implements ListenerInterface
 {
     public function __construct(
         private readonly UserOperationLogCommandService $service,
-        private readonly UserQueryService               $userQueryService
+        private readonly UserQueryService $userQueryService
     ) {}
 
     public function listen(): array

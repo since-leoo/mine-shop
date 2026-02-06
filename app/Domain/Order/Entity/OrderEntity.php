@@ -454,4 +454,13 @@ final class OrderEntity
             'package_count' => $this->getPackageCount(),
         ];
     }
+
+    public function create(OrderCreateDto $dto): void
+    {
+        $this->setMemberId($dto->memberId);
+        $this->setOrderType($dto->orderType);
+        $this->replaceItemsFromPayload($dto->items);
+        $this->useAddressPayload($dto->address);
+        $this->setBuyerRemark($dto->remark);
+    }
 }

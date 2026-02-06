@@ -19,19 +19,11 @@ final class MemberTagCommandService
 {
     public function __construct(private readonly MemberTagService $memberTagService) {}
 
-    /**
-     * @param MemberTagEntity $entity
-     * @return void
-     */
     public function create(MemberTagEntity $entity): void
     {
         $this->memberTagService->create($entity);
     }
 
-    /**
-     * @param MemberTagEntity $entity
-     * @return void
-     */
     public function update(MemberTagEntity $entity): void
     {
         $this->memberTagService->update($entity);

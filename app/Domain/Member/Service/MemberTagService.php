@@ -23,19 +23,11 @@ final class MemberTagService extends IService
 {
     public function __construct(public readonly MemberTagRepository $repository) {}
 
-    /**
-     * @param MemberTagEntity $entity
-     * @return void
-     */
     public function create(MemberTagEntity $entity): void
     {
         $this->repository->save($entity);
     }
 
-    /**
-     * @param MemberTagEntity $entity
-     * @return void
-     */
     public function update(MemberTagEntity $entity): void
     {
         $this->repository->updateEntity($entity);
@@ -53,5 +45,4 @@ final class MemberTagService extends IService
     {
         return $this->repository->allActive();
     }
-
 }

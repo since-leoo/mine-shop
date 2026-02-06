@@ -35,4 +35,13 @@ final class PassportLoginDto
         $this->os = trim($os) === '' ? 'unknown' : $os;
         return $this;
     }
+
+    public function getClient(): array
+    {
+        return [
+            'ip' => $this->ip,
+            'browser' => $this->browser,
+            'os' => $this->os,
+        ];
+    }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
+use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Enum\OrderStatus;
 use App\Infrastructure\Model\Concerns\LoadsRelations;
 use App\Infrastructure\Model\Member\Member;
@@ -45,11 +46,11 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|Carbon $expire_time
  * @property Carbon $created_at
  * @property Carbon $updated_at
- * @method Builder pending() 获取待付款订单
- * @method Builder paid() 获取已付款订单
- * @method Builder shipped() 获取已发货订单
- * @method Builder completed() 获取已完成订单
- * @method Builder afterSale() 获取售后订单
+ * @method Builder pendingStatus() 获取待付款订单
+ * @method Builder paidStatus() 获取已付款订单
+ * @method Builder shippedStatus() 获取已发货订单
+ * @method Builder completedStatus() 获取已完成订单
+ * @method Builder afterSaleStatus() 获取售后订单
  */
 class Order extends Model
 {
@@ -173,17 +174,17 @@ class Order extends Model
         return $relation;
     }
 
-    public function scopePending()
+    public function scopePendingStatus()
     {
         return self::where('status', OrderStatus::PENDING->value);
     }
 
-    public function scopePaid()
+    public function scopePaidStatus()
     {
         return self::where('status', OrderStatus::PAID->value);
     }
 
-    public function scopeShipped()
+    public function scopeShippedStatus()
     {
         return self::whereIn('status', [
             OrderStatus::PARTIAL_SHIPPED->value,
@@ -191,16 +192,42 @@ class Order extends Model
         ]);
     }
 
-    public function scopeCompleted()
+    public function scopeCompletedStatus()
     {
         return self::where('status', OrderStatus::COMPLETED->value);
     }
 
-    public function scopeAfterSale()
+    public function scopeAfterSaleStatus()
     {
         return self::whereIn('status', [
             OrderStatus::REFUNDED->value,
             OrderStatus::CANCELLED->value,
         ]);
+    }
+
+    public function ship(OrderEntity $entity): void
+    {
+        $this->status = $entity->getStatus();
+        $this->shipping_status = $entity->getShippingStatus();
+        $this->package_count = $entity->getPackageCount();
+        $this->save();
+    }
+
+    public function cancel(OrderEntity $entity): void
+    {
+        $this->status = $entity->getStatus();
+        $this->shipping_status = $entity->getShippingStatus();
+        $this->package_count = $entity->getPackageCount();
+        $this->save();
+    }
+
+    public function paid(OrderEntity $entity): void
+    {
+        $this->status = $entity->getStatus();
+        $this->pay_status = $entity->getPayStatus();
+        $this->pay_no = $entity->getPayNo();
+        $this->pay_time = $entity->getPayTime();
+        $this->pay_method = $entity->getPayMethod();
+        $this->save();
     }
 }

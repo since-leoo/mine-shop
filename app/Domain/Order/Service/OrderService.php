@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Domain\Order\Service;
 
 use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
+use App\Domain\Order\Mapper\OrderMapper;
 use App\Domain\Order\Repository\OrderRepository;
 use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Abstract\IService;
@@ -42,25 +42,15 @@ final class OrderService extends IService
     /**
      * 获取订单.
      */
-    public function getEntityById(int $id = 0, string $orderNo = ''): OrderEntity
+    public function getEntity(int $id = 0, string $orderNo = ''): OrderEntity
     {
         /** @var null|Order $order */
-        $order = $id
-            ? parent::findById($id)
-            : $this->repository->findByOrderNo($orderNo);
+        $order = $id ? $this->repository->findById($id) : $this->repository->findByOrderNo($orderNo);
 
-        if (! $order) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '订单不存在');
-        }
-
-        $orderEntity = OrderEntity::fromModel($order);
+        $orderEntity = OrderMapper::fromModel($order);
 
         if ($orderEntity->getMemberId() !== memberId()) {
             throw new BusinessException(ResultCode::FORBIDDEN, '订单不存在');
-        }
-
-        if ($orderEntity->getPayStatus() === OrderStatus::PAID->value) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '订单已支付');
         }
 
         return $orderEntity;

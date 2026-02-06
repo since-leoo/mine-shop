@@ -26,7 +26,6 @@ final class GroupBuyService extends IService
         public readonly GroupBuyRepository $repository
     ) {}
 
-
     /**
      * 创建团购活动.
      */

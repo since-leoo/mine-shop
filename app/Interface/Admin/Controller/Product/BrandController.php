@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Mapper\BrandAssembler;
 use App\Application\Commad\BrandCommandService;
+use App\Application\Mapper\BrandAssembler;
 use App\Application\Query\BrandQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

@@ -32,7 +32,7 @@ final class OrderController extends AbstractController
 {
     public function __construct(
         private readonly OrderCommandApiService $checkoutService,
-        private readonly CurrentMember          $currentMember,
+        private readonly CurrentMember $currentMember,
         private readonly OrderPaymentApiService $paymentApiService
     ) {}
 

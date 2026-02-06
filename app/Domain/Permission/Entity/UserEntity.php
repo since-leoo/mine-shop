@@ -15,6 +15,7 @@ namespace App\Domain\Permission\Entity;
 use App\Domain\Auth\Enum\Status;
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Permission\ValueObject\DataPolicy;
+use App\Interface\Admin\Dto\PassportLoginDto;
 
 /**
  * 用户实体.
@@ -324,6 +325,11 @@ final class UserEntity
     public function shouldSyncPolicy(): bool
     {
         return $this->policyDirty;
+    }
+
+    public function verifyPassword(PassportLoginDto $dto): bool
+    {
+        return password_verify($dto->password, $this->password);
     }
 
     /**

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Coupon;
 
-use App\Application\Mapper\CouponAssembler;
 use App\Application\Commad\CouponCommandService;
 use App\Application\Commad\CouponUserCommandService;
+use App\Application\Mapper\CouponAssembler;
 use App\Application\Query\CouponQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

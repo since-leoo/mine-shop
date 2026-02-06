@@ -27,7 +27,6 @@ use Hyperf\Database\Model\Builder;
  */
 final class MemberRepository extends IRepository
 {
-
     public function __construct(protected readonly Member $model) {}
 
     public function handleItems(Collection $items): Collection

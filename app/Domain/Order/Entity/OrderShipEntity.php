@@ -25,10 +25,6 @@ final class OrderShipEntity
      */
     private array $packages = [];
 
-    private int $operatorId = 0;
-
-    private string $operatorName = '';
-
     private ?Carbon $shippedAt = null;
 
     public function setOrderId(int $orderId): void
@@ -39,26 +35,6 @@ final class OrderShipEntity
     public function getOrderId(): int
     {
         return $this->orderId;
-    }
-
-    public function setOperatorId(int $param)
-    {
-        $this->operatorId = $param;
-    }
-
-    public function setOperatorName(string $param)
-    {
-        $this->operatorName = $param;
-    }
-
-    public function getOperatorId(): int
-    {
-        return $this->operatorId;
-    }
-
-    public function getOperatorName(): string
-    {
-        return $this->operatorName;
     }
 
     /**

@@ -64,10 +64,6 @@ final class MemberAuthApiService
 
     /**
      * 绑定手机号.
-     *
-     * @param int $memberId
-     * @param string $code
-     * @return void
      */
     public function bindPhoneNumber(int $memberId, string $code): void
     {

@@ -83,17 +83,14 @@ final class OrderRepository extends IRepository
      */
     public function ship(OrderEntity $entity): void
     {
-        /** @var ?Order $order */
+        /** @var null|Order $order */
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
             throw new \RuntimeException('订单不存在');
         }
 
-        $order->status = $entity->getStatus();
-        $order->shipping_status = $entity->getShippingStatus();
-        $order->package_count = $entity->getPackageCount();
-        $order->save();
+        $order->ship($entity);
 
         $order->packages()->createMany($entity->getShipEntity()->getPackagePayloads());
     }
@@ -103,39 +100,49 @@ final class OrderRepository extends IRepository
      */
     public function cancel(OrderEntity $entity): void
     {
-        /** @var Order $order */
-        $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();
+        /** @var null|Order $order */
+        $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
             throw new \RuntimeException('订单不存在');
         }
-
-        $order->status = $entity->getStatus();
-        $order->shipping_status = $entity->getShippingStatus();
-        $order->pay_status = $entity->getPayStatus();
-        $order->save();
+        $order->cancel($entity);
     }
 
     public function paid(OrderEntity $entity): void
     {
-        /** @var Order $order */
-        $order = $this->model::whereKey($entity->getId())->lockForUpdate()->first();
+        /** @var null|Order $order */
+        $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
             throw new \RuntimeException('订单不存在');
         }
 
-        $order->status = $entity->getStatus();
-        $order->pay_status = $entity->getPayStatus();
-        $order->pay_no = $entity->getPayNo();
-        $order->pay_time = $entity->getPayTime();
-        $order->pay_method = $entity->getPayMethod();
-        $order->save();
+        $order->paid($entity);
+    }
+
+    public function findById(int $id): ?Order
+    {
+        /** @var null|Order $order */
+        $order = parent::findById($id);
+
+        if (! $order) {
+            throw new \RuntimeException('订单不存在');
+        }
+
+        return $order;
     }
 
     public function findByOrderNo(string $orderNo): ?Order
     {
-        return $this->model::where('order_no', $orderNo)->first();
+        /** @var null|Order $order */
+        $order = $this->model::where('order_no', $orderNo)->first();
+
+        if (! $order) {
+            throw new \RuntimeException('订单不存在');
+        }
+
+        return $order;
     }
 
     /**
@@ -144,11 +151,11 @@ final class OrderRepository extends IRepository
     public function countByMemberAndStatuses(int $memberId): array
     {
         $where = static fn (Builder $query) => $query->where('member_id', $memberId);
-        $pending = $this->model->pending()->where($where)->count();
-        $paid = $this->model->paid()->where($where)->count();
-        $shipped = $this->model->shipped()->where($where)->count();
-        $completed = $this->model->completed()->where($where)->count();
-        $afterSale = $this->model->afterSale()->where($where)->count();
+        $pending = $this->model->pendingStatus()->where($where)->count();
+        $paid = $this->model->paidStatus()->where($where)->count();
+        $shipped = $this->model->shippedStatus()->where($where)->count();
+        $completed = $this->model->completedStatus()->where($where)->count();
+        $afterSale = $this->model->afterSaleStatus()->where($where)->count();
 
         return [$pending, $paid, $shipped, $completed, $afterSale];
     }

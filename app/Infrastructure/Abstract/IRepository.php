@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Abstract;
 
-use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Traits\BootTrait;
 use App\Infrastructure\Traits\RepositoryOrderByTrait;
 use Hyperf\Collection\Collection;
@@ -124,7 +123,7 @@ abstract class IRepository
             $info && $info->delete();
         }, $ids);
 
-        return count($ids);
+        return \count($ids);
     }
 
     public function forceDeleteById(mixed $id): bool
