@@ -12,21 +12,30 @@ declare(strict_types=1);
 
 namespace App\Domain\Coupon\Entity;
 
+use App\Domain\Coupon\Contract\CouponUserInput;
+
 /**
  * 用户优惠券实体.
  */
 final class CouponUserEntity
 {
-    public function __construct(
-        private int $id = 0,
-        private ?int $couponId = null,
-        private ?int $memberId = null,
-        private ?int $orderId = null,
-        private ?string $status = null,
-        private ?string $receivedAt = null,
-        private ?string $usedAt = null,
-        private ?string $expireAt = null
-    ) {}
+    private int $id = 0;
+
+    private ?int $couponId = null;
+
+    private ?int $memberId = null;
+
+    private ?int $orderId = null;
+
+    private ?string $status = 'unused';
+
+    private ?string $receivedAt = null;
+
+    private ?string $usedAt = null;
+
+    private ?string $expireAt = null;
+
+    public function __construct() {}
 
     public function getId(): int
     {
@@ -118,13 +127,66 @@ final class CouponUserEntity
 
     public static function issue(int $couponId, int $memberId, string $receivedAt, string $expireAt): self
     {
-        return new self(
-            couponId: $couponId,
-            memberId: $memberId,
-            status: 'unused',
-            receivedAt: $receivedAt,
-            expireAt: $expireAt
-        );
+        $entity = new self();
+        $entity->couponId = $couponId;
+        $entity->memberId = $memberId;
+        $entity->status = 'unused';
+        $entity->receivedAt = $receivedAt;
+        $entity->expireAt = $expireAt;
+        return $entity;
+    }
+
+    /**
+     * Create a new CouponUserEntity from a DTO.
+     */
+    public function create(CouponUserInput $dto): self
+    {
+        $this->couponId = $dto->getCouponId();
+        $this->memberId = $dto->getMemberId();
+        $this->orderId = $dto->getOrderId();
+        $this->status = $dto->getStatus() ?? 'unused';
+        $this->receivedAt = $dto->getReceivedAt();
+        $this->usedAt = $dto->getUsedAt();
+        $this->expireAt = $dto->getExpireAt();
+
+        return $this;
+    }
+
+    /**
+     * Update the CouponUserEntity from a DTO.
+     * Only updates properties that are non-null in the DTO.
+     */
+    public function update(CouponUserInput $dto): self
+    {
+        if ($dto->getCouponId() !== null) {
+            $this->couponId = $dto->getCouponId();
+        }
+
+        if ($dto->getMemberId() !== null) {
+            $this->memberId = $dto->getMemberId();
+        }
+
+        if ($dto->getOrderId() !== null) {
+            $this->orderId = $dto->getOrderId();
+        }
+
+        if ($dto->getStatus() !== null) {
+            $this->status = $dto->getStatus();
+        }
+
+        if ($dto->getReceivedAt() !== null) {
+            $this->receivedAt = $dto->getReceivedAt();
+        }
+
+        if ($dto->getUsedAt() !== null) {
+            $this->usedAt = $dto->getUsedAt();
+        }
+
+        if ($dto->getExpireAt() !== null) {
+            $this->expireAt = $dto->getExpireAt();
+        }
+
+        return $this;
     }
 
     public function markExpired(): self

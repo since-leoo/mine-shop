@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Coupon\Entity;
 
+use App\Domain\Coupon\Contract\CouponInput;
 use Carbon\Carbon;
 
 /**
@@ -19,20 +20,115 @@ use Carbon\Carbon;
  */
 final class CouponEntity
 {
-    public function __construct(
-        private int $id = 0,
-        private ?string $name = null,
-        private ?string $type = null,
-        private ?float $value = null,
-        private ?float $minAmount = null,
-        private ?int $totalQuantity = null,
-        private ?int $usedQuantity = null,
-        private ?int $perUserLimit = null,
-        private ?string $startTime = null,
-        private ?string $endTime = null,
-        private ?string $status = null,
-        private ?string $description = null
-    ) {}
+    private int $id;
+
+    private ?string $name;
+
+    private ?string $type;
+
+    private ?float $value;
+
+    private ?float $minAmount;
+
+    private ?int $totalQuantity;
+
+    private ?int $usedQuantity;
+
+    private ?int $perUserLimit;
+
+    private ?string $startTime;
+
+    private ?string $endTime;
+
+    private ?string $status;
+
+    private ?string $description;
+
+    public function __construct()
+    {
+        $this->id = 0;
+        $this->name = null;
+        $this->type = null;
+        $this->value = null;
+        $this->minAmount = null;
+        $this->totalQuantity = null;
+        $this->usedQuantity = 0;
+        $this->perUserLimit = null;
+        $this->startTime = null;
+        $this->endTime = null;
+        $this->status = 'active';
+        $this->description = null;
+    }
+
+    public function create(CouponInput $dto): self
+    {
+        $this->name = $dto->getName();
+        $this->type = $dto->getType();
+        $this->value = $dto->getValue();
+        $this->minAmount = $dto->getMinAmount();
+        $this->totalQuantity = $dto->getTotalQuantity();
+        $this->usedQuantity = 0;
+        $this->perUserLimit = $dto->getPerUserLimit();
+        $this->startTime = $dto->getStartTime();
+        $this->endTime = $dto->getEndTime();
+        $this->status = 'active';
+        $this->description = $dto->getDescription();
+
+        // Validate time window
+        $this->ensureTimeWindowIsValid();
+
+        return $this;
+    }
+
+    public function update(CouponInput $dto): self
+    {
+        if ($dto->getName() !== null) {
+            $this->name = $dto->getName();
+        }
+
+        if ($dto->getType() !== null) {
+            $this->type = $dto->getType();
+        }
+
+        if ($dto->getValue() !== null) {
+            $this->value = $dto->getValue();
+        }
+
+        if ($dto->getMinAmount() !== null) {
+            $this->minAmount = $dto->getMinAmount();
+        }
+
+        if ($dto->getTotalQuantity() !== null) {
+            $this->totalQuantity = $dto->getTotalQuantity();
+        }
+
+        if ($dto->getPerUserLimit() !== null) {
+            $this->perUserLimit = $dto->getPerUserLimit();
+        }
+
+        if ($dto->getStartTime() !== null) {
+            $this->startTime = $dto->getStartTime();
+        }
+
+        if ($dto->getEndTime() !== null) {
+            $this->endTime = $dto->getEndTime();
+        }
+
+        if ($dto->getStatus() !== null) {
+            $this->status = $dto->getStatus();
+        }
+
+        if ($dto->getDescription() !== null) {
+            $this->description = $dto->getDescription();
+        }
+
+        // Validate time window if times were updated
+        if ($dto->getStartTime() !== null || $dto->getEndTime() !== null) {
+            $this->ensureTimeWindowIsValid();
+        }
+
+        return $this;
+    }
 
     public function setId(int $id): self
     {

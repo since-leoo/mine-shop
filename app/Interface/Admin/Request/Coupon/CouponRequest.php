@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Coupon;
 
+use App\Domain\Coupon\Contract\CouponInput;
+use App\Interface\Admin\DTO\Coupon\CouponDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class CouponRequest extends BaseRequest
@@ -84,5 +87,42 @@ class CouponRequest extends BaseRequest
             'status' => '状态',
             'description' => '描述',
         ];
+    }
+
+    /**
+     * 转换为DTO.
+     */
+    public function toDto(?int $id = null): CouponInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        // Convert snake_case keys to camelCase for DTO mapping
+        if (isset($params['min_amount'])) {
+            $params['minAmount'] = $params['min_amount'];
+            unset($params['min_amount']);
+        }
+
+        if (isset($params['total_quantity'])) {
+            $params['totalQuantity'] = $params['total_quantity'];
+            unset($params['total_quantity']);
+        }
+
+        if (isset($params['per_user_limit'])) {
+            $params['perUserLimit'] = $params['per_user_limit'];
+            unset($params['per_user_limit']);
+        }
+
+        if (isset($params['start_time'])) {
+            $params['startTime'] = $params['start_time'];
+            unset($params['start_time']);
+        }
+
+        if (isset($params['end_time'])) {
+            $params['endTime'] = $params['end_time'];
+            unset($params['end_time']);
+        }
+
+        return Mapper::map($params, new CouponDto());
     }
 }

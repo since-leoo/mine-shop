@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Coupon;
 
+use App\Domain\Coupon\Contract\CouponUserInput;
+use App\Interface\Admin\DTO\Coupon\CouponUserDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class CouponUserRequest extends BaseRequest
@@ -50,5 +53,47 @@ class CouponUserRequest extends BaseRequest
             'status' => '状态',
             'keyword' => '搜索关键词',
         ];
+    }
+
+    /**
+     * 转换为DTO.
+     */
+    public function toDto(?int $id = null): CouponUserInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        // Convert snake_case keys to camelCase for DTO mapping
+        if (isset($params['coupon_id'])) {
+            $params['couponId'] = $params['coupon_id'];
+            unset($params['coupon_id']);
+        }
+
+        if (isset($params['member_id'])) {
+            $params['memberId'] = $params['member_id'];
+            unset($params['member_id']);
+        }
+
+        if (isset($params['order_id'])) {
+            $params['orderId'] = $params['order_id'];
+            unset($params['order_id']);
+        }
+
+        if (isset($params['received_at'])) {
+            $params['receivedAt'] = $params['received_at'];
+            unset($params['received_at']);
+        }
+
+        if (isset($params['used_at'])) {
+            $params['usedAt'] = $params['used_at'];
+            unset($params['used_at']);
+        }
+
+        if (isset($params['expire_at'])) {
+            $params['expireAt'] = $params['expire_at'];
+            unset($params['expire_at']);
+        }
+
+        return Mapper::map($params, new CouponUserDto());
     }
 }

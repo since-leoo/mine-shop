@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Application\Query\CouponQueryService;
-use App\Domain\Coupon\Entity\CouponEntity;
+use App\Domain\Coupon\Contract\CouponInput;
 use App\Domain\Coupon\Service\CouponService;
 
 /**
@@ -32,27 +32,27 @@ final class CouponCommandService
     /**
      * 创建优惠券.
      *
-     * @param CouponEntity $entity 优惠券实体
+     * @param CouponInput $dto 优惠券输入数据传输对象
      * @return bool 创建后的优惠券对象
      */
-    public function create(CouponEntity $entity): bool
+    public function create(CouponInput $dto): bool
     {
-        return $this->couponService->create($entity);
+        return $this->couponService->create($dto);
     }
 
     /**
      * 更新优惠券.
      *
-     * @param CouponEntity $entity 优惠券实体
+     * @param CouponInput $dto 优惠券输入数据传输对象
      * @return bool 更新结果
      * @throws \Exception
      */
-    public function update(CouponEntity $entity): bool
+    public function update(CouponInput $dto): bool
     {
         // 验证优惠券是否存在
-        $this->queryService->find($entity->getId());
+        $this->queryService->find($dto->getId());
 
-        return $this->couponService->update($entity);
+        return $this->couponService->update($dto);
     }
 
     /**
@@ -73,10 +73,12 @@ final class CouponCommandService
     /**
      * 切换优惠券状态
      *
+     * @param int $id 优惠券ID
      * @return bool 状态切换结果
      */
-    public function toggleStatus(CouponEntity $entity): bool
+    public function toggleStatus(int $id): bool
     {
+        $entity = $this->couponService->getEntity($id);
         return $this->couponService->toggleStatus($entity);
     }
 }

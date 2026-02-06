@@ -17,6 +17,11 @@ use App\Infrastructure\Model\Coupon\CouponUser;
 
 final class CouponUserMapper
 {
+    public static function getNewEntity(): CouponUserEntity
+    {
+        return new CouponUserEntity();
+    }
+
     public static function fromModel(CouponUser $couponUser): CouponUserEntity
     {
         $entity = new CouponUserEntity();

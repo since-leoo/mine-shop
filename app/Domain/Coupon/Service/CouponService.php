@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Coupon\Service;
 
+use App\Domain\Coupon\Contract\CouponInput;
 use App\Domain\Coupon\Entity\CouponEntity;
 use App\Domain\Coupon\Mapper\CouponMapper;
 use App\Domain\Coupon\Repository\CouponRepository;
@@ -55,24 +56,28 @@ final class CouponService extends IService
     /**
      * 创建优惠券.
      *
-     * @param CouponEntity $entity 优惠券实体对象
-     * @return bool 创建后的优惠券对象
+     * @param CouponInput $dto 优惠券输入数据传输对象
+     * @return bool 创建是否成功
      */
-    public function create(CouponEntity $entity): bool
+    public function create(CouponInput $dto): bool
     {
-        $entity->ensureTimeWindowIsValid();
+        $entity = CouponMapper::getNewEntity();
+        $entity->create($dto);
+
         return (bool) $this->repository->createFromEntity($entity);
     }
 
     /**
      * 更新优惠券.
      *
-     * @param CouponEntity $entity 优惠券实体对象
+     * @param CouponInput $dto 优惠券输入数据传输对象
      * @return bool 更新是否成功
      */
-    public function update(CouponEntity $entity): bool
+    public function update(CouponInput $dto): bool
     {
-        $entity->ensureTimeWindowIsValid();
+        $entity = $this->getEntity($dto->getId());
+        $entity->update($dto);
+
         return $this->repository->updateFromEntity($entity);
     }
 

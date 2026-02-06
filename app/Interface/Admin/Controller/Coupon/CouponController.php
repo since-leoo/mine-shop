@@ -14,7 +14,6 @@ namespace App\Interface\Admin\Controller\Coupon;
 
 use App\Application\Commad\CouponCommandService;
 use App\Application\Commad\CouponUserCommandService;
-use App\Application\Mapper\CouponAssembler;
 use App\Application\Query\CouponQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -70,7 +69,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:create')]
     public function store(CouponRequest $request): Result
     {
-        $this->commandService->create(CouponAssembler::toCreateEntity($request->validated()));
+        $this->commandService->create($request->toDto());
         return $this->success([], '创建优惠券成功', 201);
     }
 
@@ -78,7 +77,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:update')]
     public function update(int $id, CouponRequest $request): Result
     {
-        $this->commandService->update(CouponAssembler::toUpdateEntity($id, $request->validated()));
+        $this->commandService->update($request->toDto($id));
 
         return $this->success([], '更新优惠券成功');
     }
@@ -95,8 +94,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:update')]
     public function toggleStatus(int $id): Result
     {
-        $entity = CouponAssembler::toUpStatusEntity($id);
-        $this->commandService->toggleStatus($entity);
+        $this->commandService->toggleStatus($id);
         return $this->success(null, '切换状态成功');
     }
 
