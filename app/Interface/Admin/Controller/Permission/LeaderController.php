@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Permission\Assembler\PermissionQueryAssembler;
-use App\Application\Permission\Service\LeaderCommandService;
-use App\Application\Permission\Service\LeaderQueryService;
+use App\Application\Mapper\PermissionQueryAssembler;
+use App\Application\Commad\LeaderCommandService;
+use App\Application\Query\LeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\LeaderRequest;

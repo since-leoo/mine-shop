@@ -73,7 +73,7 @@ $strategy->postCreate($order);
 ## 下单流程
 
 1. **构建提交命令**：前端将购物车/立即购买数据整理为 `OrderSubmitCommand`，包含 SKU、数量、优惠、地址、remark 等。
-2. **Assembler 转换**：`OrderAssembler` 根据命令创建 `OrderEntity`、`OrderItemEntity`、`OrderAddressValue`、金额值对象。
+2. **Mapper 转换**：`OrderAssembler` 根据命令创建 `OrderEntity`、`OrderItemEntity`、`OrderAddressValue`、金额值对象。
 3. **库存预扣**：`OrderStockService` 基于 Redis + Lua (`lock_and_decrement.lua`) 原子扣减库存，并返回结果。
 4. **保存订单**：`OrderRepository->save()`；若失败触发库存回滚脚本 (`rollback.lua`)。
 5. **触发事件**：`OrderCreatedEvent` 通知营销、积分、日志、异步任务等。
@@ -98,7 +98,7 @@ class OrderPriceValue
 }
 ```
 
-Assembler 会在预览/提交阶段计算金额，并持久化到 `price_detail` 字段，以便对账与售后使用。
+Mapper 会在预览/提交阶段计算金额，并持久化到 `price_detail` 字段，以便对账与售后使用。
 
 ## 日志与幂等
 
@@ -127,7 +127,7 @@ Assembler 会在预览/提交阶段计算金额，并持久化到 `price_detail`
 
 ```
 [OrderSubmitCommand]
-      ↓ Assembler
+      ↓ Mapper
 [OrderEntity Draft]
       ↓ Strategy.validate()
 [库存预占] ──失败→ 回滚并抛错

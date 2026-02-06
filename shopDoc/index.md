@@ -95,7 +95,7 @@ cd web && npm install && npm run dev
 ```
 app/
 ├── Interface/        # Admin & Api 控制器、请求、VO
-├── Application/      # Command & Query Service、Assembler（CQRS）
+├── Application/      # Command & Query Service、Mapper（CQRS）
 ├── Domain/           # 实体、值对象、服务、策略、仓储抽象
 └── Infrastructure/   # ORM 模型、存储、队列、脚本、命令、Geo 服务
 web/                  # Vue 3 + Element Plus 后台前端

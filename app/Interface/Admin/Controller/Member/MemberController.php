@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Member\Assembler\MemberAssembler;
-use App\Application\Member\Service\MemberCommandService;
-use App\Application\Member\Service\MemberQueryService;
+use App\Application\Mapper\MemberAssembler;
+use App\Application\Commad\MemberCommandService;
+use App\Application\Query\MemberQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberRequest;

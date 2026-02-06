@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Product\Assembler\BrandAssembler;
-use App\Application\Product\Service\BrandCommandService;
-use App\Application\Product\Service\BrandQueryService;
+use App\Application\Mapper\BrandAssembler;
+use App\Application\Commad\BrandCommandService;
+use App\Application\Query\BrandQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\BrandRequest;

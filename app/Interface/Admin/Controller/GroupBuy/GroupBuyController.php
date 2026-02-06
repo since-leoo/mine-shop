@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\GroupBuy;
 
-use App\Application\GroupBuy\Assembler\GroupBuyAssembler;
-use App\Application\GroupBuy\Service\GroupBuyCommandService;
-use App\Application\GroupBuy\Service\GroupBuyQueryService;
+use App\Application\Mapper\GroupBuyAssembler;
+use App\Application\Commad\GroupBuyCommandService;
+use App\Application\Query\GroupBuyQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;

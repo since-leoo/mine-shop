@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Member\Assembler\MemberAccountAssembler;
-use App\Application\Member\Service\MemberAccountCommandService;
-use App\Application\Member\Service\MemberWalletTransactionQueryService;
+use App\Application\Mapper\MemberAccountAssembler;
+use App\Application\Commad\MemberAccountCommandService;
+use App\Application\Query\MemberWalletTransactionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberAccountRequest;

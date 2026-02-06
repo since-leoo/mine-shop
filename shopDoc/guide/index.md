@@ -56,7 +56,7 @@ Mine Shop 是一套面向企业的电商与会员运营解决方案，基于 **H
 .
 ├── app/
 │   ├── Interface/      # 控制器、请求、Middleware、VO
-│   ├── Application/    # Command/Query Service、Assembler、事件处理
+│   ├── Application/    # Command/Query Service、Mapper、事件处理
 │   ├── Domain/         # 实体、值对象、服务、策略、仓储接口
 │   └── Infrastructure/ # ORM 模型、Repository 实现、缓存、命令、Geo、支付等适配层
 ├── web/                # Vue 3 + Element Plus 后台前端

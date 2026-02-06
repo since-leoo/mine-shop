@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Permission\Assembler\PermissionQueryAssembler;
-use App\Application\Permission\Assembler\PositionAssembler;
-use App\Application\Permission\Service\PositionCommandService;
-use App\Application\Permission\Service\PositionQueryService;
+use App\Application\Mapper\PermissionQueryAssembler;
+use App\Application\Mapper\PositionAssembler;
+use App\Application\Commad\PositionCommandService;
+use App\Application\Query\PositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantDataPermissionForPositionRequest;

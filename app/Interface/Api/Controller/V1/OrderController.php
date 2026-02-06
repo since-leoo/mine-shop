@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Order\OrderCheckoutApiService;
+use App\Application\Api\Order\OrderCommandApiService;
 use App\Application\Api\Payment\OrderPaymentApiService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\OrderCommitRequest;
@@ -31,8 +31,8 @@ use Hyperf\RateLimit\Annotation\RateLimit;
 final class OrderController extends AbstractController
 {
     public function __construct(
-        private readonly OrderCheckoutApiService $checkoutService,
-        private readonly CurrentMember $currentMember,
+        private readonly OrderCommandApiService $checkoutService,
+        private readonly CurrentMember          $currentMember,
         private readonly OrderPaymentApiService $paymentApiService
     ) {}
 

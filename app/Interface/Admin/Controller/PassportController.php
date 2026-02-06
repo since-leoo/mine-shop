@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Auth\Assembler\AuthAssembler;
-use App\Application\Auth\Service\AuthCommandService;
+use App\Application\Mapper\AuthAssembler;
+use App\Application\Commad\AuthCommandService;
 use App\Domain\Auth\Enum\Type;
 use App\Interface\Admin\Request\PassportLoginRequest;
 use App\Interface\Admin\Vo\PassportLoginVo;

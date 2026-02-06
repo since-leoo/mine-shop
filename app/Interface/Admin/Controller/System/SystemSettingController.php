@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\System;
 
-use App\Application\SystemSetting\Service\SystemSettingCommandService;
-use App\Application\SystemSetting\Service\SystemSettingQueryService;
+use App\Application\Commad\SystemSettingCommandService;
+use App\Application\Query\SystemSettingQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\System\SystemSettingRequest;

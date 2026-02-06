@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Listener;
 
-use App\Application\Member\Event\MemberBalanceAdjusted;
+use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Repository\MemberWalletTransactionRepository;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Stringable\Str;

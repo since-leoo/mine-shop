@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Seckill\Assembler\SeckillSessionAssembler;
-use App\Application\Seckill\Service\SeckillSessionCommandService;
-use App\Application\Seckill\Service\SeckillSessionQueryService;
+use App\Application\Mapper\SeckillSessionAssembler;
+use App\Application\Commad\SeckillSessionCommandService;
+use App\Application\Query\SeckillSessionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillSessionRequest;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Order;
 
-use App\Application\Order\Assembler\OrderAssembler;
+use App\Application\Mapper\OrderAssembler;
 use PHPUnit\Framework\TestCase;
 
 /**

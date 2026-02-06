@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Permission\Assembler\UserAssembler;
-use App\Application\Permission\Service\MenuQueryService;
-use App\Application\Permission\Service\RoleQueryService;
-use App\Application\Permission\Service\UserCommandService;
+use App\Application\Mapper\UserAssembler;
+use App\Application\Commad\UserCommandService;
+use App\Application\Query\MenuQueryService;
+use App\Application\Query\RoleQueryService;
 use App\Domain\Auth\Enum\Status;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Admin\Request\Permission\PermissionRequest;

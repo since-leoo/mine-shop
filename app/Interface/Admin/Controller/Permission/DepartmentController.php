@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Permission\Assembler\DepartmentAssembler;
-use App\Application\Permission\Service\DepartmentCommandService;
-use App\Application\Permission\Service\DepartmentQueryService;
+use App\Application\Mapper\DepartmentAssembler;
+use App\Application\Commad\DepartmentCommandService;
+use App\Application\Query\DepartmentQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\DepartmentRequest;

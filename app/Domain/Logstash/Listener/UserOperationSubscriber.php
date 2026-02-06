@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Logstash\Listener;
 
-use App\Application\Logstash\Service\UserOperationLogService;
-use App\Application\Permission\Service\UserQueryService;
+use App\Application\Commad\UserOperationLogCommandService;
+use App\Application\Query\UserQueryService;
 use App\Interface\Common\Event\RequestOperationEvent;
 use Hyperf\Engine\Coroutine;
 use Hyperf\Event\Annotation\Listener;
@@ -23,8 +23,8 @@ use Hyperf\Event\Contract\ListenerInterface;
 class UserOperationSubscriber implements ListenerInterface
 {
     public function __construct(
-        private readonly UserOperationLogService $service,
-        private readonly UserQueryService $userQueryService
+        private readonly UserOperationLogCommandService $service,
+        private readonly UserQueryService               $userQueryService
     ) {}
 
     public function listen(): array

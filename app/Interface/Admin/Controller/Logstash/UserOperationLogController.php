@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Logstash;
 
-use App\Application\Logstash\Assembler\LogQueryAssembler;
-use App\Application\Logstash\Service\UserOperationLogService;
+use App\Application\Mapper\LogQueryAssembler;
+use App\Application\Commad\UserOperationLogCommandService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -32,8 +32,8 @@ use Mine\Access\Attribute\Permission;
 final class UserOperationLogController extends AbstractController
 {
     public function __construct(
-        protected readonly UserOperationLogService $service,
-        protected readonly CurrentUser $currentUser
+        protected readonly UserOperationLogCommandService $service,
+        protected readonly CurrentUser                    $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]

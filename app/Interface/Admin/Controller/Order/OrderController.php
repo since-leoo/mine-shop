@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Order;
 
-use App\Application\Order\Assembler\OrderAssembler;
-use App\Application\Order\Service\OrderCommandService;
-use App\Application\Order\Service\OrderQueryService;
+use App\Application\Mapper\OrderAssembler;
+use App\Application\Commad\OrderCommandService;
+use App\Application\Query\OrderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\OrderRequest;

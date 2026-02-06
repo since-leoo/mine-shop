@@ -9,9 +9,9 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Application\Auth\Service\JwtTokenChecker;
-use App\Application\Member\Contract\MemberQueryInterface;
-use App\Application\Member\Service\MemberQueryService;
+
+use App\Application\Query\JwtTokenChecker;
+use App\Application\Query\MemberQueryService;
 use App\Domain\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Product\Service\ProductSnapshotService;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
@@ -22,5 +22,4 @@ return [
     UploadInterface::class => Factory::class,
     CheckTokenInterface::class => JwtTokenChecker::class,
     ProductSnapshotInterface::class => ProductSnapshotService::class,
-    MemberQueryInterface::class => MemberQueryService::class,
 ];

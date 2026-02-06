@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Permission\Assembler\PermissionQueryAssembler;
-use App\Application\Permission\Assembler\RoleAssembler;
-use App\Application\Permission\Service\RoleCommandService;
-use App\Application\Permission\Service\RoleQueryService;
+use App\Application\Mapper\PermissionQueryAssembler;
+use App\Application\Mapper\RoleAssembler;
+use App\Application\Commad\RoleCommandService;
+use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
 use App\Interface\Admin\Controller\AbstractController;

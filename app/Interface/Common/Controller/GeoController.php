@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Common\Controller;
 
-use App\Application\Geo\Service\GeoQueryService;
+use App\Application\Query\GeoQueryService;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;

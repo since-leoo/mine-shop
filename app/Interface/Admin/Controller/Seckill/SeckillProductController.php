@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Seckill\Assembler\SeckillProductAssembler;
-use App\Application\Seckill\Service\SeckillProductCommandService;
-use App\Application\Seckill\Service\SeckillProductQueryService;
+use App\Application\Mapper\SeckillProductAssembler;
+use App\Application\Commad\SeckillProductCommandService;
+use App\Application\Query\SeckillProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillProductRequest;

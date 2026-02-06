@@ -19,7 +19,7 @@ Mine Shop 自创建伊始即以 **领域驱动设计（Domain-Driven Design，DD
 ```
 Interface  ── Controller / Request / Middleware / VO
       ↓
-Application ─ CommandService / QueryService / Assembler / Event Handler
+Application ─ CommandService / QueryService / Mapper / Event Handler
       ↓
 Domain ───── Entity / ValueObject / DomainService / Repository Interface / Strategy
       ↓
@@ -35,7 +35,7 @@ Infrastructure ─ ORM Model / Repository Impl / Cache / Queue / Lua / Command /
 ### Application Layer
 
 - **CQRS**：`CommandService` 负责写操作与事务，`QueryService` 负责查询、统计、缓存。
-- **Assembler**：在 DTO ⇄ Entity 之间转换，避免 Controller 与 Domain 直接耦合。
+- **Mapper**：在 DTO ⇄ Entity 之间转换，避免 Controller 与 Domain 直接耦合。
 - **流程编排**：如创建团购活动会依次校验 SKU、库存、时间窗并触发事件。
 - **事件调度**：通过 Hyperf 事件系统分发 `MemberBalanceAdjusted`、`OrderCreated` 等领域事件。
 

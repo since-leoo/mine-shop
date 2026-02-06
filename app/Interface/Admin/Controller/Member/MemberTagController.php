@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Member\Assembler\MemberTagAssembler;
-use App\Application\Member\Service\MemberTagCommandService;
-use App\Application\Member\Service\MemberTagQueryService;
+use App\Application\Mapper\MemberTagAssembler;
+use App\Application\Commad\MemberTagCommandService;
+use App\Application\Query\MemberTagQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberTagRequest;

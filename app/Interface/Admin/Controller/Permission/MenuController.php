@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Permission\Assembler\MenuAssembler;
-use App\Application\Permission\Service\MenuCommandService;
-use App\Application\Permission\Service\MenuQueryService;
+use App\Application\Mapper\MenuAssembler;
+use App\Application\Commad\MenuCommandService;
+use App\Application\Query\MenuQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\MenuRequest;

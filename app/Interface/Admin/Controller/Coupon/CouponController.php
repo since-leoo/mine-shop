@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Coupon;
 
-use App\Application\Coupon\Assembler\CouponAssembler;
-use App\Application\Coupon\Service\CouponCommandService;
-use App\Application\Coupon\Service\CouponQueryService;
-use App\Application\Coupon\Service\CouponUserCommandService;
+use App\Application\Mapper\CouponAssembler;
+use App\Application\Commad\CouponCommandService;
+use App\Application\Commad\CouponUserCommandService;
+use App\Application\Query\CouponQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Coupon\CouponIssueRequest;

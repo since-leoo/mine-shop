@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Member\Assembler\MemberLevelAssembler;
-use App\Application\Member\Service\MemberLevelCommandService;
-use App\Application\Member\Service\MemberLevelQueryService;
+use App\Application\Mapper\MemberLevelAssembler;
+use App\Application\Commad\MemberLevelCommandService;
+use App\Application\Query\MemberLevelQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberLevelRequest;

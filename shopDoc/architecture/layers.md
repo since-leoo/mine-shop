@@ -41,7 +41,7 @@ public function overview(MemberRequest $request): Result
 
 - `CommandService`：写操作 + 事务提交。
 - `QueryService`：查询、统计、缓存、分页。
-- `Assembler`：数据装配（`Array → Entity` / `Entity → Array`）。
+- `Mapper`：数据装配（`Array → Entity` / `Entity → Array`）。
 - `Event Handler`：订阅领域事件并触发外部副作用。
 
 **示例**：`MemberQueryService::overview`
