@@ -19,6 +19,7 @@ use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantRolesForUserRequest;
+use App\Interface\Admin\Request\Permission\ResetPasswordRequest;
 use App\Interface\Admin\Request\Permission\UserRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
@@ -69,9 +70,9 @@ final class UserController extends AbstractController
 
     #[PutMapping(path: 'password')]
     #[Permission(code: 'permission:user:password')]
-    public function resetPassword(): Result
+    public function resetPassword(ResetPasswordRequest $request): Result
     {
-        return $this->commandService->resetPassword((int) $this->getRequest()->input('id'))
+        return $this->commandService->resetPassword($request->toDto($this->currentUser->id()))
             ? $this->success()
             : $this->error();
     }
@@ -117,7 +118,7 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:setRole')]
     public function batchGrantRolesForUser(int $userId, BatchGrantRolesForUserRequest $request): Result
     {
-        $this->commandService->grantRoles($userId, $request->input('role_codes'));
+        $this->commandService->grantRoles($request->toDto($userId, $this->currentUser->id()));
         return $this->success();
     }
 }

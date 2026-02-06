@@ -63,7 +63,7 @@ class PositionController extends AbstractController
     #[Permission(code: 'permission:position:data_permission')]
     public function batchDataPermission(int $id, BatchGrantDataPermissionForPositionRequest $request): Result
     {
-        $this->commandService->setDataPermission($id, $request->validated());
+        $this->commandService->setDataPermission($request->toDto($id, $this->currentUser->id()));
         return $this->success();
     }
 

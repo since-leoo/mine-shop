@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\Service;
 
+use App\Domain\Permission\Contract\Role\RoleGrantPermissionsInput;
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Domain\Permission\Repository\RoleRepository;
@@ -47,17 +48,15 @@ final class RoleService extends IService
         return $this->roleRepository->deleteByIds($ids);
     }
 
-    /**
-     * @param string[] $permissionCodes
-     */
-    public function grantPermissions(int $roleId, array $permissionCodes): void
+    public function grantPermissions(RoleGrantPermissionsInput $input): void
     {
         /** @var null|Role $role */
-        $role = $this->roleRepository->findById($roleId);
+        $role = $this->roleRepository->findById($input->getRoleId());
         if (! $role) {
             return;
         }
 
+        $permissionCodes = $input->getPermissionCodes();
         if ($permissionCodes === []) {
             $role->menus()->detach();
             return;

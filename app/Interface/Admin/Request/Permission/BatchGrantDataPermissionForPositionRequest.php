@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Request\Permission;
 
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
+use App\Interface\Admin\DTO\Permission\PositionSetDataPermissionDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class BatchGrantDataPermissionForPositionRequest extends BaseRequest
@@ -43,5 +45,13 @@ class BatchGrantDataPermissionForPositionRequest extends BaseRequest
             'policy_type' => '策略类型',
             'value' => '策略值',
         ];
+    }
+
+    public function toDto(int $positionId, int $operatorId): PositionSetDataPermissionDto
+    {
+        $params = $this->validated();
+        $params['position_id'] = $positionId;
+        $params['operator_id'] = $operatorId;
+        return Mapper::map($params, new PositionSetDataPermissionDto());
     }
 }

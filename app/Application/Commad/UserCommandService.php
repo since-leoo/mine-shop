@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Domain\Permission\Contract\User\UserInput;
+use App\Domain\Permission\Contract\User\UserGrantRolesInput;
+use App\Domain\Permission\Contract\User\UserResetPasswordInput;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Service\UserService;
 use App\Infrastructure\Model\Permission\User;
@@ -56,20 +58,19 @@ final class UserCommandService
         return $deleted;
     }
 
-    public function resetPassword(int $id): bool
+    public function resetPassword(UserResetPasswordInput $input): bool
     {
-        $result = $this->userService->resetPassword($id);
-        $result && $this->forgetCache($id);
+        $result = $this->userService->resetPassword($input);
+        if ($result) {
+            $this->forgetCache($input->getUserId());
+        }
         return $result;
     }
 
-    /**
-     * @param string[] $roleCodes
-     */
-    public function grantRoles(int $userId, array $roleCodes): void
+    public function grantRoles(UserGrantRolesInput $input): void
     {
-        $this->userService->grantRoles($userId, $roleCodes);
-        $this->forgetCache($userId);
+        $this->userService->grantRoles($input);
+        $this->forgetCache($input->getUserId());
     }
 
     private function forgetCache(int $id): void

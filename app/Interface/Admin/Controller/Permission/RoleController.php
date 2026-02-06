@@ -109,8 +109,7 @@ final class RoleController extends AbstractController
         if (! $this->queryService->find($id)) {
             throw new BusinessException(code: ResultCode::NOT_FOUND);
         }
-        $permissionsCode = Arr::get($request->validated(), 'permissions', []);
-        $this->commandService->grantPermissions($id, $permissionsCode);
+        $this->commandService->grantPermissions($request->toDto($id, $this->currentUser->id()));
         return $this->success();
     }
 }

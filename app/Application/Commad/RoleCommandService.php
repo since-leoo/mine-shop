@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Permission\Contract\Role\RoleGrantPermissionsInput;
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Domain\Permission\Service\RoleService;
 use App\Infrastructure\Model\Permission\Role;
@@ -39,11 +40,8 @@ final class RoleCommandService
         return $this->roleService->delete($ids);
     }
 
-    /**
-     * @param string[] $permissionCodes
-     */
-    public function grantPermissions(int $roleId, array $permissionCodes): void
+    public function grantPermissions(RoleGrantPermissionsInput $input): void
     {
-        $this->roleService->grantPermissions($roleId, $permissionCodes);
+        $this->roleService->grantPermissions($input);
     }
 }

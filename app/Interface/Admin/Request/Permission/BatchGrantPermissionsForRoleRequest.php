@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Interface\Admin\DTO\Permission\RoleGrantPermissionsDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class BatchGrantPermissionsForRoleRequest extends BaseRequest
 {
@@ -32,5 +34,15 @@ class BatchGrantPermissionsForRoleRequest extends BaseRequest
         return [
             'permissions' => trans('menu.name'),
         ];
+    }
+
+    public function toDto(int $roleId, int $operatorId): RoleGrantPermissionsDto
+    {
+        $params = $this->validated();
+        // allow empty permissions -> detach all
+        $params['permissions'] = $params['permissions'] ?? [];
+        $params['role_id'] = $roleId;
+        $params['operator_id'] = $operatorId;
+        return Mapper::map($params, new RoleGrantPermissionsDto());
     }
 }

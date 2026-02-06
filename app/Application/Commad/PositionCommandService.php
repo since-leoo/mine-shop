@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Permission\Contract\Position\PositionSetDataPermissionInput;
 use App\Domain\Permission\Repository\PositionRepository;
 use App\Infrastructure\Model\Permission\Position;
 
@@ -43,18 +44,23 @@ final class PositionCommandService
         return $this->repository->deleteByIds($ids);
     }
 
-    public function setDataPermission(int $id, array $policy): bool
+    public function setDataPermission(PositionSetDataPermissionInput $input): bool
     {
-        $entity = $this->repository->findById($id);
+        $entity = $this->repository->findById($input->getPositionId());
         if ($entity === null) {
             return false;
         }
 
-        $policyEntity = $entity->policy()->first();
-        if (empty($policyEntity)) {
-            $entity->policy()->create($policy);
+        $payload = [
+            'policy_type' => $input->getPolicyType(),
+            'value' => $input->getValue(),
+        ];
+
+        $policy = $entity->policy()->first();
+        if ($policy) {
+            $policy->update($payload);
         } else {
-            $policyEntity->update($policy);
+            $entity->policy()->create($payload);
         }
 
         return true;

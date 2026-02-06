@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\Service;
 
+use App\Domain\Permission\Contract\User\UserGrantRolesInput;
+use App\Domain\Permission\Contract\User\UserResetPasswordInput;
 use App\Domain\Permission\Entity\UserEntity;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\RoleRepository;
@@ -56,10 +58,10 @@ final class UserService extends IService
         return $this->userRepository->deleteByIds($ids);
     }
 
-    public function resetPassword(int $id): bool
+    public function resetPassword(UserResetPasswordInput $input): bool
     {
         /** @var null|User $user */
-        $user = $this->userRepository->findById($id);
+        $user = $this->userRepository->findById($input->getUserId());
         if (! $user) {
             return false;
         }
@@ -68,17 +70,14 @@ final class UserService extends IService
         return true;
     }
 
-    /**
-     * @param string[] $roleCodes
-     */
-    public function grantRoles(int $userId, array $roleCodes): void
+    public function grantRoles(UserGrantRolesInput $input): void
     {
         /** @var null|User $user */
-        $user = $this->userRepository->findById($userId);
+        $user = $this->userRepository->findById($input->getUserId());
         if (! $user) {
             return;
         }
-        $roleIds = $this->roleRepository->listByCodes($roleCodes)->pluck('id')->toArray();
+        $roleIds = $this->roleRepository->listByCodes($input->getRoleCodes())->pluck('id')->toArray();
         $user->roles()->sync($roleIds);
     }
 

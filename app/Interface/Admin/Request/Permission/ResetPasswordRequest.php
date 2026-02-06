@@ -12,35 +12,35 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
-use App\Interface\Admin\DTO\Permission\UserGrantRolesDto;
+use App\Interface\Admin\DTO\Permission\UserResetPasswordDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;
 
-class BatchGrantRolesForUserRequest extends BaseRequest
+class ResetPasswordRequest extends BaseRequest
 {
     use NoAuthorizeTrait;
 
-    public function batchGrantRolesForUserRules(): array
+    public function resetPasswordRules(): array
     {
         return [
-            'role_codes' => 'required|array',
-            'role_codes.*' => 'string|exists:role,code',
+            'id' => 'required|integer|exists:user,id',
         ];
     }
 
     public function attributes(): array
     {
         return [
-            'role_codes' => trans('role.code'),
+            'id' => trans('user.id'),
         ];
     }
 
-    public function toDto(int $userId, int $operatorId): UserGrantRolesDto
+    public function toDto(int $operatorId): UserResetPasswordDto
     {
         $params = $this->validated();
-        $params['user_id'] = $userId;
+        $params['user_id'] = (int) $params['id'];
         $params['operator_id'] = $operatorId;
-        return Mapper::map($params, new UserGrantRolesDto());
+        return Mapper::map($params, new UserResetPasswordDto());
     }
 }
+
