@@ -1,0 +1,91 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+
+namespace App\Interface\Admin\DTO\Seckill;
+
+use App\Domain\Seckill\Contract\SeckillProductInput;
+
+/**
+ * 秒杀商品DTO.
+ */
+final class SeckillProductDto implements SeckillProductInput
+{
+    public ?int $id = null;
+
+    public ?int $activity_id = null;
+
+    public ?int $session_id = null;
+
+    public ?int $product_id = null;
+
+    public ?int $product_sku_id = null;
+
+    public ?float $original_price = null;
+
+    public ?float $seckill_price = null;
+
+    public ?int $quantity = null;
+
+    public ?int $max_quantity_per_user = null;
+
+    public ?int $sort_order = null;
+
+    public function getId(): int
+    {
+        return $this->id ?? 0;
+    }
+
+    public function getActivityId(): ?int
+    {
+        return $this->activity_id;
+    }
+
+    public function getSessionId(): ?int
+    {
+        return $this->session_id;
+    }
+
+    public function getProductId(): ?int
+    {
+        return $this->product_id;
+    }
+
+    public function getProductSkuId(): ?int
+    {
+        return $this->product_sku_id;
+    }
+
+    public function getOriginalPrice(): ?float
+    {
+        return $this->original_price;
+    }
+
+    public function getSeckillPrice(): ?float
+    {
+        return $this->seckill_price;
+    }
+
+    public function getQuantity(): ?int
+    {
+        return $this->quantity;
+    }
+
+    public function getMaxQuantityPerUser(): ?int
+    {
+        return $this->max_quantity_per_user;
+    }
+
+    public function getSortOrder(): ?int
+    {
+        return $this->sort_order;
+    }
+}

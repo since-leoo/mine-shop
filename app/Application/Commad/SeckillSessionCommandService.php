@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Application\Query\SeckillSessionQueryService;
-use App\Domain\Seckill\Entity\SeckillSessionEntity;
+use App\Domain\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Seckill\Service\SeckillSessionService;
 use App\Infrastructure\Model\Seckill\SeckillSession;
+use Hyperf\DbConnection\Db;
 
 /**
  * 秒杀场次命令服务：处理所有写操作.
@@ -30,20 +31,22 @@ final class SeckillSessionCommandService
     /**
      * 创建场次.
      */
-    public function create(SeckillSessionEntity $entity): SeckillSession
+    public function create(SeckillSessionInput $dto): SeckillSession
     {
-        return $this->sessionService->create($entity);
+        return Db::transaction(fn () => $this->sessionService->create($dto));
     }
 
     /**
      * 更新场次.
      */
-    public function update(SeckillSessionEntity $entity): bool
+    public function update(SeckillSessionInput $dto): bool
     {
-        $session = $this->queryService->find($entity->getId());
-        $session || throw new \InvalidArgumentException('场次不存在');
+        $session = $this->queryService->find($dto->getId());
+        if (! $session) {
+            throw new \RuntimeException('场次不存在');
+        }
 
-        return $this->sessionService->update($entity);
+        return Db::transaction(fn () => $this->sessionService->update($dto));
     }
 
     /**
@@ -52,9 +55,11 @@ final class SeckillSessionCommandService
     public function delete(int $id): bool
     {
         $session = $this->queryService->find($id);
-        $session || throw new \InvalidArgumentException('场次不存在');
+        if (! $session) {
+            throw new \RuntimeException('场次不存在');
+        }
 
-        return $this->sessionService->delete($id);
+        return Db::transaction(fn () => $this->sessionService->delete($id));
     }
 
     /**
@@ -63,8 +68,10 @@ final class SeckillSessionCommandService
     public function toggleStatus(int $id): bool
     {
         $session = $this->queryService->find($id);
-        $session || throw new \InvalidArgumentException('场次不存在');
+        if (! $session) {
+            throw new \RuntimeException('场次不存在');
+        }
 
-        return $this->sessionService->toggleStatus($id);
+        return Db::transaction(fn () => $this->sessionService->toggleStatus($id));
     }
 }

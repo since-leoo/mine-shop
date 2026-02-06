@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Seckill;
 
 use App\Application\Commad\SeckillActivityCommandService;
-use App\Application\Mapper\SeckillActivityAssembler;
 use App\Application\Query\SeckillActivityQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -73,20 +72,16 @@ final class SeckillActivityController extends AbstractController
     #[Permission(code: 'seckill:activity:create')]
     public function store(SeckillActivityRequest $request): Result
     {
-        $entity = SeckillActivityAssembler::toCreateEntity($request->validated());
-        $activity = $this->commandService->create($entity);
-        return $this->success($activity->toArray(), '创建活动成功', 201);
+        $this->commandService->create($request->toDto());
+        return $this->success([], '创建活动成功', 201);
     }
 
     #[PutMapping(path: '{id:\d+}')]
     #[Permission(code: 'seckill:activity:update')]
     public function update(int $id, SeckillActivityRequest $request): Result
     {
-        $entity = SeckillActivityAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
-
-        $activity = $this->queryService->find($id);
-        return $this->success($activity?->toArray() ?? [], '更新活动成功');
+        $this->commandService->update($request->toDto($id));
+        return $this->success([], '更新活动成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

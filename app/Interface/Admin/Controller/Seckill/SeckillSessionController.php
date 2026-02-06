@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Seckill;
 
 use App\Application\Commad\SeckillSessionCommandService;
-use App\Application\Mapper\SeckillSessionAssembler;
 use App\Application\Query\SeckillSessionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -74,20 +73,16 @@ final class SeckillSessionController extends AbstractController
     #[Permission(code: 'seckill:session:create')]
     public function store(SeckillSessionRequest $request): Result
     {
-        $entity = SeckillSessionAssembler::toCreateEntity($request->validated());
-        $session = $this->commandService->create($entity);
-        return $this->success($session->toArray(), '创建场次成功', 201);
+        $this->commandService->create($request->toDto());
+        return $this->success([], '创建场次成功', 201);
     }
 
     #[PutMapping(path: '{id:\d+}')]
     #[Permission(code: 'seckill:session:update')]
     public function update(int $id, SeckillSessionRequest $request): Result
     {
-        $entity = SeckillSessionAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
-
-        $session = $this->queryService->find($id);
-        return $this->success($session?->toArray() ?? [], '更新场次成功');
+        $this->commandService->update($request->toDto($id));
+        return $this->success([], '更新场次成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

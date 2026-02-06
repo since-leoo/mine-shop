@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Seckill;
 
 use App\Application\Commad\SeckillProductCommandService;
-use App\Application\Mapper\SeckillProductAssembler;
 use App\Application\Query\SeckillProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -74,9 +73,8 @@ final class SeckillProductController extends AbstractController
     #[Permission(code: 'seckill:product:create')]
     public function store(SeckillProductRequest $request): Result
     {
-        $entity = SeckillProductAssembler::toCreateEntity($request->validated());
-        $product = $this->commandService->create($entity);
-        return $this->success($product->toArray(), '添加商品成功', 201);
+        $this->commandService->create($request->toDto());
+        return $this->success([], '添加商品成功', 201);
     }
 
     #[PostMapping(path: 'batch')]
@@ -84,28 +82,20 @@ final class SeckillProductController extends AbstractController
     public function batchStore(SeckillProductRequest $request): Result
     {
         $data = $request->validated();
-        $entities = SeckillProductAssembler::toBatchCreateEntities(
+        $this->commandService->batchCreate(
             (int) $data['activity_id'],
             (int) $data['session_id'],
             $data['products']
         );
-        $products = $this->commandService->batchCreate($entities);
-        return $this->success(
-            array_map(static fn ($p) => $p->toArray(), $products),
-            '批量添加商品成功',
-            201
-        );
+        return $this->success([], '批量添加商品成功', 201);
     }
 
     #[PutMapping(path: '{id:\d+}')]
     #[Permission(code: 'seckill:product:update')]
     public function update(int $id, SeckillProductRequest $request): Result
     {
-        $entity = SeckillProductAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
-
-        $product = $this->queryService->find($id);
-        return $this->success($product?->toArray() ?? [], '更新商品成功');
+        $this->commandService->update($request->toDto($id));
+        return $this->success([], '更新商品成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

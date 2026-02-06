@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Seckill;
 
+use App\Domain\Seckill\Contract\SeckillProductInput;
+use App\Interface\Admin\DTO\Seckill\SeckillProductDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class SeckillProductRequest extends BaseRequest
 {
@@ -96,5 +99,16 @@ class SeckillProductRequest extends BaseRequest
             'is_enabled' => '是否启用',
             'products' => '商品列表',
         ];
+    }
+
+    /**
+     * 转换为DTO.
+     */
+    public function toDto(?int $id = null): SeckillProductInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        return Mapper::map($params, new SeckillProductDto());
     }
 }

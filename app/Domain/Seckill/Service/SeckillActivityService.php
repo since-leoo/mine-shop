@@ -12,11 +12,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Seckill\Service;
 
+use App\Domain\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Seckill\Entity\SeckillActivityEntity;
+use App\Domain\Seckill\Event\SeckillActivityCreatedEvent;
+use App\Domain\Seckill\Event\SeckillActivityDeletedEvent;
+use App\Domain\Seckill\Event\SeckillActivityEnabledEvent;
+use App\Domain\Seckill\Event\SeckillActivityStatusChangedEvent;
+use App\Domain\Seckill\Event\SeckillActivityUpdatedEvent;
+use App\Domain\Seckill\Mapper\SeckillActivityMapper;
 use App\Domain\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * 秒杀活动领域服务.
@@ -25,23 +33,75 @@ final class SeckillActivityService extends IService
 {
     public function __construct(
         public readonly SeckillActivityRepository $repository,
-        private readonly SeckillSessionRepository $sessionRepository
+        private readonly SeckillSessionRepository $sessionRepository,
+        private readonly EventDispatcherInterface $eventDispatcher
     ) {}
 
     /**
      * 创建活动.
      */
-    public function create(SeckillActivityEntity $entity): SeckillActivity
+    public function create(SeckillActivityInput $dto): SeckillActivity
     {
-        return $this->repository->createFromEntity($entity);
+        // 1. 通过Mapper获取新实体
+        $entity = SeckillActivityMapper::getNewEntity();
+
+        // 2. 调用实体的create行为方法
+        $entity->create($dto);
+
+        // 3. 持久化
+        $activity = $this->repository->createFromEntity($entity);
+        $entity->setId((int) $activity->id);
+
+        // 4. 触发活动创建事件
+        $this->eventDispatcher->dispatch(
+            new SeckillActivityCreatedEvent($entity, $entity->getId())
+        );
+
+        return $activity;
     }
 
     /**
      * 更新活动.
      */
-    public function update(SeckillActivityEntity $entity): bool
+    public function update(SeckillActivityInput $dto): bool
     {
-        return $this->repository->updateFromEntity($entity);
+        // 1. 通过仓储获取Model
+        $activity = $this->repository->findById($dto->getId());
+        if (! $activity) {
+            throw new \RuntimeException('活动不存在');
+        }
+
+        // 2. 通过Mapper将Model转换为Entity
+        $entity = SeckillActivityMapper::fromModel($activity);
+
+        // 检查是否可以编辑
+        if (! $entity->canBeEdited()) {
+            throw new \DomainException('当前活动状态不允许编辑');
+        }
+
+        $oldStatus = $entity->getStatus();
+
+        // 3. 调用实体的update行为方法
+        $entity->update($dto);
+
+        // 4. 持久化修改
+        $result = $this->repository->updateFromEntity($entity);
+
+        if ($result) {
+            // 触发活动更新事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityUpdatedEvent($entity, $entity->getId(), [])
+            );
+
+            // 如果状态发生变化，触发状态变更事件
+            if ($oldStatus !== $entity->getStatus()) {
+                $this->eventDispatcher->dispatch(
+                    new SeckillActivityStatusChangedEvent($entity->getId(), $oldStatus, $entity->getStatus())
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -49,29 +109,143 @@ final class SeckillActivityService extends IService
      */
     public function delete(int $id): bool
     {
-        $sessionCount = $this->sessionRepository->countByActivityId($id);
-        if ($sessionCount > 0) {
-            throw new \RuntimeException('该活动下还有场次，无法删除');
+        $activity = $this->repository->findById($id);
+        if (! $activity) {
+            throw new \RuntimeException('活动不存在');
         }
 
-        return $this->repository->deleteById($id) > 0;
+        // 检查是否可以删除
+        $entity = SeckillActivityMapper::fromModel($activity);
+        if (! $entity->canBeDeleted()) {
+            throw new \DomainException('当前活动状态不允许删除');
+        }
+
+        // 检查是否有关联的场次
+        $sessionCount = $this->sessionRepository->countByActivityId($id);
+        if ($sessionCount > 0) {
+            throw new \DomainException('该活动下还有场次，无法删除');
+        }
+
+        $result = $this->repository->deleteById($id) > 0;
+
+        if ($result) {
+            // 触发活动删除事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityDeletedEvent($id)
+            );
+        }
+
+        return $result;
     }
 
     /**
-     * 切换活动状态.
+     * 获取活动实体.
+     *
+     * 通过ID获取Model，然后通过Mapper转换为Entity.
+     * 用于需要调用实体行为方法的场景.
      */
-    public function toggleStatus(int $id): bool
+    public function getEntity(int $id): SeckillActivityEntity
     {
-        $activity = $this->repository->findById($id);
-        if (! $activity) {
-            throw new \InvalidArgumentException('活动不存在');
+        $model = $this->repository->findById($id);
+
+        if (! $model) {
+            throw new \RuntimeException("活动不存在: ID={$id}");
         }
 
-        $entity = new SeckillActivityEntity();
-        $entity->setId($id);
-        $entity->setIsEnabled(! $activity->is_enabled);
+        return SeckillActivityMapper::fromModel($model);
+    }
 
-        return $this->repository->updateFromEntity($entity);
+    /**
+     * 切换活动启用状态.
+     */
+    public function toggleEnabled(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+
+        // 如果要启用，检查是否可以启用
+        if (! $entity->isEnabled() && ! $entity->canBeEnabled()) {
+            throw new \DomainException('当前活动状态不允许启用');
+        }
+
+        $entity->toggleEnabled();
+        $result = $this->repository->updateFromEntity($entity);
+
+        if ($result) {
+            // 触发启用/禁用事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityEnabledEvent($id, $entity->isEnabled())
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * 取消活动.
+     */
+    public function cancel(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+        $oldStatus = $entity->getStatus();
+
+        $entity->cancel();
+        $result = $this->repository->updateFromEntity($entity);
+
+        if ($result) {
+            // 触发状态变更事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus())
+            );
+
+            // 触发禁用事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityEnabledEvent($id, false)
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * 开始活动.
+     */
+    public function start(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+        $oldStatus = $entity->getStatus();
+
+        $entity->start();
+        $result = $this->repository->updateFromEntity($entity);
+
+        if ($result) {
+            // 触发状态变更事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus())
+            );
+        }
+
+        return $result;
+    }
+
+    /**
+     * 结束活动.
+     */
+    public function end(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+        $oldStatus = $entity->getStatus();
+
+        $entity->end();
+        $result = $this->repository->updateFromEntity($entity);
+
+        if ($result) {
+            // 触发状态变更事件
+            $this->eventDispatcher->dispatch(
+                new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus())
+            );
+        }
+
+        return $result;
     }
 
     /**

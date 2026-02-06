@@ -39,6 +39,24 @@ final class SeckillActivityRepository extends IRepository
         return $activity && $activity->update($entity->toArray());
     }
 
+    /**
+     * 将模型转换为实体.
+     */
+    public function toEntity(SeckillActivity $model): SeckillActivityEntity
+    {
+        return SeckillActivityEntity::reconstitute(
+            id: $model->id,
+            title: $model->title,
+            description: $model->description,
+            status: $model->status,
+            isEnabled: $model->is_enabled,
+            rulesData: $model->rules,
+            remark: $model->remark,
+            createdAt: $model->created_at,
+            updatedAt: $model->updated_at
+        );
+    }
+
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
@@ -59,6 +77,10 @@ final class SeckillActivityRepository extends IRepository
             'total' => SeckillActivity::count(),
             'enabled' => SeckillActivity::where('is_enabled', true)->count(),
             'disabled' => SeckillActivity::where('is_enabled', false)->count(),
+            'pending' => SeckillActivity::where('status', 'pending')->count(),
+            'active' => SeckillActivity::where('status', 'active')->count(),
+            'ended' => SeckillActivity::where('status', 'ended')->count(),
+            'cancelled' => SeckillActivity::where('status', 'cancelled')->count(),
         ];
     }
 }

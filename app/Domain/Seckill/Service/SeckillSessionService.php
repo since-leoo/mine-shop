@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Seckill\Service;
 
-use App\Domain\Seckill\Entity\SeckillSessionEntity;
+use App\Domain\Seckill\Contract\SeckillSessionInput;
+use App\Domain\Seckill\Mapper\SeckillSessionMapper;
 use App\Domain\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
@@ -40,16 +41,41 @@ final class SeckillSessionService extends IService
     /**
      * 创建场次.
      */
-    public function create(SeckillSessionEntity $entity): SeckillSession
+    public function create(SeckillSessionInput $dto): SeckillSession
     {
+        // 1. 通过Mapper获取新实体
+        $entity = SeckillSessionMapper::getNewEntity();
+
+        // 2. 调用实体的create行为方法
+        $entity->create($dto);
+
+        // 3. 持久化
         return $this->repository->createFromEntity($entity);
     }
 
     /**
      * 更新场次.
      */
-    public function update(SeckillSessionEntity $entity): bool
+    public function update(SeckillSessionInput $dto): bool
     {
+        // 1. 通过仓储获取Model
+        $session = $this->repository->findById($dto->getId());
+        if (! $session) {
+            throw new \RuntimeException('场次不存在');
+        }
+
+        // 2. 通过Mapper将Model转换为Entity
+        $entity = SeckillSessionMapper::fromModel($session);
+
+        // 检查是否可以编辑
+        if (! $entity->canBeEdited()) {
+            throw new \DomainException('当前场次状态不允许编辑');
+        }
+
+        // 3. 调用实体的update行为方法
+        $entity->update($dto);
+
+        // 4. 持久化修改
         return $this->repository->updateFromEntity($entity);
     }
 
@@ -71,10 +97,15 @@ final class SeckillSessionService extends IService
     public function toggleStatus(int $id): bool
     {
         $session = $this->repository->findById($id);
+        if (! $session) {
+            throw new \RuntimeException('场次不存在');
+        }
 
-        $entity = new SeckillSessionEntity();
-        $entity->setId($id);
-        $entity->setIsEnabled(! $session->is_enabled);
+        // 通过Mapper将Model转换为Entity
+        $entity = SeckillSessionMapper::fromModel($session);
+
+        // 切换状态
+        $entity->toggleEnabled();
 
         return $this->repository->updateFromEntity($entity);
     }

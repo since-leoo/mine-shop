@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Application\Query\SeckillProductQueryService;
-use App\Domain\Seckill\Entity\SeckillProductEntity;
+use App\Domain\Seckill\Contract\SeckillProductInput;
 use App\Domain\Seckill\Service\SeckillProductService;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
+use Hyperf\DbConnection\Db;
 
 /**
  * 秒杀商品命令服务：处理所有写操作.
@@ -30,20 +31,22 @@ final class SeckillProductCommandService
     /**
      * 添加商品到场次.
      */
-    public function create(SeckillProductEntity $entity): SeckillProduct
+    public function create(SeckillProductInput $dto): SeckillProduct
     {
-        return $this->productService->create($entity);
+        return Db::transaction(fn () => $this->productService->create($dto));
     }
 
     /**
      * 更新商品配置.
      */
-    public function update(SeckillProductEntity $entity): bool
+    public function update(SeckillProductInput $dto): bool
     {
-        $product = $this->queryService->find($entity->getId());
-        $product || throw new \InvalidArgumentException('商品不存在');
+        $product = $this->queryService->find($dto->getId());
+        if (! $product) {
+            throw new \RuntimeException('商品不存在');
+        }
 
-        return $this->productService->update($entity);
+        return Db::transaction(fn () => $this->productService->update($dto));
     }
 
     /**
@@ -52,20 +55,19 @@ final class SeckillProductCommandService
     public function delete(int $id): bool
     {
         $product = $this->queryService->find($id);
-        $product || throw new \InvalidArgumentException('商品不存在');
+        if (! $product) {
+            throw new \RuntimeException('商品不存在');
+        }
 
-        return $this->productService->delete($id);
+        return Db::transaction(fn () => $this->productService->delete($id));
     }
 
     /**
      * 批量添加商品.
-     *
-     * @param SeckillProductEntity[] $entities
-     * @return SeckillProduct[]
      */
-    public function batchCreate(array $entities): array
+    public function batchCreate(int $activityId, int $sessionId, array $products): array
     {
-        return $this->productService->batchCreate($entities);
+        return Db::transaction(fn () => $this->productService->batchCreate($activityId, $sessionId, $products));
     }
 
     /**
@@ -74,8 +76,10 @@ final class SeckillProductCommandService
     public function toggleStatus(int $id): bool
     {
         $product = $this->queryService->find($id);
-        $product || throw new \InvalidArgumentException('商品不存在');
+        if (! $product) {
+            throw new \RuntimeException('商品不存在');
+        }
 
-        return $this->productService->toggleStatus($id);
+        return Db::transaction(fn () => $this->productService->toggleStatus($id));
     }
 }
