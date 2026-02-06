@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\MenuCommandService;
-use App\Application\Mapper\MenuAssembler;
 use App\Application\Query\MenuQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\DTO\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\MenuRequest;
 use App\Interface\Common\CurrentUser;
@@ -57,9 +57,7 @@ final class MenuController extends AbstractController
     #[Permission(code: 'permission:menu:create')]
     public function create(MenuRequest $request): Result
     {
-        $this->commandService->create(MenuAssembler::toCreateEntity(array_merge($request->validated(), [
-            'created_by' => $this->user->id(),
-        ])));
+        $this->commandService->create($request->toDto(null, $this->user->id()));
         return $this->success();
     }
 
@@ -67,9 +65,7 @@ final class MenuController extends AbstractController
     #[Permission(code: 'permission:menu:save')]
     public function save(int $id, MenuRequest $request): Result
     {
-        $this->commandService->update($id, MenuAssembler::toUpdateEntity($id, array_merge($request->validated(), [
-            'updated_by' => $this->user->id(),
-        ])));
+        $this->commandService->update($request->toDto($id, $this->user->id()));
         return $this->success();
     }
 
@@ -79,10 +75,10 @@ final class MenuController extends AbstractController
     {
         $requestData = $this->getRequestData();
         $ids = $requestData['ids'] ?? [];
-        $dto = new \App\Interface\Admin\DTO\Permission\DeleteDto();
-        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto = new DeleteDto();
+        $dto->ids = \is_array($ids) ? $ids : [$ids];
         $dto->operator_id = $this->user->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

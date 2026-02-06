@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Contract\Leader;
 
 /**
- * 删除领导操作输入契约.
+ * 创建领导操作输入契约.
  */
-interface LeaderDeleteInput
+interface LeaderCreateInput
 {
     /**
      * 获取部门ID.
@@ -23,7 +23,7 @@ interface LeaderDeleteInput
     public function getDeptId(): int;
 
     /**
-     * 获取要删除的用户ID列表.
+     * 获取用户ID列表.
      * @return array<int>
      */
     public function getUserIds(): array;
@@ -32,4 +32,10 @@ interface LeaderDeleteInput
      * 获取操作者ID.
      */
     public function getOperatorId(): int;
+
+    /**
+     * 转换为数组（用于简单 CRUD 操作）.
+     * @return array<string, mixed>
+     */
+    public function toArray(): array;
 }

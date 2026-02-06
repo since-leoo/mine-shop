@@ -12,8 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
+use App\Domain\Permission\Contract\Department\DepartmentUpdateInput;
+use App\Interface\Admin\DTO\Permission\DepartmentDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class DepartmentRequest extends BaseRequest
 {
@@ -49,5 +53,20 @@ class DepartmentRequest extends BaseRequest
             'name' => '部门名称',
             'parent_id' => '上级部门',
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param null|int $id 部门ID，创建时为null，更新时传入
+     */
+    public function toDto(?int $id, int $operatorId): DepartmentCreateInput|DepartmentUpdateInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+        $params['operator_id'] = $operatorId;
+        $params['department_users'] ??= [];
+        $params['leader'] ??= [];
+
+        return Mapper::map($params, new DepartmentDto());
     }
 }

@@ -37,9 +37,6 @@ final class PositionCommandService
         return $this->repository->updateById($id, $payload);
     }
 
-    /**
-     * @param DeleteInput $input
-     */
     public function delete(DeleteInput $input): int
     {
         return $this->repository->deleteByIds($input->getIds());

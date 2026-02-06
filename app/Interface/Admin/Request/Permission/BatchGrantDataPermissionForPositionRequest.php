@@ -54,7 +54,7 @@ class BatchGrantDataPermissionForPositionRequest extends BaseRequest
         $params['operator_id'] = $operatorId;
         $params['policy_type'] = PolicyType::from($params['policy_type']);
         // 确保 value 存在，如果不存在则设置为空数组
-        $params['value'] = $params['value'] ?? [];
+        $params['value'] ??= [];
         return Mapper::map($params, new PositionSetDataPermissionDto());
     }
 }

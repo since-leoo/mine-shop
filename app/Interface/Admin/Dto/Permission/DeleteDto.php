@@ -24,15 +24,15 @@ class DeleteDto implements DeleteInput
 {
     #[Required]
     public array $ids = [];
-    
+
     #[Required]
     public int $operator_id = 0;
-    
+
     public function getIds(): array
     {
         return $this->ids;
     }
-    
+
     public function getOperatorId(): int
     {
         return $this->operator_id;

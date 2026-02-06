@@ -33,9 +33,6 @@ final class RoleCommandService
         return Db::transaction(fn () => $this->roleService->update($id, $entity));
     }
 
-    /**
-     * @param DeleteInput $input
-     */
     public function delete(DeleteInput $input): int
     {
         return $this->roleService->delete($input->getIds());

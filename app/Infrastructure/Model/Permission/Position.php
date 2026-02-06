@@ -69,11 +69,10 @@ class Position extends Model
     }
 
     /**
-     * 设置数据权限策略（实体行为方法）
+     * 设置数据权限策略（实体行为方法）.
      *
      * @param PolicyType $policyType 策略类型
      * @param array $value 策略值
-     * @return SetDataPermissionVo
      * @throws \DomainException
      */
     public function setDataPermissionPolicy(PolicyType $policyType, array $value): SetDataPermissionVo
@@ -88,7 +87,7 @@ class Position extends Model
     }
 
     /**
-     * 检查是否可以设置数据权限
+     * 检查是否可以设置数据权限.
      */
     public function canSetDataPermission(): bool
     {

@@ -12,8 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Domain\Permission\Contract\Menu\MenuCreateInput;
+use App\Domain\Permission\Contract\Menu\MenuUpdateInput;
+use App\Interface\Admin\DTO\Permission\MenuDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class MenuRequest extends BaseRequest
 {
@@ -76,5 +80,23 @@ class MenuRequest extends BaseRequest
             'meta.link' => trans('menu.meta.link'),
             'meta.activeName' => trans('menu.meta.activeName'),
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param null|int $id 菜单ID，创建时为null，更新时传入
+     */
+    public function toDto(?int $id, int $operatorId): MenuCreateInput|MenuUpdateInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+        $params['operator_id'] = $operatorId;
+        $params['parent_id'] ??= 0;
+        $params['status'] ??= 1;
+        $params['sort'] ??= 0;
+        $params['meta'] ??= [];
+        $params['btnPermission'] ??= [];
+
+        return Mapper::map($params, new MenuDto());
     }
 }

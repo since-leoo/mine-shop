@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\DepartmentCommandService;
-use App\Application\Mapper\DepartmentAssembler;
 use App\Application\Query\DepartmentQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\DTO\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\DepartmentRequest;
 use App\Interface\Common\CurrentUser;
@@ -55,14 +55,7 @@ class DepartmentController extends AbstractController
     #[Permission(code: 'permission:department:save')]
     public function create(DepartmentRequest $request): Result
     {
-        $payload = DepartmentAssembler::fromArray(array_merge($request->validated(), [
-            'created_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->create($payload, static function ($entity, array $data): void {
-            // 复用原关系同步逻辑
-            $entity->department_users()->sync($data['department_users'] ?? []);
-            $entity->leader()->sync($data['leader'] ?? []);
-        });
+        $this->commandService->create($request->toDto(null, $this->currentUser->id()));
         return $this->success();
     }
 
@@ -70,13 +63,7 @@ class DepartmentController extends AbstractController
     #[Permission(code: 'permission:department:update')]
     public function save(int $id, DepartmentRequest $request): Result
     {
-        $payload = DepartmentAssembler::fromArray(array_merge($request->validated(), [
-            'updated_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->update($id, $payload, static function ($entity, array $data): void {
-            $entity->department_users()->sync($data['department_users'] ?? []);
-            $entity->leader()->sync($data['leader'] ?? []);
-        });
+        $this->commandService->update($request->toDto($id, $this->currentUser->id()));
         return $this->success();
     }
 
@@ -86,10 +73,10 @@ class DepartmentController extends AbstractController
     {
         $requestData = $this->getRequestData();
         $ids = $requestData['ids'] ?? [];
-        $dto = new \App\Interface\Admin\DTO\Permission\DeleteDto();
-        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto = new DeleteDto();
+        $dto->ids = \is_array($ids) ? $ids : [$ids];
         $dto->operator_id = $this->currentUser->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

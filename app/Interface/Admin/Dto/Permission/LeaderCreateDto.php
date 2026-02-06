@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\DTO\Permission;
 
-use App\Domain\Permission\Contract\Leader\LeaderDeleteInput;
+use App\Domain\Permission\Contract\Leader\LeaderCreateInput;
 use Hyperf\DTO\Annotation\Contracts\Valid;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**
- * 删除领导操作 DTO.
+ * 创建领导操作 DTO.
  */
 #[Valid]
-class LeaderDeleteDto implements LeaderDeleteInput
+class LeaderCreateDto implements LeaderCreateInput
 {
     #[Required]
     public int $dept_id = 0;
@@ -44,5 +44,18 @@ class LeaderDeleteDto implements LeaderDeleteInput
     public function getOperatorId(): int
     {
         return $this->operator_id;
+    }
+
+    /**
+     * 转换为数组（用于简单 CRUD 操作）.
+     * @return array<string, mixed>
+     */
+    public function toArray(): array
+    {
+        return [
+            'dept_id' => $this->dept_id,
+            'user_id' => $this->user_ids,
+            'created_by' => $this->operator_id,
+        ];
     }
 }

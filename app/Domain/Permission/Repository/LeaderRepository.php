@@ -23,34 +23,33 @@ final class LeaderRepository extends IRepository
 {
     public function __construct(protected readonly Leader $model) {}
 
-    public function create(array $data): mixed
+    public function create(array $payload): mixed
     {
-        foreach ($data['user_id'] as $id) {
-            Leader::query()->where('dept_id', $data['dept_id'])->where('user_id', $id)->forceDelete();
-            Leader::create(['dept_id' => $data['dept_id'], 'user_id' => $id, 'created_at' => date('Y-m-d H:i:s')]);
+        foreach ($payload['user_id'] as $id) {
+            $this->model::where('dept_id', $payload['dept_id'])->where('user_id', $id)->forceDelete();
+            parent::create(['dept_id' => $payload['dept_id'], 'user_id' => $id, 'created_at' => date('Y-m-d H:i:s')]);
         }
-        // @phpstan-ignore-next-line
-        return null;
+        return true;
     }
 
     public function deleteByDoubleKey(int $dept_id, array $user_ids): void
     {
-        Leader::query()->where('dept_id', $dept_id)->whereIn('user_id', $user_ids)->forceDelete();
+        $this->model::where('dept_id', $dept_id)->whereIn('user_id', $user_ids)->forceDelete();
     }
 
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
-            ->when(isset($params['user_id']), static function (Builder $query) use ($params) {
+            ->when(! empty($params['user_id']), static function (Builder $query) use ($params) {
                 $query->where('user_id', $params['user_id']);
             })
-            ->when(isset($params['dept_id']), static function (Builder $query) use ($params) {
+            ->when(! empty($params['dept_id']), static function (Builder $query) use ($params) {
                 $query->where('dept_id', $params['dept_id']);
             })
-            ->when(isset($params['created_at']), static function (Builder $query) use ($params) {
+            ->when(! empty($params['created_at']), static function (Builder $query) use ($params) {
                 $query->whereBetween('created_at', $params['created_at']);
             })
-            ->when(isset($params['updated_at']), static function (Builder $query) use ($params) {
+            ->when(! empty($params['updated_at']), static function (Builder $query) use ($params) {
                 $query->whereBetween('updated_at', $params['updated_at']);
             })
             ->with(['department', 'user']);

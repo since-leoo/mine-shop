@@ -22,7 +22,7 @@ interface DeleteInput
      * @return array<int>
      */
     public function getIds(): array;
-    
+
     /**
      * 获取操作者ID.
      */

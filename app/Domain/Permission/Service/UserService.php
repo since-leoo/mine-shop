@@ -38,33 +38,53 @@ final class UserService extends IService
     /**
      * 创建用户.
      *
-     * @param UserEntity $entity 用户实体对象
+     * @param UserInput $dto 用户输入 DTO
      * @return User 创建后的用户模型
      */
-    public function create(UserEntity $entity): User
+    public function create(UserInput $dto): User
     {
+        // 1. 通过 Mapper 获取新实体
+        $entity = UserMapper::getNewEntity();
+
+        // 2. 调用实体的 create 行为方法（内部组装设置值）
+        $entity->create($dto);
+
+        // 3. 外部逻辑判断后调用仓储
         $user = $this->repository->create($entity->toArray());
+
+        // 4. 同步关联关系
         $this->syncRelations($user, $entity);
+
         return $user;
     }
 
     /**
      * 更新用户信息.
      *
-     * @param UserEntity $entity 用户实体对象
+     * @param UserInput $dto 用户输入 DTO
      * @return null|User 更新后的用户模型，如果用户不存在则返回null
      */
-    public function update(UserEntity $entity): ?User
+    public function update(UserInput $dto): ?User
     {
+        // 1. 通过仓储获取 Model
         /** @var null|User $user */
-        $user = $this->repository->findById($entity->getId());
+        $user = $this->repository->findById($dto->getId());
         if (! $user) {
             return null;
         }
 
-        $this->repository->updateById($entity->getId(), $entity->toArray());
+        // 2. 通过 Mapper 将 Model 转换为 Entity
+        $entity = UserMapper::fromModel($user);
 
+        // 3. 调用实体的 update 行为方法
+        $entity->update($dto);
+
+        // 4. 持久化修改
+        $this->repository->updateById($dto->getId(), $entity->toArray());
+
+        // 5. 同步关联关系
         $this->syncRelations($user, $entity);
+
         return $user;
     }
 

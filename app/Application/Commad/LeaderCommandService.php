@@ -12,25 +12,23 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Permission\Repository\LeaderRepository;
+use App\Domain\Permission\Contract\Leader\LeaderCreateInput;
+use App\Domain\Permission\Contract\Leader\LeaderDeleteInput;
+use App\Domain\Permission\Service\LeaderService;
 
 final class LeaderCommandService
 {
-    public function __construct(public readonly LeaderRepository $repository) {}
+    public function __construct(
+        private readonly LeaderService $leaderService
+    ) {}
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function create(array $payload): mixed
+    public function create(LeaderCreateInput $input): mixed
     {
-        return $this->repository->create($payload);
+        return $this->leaderService->create($input);
     }
 
-    /**
-     * @param \App\Domain\Permission\Contract\Leader\LeaderDeleteInput $input
-     */
-    public function delete(\App\Domain\Permission\Contract\Leader\LeaderDeleteInput $input): void
+    public function delete(LeaderDeleteInput $input): void
     {
-        $this->repository->deleteByDoubleKey($input->getDeptId(), $input->getUserIds());
+        $this->leaderService->delete($input->getDeptId(), $input->getUserIds());
     }
 }

@@ -12,46 +12,31 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Permission\Repository\DepartmentRepository;
+use App\Domain\Permission\Contract\Common\DeleteInput;
+use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
+use App\Domain\Permission\Contract\Department\DepartmentUpdateInput;
+use App\Domain\Permission\Service\DepartmentService;
 use App\Infrastructure\Model\Permission\Department;
 use Hyperf\DbConnection\Db;
 
 final class DepartmentCommandService
 {
-    public function __construct(public readonly DepartmentRepository $repository) {}
+    public function __construct(
+        private readonly DepartmentService $departmentService
+    ) {}
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function create(array $payload, callable $afterCreate): Department
+    public function create(DepartmentCreateInput $input): Department
     {
-        return Db::transaction(function () use ($payload, $afterCreate) {
-            $entity = $this->repository->create($payload);
-            $afterCreate($entity, $payload);
-            return $entity;
-        });
+        return Db::transaction(fn () => $this->departmentService->create($input));
     }
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function update(int $id, array $payload, callable $afterUpdate): ?Department
+    public function update(DepartmentUpdateInput $input): ?Department
     {
-        return Db::transaction(function () use ($id, $payload, $afterUpdate) {
-            $entity = $this->repository->findById($id);
-            if (! $entity) {
-                return null;
-            }
-            $afterUpdate($entity, $payload);
-            return $entity;
-        });
+        return Db::transaction(fn () => $this->departmentService->update($input));
     }
 
-    /**
-     * @param \App\Domain\Permission\Contract\Common\DeleteInput $input
-     */
-    public function delete(\App\Domain\Permission\Contract\Common\DeleteInput $input): int
+    public function delete(DeleteInput $input): int
     {
-        return $this->repository->deleteByIds($input->getIds());
+        return $this->departmentService->delete($input->getIds());
     }
 }

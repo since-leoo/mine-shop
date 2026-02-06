@@ -19,10 +19,9 @@ use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\DTO\Permission\DeleteDto;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantPermissionsForRoleRequest;
-use App\Interface\Admin\Request\Permission\DeleteRequest;
 use App\Interface\Admin\Request\Permission\RoleRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
@@ -92,9 +91,9 @@ final class RoleController extends AbstractController
     {
         $ids = $this->getRequestData()['ids'] ?? [];
         $dto = new DeleteDto();
-        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto->ids = \is_array($ids) ? $ids : [$ids];
         $dto->operator_id = $this->currentUser->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

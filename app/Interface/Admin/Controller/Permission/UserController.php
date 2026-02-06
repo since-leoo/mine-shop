@@ -17,10 +17,9 @@ use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\UserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\DTO\Permission\DeleteDto;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantRolesForUserRequest;
-use App\Interface\Admin\Request\Permission\DeleteRequest;
 use App\Interface\Admin\Request\Permission\ResetPasswordRequest;
 use App\Interface\Admin\Request\Permission\UserRequest;
 use App\Interface\Common\CurrentUser;
@@ -93,9 +92,9 @@ final class UserController extends AbstractController
     {
         $ids = $this->getRequestData()['ids'] ?? [];
         $dto = new DeleteDto();
-        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto->ids = \is_array($ids) ? $ids : [$ids];
         $dto->operator_id = $this->currentUser->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

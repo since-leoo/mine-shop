@@ -19,7 +19,6 @@ use App\Application\Query\PositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantDataPermissionForPositionRequest;
-use App\Interface\Admin\Request\Permission\DeleteRequest;
 use App\Interface\Admin\Request\Permission\PositionRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
@@ -96,9 +95,9 @@ class PositionController extends AbstractController
     {
         $ids = $this->getRequestData()['ids'] ?? [];
         $dto = new DeleteDto();
-        $dto->ids = is_array($ids) ? $ids : [$ids];
+        $dto->ids = \is_array($ids) ? $ids : [$ids];
         $dto->operator_id = $this->currentUser->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

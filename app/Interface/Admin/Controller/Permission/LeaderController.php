@@ -16,6 +16,7 @@ use App\Application\Commad\LeaderCommandService;
 use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\LeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\DTO\Permission\LeaderDeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\LeaderRequest;
 use App\Interface\Common\CurrentUser;
@@ -60,9 +61,7 @@ class LeaderController extends AbstractController
     #[Permission(code: 'permission:leader:save')]
     public function create(LeaderRequest $request): Result
     {
-        $this->commandService->create(array_merge($request->validated(), [
-            'created_by' => $this->currentUser->id(),
-        ]));
+        $this->commandService->create($request->toDto($this->currentUser->id()));
         return $this->success();
     }
 
@@ -72,11 +71,11 @@ class LeaderController extends AbstractController
     {
         $requestData = $this->getRequestData();
         $userIds = $requestData['user_ids'] ?? [];
-        $dto = new \App\Interface\Admin\DTO\Permission\LeaderDeleteDto();
+        $dto = new LeaderDeleteDto();
         $dto->dept_id = $requestData['dept_id'] ?? 0;
-        $dto->user_ids = is_array($userIds) ? $userIds : [$userIds];
+        $dto->user_ids = \is_array($userIds) ? $userIds : [$userIds];
         $dto->operator_id = $this->currentUser->id();
-        
+
         $this->commandService->delete($dto);
         return $this->success();
     }

@@ -12,7 +12,11 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Permission\Entity\MenuEntity;
+use App\Domain\Auth\Enum\Status;
+use App\Domain\Permission\Contract\Common\DeleteInput;
+use App\Domain\Permission\Contract\Menu\MenuCreateInput;
+use App\Domain\Permission\Contract\Menu\MenuUpdateInput;
+use App\Domain\Permission\Mapper\MenuMapper;
 use App\Domain\Permission\Service\MenuService;
 use App\Infrastructure\Model\Permission\Menu;
 use Hyperf\DbConnection\Db;
@@ -21,21 +25,47 @@ final class MenuCommandService
 {
     public function __construct(private readonly MenuService $menuService) {}
 
-    public function create(MenuEntity $entity): Menu
+    public function create(MenuCreateInput $input): Menu
     {
+        // 通过 Mapper 获取新实体
+        $entity = MenuMapper::getNewEntity();
+        $this->fillEntityFromInput($entity, $input);
+        $entity->setCreatedBy($input->getOperatorId());
+
         return Db::transaction(fn () => $this->menuService->create($entity));
     }
 
-    public function update(int $id, MenuEntity $entity): bool
+    public function update(MenuUpdateInput $input): bool
     {
-        return Db::transaction(fn () => $this->menuService->update($id, $entity));
+        // 通过 Mapper 获取新实体（MenuService 内部会获取现有数据）
+        $entity = MenuMapper::getNewEntity();
+        $entity->setId($input->getId());
+        $this->fillEntityFromInput($entity, $input);
+        $entity->setUpdatedBy($input->getOperatorId());
+
+        return Db::transaction(fn () => $this->menuService->update($input->getId(), $entity));
+    }
+
+    public function delete(DeleteInput $input): int
+    {
+        return $this->menuService->delete($input->getIds());
     }
 
     /**
-     * @param \App\Domain\Permission\Contract\Common\DeleteInput $input
+     * 从 Input 填充 Entity.
+     * @param mixed $entity
      */
-    public function delete(\App\Domain\Permission\Contract\Common\DeleteInput $input): int
+    private function fillEntityFromInput($entity, MenuCreateInput|MenuUpdateInput $input): void
     {
-        return $this->menuService->delete($input->getIds());
+        $entity->setParentId($input->getParentId());
+        $entity->setName($input->getName());
+        $entity->setPath($input->getPath());
+        $entity->setComponent($input->getComponent());
+        $entity->setRedirect($input->getRedirect());
+        $entity->setStatus(Status::tryFrom($input->getStatus()) ?? Status::Normal);
+        $entity->setSort($input->getSort());
+        $entity->setRemark($input->getRemark());
+        $entity->setMeta($input->getMeta());
+        $entity->setButtonPermissions($input->getButtonPermissions());
     }
 }
