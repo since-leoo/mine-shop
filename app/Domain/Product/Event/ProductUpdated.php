@@ -12,15 +12,21 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Event;
 
-use App\Infrastructure\Model\Product\Product;
+use App\Domain\Product\ValueObject\ProductChangeVo;
 
+/**
+ * 商品更新事件.
+ */
 final class ProductUpdated
 {
     /**
-     * @param array<int, int> $deletedSkuIds
+     * @param int $productId 商品ID
+     * @param ProductChangeVo $changes 变更信息
+     * @param array<int, array{sku_id: int, stock: int}> $stockData 库存数据
      */
     public function __construct(
-        public readonly Product $product,
-        public readonly array $deletedSkuIds = []
+        public readonly int $productId,
+        public readonly ProductChangeVo $changes,
+        public readonly array $stockData = []
     ) {}
 }

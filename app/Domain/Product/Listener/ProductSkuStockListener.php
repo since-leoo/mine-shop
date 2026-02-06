@@ -16,10 +16,12 @@ use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
 use App\Infrastructure\Abstract\ICache;
-use App\Infrastructure\Model\Product\Product;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * SKU库存监听器：负责同步SKU库存到Redis.
+ */
 final class ProductSkuStockListener implements ListenerInterface
 {
     private const STOCK_HASH_KEY_PREFIX = 'product';
@@ -44,15 +46,14 @@ final class ProductSkuStockListener implements ListenerInterface
     {
         try {
             $this->redis->setPrefix(self::STOCK_HASH_KEY_PREFIX);
+
             match (true) {
-                $event instanceof ProductCreated => $this->syncStocks($event->product),
-                $event instanceof ProductUpdated => $this->syncUpdatedStocks($event->product, $event->deletedSkuIds),
-                $event instanceof ProductDeleted => $this->clearStocks($event->skuIds),
+                $event instanceof ProductCreated => $this->handleCreated($event),
+                $event instanceof ProductUpdated => $this->handleUpdated($event),
+                $event instanceof ProductDeleted => $this->handleDeleted($event),
             };
         } catch (\Throwable $e) {
-            $productId = property_exists($event, 'product') && $event->product instanceof Product
-                ? $event->product->id
-                : null;
+            $productId = property_exists($event, 'productId') ? $event->productId : null;
             $this->logger->error('Product stock sync failed', [
                 'product_id' => $productId,
                 'event' => $event::class,
@@ -61,16 +62,54 @@ final class ProductSkuStockListener implements ListenerInterface
         }
     }
 
-    private function syncStocks(Product $product): void
+    /**
+     * 处理商品创建事件.
+     */
+    private function handleCreated(ProductCreated $event): void
     {
-        $product->loadMissing('skus');
+        // 直接使用事件中的库存数据，不需要查询数据库
+        $this->syncStocks($event->stockData);
+    }
+
+    /**
+     * 处理商品更新事件.
+     */
+    private function handleUpdated(ProductUpdated $event): void
+    {
+        // 更新库存
+        $this->syncStocks($event->stockData);
+
+        // 删除已删除的 SKU 库存
+        if ($event->changes->hasSkuDeleted()) {
+            $this->removeStocks($event->changes->deletedSkuIds);
+        }
+    }
+
+    /**
+     * 处理商品删除事件.
+     */
+    private function handleDeleted(ProductDeleted $event): void
+    {
+        $this->removeStocks($event->skuIds);
+    }
+
+    /**
+     * 同步库存数据到Redis.
+     *
+     * @param array<int, array{sku_id: int, stock: int}> $stockData
+     */
+    private function syncStocks(array $stockData): void
+    {
         $payload = [];
-        foreach ($product->skus as $sku) {
-            $skuId = (int) $sku->id;
+        foreach ($stockData as $item) {
+            $skuId = $item['sku_id'] ?? 0;
+            $stock = $item['stock'] ?? 0;
+
             if ($skuId <= 0) {
                 continue;
             }
-            $payload[(string) $skuId] = (int) $sku->stock;
+
+            $payload[(string) $skuId] = $stock;
         }
 
         if ($payload !== []) {
@@ -79,24 +118,8 @@ final class ProductSkuStockListener implements ListenerInterface
     }
 
     /**
-     * @param array<int, int> $deletedSkuIds
-     */
-    private function syncUpdatedStocks(Product $product, array $deletedSkuIds): void
-    {
-        $this->syncStocks($product);
-
-        $this->removeStocks($deletedSkuIds);
-    }
-
-    /**
-     * @param array<int, int> $skuIds
-     */
-    private function clearStocks(array $skuIds): void
-    {
-        $this->removeStocks($skuIds);
-    }
-
-    /**
+     * 删除SKU库存.
+     *
      * @param array<int, int> $skuIds
      */
     private function removeStocks(array $skuIds): void

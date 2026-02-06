@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Service;
 
-use App\Domain\Product\Entity\BrandEntity;
+use App\Domain\Product\Contract\BrandInput;
 use App\Domain\Product\Repository\BrandRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\BusinessException;
 use App\Infrastructure\Model\Product\Brand;
+use Mine\Support\ResultCode;
 
 /**
  * 品牌领域服务：封装品牌相关的核心业务逻辑.
@@ -35,22 +37,31 @@ final class BrandService extends IService
     /**
      * 创建品牌.
      */
-    public function create(BrandEntity $entity): Brand
+    public function create(BrandInput $input): Brand
     {
-        if ($entity->needsSort()) {
-            $entity->applySort(Brand::getNextSort());
+        $data = $input->toArray();
+
+        // 如果没有指定排序，使用下一个排序值
+        if (! isset($data['sort']) || $data['sort'] === 0) {
+            $data['sort'] = Brand::getNextSort();
         }
-        return $this->repository->store($entity);
+
+        return $this->repository->create($data);
     }
 
     /**
      * 更新品牌.
      */
-    public function update(BrandEntity $entity): bool
+    public function update(BrandInput $input): bool
     {
-        $brand = $this->repository->findById($entity->getId());
-        $brand || throw new \InvalidArgumentException('品牌不存在');
-        return $this->repository->update($entity);
+        $id = $input->getId();
+        $brand = $this->repository->findById($id);
+
+        if (! $brand) {
+            throw new BusinessException(ResultCode::FAIL, '品牌不存在');
+        }
+
+        return $this->repository->updateById($id, $input->toArray());
     }
 
     /**
@@ -60,8 +71,14 @@ final class BrandService extends IService
     {
         /** @var null|Brand $brand */
         $brand = $this->repository->findById($id);
-        $brand || throw new \InvalidArgumentException('品牌不存在');
-        $brand->canDelete() || throw new \RuntimeException('该品牌下还有商品，无法删除');
+
+        if (! $brand) {
+            throw new BusinessException(ResultCode::FAIL, '品牌不存在');
+        }
+
+        if (! $brand->canDelete()) {
+            throw new BusinessException(ResultCode::FAIL, '该品牌下还有商品，无法删除');
+        }
 
         return $this->repository->deleteById($id) > 0;
     }
@@ -76,12 +93,9 @@ final class BrandService extends IService
             if (! isset($item['id'], $item['sort'])) {
                 continue;
             }
-            $entity = (new BrandEntity())
-                ->setId((int) $item['id'])
-                ->applySort((int) $item['sort']);
             $sanitized[] = [
-                'id' => $entity->getId(),
-                'sort' => $entity->getSort(),
+                'id' => (int) $item['id'],
+                'sort' => (int) $item['sort'],
             ];
         }
 

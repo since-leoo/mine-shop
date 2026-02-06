@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Product\Entity\CategoryEntity;
+use App\Domain\Product\Contract\CategoryInput;
 use App\Domain\Product\Service\CategoryService;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Cache\Annotation\CacheEvict;
+use Hyperf\DbConnection\Db;
 
 /**
  * 分类命令服务：处理所有写操作.
@@ -27,32 +28,32 @@ final class CategoryCommandService
     ) {}
 
     #[CacheEvict(prefix: 'mall:category', all: true)]
-    public function create(CategoryEntity $entity): Category
+    public function create(CategoryInput $input): Category
     {
-        return $this->categoryService->create($entity);
+        return Db::transaction(fn () => $this->categoryService->create($input));
     }
 
     #[CacheEvict(prefix: 'mall:category', all: true)]
-    public function update(CategoryEntity $entity): bool
+    public function update(CategoryInput $input): bool
     {
-        return $this->categoryService->update($entity);
+        return Db::transaction(fn () => $this->categoryService->update($input));
     }
 
     #[CacheEvict(prefix: 'mall:category', all: true)]
     public function delete(int $id): bool
     {
-        return $this->categoryService->delete($id);
+        return Db::transaction(fn () => $this->categoryService->delete($id));
     }
 
     #[CacheEvict(prefix: 'mall:category', all: true)]
     public function move(int $categoryId, int $newParentId): bool
     {
-        return $this->categoryService->move($categoryId, $newParentId);
+        return Db::transaction(fn () => $this->categoryService->move($categoryId, $newParentId));
     }
 
     #[CacheEvict(prefix: 'mall:category', all: true)]
     public function updateSort(array $sortData): bool
     {
-        return $this->categoryService->updateSort($sortData);
+        return Db::transaction(fn () => $this->categoryService->updateSort($sortData));
     }
 }

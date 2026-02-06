@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Product;
 
 use App\Application\Commad\CategoryCommandService;
-use App\Application\Mapper\CategoryAssembler;
 use App\Application\Query\CategoryQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -71,8 +70,7 @@ final class CategoryController extends AbstractController
     #[Permission(code: 'product:category:create')]
     public function store(CategoryRequest $request): Result
     {
-        $entity = CategoryAssembler::toCreateEntity($request->validated());
-        $category = $this->commandService->create($entity);
+        $category = $this->commandService->create($request->toDto(null));
         return $this->success($category->toArray(), '创建分类成功', 201);
     }
 
@@ -80,8 +78,7 @@ final class CategoryController extends AbstractController
     #[Permission(code: 'product:category:update')]
     public function update(int $id, CategoryRequest $request): Result
     {
-        $entity = CategoryAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($id));
         $category = $this->queryService->find($id);
         return $this->success($category?->toArray() ?? [], '更新分类成功');
     }

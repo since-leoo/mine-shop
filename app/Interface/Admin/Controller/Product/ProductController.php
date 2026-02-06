@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Product;
 
 use App\Application\Commad\ProductCommandService;
-use App\Application\Mapper\ProductAssembler;
 use App\Application\Query\ProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\DTO\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\ProductRequest;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
@@ -72,8 +72,7 @@ final class ProductController extends AbstractController
     #[Permission(code: 'product:product:create')]
     public function store(ProductRequest $request): Result
     {
-        $entity = ProductAssembler::toCreateEntity($request->validated());
-        $product = $this->commandService->create($entity);
+        $product = $this->commandService->create($request->toDto(null));
         return $this->success($product->toArray(), '创建商品成功', 201);
     }
 
@@ -81,8 +80,7 @@ final class ProductController extends AbstractController
     #[Permission(code: 'product:product:update')]
     public function update(int $id, ProductRequest $request): Result
     {
-        $entity = ProductAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($id));
 
         $product = $this->queryService->find($id);
         return $this->success($product?->toArray() ?? [], '更新商品成功');
@@ -100,8 +98,11 @@ final class ProductController extends AbstractController
     #[Permission(code: 'product:product:update')]
     public function updateStatus(int $id, RequestInterface $request): Result
     {
-        $entity = ProductAssembler::toUpdateEntity($id, ['status' => $request->input('status')]);
-        $this->commandService->update($entity);
+        $dto = new ProductDto();
+        $dto->id = $id;
+        $dto->status = $request->input('status');
+
+        $this->commandService->update($dto);
         return $this->success(null, '更新状态成功');
     }
 

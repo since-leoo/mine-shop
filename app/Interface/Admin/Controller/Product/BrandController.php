@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Product;
 
 use App\Application\Commad\BrandCommandService;
-use App\Application\Mapper\BrandAssembler;
 use App\Application\Query\BrandQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -60,8 +59,7 @@ final class BrandController extends AbstractController
     #[Permission(code: 'product:brand:create')]
     public function store(BrandRequest $request): Result
     {
-        $entity = BrandAssembler::toCreateEntity($request->validated());
-        $brand = $this->commandService->create($entity);
+        $brand = $this->commandService->create($request->toDto(null));
         return $this->success($brand->toArray(), '创建品牌成功', 201);
     }
 
@@ -69,8 +67,7 @@ final class BrandController extends AbstractController
     #[Permission(code: 'product:brand:update')]
     public function update(int $id, BrandRequest $request): Result
     {
-        $entity = BrandAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($id));
         $brand = $this->queryService->find($id);
         return $this->success($brand?->toArray() ?? [], '更新品牌成功');
     }

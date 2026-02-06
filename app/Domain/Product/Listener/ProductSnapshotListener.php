@@ -12,18 +12,22 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Listener;
 
+use App\Application\Query\ProductQueryService;
 use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
 use App\Domain\Product\Service\ProductSnapshotService;
-use App\Infrastructure\Model\Product\Product;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\Log\LoggerInterface;
 
+/**
+ * 商品快照监听器：负责同步商品快照到缓存.
+ */
 final class ProductSnapshotListener implements ListenerInterface
 {
     public function __construct(
         private readonly ProductSnapshotService $snapshotService,
+        private readonly ProductQueryService $queryService,
         private readonly LoggerInterface $logger
     ) {}
 
@@ -39,23 +43,13 @@ final class ProductSnapshotListener implements ListenerInterface
     public function process(object $event): void
     {
         try {
-            if ($event instanceof ProductDeleted) {
-                $skuIds = $event->skuIds;
-                if ($skuIds === []) {
-                    $skuIds = $this->resolveSkuIds($event->product);
-                }
-                $this->snapshotService->deleteSkus($skuIds);
-                $this->snapshotService->evictProduct((int) ($event->product->id ?? 0));
-                return;
-            }
-
-            $this->snapshotService->rememberProduct($event->product);
-
-            if ($event instanceof ProductUpdated && $event->deletedSkuIds !== []) {
-                $this->snapshotService->deleteSkus($event->deletedSkuIds);
-            }
+            match (true) {
+                $event instanceof ProductCreated => $this->handleCreated($event),
+                $event instanceof ProductUpdated => $this->handleUpdated($event),
+                $event instanceof ProductDeleted => $this->handleDeleted($event),
+            };
         } catch (\Throwable $throwable) {
-            $productId = property_exists($event, 'product') ? (int) ($event->product->id ?? 0) : 0;
+            $productId = property_exists($event, 'productId') ? $event->productId : 0;
             $this->logger->error('商品快照同步失败', [
                 'event' => $event::class,
                 'product_id' => $productId,
@@ -65,18 +59,42 @@ final class ProductSnapshotListener implements ListenerInterface
     }
 
     /**
-     * @return array<int, int>
+     * 处理商品创建事件.
      */
-    private function resolveSkuIds(Product $product): array
+    private function handleCreated(ProductCreated $event): void
     {
-        $collection = $product->relationLoaded('skus')
-            ? $product->skus
-            : $product->skus()->get();
+        // 查询完整的商品信息（包含关联关系）
+        $product = $this->queryService->find($event->productId);
+        if ($product) {
+            $this->snapshotService->rememberProduct($product);
+        }
+    }
 
-        if ($collection === null) {
-            return [];
+    /**
+     * 处理商品更新事件.
+     */
+    private function handleUpdated(ProductUpdated $event): void
+    {
+        // 根据变更信息决定是否刷新缓存
+        if ($event->changes->needsCacheRefresh()) {
+            $product = $this->queryService->find($event->productId);
+            if ($product) {
+                $this->snapshotService->rememberProduct($product);
+            }
         }
 
-        return $collection->pluck('id')->map(static fn ($id) => (int) $id)->all();
+        // 删除已删除的 SKU 快照
+        if ($event->changes->hasSkuDeleted()) {
+            $this->snapshotService->deleteSkus($event->changes->deletedSkuIds);
+        }
+    }
+
+    /**
+     * 处理商品删除事件.
+     */
+    private function handleDeleted(ProductDeleted $event): void
+    {
+        $this->snapshotService->evictProduct($event->productId);
+        $this->snapshotService->deleteSkus($event->skuIds);
     }
 }

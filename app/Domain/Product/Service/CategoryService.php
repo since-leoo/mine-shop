@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Service;
 
-use App\Domain\Product\Entity\CategoryEntity;
+use App\Domain\Product\Contract\CategoryInput;
 use App\Domain\Product\Repository\CategoryRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\BusinessException;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Database\Model\Collection;
-use Hyperf\DbConnection\Db;
+use Mine\Support\ResultCode;
 
 /**
  * 分类领域服务：封装分类相关的核心业务逻辑.
@@ -45,33 +46,43 @@ final class CategoryService extends IService
     /**
      * 创建分类.
      */
-    public function create(CategoryEntity $entity): Category
+    public function create(CategoryInput $input): Category
     {
-        $parentId = $entity->getParentId() ?? 0;
-        $level = $parentId > 0 ? $this->calculateLevel($parentId) : 1;
-        $entity->setLevel($level);
+        $data = $input->toArray();
 
-        if ($entity->needsSort()) {
-            $entity->applySort(Category::getNextSort($parentId));
+        $parentId = $input->getParentId();
+        $level = $parentId > 0 ? $this->calculateLevel($parentId) : 1;
+        $data['level'] = $level;
+
+        // 如果没有指定排序，使用下一个排序值
+        if (! isset($data['sort']) || $data['sort'] === 0) {
+            $data['sort'] = Category::getNextSort($parentId);
         }
 
-        return $this->repository->store($entity);
+        return $this->repository->create($data);
     }
 
     /**
      * 更新分类.
      */
-    public function update(CategoryEntity $entity): bool
+    public function update(CategoryInput $input): bool
     {
-        $category = $this->repository->findById($entity->getId());
-        $category || throw new \InvalidArgumentException('分类不存在');
+        $id = $input->getId();
+        $category = $this->repository->findById($id);
 
-        $parentId = $entity->getParentId();
-        if ($parentId !== null) {
-            $entity->setLevel($parentId > 0 ? $this->calculateLevel($parentId) : 1);
+        if (! $category) {
+            throw new BusinessException(ResultCode::FAIL, '分类不存在');
         }
 
-        return $this->repository->update($entity);
+        $data = $input->toArray();
+
+        // 如果更新了父级分类，重新计算层级
+        if (isset($data['parent_id'])) {
+            $parentId = (int) $data['parent_id'];
+            $data['level'] = $parentId > 0 ? $this->calculateLevel($parentId) : 1;
+        }
+
+        return $this->repository->updateById($id, $data);
     }
 
     /**
@@ -80,8 +91,14 @@ final class CategoryService extends IService
     public function delete(int $id): bool
     {
         $category = $this->repository->findById($id);
-        $category || throw new \InvalidArgumentException('分类不存在');
-        $category->canDelete() || throw new \RuntimeException('该分类下还有子分类，无法删除');
+
+        if (! $category) {
+            throw new BusinessException(ResultCode::FAIL, '分类不存在');
+        }
+
+        if (! $category->canDelete()) {
+            throw new BusinessException(ResultCode::FAIL, '该分类下还有子分类，无法删除');
+        }
 
         return $this->repository->deleteById($id) > 0;
     }
@@ -92,13 +109,20 @@ final class CategoryService extends IService
     public function move(int $categoryId, int $newParentId): bool
     {
         $category = $this->repository->findById($categoryId);
-        $category || throw new \InvalidArgumentException('分类不存在');
 
-        $newParent = $newParentId > 0 ? $this->repository->findById($newParentId) : null;
-        $newParentId > 0 && ! $newParent && throw new \InvalidArgumentException('父级分类不存在');
+        if (! $category) {
+            throw new BusinessException(ResultCode::FAIL, '分类不存在');
+        }
 
-        if ($newParent && $this->isDescendant($categoryId, $newParentId)) {
-            throw new \InvalidArgumentException('不能移动到子分类下');
+        if ($newParentId > 0) {
+            $newParent = $this->repository->findById($newParentId);
+            if (! $newParent) {
+                throw new BusinessException(ResultCode::FAIL, '父级分类不存在');
+            }
+
+            if ($this->isDescendant($categoryId, $newParentId)) {
+                throw new BusinessException(ResultCode::FAIL, '不能移动到子分类下');
+            }
         }
 
         $newLevel = 1;
@@ -109,12 +133,14 @@ final class CategoryService extends IService
             }
         }
 
-        return (bool) Db::transaction(function () use ($categoryId, $newParentId, $newLevel) {
-            $entity = (new CategoryEntity())->setId($categoryId)->moveToParent($newParentId, $newLevel);
-            $this->repository->update($entity);
-            $this->updateChildrenLevel($categoryId, $newLevel);
-            return true;
-        });
+        $this->repository->updateById($categoryId, [
+            'parent_id' => $newParentId,
+            'level' => $newLevel,
+        ]);
+
+        $this->updateChildrenLevel($categoryId, $newLevel);
+
+        return true;
     }
 
     /**
@@ -127,10 +153,9 @@ final class CategoryService extends IService
             if (! isset($item['id'], $item['sort'])) {
                 continue;
             }
-            $entity = (new CategoryEntity())->setId((int) $item['id'])->applySort((int) $item['sort']);
             $sanitized[] = [
-                'id' => $entity->getId(),
-                'sort' => $entity->getSort(),
+                'id' => (int) $item['id'],
+                'sort' => (int) $item['sort'],
             ];
         }
 
@@ -172,8 +197,7 @@ final class CategoryService extends IService
         $children = $this->repository->getTree($parentId);
         foreach ($children as $child) {
             $childLevel = $parentLevel + 1;
-            $entity = (new CategoryEntity())->setId((int) $child->id)->setLevel($childLevel);
-            $this->repository->update($entity);
+            $this->repository->updateById((int) $child->id, ['level' => $childLevel]);
             $this->updateChildrenLevel((int) $child->id, $childLevel);
         }
     }

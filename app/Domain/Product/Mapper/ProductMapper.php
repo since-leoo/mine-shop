@@ -15,7 +15,6 @@ namespace App\Domain\Product\Mapper;
 use App\Domain\Product\Entity\ProductAttributeEntity;
 use App\Domain\Product\Entity\ProductEntity;
 use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\Product\Enum\ProductStatus;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductAttribute;
 use App\Infrastructure\Model\Product\ProductSku;
@@ -24,35 +23,11 @@ use Hyperf\Collection\Collection;
 final class ProductMapper
 {
     /**
-     * 根据请求数组创建商品实体（用于新增）.
-     *
-     * @param array<string, mixed> $payload
+     * 获取新实体.
      */
-    public static function fromArrayForCreate(array $payload): ProductEntity
+    public static function getNewEntity(): ProductEntity
     {
-        $entity = new ProductEntity();
-        self::fillBaseFields($entity, $payload, ProductStatus::DRAFT->value, true);
-        $entity->setSkus(self::mapSkuPayloads($payload['skus'] ?? []));
-        $entity->setAttributes(self::mapAttributePayloads($payload['attributes'] ?? []));
-        $entity->setGallery($payload['gallery'] ?? []);
-        return $entity;
-    }
-
-    /**
-     * 根据请求数组创建商品实体（用于更新）.
-     *
-     * @param array<string, mixed> $payload
-     */
-    public static function fromArrayForUpdate(int $id, array $payload): ProductEntity
-    {
-        $entity = new ProductEntity();
-        $entity->setId($id);
-        self::fillBaseFields($entity, $payload, null, false);
-        $entity->setSkus(self::mapSkuPayloads($payload['skus'] ?? []));
-        $attributePayload = $payload['product_attributes'] ?? $payload['attributes'] ?? [];
-        $entity->setAttributes(self::mapAttributePayloads($attributePayload));
-        $entity->setGallery($payload['gallery'] ?? []);
-        return $entity;
+        return new ProductEntity();
     }
 
     /**
@@ -60,6 +35,10 @@ final class ProductMapper
      */
     public static function fromModel(Product $model): ProductEntity
     {
+        // 先保存 attributes JSON 字段的值
+        $attributesJson = $model->attributes;
+
+        // 加载关联关系（这会覆盖 attributes 字段）
         $model->loadMissing(['skus', 'attributes', 'gallery']);
 
         $entity = new ProductEntity();
@@ -73,7 +52,10 @@ final class ProductMapper
         $entity->setGalleryImages($model->gallery_images);
         $entity->setDescription($model->description);
         $entity->setDetailContent($model->detail_content);
-        $entity->setAttributesJson($model->attributes);
+
+        // 使用之前保存的 attributes JSON 字段值
+        $entity->setAttributesJson(\is_array($attributesJson) ? $attributesJson : null);
+
         $entity->setMinPrice((float) $model->min_price);
         $entity->setMaxPrice((float) $model->max_price);
         $entity->setVirtualSales($model->virtual_sales);
@@ -85,15 +67,32 @@ final class ProductMapper
         $entity->setSort($model->sort);
         $entity->setStatus($model->status);
 
-        /** @var Collection<int, ProductSku> $skuModels */
+        // 处理 SKU 关联关系
         $skuModels = $model->skus;
-        $entity->setSkus($skuModels->map(static fn (ProductSku $sku) => self::mapSkuModel($sku))->all());
+        if ($skuModels instanceof Collection) {
+            $entity->setSkus($skuModels->map(static fn (ProductSku $sku) => self::mapSkuModel($sku))->all());
+        } else {
+            $entity->setSkus([]);
+        }
 
-        /** @var Collection<int, ProductAttribute> $attributeModels */
-        $attributeModels = $model->attributes;
-        $entity->setAttributes($attributeModels->map(static fn (ProductAttribute $attribute) => self::mapAttributeModel($attribute))->all());
+        // 处理属性关联关系（product_attributes 表）
+        $attributeModels = $model->getRelation('attributes');
+        if ($attributeModels instanceof Collection) {
+            $entity->setAttributes($attributeModels->map(static fn (ProductAttribute $attribute) => self::mapAttributeModel($attribute))->all());
+        } elseif (\is_array($attributeModels)) {
+            // 如果是数组，直接使用
+            $entity->setAttributes(array_map(static fn ($attribute) => self::mapAttributeModel($attribute), $attributeModels));
+        } else {
+            $entity->setAttributes([]);
+        }
 
-        $entity->setGallery($model->gallery->map(static fn ($gallery) => $gallery->toArray())->all());
+        // 处理图片集关联关系
+        $galleryModels = $model->gallery;
+        if ($galleryModels instanceof Collection) {
+            $entity->setGallery($galleryModels->map(static fn ($gallery) => $gallery->toArray())->all());
+        } else {
+            $entity->setGallery([]);
+        }
 
         return $entity;
     }

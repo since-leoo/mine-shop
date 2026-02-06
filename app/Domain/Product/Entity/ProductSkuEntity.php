@@ -202,27 +202,17 @@ final class ProductSkuEntity
     public function ensureStockAvailable(int $quantity): void
     {
         if ($quantity <= 0) {
-            throw new \DomainException('扣减库存数量必须大于0');
+            throw new BusinessException(ResultCode::FAIL, '扣减库存数量必须大于0');
         }
         if ($this->stock < $quantity) {
-            throw new \DomainException('SKU库存不足');
+            throw new BusinessException(ResultCode::FAIL, 'SKU库存不足');
         }
     }
 
     public function assertIntegrity(): void
     {
-        if (trim($this->skuName) === '') {
-            throw new \DomainException('SKU名称不能为空');
-        }
-        if ($this->salePrice < 0 || $this->marketPrice < 0 || $this->costPrice < 0) {
-            throw new \DomainException('SKU价格不能小于0');
-        }
-        if ($this->stock < 0) {
-            throw new \DomainException('SKU库存不能小于0');
-        }
-        if ($this->warningStock < 0) {
-            throw new \DomainException('SKU预警库存不能小于0');
-        }
+        // Entity 层只验证业务规则，不验证格式
+        // 格式验证（名称非空、价格大于0等）应该在 Request 层完成
     }
 
     /**
@@ -254,7 +244,7 @@ final class ProductSkuEntity
 
         $newStock = $this->stock + $delta;
         if ($newStock < 0) {
-            throw new \DomainException('SKU库存不允许为负数');
+            throw new BusinessException(ResultCode::FAIL, 'SKU库存不允许为负数');
         }
 
         $this->stock = $newStock;

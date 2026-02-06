@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Entity;
 
+use App\Domain\Product\Contract\ProductInput;
 use App\Domain\Product\Enum\ProductStatus;
 use App\Domain\Product\Trait\ProductEntityTrait;
 use App\Domain\Product\Trait\ProductSettingsTrait;
+use App\Domain\Product\ValueObject\PriceRangeVo;
+use App\Domain\Product\ValueObject\ProductChangeVo;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
+use App\Interface\Common\ResultCode;
 
 /**
  * 商品聚合根.
@@ -96,9 +101,200 @@ final class ProductEntity
     /** @var array<int, mixed> */
     private array $gallery = [];
 
+    /** @var array<string, bool> dirty 追踪机制 */
+    private array $dirty = [];
+
+    /**
+     * 创建行为方法：接收 DTO，内部组装设置值.
+     */
+    public function create(ProductInput $input): self
+    {
+        $this->setProductCode($input->getProductCode());
+        $this->setCategoryId($input->getCategoryId());
+        $this->setBrandId($input->getBrandId());
+        $this->setName($input->getName());
+        $this->setSubTitle($input->getSubTitle());
+        $this->setMainImage($input->getMainImage());
+        $this->setGalleryImages($input->getGalleryImages());
+        $this->setDescription($input->getDescription());
+        $this->setDetailContent($input->getDetailContent());
+        $this->setAttributesJson($input->getAttributes());
+        $this->setVirtualSales($input->getVirtualSales() ?? 0);
+        $this->setRealSales($input->getRealSales() ?? 0);
+        $this->setIsRecommend($input->getIsRecommend() ?? false);
+        $this->setIsHot($input->getIsHot() ?? false);
+        $this->setIsNew($input->getIsNew() ?? false);
+        $this->setShippingTemplateId($input->getShippingTemplateId());
+        $this->setSort($input->getSort() ?? 0);
+        $this->setStatus($input->getStatus() ?? ProductStatus::DRAFT->value);
+        $this->setGallery($input->getGallery());
+
+        // 处理 SKU
+        $skuData = $input->getSkus();
+        if ($skuData !== null) {
+            $skus = [];
+            foreach ($skuData as $item) {
+                $sku = new ProductSkuEntity();
+                $sku->setSkuCode($item['sku_code'] ?? null);
+                $sku->setSkuName($item['sku_name'] ?? '');
+                $sku->setSpecValues($item['spec_values'] ?? null);
+                $sku->setImage($item['image'] ?? null);
+                $sku->setCostPrice((float) ($item['cost_price'] ?? 0.0));
+                $sku->setMarketPrice((float) ($item['market_price'] ?? 0.0));
+                $sku->setSalePrice((float) ($item['sale_price'] ?? 0.0));
+                $sku->setStock((int) ($item['stock'] ?? 0));
+                $sku->setWarningStock((int) ($item['warning_stock'] ?? 0));
+                $sku->setWeight((float) ($item['weight'] ?? 0.0));
+                $sku->setStatus($item['status'] ?? 'active');
+                $skus[] = $sku;
+            }
+            $this->setSkus($skus);
+        }
+
+        // 处理属性
+        $attrData = $input->getProductAttributes();
+        if ($attrData !== null) {
+            $attributes = [];
+            foreach ($attrData as $item) {
+                $attr = new ProductAttributeEntity();
+                $attr->setAttributeName($item['attribute_name'] ?? '');
+                $attr->setValue($item['value'] ?? '');
+                $attributes[] = $attr;
+            }
+            $this->setAttributes($attributes);
+        }
+
+        // 同步价格范围
+        $this->syncPriceRange();
+
+        return $this;
+    }
+
+    /**
+     * 更新行为方法：接收 DTO，内部组装设置值.
+     */
+    public function update(ProductInput $input): ProductChangeVo
+    {
+        $oldMinPrice = $this->minPrice;
+        $oldMaxPrice = $this->maxPrice;
+        $oldStatus = $this->status;
+
+        // 更新基本信息
+        if ($input->getProductCode() !== null) {
+            $this->setProductCode($input->getProductCode());
+        }
+        if ($input->getCategoryId() !== null) {
+            $this->setCategoryId($input->getCategoryId());
+        }
+        if ($input->getBrandId() !== null) {
+            $this->setBrandId($input->getBrandId());
+        }
+        if ($input->getName() !== null) {
+            $this->setName($input->getName());
+        }
+        if ($input->getSubTitle() !== null) {
+            $this->setSubTitle($input->getSubTitle());
+        }
+        if ($input->getMainImage() !== null) {
+            $this->setMainImage($input->getMainImage());
+        }
+        if ($input->getGalleryImages() !== null) {
+            $this->setGalleryImages($input->getGalleryImages());
+        }
+        if ($input->getDescription() !== null) {
+            $this->setDescription($input->getDescription());
+        }
+        if ($input->getDetailContent() !== null) {
+            $this->setDetailContent($input->getDetailContent());
+        }
+        if ($input->getAttributes() !== null) {
+            $this->setAttributesJson($input->getAttributes());
+        }
+        if ($input->getVirtualSales() !== null) {
+            $this->setVirtualSales($input->getVirtualSales());
+        }
+        if ($input->getIsRecommend() !== null) {
+            $this->setIsRecommend($input->getIsRecommend());
+        }
+        if ($input->getIsHot() !== null) {
+            $this->setIsHot($input->getIsHot());
+        }
+        if ($input->getIsNew() !== null) {
+            $this->setIsNew($input->getIsNew());
+        }
+        if ($input->getShippingTemplateId() !== null) {
+            $this->setShippingTemplateId($input->getShippingTemplateId());
+        }
+        if ($input->getSort() !== null) {
+            $this->setSort($input->getSort());
+        }
+        if ($input->getStatus() !== null) {
+            $this->setStatus($input->getStatus());
+        }
+        if ($input->getGallery() !== []) {
+            $this->setGallery($input->getGallery());
+        }
+
+        // 处理 SKU
+        $skuData = $input->getSkus();
+        if ($skuData !== null) {
+            $skus = [];
+            foreach ($skuData as $item) {
+                $sku = new ProductSkuEntity();
+                if (isset($item['id'])) {
+                    $sku->setId((int) $item['id']);
+                }
+                $sku->setSkuCode($item['sku_code'] ?? null);
+                $sku->setSkuName($item['sku_name'] ?? '');
+                $sku->setSpecValues($item['spec_values'] ?? null);
+                $sku->setImage($item['image'] ?? null);
+                $sku->setCostPrice((float) ($item['cost_price'] ?? 0.0));
+                $sku->setMarketPrice((float) ($item['market_price'] ?? 0.0));
+                $sku->setSalePrice((float) ($item['sale_price'] ?? 0.0));
+                $sku->setStock((int) ($item['stock'] ?? 0));
+                $sku->setWarningStock((int) ($item['warning_stock'] ?? 0));
+                $sku->setWeight((float) ($item['weight'] ?? 0.0));
+                $sku->setStatus($item['status'] ?? 'active');
+                $skus[] = $sku;
+            }
+            $this->setSkus($skus);
+        }
+
+        // 处理属性
+        $attrData = $input->getProductAttributes();
+        if ($attrData !== null) {
+            $attributes = [];
+            foreach ($attrData as $item) {
+                $attr = new ProductAttributeEntity();
+                if (isset($item['id'])) {
+                    $attr->setId((int) $item['id']);
+                }
+                $attr->setAttributeName($item['attribute_name'] ?? '');
+                $attr->setValue($item['value'] ?? '');
+                $attributes[] = $attr;
+            }
+            $this->setAttributes($attributes);
+        }
+
+        // 同步价格范围
+        $this->syncPriceRange();
+
+        // 检测变更
+        $priceChanged = $oldMinPrice !== $this->minPrice || $oldMaxPrice !== $this->maxPrice;
+        $statusChanged = $oldStatus !== $this->status;
+
+        return new ProductChangeVo(
+            productId: $this->id,
+            priceChanged: $priceChanged,
+            statusChanged: $statusChanged,
+            stockChanged: $skuData !== null
+        );
+    }
+
     public function setProductCode(?string $code): void
     {
         $this->productCode = $code;
+        $this->markDirty('product_code');
     }
 
     public function getProductCode(): ?string
@@ -114,6 +310,7 @@ final class ProductEntity
     public function setCategoryId(?int $categoryId): void
     {
         $this->categoryId = $categoryId;
+        $this->markDirty('category_id');
     }
 
     public function getBrandId(): ?int
@@ -124,6 +321,7 @@ final class ProductEntity
     public function setBrandId(?int $brandId): void
     {
         $this->brandId = $brandId;
+        $this->markDirty('brand_id');
     }
 
     public function getName(): ?string
@@ -134,6 +332,7 @@ final class ProductEntity
     public function setName(?string $name): void
     {
         $this->name = $name;
+        $this->markDirty('name');
     }
 
     public function getSubTitle(): ?string
@@ -309,11 +508,8 @@ final class ProductEntity
 
     public function setStatus(?string $status): void
     {
-        if ($status === null) {
-            $this->status = null;
-            return;
-        }
         $this->changeStatus($status);
+        $this->markDirty('status');
     }
 
     public function getId(): int
@@ -395,6 +591,7 @@ final class ProductEntity
     public function applySort(int $sort): self
     {
         $this->sort = max(0, $sort);
+        $this->markDirty('sort');
         return $this;
     }
 
@@ -426,7 +623,7 @@ final class ProductEntity
         }
 
         if (! \in_array($targetStatus, ProductStatus::values(), true)) {
-            throw new \DomainException('无效的商品状态');
+            throw new BusinessException(ResultCode::FAIL, '无效的商品状态');
         }
 
         $current = $this->status ?? ProductStatus::DRAFT->value;
@@ -437,10 +634,14 @@ final class ProductEntity
 
         $allowed = self::STATUS_TRANSITIONS[$current] ?? [];
         if (! \in_array($targetStatus, $allowed, true)) {
-            throw new \DomainException(\sprintf('商品状态不允许从 %s 变更为 %s', $current, $targetStatus));
+            throw new BusinessException(
+                ResultCode::FAIL,
+                \sprintf('商品状态不允许从 %s 变更为 %s', $current, $targetStatus)
+            );
         }
 
         $this->status = $targetStatus;
+        $this->markDirty('status');
         return $this;
     }
 
@@ -474,22 +675,41 @@ final class ProductEntity
     {
         $skus = $this->getSkus();
         if ($skus === null || $skus === []) {
-            return;
-        }
-
-        $prices = array_filter(
-            array_map(static fn (ProductSkuEntity $sku) => $sku->getSalePrice(), $skus),
-            static fn (float $price) => $price >= 0.0
-        );
-
-        if ($prices === []) {
             $this->setMinPrice(0.0);
             $this->setMaxPrice(0.0);
             return;
         }
 
-        $this->setMinPrice(min($prices));
-        $this->setMaxPrice(max($prices));
+        $priceRange = PriceRangeVo::fromSkus($skus);
+        $this->setMinPrice($priceRange->minPrice);
+        $this->setMaxPrice($priceRange->maxPrice);
+    }
+
+    /**
+     * 获取库存数据（用于领域事件）.
+     *
+     * @return array<int, array{sku_id: int, stock: int}>
+     */
+    public function getStockData(): array
+    {
+        $skus = $this->getSkus();
+        if ($skus === null) {
+            return [];
+        }
+
+        $stockData = [];
+        foreach ($skus as $sku) {
+            $skuId = $sku->getId();
+            if ($skuId === null || $skuId <= 0) {
+                continue;
+            }
+            $stockData[] = [
+                'sku_id' => $skuId,
+                'stock' => $sku->getStock(),
+            ];
+        }
+
+        return $stockData;
     }
 
     /**
@@ -526,14 +746,22 @@ final class ProductEntity
         ], static fn ($v) => $v !== null);
     }
 
+    /**
+     * 标记字段为已修改.
+     */
+    private function markDirty(string $field): void
+    {
+        $this->dirty[$field] = true;
+    }
+
     private function assertCreateRequirements(): void
     {
-        $this->assertRequiredString($this->name, '商品名称不能为空');
-        $this->assertPositiveInt($this->categoryId, '请选择商品分类');
+        // Entity 层只验证业务规则
+        // 格式验证（名称非空、分类ID有效等）应该在 Request 层完成
 
         $skus = $this->getSkus();
         if ($skus === null || $skus === []) {
-            throw new \DomainException('请至少添加一个SKU');
+            throw new BusinessException(ResultCode::FAIL, '请至少添加一个SKU');
         }
 
         $this->assertSkuIntegrity($skus);
@@ -541,13 +769,7 @@ final class ProductEntity
 
     private function assertUpdateRequirements(): void
     {
-        if ($this->name !== null) {
-            $this->assertRequiredString($this->name, '商品名称不能为空');
-        }
-
-        if ($this->categoryId !== null) {
-            $this->assertPositiveInt($this->categoryId, '商品分类无效');
-        }
+        // Entity 层只验证业务规则
 
         $skus = $this->getSkus();
         if ($skus === null) {
@@ -555,24 +777,10 @@ final class ProductEntity
         }
 
         if ($skus === []) {
-            throw new \DomainException('SKU 列表不能为空');
+            throw new BusinessException(ResultCode::FAIL, 'SKU 列表不能为空');
         }
 
         $this->assertSkuIntegrity($skus);
-    }
-
-    private function assertRequiredString(?string $value, string $message): void
-    {
-        if ($value === null || trim($value) === '') {
-            throw new \DomainException($message);
-        }
-    }
-
-    private function assertPositiveInt(?int $value, string $message): void
-    {
-        if ($value === null || $value <= 0) {
-            throw new \DomainException($message);
-        }
     }
 
     /**
@@ -582,7 +790,7 @@ final class ProductEntity
     {
         foreach ($skus as $sku) {
             if (! $sku instanceof ProductSkuEntity) {
-                throw new \DomainException('SKU 数据必须通过实体传递');
+                throw new BusinessException(ResultCode::FAIL, 'SKU 数据必须通过实体传递');
             }
             $sku->assertIntegrity();
         }
@@ -595,7 +803,7 @@ final class ProductEntity
         }
 
         if ($this->minPrice > $this->maxPrice) {
-            throw new \DomainException('最低价不能高于最高价');
+            throw new BusinessException(ResultCode::FAIL, '最低价不能高于最高价');
         }
     }
 }

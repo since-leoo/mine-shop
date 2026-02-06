@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Application\Query\ProductQueryService;
-use App\Domain\Product\Entity\ProductEntity;
+use App\Domain\Product\Contract\ProductInput;
 use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
 use App\Domain\Product\Service\ProductService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
+use App\Interface\Common\ResultCode;
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\DbConnection\Db;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -35,53 +37,79 @@ final class ProductCommandService
     ) {}
 
     /**
-     * 创建商品
+     * 创建商品.
      */
-    public function create(ProductEntity $entity): Product
+    public function create(ProductInput $input): Product
     {
-        $entity = Db::transaction(fn () => $this->productService->create($entity));
+        // 1. 事务管理
+        $entity = Db::transaction(fn () => $this->productService->create($input));
 
+        // 2. 查询完整的 Model（包含关联关系）
         $model = $this->queryService->find($entity->getId());
         if (! $model) {
-            throw new \RuntimeException('创建商品失败');
+            throw new BusinessException(ResultCode::FAIL, '创建商品失败');
         }
 
-        $this->dispatcher->dispatch(new ProductCreated($model));
+        // 3. 发布领域事件
+        $this->dispatcher->dispatch(new ProductCreated(
+            productId: $entity->getId(),
+            skuIds: $this->extractSkuIds($model),
+            stockData: $entity->getStockData()
+        ));
+
         return $model;
     }
 
     /**
-     * 更新商品
+     * 更新商品.
      */
-    public function update(ProductEntity $entity): bool
+    public function update(ProductInput $input): bool
     {
-        Db::transaction(fn () => $this->productService->update($entity));
+        // 1. 事务管理 + 获取变更信息
+        $changes = Db::transaction(fn () => $this->productService->update($input));
 
-        $model = $this->queryService->find($entity->getId());
-
-        if ($model) {
-            $this->dispatcher->dispatch(new ProductUpdated($model));
+        // 2. 查询完整的 Model
+        $model = $this->queryService->find($input->getId());
+        if (! $model) {
+            throw new BusinessException(ResultCode::FAIL, '商品不存在');
         }
+
+        // 3. 获取实体（用于提取库存数据）
+        $entity = $this->productService->getEntity($input->getId());
+
+        // 4. 发布领域事件
+        $this->dispatcher->dispatch(new ProductUpdated(
+            productId: $input->getId(),
+            changes: $changes,
+            stockData: $entity->getStockData()
+        ));
 
         return true;
     }
 
     /**
-     * 删除商品
+     * 删除商品.
      */
     public function delete(int $id): bool
     {
+        // 1. 查询商品
         $product = $this->queryService->find($id);
         if (! $product) {
-            throw new \InvalidArgumentException('商品不存在');
+            throw new BusinessException(ResultCode::FAIL, '商品不存在');
         }
 
-        $entity = new ProductEntity();
-        $entity->setId($id);
+        // 2. 提取 SKU IDs
+        $skuIds = $this->extractSkuIds($product);
 
-        Db::transaction(fn () => $this->productService->remove($entity));
+        // 3. 事务管理
+        Db::transaction(fn () => $this->productService->delete($id));
 
-        $this->dispatcher->dispatch(new ProductDeleted($product));
+        // 4. 发布领域事件
+        $this->dispatcher->dispatch(new ProductDeleted(
+            productId: $id,
+            skuIds: $skuIds
+        ));
+
         return true;
     }
 
@@ -89,5 +117,17 @@ final class ProductCommandService
     public function updateSort(array $sortData): bool
     {
         return $this->productService->updateSort($sortData);
+    }
+
+    /**
+     * 提取 SKU IDs.
+     *
+     * @return array<int, int>
+     */
+    private function extractSkuIds(Product $product): array
+    {
+        $product->loadMissing('skus');
+
+        return $product->skus->pluck('id')->map(static fn ($id) => (int) $id)->all();
     }
 }

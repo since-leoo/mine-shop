@@ -15,7 +15,9 @@ namespace App\Domain\Product\Trait;
 use App\Domain\Product\Entity\ProductSkuEntity;
 use App\Domain\SystemSetting\ValueObject\ContentSetting;
 use App\Domain\SystemSetting\ValueObject\ProductSetting;
+use App\Infrastructure\Exception\BusinessException;
 use App\Infrastructure\Model\Product\ProductSku;
+use Mine\Support\ResultCode;
 
 /**
  * 商品实体配置校验 Trait.
@@ -39,7 +41,7 @@ trait ProductSettingsTrait
 
         $images = $this->getGalleryImages() ?? [];
         if (\count($images) > $max) {
-            throw new \DomainException(\sprintf('商品主图最多支持 %d 张，请删除多余图片。', $max));
+            throw new BusinessException(ResultCode::FAIL, \sprintf('商品主图最多支持 %d 张，请删除多余图片。', $max));
         }
     }
 
@@ -83,7 +85,7 @@ trait ProductSettingsTrait
             }
 
             if (! $autoGenerate) {
-                throw new \DomainException('SKU 编码为必填项，请为每个规格设置唯一编码。');
+                throw new BusinessException(ResultCode::FAIL, 'SKU 编码为必填项，请为每个规格设置唯一编码。');
             }
 
             $sku->setSkuCode(ProductSku::generateSkuCode());
@@ -117,7 +119,7 @@ trait ProductSettingsTrait
                     continue;
                 }
                 if (mb_stripos($text, $keyword) !== false) {
-                    throw new \DomainException(\sprintf('%s包含敏感词“%s”，请调整后再提交。', $label, $keyword));
+                    throw new BusinessException(ResultCode::FAIL, \sprintf('%s包含敏感词"%s"，请调整后再提交。', $label, $keyword));
                 }
             }
         }

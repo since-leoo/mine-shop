@@ -36,7 +36,28 @@ async function loadDetail() {
     return
   }
   const res = await detail(data.id)
-  Object.assign(model.value, res.data)
+  
+  // 转换数字类型字段
+  const normalizedData = {
+    ...res.data,
+    min_price: res.data.min_price ? Number(res.data.min_price) : 0,
+    max_price: res.data.max_price ? Number(res.data.max_price) : 0,
+    virtual_sales: res.data.virtual_sales ? Number(res.data.virtual_sales) : 0,
+    real_sales: res.data.real_sales ? Number(res.data.real_sales) : 0,
+    sort: res.data.sort ? Number(res.data.sort) : 0,
+    skus: res.data.skus?.map((sku: any) => ({
+      ...sku,
+      cost_price: sku.cost_price ? Number(sku.cost_price) : 0,
+      market_price: sku.market_price ? Number(sku.market_price) : 0,
+      sale_price: sku.sale_price ? Number(sku.sale_price) : 0,
+      stock: sku.stock ? Number(sku.stock) : 0,
+      warning_stock: sku.warning_stock ? Number(sku.warning_stock) : 0,
+      weight: sku.weight ? Number(sku.weight) : 0,
+    })) || [],
+  }
+  
+  Object.assign(model.value, normalizedData)
+  
   if (model.value.gallery_images) {
     model.value.gallery_images = model.value.gallery_images.filter(Boolean)
   }

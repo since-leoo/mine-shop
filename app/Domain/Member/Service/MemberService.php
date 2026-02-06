@@ -94,7 +94,7 @@ final class MemberService extends IService
         // 3. 持久化修改
         $this->repository->updateEntity($entity);
 
-        /** @var Member $model */
+        /* @var Member $model */
         return $this->repository->findById($memberId);
     }
 

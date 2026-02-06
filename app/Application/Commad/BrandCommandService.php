@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Product\Entity\BrandEntity;
+use App\Domain\Product\Contract\BrandInput;
 use App\Domain\Product\Service\BrandService;
 use App\Infrastructure\Model\Product\Brand;
 use Hyperf\Cache\Annotation\CacheEvict;
+use Hyperf\DbConnection\Db;
 
 /**
  * 品牌命令服务：处理所有写操作.
@@ -27,26 +28,26 @@ final class BrandCommandService
     ) {}
 
     #[CacheEvict(prefix: 'brands', all: true)]
-    public function create(BrandEntity $entity): Brand
+    public function create(BrandInput $input): Brand
     {
-        return $this->brandService->create($entity);
+        return Db::transaction(fn () => $this->brandService->create($input));
     }
 
     #[CacheEvict(prefix: 'brands', all: true)]
-    public function update(BrandEntity $entity): bool
+    public function update(BrandInput $input): bool
     {
-        return $this->brandService->update($entity);
+        return Db::transaction(fn () => $this->brandService->update($input));
     }
 
     #[CacheEvict(prefix: 'brands', all: true)]
     public function delete(int $id): bool
     {
-        return $this->brandService->delete($id);
+        return Db::transaction(fn () => $this->brandService->delete($id));
     }
 
     #[CacheEvict(prefix: 'brands', all: true)]
     public function updateSort(array $sortData): bool
     {
-        return $this->brandService->updateSort($sortData);
+        return Db::transaction(fn () => $this->brandService->updateSort($sortData));
     }
 }

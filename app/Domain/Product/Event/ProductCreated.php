@@ -12,9 +12,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Event;
 
-use App\Infrastructure\Model\Product\Product;
-
+/**
+ * 商品创建事件.
+ */
 final class ProductCreated
 {
-    public function __construct(public readonly Product $product) {}
+    /**
+     * @param int $productId 商品ID
+     * @param array<int, int> $skuIds SKU ID列表
+     * @param array<int, array{sku_id: int, stock: int}> $stockData 库存数据
+     */
+    public function __construct(
+        public readonly int $productId,
+        public readonly array $skuIds = [],
+        public readonly array $stockData = []
+    ) {}
 }

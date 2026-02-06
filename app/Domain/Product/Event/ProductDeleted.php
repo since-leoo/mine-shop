@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Event;
 
-use App\Infrastructure\Model\Product\Product;
-
+/**
+ * 商品删除事件.
+ */
 final class ProductDeleted
 {
     /**
-     * @param array<int, int> $skuIds
+     * @param int $productId 商品ID
+     * @param array<int, int> $skuIds SKU ID列表
      */
     public function __construct(
-        public readonly Product $product,
+        public readonly int $productId,
         public readonly array $skuIds = []
     ) {}
 }

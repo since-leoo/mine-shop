@@ -49,7 +49,32 @@ export default function getFormItems(
   if (!model.skus) {
     model.skus = []
   }
-  if (!Array.isArray((model as any).specs)) {
+  
+  // 从 SKU 数据中反推规格配置（编辑模式）
+  if (formType === 'edit' && model.skus.length > 0 && !Array.isArray((model as any).specs)) {
+    const specMap = new Map<number, Set<string>>()
+    
+    model.skus.forEach((sku) => {
+      if (Array.isArray(sku.spec_values) && sku.spec_values.length > 0) {
+        sku.spec_values.forEach((value, index) => {
+          if (!specMap.has(index)) {
+            specMap.set(index, new Set())
+          }
+          specMap.get(index)!.add(value)
+        })
+      }
+    })
+    
+    // 生成规格配置
+    if (specMap.size > 0) {
+      specItems.value = Array.from(specMap.entries()).map(([index, values]) => ({
+        nameTags: [`规格${index + 1}`], // 默认规格名
+        values: Array.from(values),
+      }))
+      ;(model as any).specs = specItems.value
+    }
+  }
+  else if (!Array.isArray((model as any).specs)) {
     (model as any).specs = specItems.value
   }
   else {
@@ -143,19 +168,62 @@ export default function getFormItems(
     }, [])
 
     const base = model.skus?.[0] || {}
-    model.skus = cartesian.map((values, index) => ({
-      sku_code: model.product_code ? `${model.product_code}-${index + 1}` : '',
-      sku_name: values.join('/'),
-      spec_values: values,
-      image: (base as ProductSkuVo).image,
-      cost_price: base.cost_price ?? 0,
-      market_price: base.market_price ?? 0,
-      sale_price: base.sale_price ?? 0,
-      stock: base.stock ?? 0,
-      warning_stock: base.warning_stock ?? 0,
-      weight: base.weight ?? 0,
-      status: base.status ?? 'active',
-    } as ProductSkuVo))
+    
+    // 编辑模式：尝试匹配现有 SKU，保留 ID
+    if (formType === 'edit' && model.skus && model.skus.length > 0) {
+      const existingSkuMap = new Map<string, ProductSkuVo>()
+      model.skus.forEach((sku) => {
+        const key = Array.isArray(sku.spec_values) 
+          ? sku.spec_values.join('/')
+          : String(sku.spec_values || '')
+        existingSkuMap.set(key, sku)
+      })
+      
+      model.skus = cartesian.map((values, index) => {
+        const key = values.join('/')
+        const existing = existingSkuMap.get(key)
+        
+        if (existing) {
+          // 保留现有 SKU，只更新 spec_values 和 sku_name
+          return {
+            ...existing,
+            sku_name: values.join('/'),
+            spec_values: values,
+          }
+        }
+        
+        // 新增 SKU
+        return {
+          sku_code: model.product_code ? `${model.product_code}-${index + 1}` : '',
+          sku_name: values.join('/'),
+          spec_values: values,
+          image: (base as ProductSkuVo).image,
+          cost_price: base.cost_price ?? 0,
+          market_price: base.market_price ?? 0,
+          sale_price: base.sale_price ?? 0,
+          stock: base.stock ?? 0,
+          warning_stock: base.warning_stock ?? 0,
+          weight: base.weight ?? 0,
+          status: base.status ?? 'active',
+        } as ProductSkuVo
+      })
+    }
+    else {
+      // 新增模式：直接生成新 SKU
+      model.skus = cartesian.map((values, index) => ({
+        sku_code: model.product_code ? `${model.product_code}-${index + 1}` : '',
+        sku_name: values.join('/'),
+        spec_values: values,
+        image: (base as ProductSkuVo).image,
+        cost_price: base.cost_price ?? 0,
+        market_price: base.market_price ?? 0,
+        sale_price: base.sale_price ?? 0,
+        stock: base.stock ?? 0,
+        warning_stock: base.warning_stock ?? 0,
+        weight: base.weight ?? 0,
+        status: base.status ?? 'active',
+      } as ProductSkuVo))
+    }
   }
 
   const addAttribute = () => {
@@ -472,6 +540,9 @@ export default function getFormItems(
               </el-button>
               <el-button type="primary" plain size="small" onClick={() => batchSet('stock', '库存', true)}>
                 批量设置库存
+              </el-button>
+              <el-button type="primary" plain size="small" onClick={() => batchSet('warning_stock', '预警库存', true)}>
+                批量设置预警库存
               </el-button>
             </div>
           </div>

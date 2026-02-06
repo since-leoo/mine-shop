@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Product;
 
+use App\Domain\Product\Contract\BrandInput;
+use App\Interface\Admin\DTO\Product\BrandDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 use Hyperf\Validation\Rules\Unique;
 
@@ -76,6 +79,17 @@ class BrandRequest extends BaseRequest
         ];
     }
 
+    /**
+     * 转换为 DTO.
+     */
+    public function toDto(?int $id): BrandInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        return Mapper::map($params, new BrandDto());
+    }
+
     private function uniqueNameRule(?int $ignoreId = null): Unique
     {
         $rule = Rule::unique('brands', 'name');
@@ -85,6 +99,4 @@ class BrandRequest extends BaseRequest
 
         return $rule;
     }
-
-    // reserved for future validation hooks
 }

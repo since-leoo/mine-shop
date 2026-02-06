@@ -15,6 +15,7 @@ namespace App\Domain\Product\Trait;
 use App\Domain\Product\Entity\ProductAttributeEntity;
 use App\Domain\Product\Entity\ProductSkuEntity;
 use App\Infrastructure\Model\Product\Product;
+use Hyperf\Collection\Collection;
 
 trait ProductEntityTrait
 {
@@ -24,7 +25,16 @@ trait ProductEntityTrait
             return [];
         }
 
-        $originalIds = $product->skus()->pluck('id')->map(static fn ($id) => (int) $id)->toArray();
+        // 使用已加载的关联关系
+        $product->loadMissing('skus');
+        $skus = $product->getRelation('skus');
+
+        if ($skus instanceof Collection) {
+            $originalIds = $skus->pluck('id')->map(static fn ($id) => (int) $id)->toArray();
+        } else {
+            $originalIds = [];
+        }
+
         $newIds = $this->extractIds($this->getSkus());
 
         return array_values(array_diff($originalIds, $newIds));
@@ -36,7 +46,16 @@ trait ProductEntityTrait
             return [];
         }
 
-        $originalIds = $product->attributes()->pluck('id')->map(static fn ($id) => (int) $id)->toArray();
+        // 使用 getRelation() 避免与 JSON 字段 attributes 冲突
+        $product->loadMissing('attributes');
+        $attributes = $product->getRelation('attributes');
+
+        if ($attributes instanceof Collection) {
+            $originalIds = $attributes->pluck('id')->map(static fn ($id) => (int) $id)->toArray();
+        } else {
+            $originalIds = [];
+        }
+
         $newIds = $this->extractIds($this->getAttributes());
 
         return array_values(array_diff($originalIds, $newIds));

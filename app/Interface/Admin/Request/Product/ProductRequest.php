@@ -12,9 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Product;
 
+use App\Domain\Product\Contract\ProductInput;
 use App\Domain\Product\Enum\ProductStatus;
+use App\Interface\Admin\DTO\Product\ProductDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class ProductRequest extends BaseRequest
@@ -25,6 +28,9 @@ class ProductRequest extends BaseRequest
     {
         $rules = $this->baseRules();
         $rules['product_code'][] = Rule::unique('products', 'product_code');
+        $rules['name'][0] = 'required'; // 确保名称必填
+        $rules['category_id'][0] = 'required'; // 确保分类必填
+        $rules['skus'] = ['required', 'array', 'min:1']; // 确保至少有一个SKU
         if ($this->input('min_price') !== null) {
             $rules['min_price'][] = 'lte:max_price';
         }
@@ -41,6 +47,7 @@ class ProductRequest extends BaseRequest
             ->ignore((int) $this->route('id'));
         $rules['category_id'][0] = 'sometimes';
         $rules['name'][0] = 'sometimes';
+        $rules['skus'][0] = 'sometimes'; // 更新时 SKU 可选
         if ($this->input('min_price') !== null) {
             $rules['min_price'][] = 'lte:max_price';
         }
@@ -77,6 +84,62 @@ class ProductRequest extends BaseRequest
     }
 
     /**
+     * 转换为 DTO.
+     */
+    public function toDto(?int $id): ProductInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        // 处理 attributes：前端可能传递完整对象，需要转换为简单格式
+        if (isset($params['attributes']) && \is_array($params['attributes'])) {
+            $params['product_attributes'] = array_map(static function ($attr) {
+                return [
+                    'id' => $attr['id'] ?? null,
+                    'attribute_name' => $attr['attribute_name'] ?? '',
+                    'value' => $attr['value'] ?? '',
+                ];
+            }, $params['attributes']);
+            unset($params['attributes']);
+        }
+
+        // 处理 skus：前端可能传递完整对象，需要转换为简单格式
+        if (isset($params['skus']) && \is_array($params['skus'])) {
+            $params['skus'] = array_map(static function ($sku) {
+                return [
+                    'id' => $sku['id'] ?? null,
+                    'sku_code' => $sku['sku_code'] ?? null,
+                    'sku_name' => $sku['sku_name'] ?? '',
+                    'spec_values' => $sku['spec_values'] ?? null,
+                    'image' => $sku['image'] ?? null,
+                    'cost_price' => $sku['cost_price'] ?? 0,
+                    'market_price' => $sku['market_price'] ?? 0,
+                    'sale_price' => $sku['sale_price'] ?? 0,
+                    'stock' => $sku['stock'] ?? 0,
+                    'warning_stock' => $sku['warning_stock'] ?? 0,
+                    'weight' => $sku['weight'] ?? 0,
+                    'status' => $sku['status'] ?? 'active',
+                ];
+            }, $params['skus']);
+        }
+
+        // 处理 gallery：前端可能传递完整对象
+        if (isset($params['gallery']) && \is_array($params['gallery'])) {
+            $params['gallery'] = array_map(static function ($item) {
+                return [
+                    'id' => $item['id'] ?? null,
+                    'image_url' => $item['image_url'] ?? '',
+                    'alt_text' => $item['alt_text'] ?? null,
+                    'sort_order' => $item['sort_order'] ?? 0,
+                    'is_primary' => $item['is_primary'] ?? false,
+                ];
+            }, $params['gallery']);
+        }
+
+        return Mapper::map($params, new ProductDto());
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function baseRules(): array
@@ -102,16 +165,16 @@ class ProductRequest extends BaseRequest
             'shipping_template_id' => ['nullable', 'integer', 'min:1'],
             'sort' => ['nullable', 'integer', 'min:0'],
             'status' => ['nullable', Rule::in(ProductStatus::values())],
-            'skus' => ['nullable', 'array'],
+            'skus' => ['required', 'array', 'min:1'],
             'skus.*.id' => ['nullable', 'integer', 'min:1'],
             'skus.*.sku_code' => ['nullable', 'string', 'max:50'],
-            'skus.*.sku_name' => ['required_with:skus', 'string', 'max:100'],
+            'skus.*.sku_name' => ['required', 'string', 'max:100'],
             'skus.*.spec_values' => ['nullable', 'array'],
             'skus.*.image' => ['nullable', 'string', 'max:500'],
-            'skus.*.cost_price' => ['required_with:skus', 'numeric', 'min:0'],
-            'skus.*.market_price' => ['required_with:skus', 'numeric', 'min:0'],
-            'skus.*.sale_price' => ['required_with:skus', 'numeric', 'min:0'],
-            'skus.*.stock' => ['required_with:skus', 'integer', 'min:0'],
+            'skus.*.cost_price' => ['required', 'numeric', 'min:0'],
+            'skus.*.market_price' => ['required', 'numeric', 'min:0'],
+            'skus.*.sale_price' => ['required', 'numeric', 'min:0'],
+            'skus.*.stock' => ['required', 'integer', 'min:0'],
             'skus.*.warning_stock' => ['nullable', 'integer', 'min:0'],
             'skus.*.weight' => ['nullable', 'numeric', 'min:0'],
             'skus.*.status' => ['nullable', Rule::in(['active', 'inactive'])],

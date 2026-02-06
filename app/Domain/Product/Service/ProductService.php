@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Service;
 
+use App\Domain\Product\Contract\ProductInput;
 use App\Domain\Product\Entity\ProductEntity;
 use App\Domain\Product\Mapper\ProductMapper;
 use App\Domain\Product\Repository\ProductRepository;
+use App\Domain\Product\ValueObject\ProductChangeVo;
 use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
@@ -34,30 +36,67 @@ final class ProductService extends IService
     /**
      * 创建商品.
      */
-    public function create(ProductEntity $entity): ProductEntity
+    public function create(ProductInput $input): ProductEntity
     {
+        // 1. 获取新实体
+        $entity = ProductMapper::getNewEntity();
+
+        // 2. 调用实体的 create 行为方法
+        $entity->create($input);
+
+        // 3. 应用系统设置约束
         $this->applyProductSettings($entity);
+
+        // 4. 验证实体完整性
         $entity->ensureCanPersist(true);
+
+        // 5. 同步价格范围
         $entity->syncPriceRange();
+
+        // 6. 持久化
         return $this->repository->save($entity);
     }
 
     /**
      * 更新商品.
      */
-    public function update(ProductEntity $entity): void
+    public function update(ProductInput $input): ProductChangeVo
     {
+        // 1. 获取实体
+        $entity = $this->getEntity($input->getId());
+
+        // 2. 调用实体的 update 行为方法（返回变更信息）
+        $changes = $entity->update($input);
+
+        // 3. 应用系统设置约束
         $this->applyProductSettings($entity);
+
+        // 4. 验证实体完整性
         $entity->ensureCanPersist();
+
+        // 5. 同步价格范围
         $entity->syncPriceRange();
+
+        // 6. 持久化
         $this->repository->update($entity);
+
+        // 7. 返回变更信息
+        return $changes;
     }
 
     /**
      * 删除商品.
      */
-    public function remove(ProductEntity $entity): void
+    public function delete(int $id): void
     {
+        $product = $this->repository->findById($id);
+        if (! $product) {
+            throw new BusinessException(ResultCode::FAIL, '商品不存在');
+        }
+
+        $entity = new ProductEntity();
+        $entity->setId($id);
+
         $this->repository->remove($entity);
     }
 
@@ -68,10 +107,7 @@ final class ProductService extends IService
     {
         foreach ($sortData as $item) {
             if (isset($item['id'], $item['sort'])) {
-                $entity = new ProductEntity();
-                $entity->setId((int) $item['id']);
-                $entity->applySort((int) $item['sort']);
-                $this->repository->updateById($entity->getId(), ['sort' => $entity->getSort()]);
+                $this->repository->updateById((int) $item['id'], ['sort' => (int) $item['sort']]);
             }
         }
         return true;
@@ -79,13 +115,16 @@ final class ProductService extends IService
 
     /**
      * 获取商品实体.
+     *
+     * 通过 ID 获取 Model，然后通过 Mapper 转换为 Entity.
+     * 用于需要调用实体行为方法的场景.
      */
     public function getEntity(int $id): ProductEntity
     {
         /** @var null|Product $product */
-        $product = $this->findById($id);
+        $product = $this->repository->findById($id);
         if (! $product) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '商品不存在');
+            throw new BusinessException(ResultCode::FAIL, '商品不存在');
         }
 
         return ProductMapper::fromModel($product);
