@@ -40,7 +40,7 @@ class BatchGrantPermissionsForRoleRequest extends BaseRequest
     {
         $params = $this->validated();
         // allow empty permissions -> detach all
-        $params['permissions'] = $params['permissions'] ?? [];
+        $params['permissions'] ??= [];
         $params['role_id'] = $roleId;
         $params['operator_id'] = $operatorId;
         return Mapper::map($params, new RoleGrantPermissionsDto());

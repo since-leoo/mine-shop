@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Permission\Contract\Role;
 
@@ -10,6 +18,8 @@ namespace App\Domain\Permission\Contract\Role;
 interface RoleGrantPermissionsInput
 {
     public function getRoleId(): int;
+
     public function getPermissionCodes(): array;
+
     public function getOperatorId(): int;
 }

@@ -43,4 +43,3 @@ class ResetPasswordRequest extends BaseRequest
         return Mapper::map($params, new UserResetPasswordDto());
     }
 }
-

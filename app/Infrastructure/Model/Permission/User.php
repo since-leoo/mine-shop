@@ -98,6 +98,7 @@ final class User extends Model
         $this->position()->detach();
         $this->dept_leader()->detach();
     }
+
     public function setPasswordAttribute($value): void
     {
         $this->attributes['password'] = password_hash((string) $value, \PASSWORD_DEFAULT);

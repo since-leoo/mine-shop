@@ -10,14 +10,16 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Domain\Permission\Contract\User;
+namespace App\Domain\Permission\ValueObject;
 
 /**
- * 输入契约：重置用户密码.
+ * 重置密码值对象.
  */
-interface UserResetPasswordInput
+final class ResetPasswordVo
 {
-    public function getUserId(): int;
-
-    public function getOperatorId(): int;
+    public function __construct(
+        public readonly bool $success,
+        public readonly string $message,
+        public readonly bool $needsSave
+    ) {}
 }

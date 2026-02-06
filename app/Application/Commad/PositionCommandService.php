@@ -46,23 +46,36 @@ final class PositionCommandService
 
     public function setDataPermission(PositionSetDataPermissionInput $input): bool
     {
-        $entity = $this->repository->findById($input->getPositionId());
-        if ($entity === null) {
+        // 步骤1: 从 DTO 获取岗位ID
+        $positionId = $input->getPositionId();
+
+        // 步骤2: 通过 Repository 获取 Model
+        $positionModel = $this->repository->findById($positionId);
+        if ($positionModel === null) {
             return false;
         }
 
-        $payload = [
-            'policy_type' => $input->getPolicyType(),
-            'value' => $input->getValue(),
-        ];
+        // 步骤3: 调用 Model 的行为方法（包含业务规则验证）
+        $result = $positionModel->setDataPermissionPolicy(
+            $input->getPolicyType(),
+            $input->getValue()
+        );
 
-        $policy = $entity->policy()->first();
-        if ($policy) {
-            $policy->update($payload);
-        } else {
-            $entity->policy()->create($payload);
+        // 步骤4: 根据结果执行持久化操作
+        if ($result->success) {
+            $payload = [
+                'policy_type' => $result->policyType,
+                'value' => $result->value,
+            ];
+
+            $policy = $positionModel->policy()->first();
+            if ($policy) {
+                $policy->update($payload);
+            } else {
+                $positionModel->policy()->create($payload);
+            }
         }
 
-        return true;
+        return $result->success;
     }
 }

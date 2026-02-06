@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Entity;
 
 use App\Domain\Auth\Enum\Status;
+use App\Domain\Permission\ValueObject\GrantPermissionsVo;
 
 /**
  * 角色实体.
@@ -189,6 +190,64 @@ final class RoleEntity
             },
             \ARRAY_FILTER_USE_BOTH
         );
+    }
+
+    /**
+     * 授予权限（实体行为方法）.
+     *
+     * @param array<int> $menuIds 菜单ID列表
+     * @param bool $isSuperAdmin 是否为超级管理员角色
+     * @throws \DomainException
+     */
+    public function grantPermissions(array $menuIds, bool $isSuperAdmin = false): GrantPermissionsVo
+    {
+        // 1. 前置条件检查
+        if ($this->status !== Status::Normal) {
+            throw new \DomainException(
+                "角色状态为 {$this->status->name}，无法授予权限"
+            );
+        }
+
+        // 2. 业务规则：超级管理员角色不能修改权限
+        if ($isSuperAdmin) {
+            throw new \DomainException(
+                '超级管理员角色的权限不能被修改'
+            );
+        }
+
+        // 3. 空数组表示清空所有权限
+        if (empty($menuIds)) {
+            return new GrantPermissionsVo(
+                success: true,
+                message: '已清空所有权限',
+                menuIds: [],
+                shouldDetach: true
+            );
+        }
+
+        // 4. 返回需要同步的菜单ID
+        return new GrantPermissionsVo(
+            success: true,
+            message: '权限授予成功',
+            menuIds: $menuIds,
+            shouldDetach: false
+        );
+    }
+
+    /**
+     * 检查是否为超级管理员角色.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->code === 'SuperAdmin';
+    }
+
+    /**
+     * 检查是否可以授予权限.
+     */
+    public function canGrantPermission(): bool
+    {
+        return $this->status === Status::Normal && ! $this->isSuperAdmin();
     }
 
     private function markDirty(string $field): void

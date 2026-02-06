@@ -17,6 +17,8 @@ use App\Domain\Auth\Enum\Type;
 use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
 use App\Domain\Permission\ValueObject\DataPolicy;
+use App\Domain\Permission\ValueObject\GrantRolesVo;
+use App\Domain\Permission\ValueObject\ResetPasswordVo;
 
 /**
  * 用户实体.
@@ -428,6 +430,75 @@ final class UserEntity
             $this->setPolicy($vo);
         }
         return $this;
+    }
+
+    /**
+     * 授予角色（实体行为方法）.
+     *
+     * 注意：此方法不修改 Entity 自身状态，只返回需要同步的角色ID
+     *
+     * @param array<int> $roleIds 角色ID列表
+     * @throws \DomainException
+     */
+    public function grantRoles(array $roleIds): GrantRolesVo
+    {
+        // 1. 前置条件检查：用户状态必须正常
+        if ($this->status !== Status::Normal) {
+            throw new \DomainException(
+                "用户状态为 {$this->status->name}，无法授予角色"
+            );
+        }
+
+        // 3. 空数组表示清空所有角色（合法操作）
+        if (empty($roleIds)) {
+            return new GrantRolesVo(
+                success: true,
+                message: '已清空所有角色',
+                roleIds: [],
+                shouldSync: true
+            );
+        }
+
+        // 4. 返回需要同步的角色ID
+        return new GrantRolesVo(
+            success: true,
+            message: '角色授予成功',
+            roleIds: $roleIds,
+            shouldSync: true
+        );
+    }
+
+    /**
+     * 重置密码（实体行为方法）.
+     *
+     * @param string $defaultPassword 默认密码
+     */
+    public function resetPasswordWithValidation(string $defaultPassword = '123456'): ResetPasswordVo
+    {
+        // 1. 前置条件检查
+        if ($this->status !== Status::Normal) {
+            throw new \DomainException(
+                "用户状态为 {$this->status->name}，无法重置密码"
+            );
+        }
+
+        // 3. 修改密码（会自动标记 dirty）
+        $this->setPassword($defaultPassword);
+
+        // 4. 返回结果
+        return new ResetPasswordVo(
+            success: true,
+            message: '密码重置成功',
+            needsSave: true
+        );
+    }
+
+    /**
+     * 检查是否可以授予角色.
+     */
+    public function canGrantRoles(): bool
+    {
+        return $this->status === Status::Normal;
     }
 
     private function markDirty(string $field): void

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Contract\User\UserGrantRolesInput;
+use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Contract\User\UserResetPasswordInput;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Service\UserService;

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Permission;
 
+use App\Domain\Permission\Enum\DataPermission\PolicyType;
+use App\Domain\Permission\ValueObject\SetDataPermissionVo;
 use App\Infrastructure\Model\DataPermission\Policy;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Collection;
@@ -64,5 +66,32 @@ class Position extends Model
     public function policy(): HasOne
     {
         return $this->hasOne(Policy::class, 'position_id', 'id');
+    }
+
+    /**
+     * 设置数据权限策略（实体行为方法）
+     *
+     * @param PolicyType $policyType 策略类型
+     * @param array $value 策略值
+     * @return SetDataPermissionVo
+     * @throws \DomainException
+     */
+    public function setDataPermissionPolicy(PolicyType $policyType, array $value): SetDataPermissionVo
+    {
+        // 2. 返回需要持久化的数据
+        return new SetDataPermissionVo(
+            success: true,
+            message: '数据权限设置成功',
+            policyType: $policyType,
+            value: $value
+        );
+    }
+
+    /**
+     * 检查是否可以设置数据权限
+     */
+    public function canSetDataPermission(): bool
+    {
+        return $this->dept_id !== null;
     }
 }

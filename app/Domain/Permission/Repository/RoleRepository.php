@@ -27,6 +27,26 @@ final class RoleRepository extends IRepository
         return $this->list(['code' => $roleCodes]);
     }
 
+    /**
+     * 获取角色ID.
+     */
+    public function getRoleIds(array $roleCodes): array
+    {
+        return $this->listByCodes($roleCodes)
+            ->pluck('id')
+            ->toArray();
+    }
+
+    /**
+     * 同步角色.
+     */
+    public function syncRoles(int $id, array $roleIds): void
+    {
+        $userModel = $this->findById($id);
+
+        $userModel->roles()->sync($roleIds);
+    }
+
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query

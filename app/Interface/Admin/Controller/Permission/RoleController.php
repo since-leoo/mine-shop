@@ -27,7 +27,6 @@ use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
-use Hyperf\Collection\Arr;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;

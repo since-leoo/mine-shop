@@ -21,85 +21,131 @@ use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\User;
 
+/**
+ * 用户服务类
+ * 提供用户相关的业务操作功能.
+ */
 final class UserService extends IService
 {
+    /**
+     * 构造函数.
+     */
     public function __construct(
-        private readonly UserRepository $userRepository,
+        private readonly UserRepository $repository,
         private readonly RoleRepository $roleRepository
     ) {}
 
+    /**
+     * 创建用户.
+     *
+     * @param UserEntity $entity 用户实体对象
+     * @return User 创建后的用户模型
+     */
     public function create(UserEntity $entity): User
     {
-        /** @var User $user */
-        $user = $this->userRepository->create($entity->toArray());
+        $user = $this->repository->create($entity->toArray());
         $this->syncRelations($user, $entity);
         return $user;
     }
 
+    /**
+     * 更新用户信息.
+     *
+     * @param UserEntity $entity 用户实体对象
+     * @return null|User 更新后的用户模型，如果用户不存在则返回null
+     */
     public function update(UserEntity $entity): ?User
     {
         /** @var null|User $user */
-        $user = $this->userRepository->findById($entity->getId());
+        $user = $this->repository->findById($entity->getId());
         if (! $user) {
             return null;
         }
 
-        $payload = $entity->toArray();
-        $payload !== [] && $user->fill($payload)->save();
+        $this->repository->updateById($entity->getId(), $entity->toArray());
+
         $this->syncRelations($user, $entity);
         return $user;
     }
 
     /**
-     * @param array<int> $ids
+     * 批量删除用户.
+     *
+     * @param array<int> $ids 用户ID数组
+     * @return int 删除的记录数
      */
     public function delete(array $ids): int
     {
-        return $this->userRepository->deleteByIds($ids);
+        return $this->repository->deleteByIds($ids);
     }
 
+    /**
+     * 重置用户密码
+     *
+     * @param UserResetPasswordInput $input 密码重置输入对象
+     * @return bool 重置是否成功
+     */
     public function resetPassword(UserResetPasswordInput $input): bool
     {
-        /** @var null|User $user */
-        $user = $this->userRepository->findById($input->getUserId());
-        if (! $user) {
-            return false;
+        $userEntity = $this->getEntity($input->getUserId());
+        $result = $userEntity->resetPasswordWithValidation();
+
+        // 根据验证结果决定是否保存更改
+        if ($result->needsSave) {
+            $changedData = $userEntity->toArray();
+            $this->repository->updateById($userEntity->getId(), $changedData);
         }
-        $user->resetPassword();
-        $user->save();
-        return true;
+
+        return $result->success;
     }
 
+    /**
+     * 授予角色给用户.
+     *
+     * @param UserGrantRolesInput $input 角色授权输入对象
+     */
     public function grantRoles(UserGrantRolesInput $input): void
     {
-        /** @var null|User $user */
-        $user = $this->userRepository->findById($input->getUserId());
-        if (! $user) {
-            return;
+        $userEntity = $this->getEntity($input->getUserId());
+        $roleIds = $this->roleRepository->getRoleIds($input->getRoleCodes());
+        $result = $userEntity->grantRoles($roleIds);
+        if ($result->success && $result->shouldSync) {
+            $this->roleRepository->syncRoles($input->getUserId(), $result->roleIds);
         }
-        $roleIds = $this->roleRepository->listByCodes($input->getRoleCodes())->pluck('id')->toArray();
-        $user->roles()->sync($roleIds);
     }
 
     /**
      * 获取用户实体.
+     *
+     * @param int $id 用户ID
+     * @return UserEntity 用户实体对象
      */
     public function getEntity(int $id): UserEntity
     {
         /** @var null|User $info */
-        $info = $this->userRepository->findById($id);
+        $info = $this->repository->findById($id);
 
         return UserMapper::fromModel($info);
     }
 
+    /**
+     * 同步用户关系数据
+     * 包括部门、职位和策略的同步.
+     *
+     * @param User $user 用户模型
+     * @param UserEntity $entity 用户实体对象
+     */
     private function syncRelations(User $user, UserEntity $entity): void
     {
+        // 同步用户部门关系
         if ($entity->shouldSyncDepartments()) {
             $user->department()->sync($entity->getDepartmentIds());
         }
+        // 同步用户职位关系
         if ($entity->shouldSyncPositions()) {
             $user->position()->sync($entity->getPositionIds());
         }
+        // 同步用户策略关系
         if ($entity->shouldSyncPolicy()) {
             $policy = $user->policy()->first();
             $policyPayload = $entity->getPolicy()?->toArray() ?? [];

@@ -10,20 +10,19 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Domain\Permission\Contract\Position;
+namespace App\Domain\Permission\ValueObject;
 
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
 
 /**
- * 输入契约：为岗位设置数据权限策略。
+ * 设置数据权限值对象.
  */
-interface PositionSetDataPermissionInput
+final class SetDataPermissionVo
 {
-    public function getPositionId(): int;
-
-    public function getOperatorId(): int;
-
-    public function getPolicyType(): PolicyType;
-
-    public function getValue(): array;
+    public function __construct(
+        public readonly bool $success,
+        public readonly string $message,
+        public readonly PolicyType $policyType,
+        public readonly array $value
+    ) {}
 }
