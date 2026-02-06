@@ -18,7 +18,7 @@ use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\Auth\JwtInBlackException;
 use App\Infrastructure\Exception\System\BusinessException;
-use App\Interface\Admin\Dto\PassportLoginDto;
+use App\Interface\Admin\DTO\PassportLoginDto;
 use App\Interface\Common\ResultCode;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;

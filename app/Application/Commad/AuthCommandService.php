@@ -14,7 +14,7 @@ namespace App\Application\Commad;
 
 use App\Domain\Auth\Service\AuthService;
 use App\Domain\Auth\ValueObject\TokenPair;
-use App\Interface\Admin\Dto\PassportLoginDto;
+use App\Interface\Admin\DTO\PassportLoginDto;
 use Lcobucci\JWT\UnencryptedToken;
 
 /**

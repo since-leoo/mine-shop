@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Request;
 
 use App\Domain\Auth\Enum\Type;
-use App\Interface\Admin\Dto\PassportLoginDto;
+use App\Interface\Admin\DTO\PassportLoginDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\Collection\Arr;

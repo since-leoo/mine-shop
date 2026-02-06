@@ -15,7 +15,7 @@ namespace App\Domain\Permission\Entity;
 use App\Domain\Auth\Enum\Status;
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Permission\ValueObject\DataPolicy;
-use App\Interface\Admin\Dto\PassportLoginDto;
+use App\Interface\Admin\DTO\PassportLoginDto;
 
 /**
  * 用户实体.
