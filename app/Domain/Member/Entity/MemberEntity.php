@@ -12,6 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Entity;
 
+use App\Domain\Member\Contract\MemberInput;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 
 /**
@@ -72,6 +75,81 @@ final class MemberEntity
      * @var array<string, bool>
      */
     private array $dirtyFields = [];
+
+    /**
+     * 创建行为方法：接收 DTO，内部组装设置值.
+     */
+    public function create(MemberInput $dto): self
+    {
+        $this->setNickname($dto->getNickname());
+        $this->setAvatar($dto->getAvatar());
+        $this->setGender($dto->getGender());
+        $this->setPhone($dto->getPhone());
+        $this->setBirthday($dto->getBirthday());
+        $this->setCity($dto->getCity());
+        $this->setProvince($dto->getProvince());
+        $this->setDistrict($dto->getDistrict());
+        $this->setStreet($dto->getStreet());
+        $this->setRegionPath($dto->getRegionPath());
+        $this->setCountry($dto->getCountry());
+        $this->setLevel($dto->getLevel() ?? 'bronze');
+        $this->setGrowthValue($dto->getGrowthValue());
+        $this->setStatus($dto->getStatus() ?? 'active');
+        $this->setSource($dto->getSource() ?? 'admin');
+        $this->setRemark($dto->getRemark());
+        $this->setTagIds($dto->getTagIds());
+
+        return $this;
+    }
+
+    /**
+     * 更新行为方法：接收 DTO，内部组装设置值.
+     */
+    public function update(MemberInput $dto): self
+    {
+        $dto->getNickname() !== null && $this->setNickname($dto->getNickname());
+        $dto->getAvatar() !== null && $this->setAvatar($dto->getAvatar());
+        $dto->getGender() !== null && $this->setGender($dto->getGender());
+        $dto->getPhone() !== null && $this->setPhone($dto->getPhone());
+        $dto->getBirthday() !== null && $this->setBirthday($dto->getBirthday());
+        $dto->getCity() !== null && $this->setCity($dto->getCity());
+        $dto->getProvince() !== null && $this->setProvince($dto->getProvince());
+        $dto->getDistrict() !== null && $this->setDistrict($dto->getDistrict());
+        $dto->getStreet() !== null && $this->setStreet($dto->getStreet());
+        $dto->getRegionPath() !== null && $this->setRegionPath($dto->getRegionPath());
+        $dto->getCountry() !== null && $this->setCountry($dto->getCountry());
+        $dto->getLevel() !== null && $this->setLevel($dto->getLevel());
+        $dto->getGrowthValue() !== null && $this->setGrowthValue($dto->getGrowthValue());
+        $dto->getStatus() !== null && $this->setStatus($dto->getStatus());
+        $dto->getSource() !== null && $this->setSource($dto->getSource());
+        $dto->getRemark() !== null && $this->setRemark($dto->getRemark());
+
+        return $this;
+    }
+
+    /**
+     * 更新状态行为方法.
+     */
+    public function updateStatus(string $status): self
+    {
+        if (! \in_array($status, ['active', 'inactive', 'banned'], true)) {
+            throw new BusinessException(ResultCode::FAIL, '无效的会员状态');
+        }
+
+        $this->setStatus($status);
+        return $this;
+    }
+
+    /**
+     * 同步标签行为方法.
+     *
+     * @param int[] $tagIds
+     */
+    public function syncTags(array $tagIds): self
+    {
+        $this->setTagIds($tagIds);
+        return $this;
+    }
 
     public function getId(): int
     {
@@ -349,8 +427,6 @@ final class MemberEntity
     {
         $this->phone = $phone;
     }
-
-    public function login(string $openId) {}
 
     public function toArray(): array
     {

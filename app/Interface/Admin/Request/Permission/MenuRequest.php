@@ -14,7 +14,7 @@ namespace App\Interface\Admin\Request\Permission;
 
 use App\Domain\Permission\Contract\Menu\MenuCreateInput;
 use App\Domain\Permission\Contract\Menu\MenuUpdateInput;
-use App\Interface\Admin\DTO\Permission\MenuDto;
+use App\Interface\Admin\Dto\Permission\MenuDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

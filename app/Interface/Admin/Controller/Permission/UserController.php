@@ -17,7 +17,7 @@ use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\UserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\DTO\Permission\DeleteDto;
+use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantRolesForUserRequest;
 use App\Interface\Admin\Request\Permission\ResetPasswordRequest;

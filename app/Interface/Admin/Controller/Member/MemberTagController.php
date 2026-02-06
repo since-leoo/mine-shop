@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Member;
 
 use App\Application\Commad\MemberTagCommandService;
-use App\Application\Mapper\MemberTagAssembler;
 use App\Application\Query\MemberTagQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberTagRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -37,7 +37,8 @@ final class MemberTagController extends AbstractController
 {
     public function __construct(
         private readonly MemberTagQueryService $queryService,
-        private readonly MemberTagCommandService $commandService
+        private readonly MemberTagCommandService $commandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -60,9 +61,7 @@ final class MemberTagController extends AbstractController
     #[Permission(code: 'member:tag:create')]
     public function store(MemberTagRequest $request): Result
     {
-        $payload = $request->validated();
-        $entity = MemberTagAssembler::toCreateEntity($payload);
-        $this->commandService->create($entity);
+        $this->commandService->create($request->toDto(null, $this->currentUser->id()));
         return $this->success([], '标签创建成功', 201);
     }
 
@@ -70,9 +69,7 @@ final class MemberTagController extends AbstractController
     #[Permission(code: 'member:tag:update')]
     public function update(int $id, MemberTagRequest $request): Result
     {
-        $payload = $request->validated();
-        $entity = MemberTagAssembler::toUpdateEntity($id, $payload);
-        $this->commandService->update($entity);
+        $this->commandService->update($request->toDto($id, $this->currentUser->id()));
         return $this->success([], '标签更新成功');
     }
 

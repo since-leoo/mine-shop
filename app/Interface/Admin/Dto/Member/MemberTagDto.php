@@ -10,27 +10,28 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\Dto\Permission;
+namespace App\Interface\Admin\DTO\Member;
 
-use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
-use App\Domain\Permission\Contract\Department\DepartmentUpdateInput;
+use App\Domain\Member\Contract\MemberTagInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**
- * 部门操作 DTO（创建和更新共用）.
+ * 会员标签 DTO.
  */
-class DepartmentDto implements DepartmentCreateInput, DepartmentUpdateInput
+class MemberTagDto implements MemberTagInput
 {
     public ?int $id = null;
 
     #[Required]
     public string $name = '';
 
-    public ?int $parent_id = null;
+    public ?string $color = null;
 
-    public array $department_users = [];
+    public ?string $description = null;
 
-    public array $leader = [];
+    public string $status = 'active';
+
+    public ?int $sort_order = null;
 
     #[Required]
     public int $operator_id = 0;
@@ -45,19 +46,24 @@ class DepartmentDto implements DepartmentCreateInput, DepartmentUpdateInput
         return $this->name;
     }
 
-    public function getParentId(): ?int
+    public function getColor(): ?string
     {
-        return $this->parent_id;
+        return $this->color;
     }
 
-    public function getDepartmentUsers(): array
+    public function getDescription(): ?string
     {
-        return $this->department_users;
+        return $this->description;
     }
 
-    public function getLeaders(): array
+    public function getStatus(): string
     {
-        return $this->leader;
+        return $this->status;
+    }
+
+    public function getSortOrder(): ?int
+    {
+        return $this->sort_order;
     }
 
     public function getOperatorId(): int
@@ -67,13 +73,17 @@ class DepartmentDto implements DepartmentCreateInput, DepartmentUpdateInput
 
     /**
      * 转换为数组（用于简单 CRUD 操作）.
+     *
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
         $data = [
             'name' => $this->name,
-            'parent_id' => $this->parent_id,
+            'color' => $this->color,
+            'description' => $this->description,
+            'status' => $this->status,
+            'sort_order' => $this->sort_order,
         ];
 
         // 创建时添加 created_by
@@ -84,6 +94,6 @@ class DepartmentDto implements DepartmentCreateInput, DepartmentUpdateInput
             $data['updated_by'] = $this->operator_id;
         }
 
-        return $data;
+        return array_filter($data, static fn ($value) => $value !== null);
     }
 }

@@ -14,6 +14,7 @@ namespace App\Domain\Member\Repository;
 
 use App\Domain\Member\Entity\MemberWalletEntity;
 use App\Infrastructure\Model\Member\MemberWallet;
+use Hyperf\Database\Model\Model;
 
 final class MemberWalletRepository
 {
@@ -33,28 +34,21 @@ final class MemberWalletRepository
     }
 
     /**
-     * 获取会员钱包.
+     * 通过会员ID和类型查找钱包 Model.
      */
-    public function findEntity(int $memberId, string $type): MemberWalletEntity
+    public function findByMemberIdAndType(int $memberId, string $type): ?MemberWallet
     {
-        $wallet = $this->model->newQuery()
+        return $this->model->newQuery()
             ->where('member_id', $memberId)
             ->where('type', $type)
             ->first();
+    }
 
-        $entity = new MemberWalletEntity();
-        $entity->setMemberId($memberId);
-        $entity->setType($type);
-
-        if ($wallet) {
-            $entity->setId($wallet->id);
-            $entity->setBalance((float) $wallet->balance);
-            $entity->setFrozenBalance((float) $wallet->frozen_balance);
-            $entity->setTotalConsume((float) $wallet->total_consume);
-            $entity->setTotalRecharge((float) $wallet->total_recharge);
-            $entity->setStatus($wallet->status);
-        }
-
-        return $entity;
+    /**
+     * 创建或更新.
+     */
+    public function updateOrCreate(array $condition, array $data): Model
+    {
+        return $this->model::query()->updateOrCreate($condition, $data);
     }
 }

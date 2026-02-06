@@ -134,7 +134,7 @@ Controller 返回响应
 namespace App\Interface\Admin\Request\Permission;
 
 use App\Domain\Permission\Contract\User\UserInput;
-use App\Interface\Admin\DTO\Permission\UserDto;
+use App\Interface\Admin\Dto\Permission\UserDto;
 use App\Interface\Common\Request\BaseRequest;
 use Hyperf\DTO\Mapper;
 
@@ -215,13 +215,11 @@ class UserController extends AbstractController
 ```php
 <?php
 
-namespace App\Interface\Admin\DTO\Permission;
+namespace App\Interface\Admin\Dto\Permission;
 
 use App\Domain\Permission\Contract\User\UserInput;
-use Hyperf\DTO\Annotation\Contracts\Valid;
 use Hyperf\DTO\Annotation\Validation\Required;
 
-#[Valid]
 class UserDto implements UserInput
 {
     public ?int $id = null;
@@ -613,7 +611,7 @@ class UserMapper
 ```php
 <?php
 
-namespace App\Interface\Admin\DTO\Permission;
+namespace App\Interface\Admin\Dto\Permission;
 
 use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
 use App\Domain\Permission\Contract\Department\DepartmentUpdateInput;
@@ -727,6 +725,178 @@ final class DepartmentService
     }
 }
 ```
+
+---
+
+## 验证职责划分
+
+### Request 层验证（优先）
+
+**应该在 Request 层验证的内容：**
+- ✅ 格式验证（邮箱、手机号、URL、日期等）
+- ✅ 长度验证（字符串长度、数组长度等）
+- ✅ 类型验证（整数、字符串、布尔值等）
+- ✅ 必填验证（required）
+- ✅ 范围验证（min、max、between）
+- ✅ 枚举验证（in、exists）
+- ✅ 唯一性验证（unique）
+- ✅ 正则表达式验证
+
+**原则：** 能在 Request 层验证的，就在 Request 层验证。Request 层是第一道防线。
+
+**示例：**
+```php
+public function storeRules(): array
+{
+    return [
+        'nickname' => ['required', 'string', 'max:100'],
+        'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
+        'email' => ['nullable', 'email', 'max:255'],
+        'age' => ['nullable', 'integer', 'min:0', 'max:150'],
+        'status' => ['required', Rule::in(['active', 'inactive', 'banned'])],
+        'growth_value' => ['nullable', 'integer', 'min:0'],
+    ];
+}
+```
+
+### Entity 层验证（业务规则）
+
+**应该在 Entity 层验证的内容：**
+- ✅ 复杂的业务规则（如：折扣率必须在会员等级允许的范围内）
+- ✅ 跨字段的业务逻辑（如：最高成长值必须大于最低成长值）
+- ✅ 状态转换规则（如：已支付的订单不能取消）
+- ✅ 领域不变量（如：账户余额不能为负数）
+- ✅ 需要查询数据库的业务规则（如：检查库存是否充足）
+
+**原则：** Entity 层只验证业务规则，不验证格式。
+
+**示例：**
+```php
+// ❌ 错误：在 Entity 中验证格式
+public function setPhone(?string $phone): void
+{
+    if ($phone !== null && ! preg_match('/^1[3-9]\d{9}$/', $phone)) {
+        throw new BusinessException(ResultCode::FAIL, '手机号格式不正确');
+    }
+    // ...
+}
+
+// ✅ 正确：在 Request 中验证格式
+public function storeRules(): array
+{
+    return [
+        'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
+    ];
+}
+
+// ✅ 正确：在 Entity 中验证业务规则
+public function setGrowthMax(?int $value): self
+{
+    if ($value !== null && $this->growthMin !== null && $value < $this->growthMin) {
+        throw new BusinessException(ResultCode::FAIL, '最高成长值不能小于最低成长值');
+    }
+    // ...
+}
+```
+
+### 验证层次对比
+
+| 验证类型 | Request 层 | Entity 层 |
+|---------|-----------|----------|
+| 格式验证 | ✅ 优先 | ❌ 不应该 |
+| 长度验证 | ✅ 优先 | ❌ 不应该 |
+| 类型验证 | ✅ 优先 | ❌ 不应该 |
+| 必填验证 | ✅ 优先 | ❌ 不应该 |
+| 范围验证 | ✅ 优先 | ⚠️ 看情况 |
+| 枚举验证 | ✅ 优先 | ⚠️ 看情况 |
+| 业务规则 | ❌ 不应该 | ✅ 必须 |
+| 跨字段逻辑 | ⚠️ 简单的可以 | ✅ 复杂的必须 |
+| 状态转换 | ❌ 不应该 | ✅ 必须 |
+| 领域不变量 | ❌ 不应该 | ✅ 必须 |
+
+### 实际案例
+
+#### 案例 1：会员昵称验证
+
+```php
+// Request 层：验证格式和长度
+public function storeRules(): array
+{
+    return [
+        'nickname' => ['required', 'string', 'max:100'],
+    ];
+}
+
+// Entity 层：不需要再验证（已在 Request 层验证）
+public function setNickname(?string $nickname): void
+{
+    $this->nickname = $nickname;
+    $this->markDirty('nickname', $nickname);
+}
+```
+
+#### 案例 2：会员等级成长值验证
+
+```php
+// Request 层：验证基本范围
+public function storeRules(): array
+{
+    return [
+        'growth_value_min' => ['required', 'integer', 'min:0'],
+        'growth_value_max' => ['nullable', 'integer', 'gte:growth_value_min'],
+    ];
+}
+
+// Entity 层：验证业务规则（跨字段逻辑）
+public function setGrowthMax(?int $value): self
+{
+    if ($value !== null && $this->growthMin !== null && $value < $this->growthMin) {
+        throw new BusinessException(ResultCode::FAIL, '最高成长值不能小于最低成长值');
+    }
+    
+    $this->growthMax = $value;
+    $this->markDirty('growth_value_max');
+    return $this;
+}
+```
+
+#### 案例 3：订单状态转换验证
+
+```php
+// Request 层：验证状态值是否有效
+public function updateStatusRules(): array
+{
+    return [
+        'status' => ['required', Rule::in(['pending', 'paid', 'shipped', 'completed', 'cancelled'])],
+    ];
+}
+
+// Entity 层：验证状态转换规则（业务规则）
+public function updateStatus(string $newStatus): self
+{
+    // 已支付的订单不能取消
+    if ($this->status === 'paid' && $newStatus === 'cancelled') {
+        throw new BusinessException(ResultCode::FAIL, '已支付的订单不能取消');
+    }
+    
+    // 已完成的订单不能修改状态
+    if ($this->status === 'completed') {
+        throw new BusinessException(ResultCode::FAIL, '已完成的订单不能修改状态');
+    }
+    
+    $this->status = $newStatus;
+    $this->markDirty('status');
+    return $this;
+}
+```
+
+### 总结
+
+**验证职责划分原则：**
+1. **Request 层是第一道防线** - 验证所有格式、类型、长度、范围等基础验证
+2. **Entity 层是业务规则守护者** - 只验证业务规则和领域不变量
+3. **避免重复验证** - Request 层验证过的，Entity 层不需要再验证
+4. **保持 Entity 纯粹** - Entity 专注于业务逻辑，不关心数据格式
 
 ---
 

@@ -12,31 +12,48 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Member\Entity\MemberLevelEntity;
+use App\Domain\Member\Contract\MemberLevelInput;
 use App\Domain\Member\Service\MemberLevelService;
+use Hyperf\DbConnection\Db;
 
 final class MemberLevelCommandService
 {
-    public function __construct(private readonly MemberLevelService $memberLevelService) {}
+    public function __construct(
+        private readonly MemberLevelService $memberLevelService
+    ) {}
 
     /**
+     * 创建会员等级.
+     *
      * @return array<string, mixed>
      */
-    public function create(MemberLevelEntity $entity): array
+    public function create(MemberLevelInput $input): array
     {
-        return $this->memberLevelService->create($entity);
+        // 事务管理
+        $level = Db::transaction(fn () => $this->memberLevelService->create($input));
+
+        return $level->toArray();
     }
 
     /**
+     * 更新会员等级.
+     *
      * @return array<string, mixed>
      */
-    public function update(MemberLevelEntity $entity): array
+    public function update(MemberLevelInput $input): array
     {
-        return $this->memberLevelService->update($entity);
+        // 事务管理
+        $level = Db::transaction(fn () => $this->memberLevelService->update($input));
+
+        return $level->toArray();
     }
 
+    /**
+     * 删除会员等级.
+     */
     public function delete(int $id): bool
     {
-        return $this->memberLevelService->delete($id);
+        // 事务管理
+        return Db::transaction(fn () => $this->memberLevelService->delete($id));
     }
 }

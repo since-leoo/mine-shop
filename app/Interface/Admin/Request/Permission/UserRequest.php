@@ -14,7 +14,7 @@ namespace App\Interface\Admin\Request\Permission;
 
 use App\Domain\Auth\Enum\Status;
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
-use App\Interface\Admin\DTO\Permission\UserDto;
+use App\Interface\Admin\Dto\Permission\UserDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

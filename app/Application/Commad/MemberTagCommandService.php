@@ -12,25 +12,37 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Member\Entity\MemberTagEntity;
+use App\Domain\Member\Contract\MemberTagInput;
 use App\Domain\Member\Service\MemberTagService;
+use Hyperf\DbConnection\Db;
 
 final class MemberTagCommandService
 {
-    public function __construct(private readonly MemberTagService $memberTagService) {}
+    public function __construct(
+        private readonly MemberTagService $memberTagService
+    ) {}
 
-    public function create(MemberTagEntity $entity): void
+    /**
+     * 创建会员标签.
+     */
+    public function create(MemberTagInput $input): void
     {
-        $this->memberTagService->create($entity);
+        Db::transaction(fn () => $this->memberTagService->create($input));
     }
 
-    public function update(MemberTagEntity $entity): void
+    /**
+     * 更新会员标签.
+     */
+    public function update(MemberTagInput $input): void
     {
-        $this->memberTagService->update($entity);
+        Db::transaction(fn () => $this->memberTagService->update($input));
     }
 
+    /**
+     * 删除会员标签.
+     */
     public function delete(int $id): bool
     {
-        return $this->memberTagService->delete($id);
+        return Db::transaction(fn () => $this->memberTagService->delete($id));
     }
 }

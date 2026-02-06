@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Member;
 
+use App\Domain\Member\Contract\MemberInput;
+use App\Interface\Admin\DTO\Member\MemberDto;
 use App\Interface\Common\Request\BaseRequest;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class MemberRequest extends BaseRequest
@@ -60,7 +63,7 @@ class MemberRequest extends BaseRequest
             'nickname' => ['required', 'string', 'max:100'],
             'avatar' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', Rule::in(['unknown', 'male', 'female'])],
-            'phone' => ['nullable', 'string', 'max:20', 'unique:members,phone'],
+            'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/', 'unique:members,phone'],
             'birthday' => ['nullable', 'date'],
             'city' => ['nullable', 'string', 'max:50'],
             'province' => ['nullable', 'string', 'max:50'],
@@ -70,7 +73,7 @@ class MemberRequest extends BaseRequest
             'country' => ['nullable', 'string', 'max:50'],
             'level' => ['nullable', Rule::in(['bronze', 'silver', 'gold', 'diamond'])],
             'growth_value' => ['nullable', 'integer', 'min:0'],
-            'status' => ['nullable', Rule::in(['active', 'inactive', 'banned'])],
+            'status' => ['required', Rule::in(['active', 'inactive', 'banned'])],
             'source' => ['nullable', Rule::in(['wechat', 'mini_program', 'h5', 'admin'])],
             'remark' => ['nullable', 'string', 'max:255'],
             'tags' => ['nullable', 'array'],
@@ -84,7 +87,7 @@ class MemberRequest extends BaseRequest
             'nickname' => ['nullable', 'string', 'max:100'],
             'avatar' => ['nullable', 'string', 'max:255'],
             'gender' => ['nullable', Rule::in(['unknown', 'male', 'female'])],
-            'phone' => ['nullable', 'string', 'max:20'],
+            'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
             'birthday' => ['nullable', 'date'],
             'city' => ['nullable', 'string', 'max:50'],
             'province' => ['nullable', 'string', 'max:50'],
@@ -94,7 +97,7 @@ class MemberRequest extends BaseRequest
             'country' => ['nullable', 'string', 'max:50'],
             'level' => ['nullable', 'string', 'max:50'],
             'growth_value' => ['nullable', 'integer', 'min:0'],
-            'status' => ['nullable', Rule::in(['active', 'inactive', 'banned'])],
+            'status' => ['required', Rule::in(['active', 'inactive', 'banned'])],
             'source' => ['nullable', 'string', 'max:50'],
             'remark' => ['nullable', 'string', 'max:255'],
         ];
@@ -136,5 +139,19 @@ class MemberRequest extends BaseRequest
             'remark' => '备注',
             'tags' => '标签',
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param null|int $id 会员ID，创建时为null，更新时传入
+     * @param int $operatorId 操作者ID
+     */
+    public function toDto(?int $id, int $operatorId): MemberInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+        $params['operator_id'] = $operatorId;
+
+        return Mapper::map($params, new MemberDto());
     }
 }

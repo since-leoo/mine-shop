@@ -12,46 +12,50 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Member\Entity\MemberWalletEntity;
+use App\Domain\Member\Contract\MemberWalletInput;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Service\MemberWalletService;
 use Hyperf\DbConnection\Db;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class MemberAccountCommandService
 {
     public function __construct(
-        private readonly MemberWalletService $accountService,
-        private readonly EventDispatcherInterface $dispatcher,
+        private readonly MemberWalletService $accountService
     ) {}
 
     /**
+     * 调整余额.
+     *
      * @param array{type?:string,id?:null|int,name?:null|string} $operator
      * @return array<string, mixed>
      */
-    public function adjustBalance(MemberWalletEntity $wallet, array $operator = []): array
+    public function adjustBalance(MemberWalletInput $input, array $operator = []): array
     {
-        return Db::transaction(function () use ($wallet, $operator) {
-            $updated = $this->accountService->adjustBalance($wallet);
+        // 事务管理
+        return Db::transaction(function () use ($input, $operator) {
+            // 调用领域服务
+            $vo = $this->accountService->adjustBalance($input);
 
+            // 发布领域事件
             $event = new MemberBalanceAdjusted(
-                memberId: $updated->getMemberId(),
-                walletId: $updated->getId(),
-                walletType: $updated->getType(),
-                changeAmount: $wallet->getChangeBalance(),
-                beforeBalance: $updated->getBeforeBalance(),
-                afterBalance: $updated->getAfterBalance(),
-                source: $wallet->getSource(),
-                remark: $wallet->getRemark(),
+                memberId: $vo->memberId,
+                walletId: null,
+                walletType: $vo->walletType,
+                changeAmount: $vo->changeAmount,
+                beforeBalance: $vo->beforeBalance,
+                afterBalance: $vo->afterBalance,
+                source: $input->getSource(),
+                remark: $input->getRemark(),
                 operator: $operator,
             );
-            $this->dispatcher->dispatch($event);
+            event($event);
 
             return [
-                'member_id' => $updated->getMemberId(),
-                'wallet_type' => $updated->getType(),
-                'before_balance' => $updated->getBeforeBalance(),
-                'after_balance' => $updated->getAfterBalance(),
+                'member_id' => $vo->memberId,
+                'wallet_type' => $vo->walletType,
+                'before_balance' => $vo->beforeBalance,
+                'after_balance' => $vo->afterBalance,
+                'change_amount' => $vo->changeAmount,
             ];
         });
     }

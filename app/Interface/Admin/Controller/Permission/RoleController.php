@@ -19,7 +19,7 @@ use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\DTO\Permission\DeleteDto;
+use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantPermissionsForRoleRequest;
 use App\Interface\Admin\Request\Permission\RoleRequest;

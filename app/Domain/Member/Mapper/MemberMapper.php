@@ -18,6 +18,14 @@ use Carbon\Carbon;
 
 final class MemberMapper
 {
+    /**
+     * 获取新实体.
+     */
+    public static function getNewEntity(): MemberEntity
+    {
+        return new MemberEntity();
+    }
+
     public static function fromModel(Member $member): MemberEntity
     {
         $entity = new MemberEntity();

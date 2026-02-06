@@ -10,16 +10,14 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\DTO\Permission;
+namespace App\Interface\Admin\Dto\Permission;
 
 use App\Domain\Permission\Contract\Leader\LeaderDeleteInput;
-use Hyperf\DTO\Annotation\Contracts\Valid;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**
  * 删除领导操作 DTO.
  */
-#[Valid]
 class LeaderDeleteDto implements LeaderDeleteInput
 {
     #[Required]

@@ -12,33 +12,60 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Member\Entity\MemberEntity;
+use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Service\MemberService;
+use Hyperf\DbConnection\Db;
 
 /**
  * 会员写应用服务.
  */
 final class MemberCommandService
 {
-    public function __construct(private readonly MemberService $memberService) {}
+    public function __construct(
+        private readonly MemberService $memberService
+    ) {}
 
-    public function create(MemberEntity $entity): void
+    /**
+     * 创建会员.
+     *
+     * @return array<string, mixed>
+     */
+    public function create(MemberInput $input): array
     {
-        $this->memberService->create($entity);
+        // 事务管理
+        $member = Db::transaction(fn () => $this->memberService->create($input));
+
+        return $member->toArray();
     }
 
-    public function update(MemberEntity $entity): void
+    /**
+     * 更新会员.
+     *
+     * @return array<string, mixed>
+     */
+    public function update(MemberInput $input): array
     {
-        $this->memberService->update($entity);
+        // 事务管理
+        $member = Db::transaction(fn () => $this->memberService->update($input));
+
+        return $member->toArray();
     }
 
-    public function updateStatus(MemberEntity $entity): void
+    /**
+     * 更新会员状态.
+     */
+    public function updateStatus(int $memberId, string $status): void
     {
-        $this->memberService->updateStatus($entity);
+        Db::transaction(fn () => $this->memberService->updateStatus($memberId, $status));
     }
 
-    public function syncTags(MemberEntity $entity): void
+    /**
+     * 同步会员标签.
+     *
+     * @param int[] $tagIds
+     */
+    public function syncTags(int $memberId, array $tagIds): void
     {
-        $this->memberService->syncTags($entity);
+        Db::transaction(fn () => $this->memberService->syncTags($memberId, $tagIds));
     }
 }

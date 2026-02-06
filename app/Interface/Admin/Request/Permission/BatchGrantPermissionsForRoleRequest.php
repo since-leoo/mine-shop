@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
-use App\Interface\Admin\DTO\Permission\RoleGrantPermissionsDto;
+use App\Interface\Admin\Dto\Permission\RoleGrantPermissionsDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

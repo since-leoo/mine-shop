@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Member;
 
 use App\Application\Commad\MemberLevelCommandService;
-use App\Application\Mapper\MemberLevelAssembler;
 use App\Application\Query\MemberLevelQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberLevelRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -38,6 +38,7 @@ final class MemberLevelController extends AbstractController
     public function __construct(
         private readonly MemberLevelQueryService $queryService,
         private readonly MemberLevelCommandService $commandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -60,8 +61,7 @@ final class MemberLevelController extends AbstractController
     #[Permission(code: 'member:level:create')]
     public function store(MemberLevelRequest $request): Result
     {
-        $entity = MemberLevelAssembler::toCreateEntity($request->validated());
-        $level = $this->commandService->create($entity);
+        $level = $this->commandService->create($request->toDto(null, $this->currentUser->id()));
         return $this->success($level, '创建会员等级成功', 201);
     }
 
@@ -69,8 +69,7 @@ final class MemberLevelController extends AbstractController
     #[Permission(code: 'member:level:update')]
     public function update(int $id, MemberLevelRequest $request): Result
     {
-        $entity = MemberLevelAssembler::toUpdateEntity($id, $request->validated());
-        $level = $this->commandService->update($entity);
+        $level = $this->commandService->update($request->toDto($id, $this->currentUser->id()));
         return $this->success($level, '更新会员等级成功');
     }
 

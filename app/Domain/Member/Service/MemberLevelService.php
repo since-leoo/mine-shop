@@ -12,47 +12,51 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
-use App\Domain\Member\Entity\MemberLevelEntity;
+use App\Domain\Member\Contract\MemberLevelInput;
 use App\Domain\Member\Repository\MemberLevelRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\MemberLevel;
+use App\Interface\Common\ResultCode;
 
 final class MemberLevelService extends IService
 {
     public function __construct(public readonly MemberLevelRepository $repository) {}
 
     /**
-     * @return array<string, mixed>
+     * 创建会员等级.
      */
-    public function create(MemberLevelEntity $entity): array
+    public function create(MemberLevelInput $dto): MemberLevel
     {
-        $level = $this->repository->save($entity);
-        return $level->toArray();
+        // 使用 DTO 的 toArray() 方法获取数据
+        return $this->repository->create($dto->toArray());
     }
 
     /**
-     * @return array<string, mixed>
+     * 更新会员等级.
      */
-    public function update(MemberLevelEntity $entity): array
+    public function update(MemberLevelInput $dto): ?MemberLevel
     {
-        $this->ensureExists($entity->getId());
+        $level = $this->repository->findById($dto->getId());
+        if (! $level) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员等级不存在');
+        }
 
-        $this->repository->updateEntity($entity);
-        /** @var MemberLevel $fresh */
-        $fresh = $this->repository->findById($entity->getId());
-        return $fresh->toArray();
+        // 使用 DTO 的 toArray() 方法获取数据
+        $this->repository->updateById($dto->getId(), $dto->toArray());
+
+        return $level->refresh();
     }
 
+    /**
+     * 删除会员等级.
+     */
     public function delete(int $id): bool
     {
-        $this->ensureExists($id);
-        return $this->repository->deleteById($id) > 0;
-    }
-
-    private function ensureExists(int $id): void
-    {
         if (! $this->repository->existsById($id)) {
-            throw new \RuntimeException('会员等级不存在');
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员等级不存在');
         }
+
+        return $this->repository->deleteById($id) > 0;
     }
 }

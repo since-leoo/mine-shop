@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Member;
 
 use App\Application\Commad\MemberAccountCommandService;
-use App\Application\Mapper\MemberAccountAssembler;
 use App\Application\Query\MemberWalletTransactionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -36,7 +35,6 @@ final class MemberAccountController extends AbstractController
 {
     public function __construct(
         private readonly MemberAccountCommandService $accountCommandService,
-        private readonly MemberAccountAssembler $memberAccountAssembler,
         private readonly MemberWalletTransactionQueryService $walletTransactionQueryService,
         private readonly CurrentUser $currentUser,
     ) {}
@@ -59,9 +57,10 @@ final class MemberAccountController extends AbstractController
     #[Permission(code: 'member:wallet:adjust')]
     public function adjust(MemberAccountRequest $request): Result
     {
-        $payload = $request->validated();
-        $walletEntity = $this->memberAccountAssembler->fromArray($payload);
-        $result = $this->accountCommandService->adjustBalance($walletEntity, $this->operatorPayload());
+        $result = $this->accountCommandService->adjustBalance(
+            $request->toDto($this->currentUser->id()),
+            $this->operatorPayload()
+        );
 
         return $this->success($result, '钱包调整成功');
     }

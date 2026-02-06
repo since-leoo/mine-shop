@@ -12,6 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Entity;
 
+use App\Domain\Member\Contract\MemberWalletInput;
+use App\Domain\Member\ValueObject\BalanceChangeVo;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Common\ResultCode;
+
 /**
  * 会员钱包实体：聚合积分余额、累计值以及成长值信息.
  */
@@ -44,6 +49,27 @@ final class MemberWalletEntity
     private string $remark = '';
 
     private string $source = 'manual';
+
+    /**
+     * 调整余额行为方法：接收 DTO，执行余额变更.
+     */
+    public function adjustBalance(MemberWalletInput $dto): BalanceChangeVo
+    {
+        $this->setChangeBalance($dto->getValue());
+        $this->setSource($dto->getSource());
+        $this->setRemark($dto->getRemark());
+
+        // 调用余额变更逻辑
+        $this->changeBalance();
+
+        return BalanceChangeVo::success(
+            memberId: $this->memberId,
+            walletType: $this->type,
+            beforeBalance: $this->beforeBalance,
+            afterBalance: $this->afterBalance,
+            changeAmount: $this->changeBalance
+        );
+    }
 
     public function setId(int $id): void
     {
@@ -191,18 +217,24 @@ final class MemberWalletEntity
     public function changeBalance(): void
     {
         if ($this->changeBalance === 0.0) {
-            throw new \InvalidArgumentException('变动值不能为 0');
+            throw new BusinessException(ResultCode::FAIL, '变动值不能为 0');
         }
 
         $this->setBeforeBalance($this->balance);
         $after = (float) bcadd((string) $this->balance, (string) $this->changeBalance, 2);
 
+        // 领域不变量：余额不能为负数
         if ($after < 0) {
-            throw new \RuntimeException('余额不足，无法扣减');
+            throw new BusinessException(
+                ResultCode::FAIL,
+                \sprintf('余额不足，当前余额：%.2f，变动金额：%.2f', $this->balance, $this->changeBalance)
+            );
         }
 
         $this->setAfterBalance($after);
         $this->balance = $after;
+
+        // 更新累计充值或消费
         if ($this->changeBalance > 0) {
             $this->totalRecharge = (float) bcadd((string) $this->totalRecharge, (string) $this->changeBalance, 2);
         } else {

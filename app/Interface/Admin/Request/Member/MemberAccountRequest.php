@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Member;
 
+use App\Domain\Member\Contract\MemberWalletInput;
+use App\Interface\Admin\DTO\Member\MemberWalletDto;
 use App\Interface\Common\Request\BaseRequest;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class MemberAccountRequest extends BaseRequest
@@ -52,5 +55,17 @@ class MemberAccountRequest extends BaseRequest
             'wallet_type' => '钱包类型',
             'remark' => '备注',
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param int $operatorId 操作者ID
+     */
+    public function toDto(int $operatorId): MemberWalletInput
+    {
+        $params = $this->validated();
+        $params['operator_id'] = $operatorId;
+
+        return Mapper::map($params, new MemberWalletDto());
     }
 }

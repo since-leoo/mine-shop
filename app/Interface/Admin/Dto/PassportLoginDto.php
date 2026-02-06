@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\DTO;
+namespace App\Interface\Admin\Dto;
 
 use App\Domain\Auth\Contract\LoginInput;
 use App\Domain\Auth\Enum\Type;

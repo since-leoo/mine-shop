@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
+use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
@@ -34,21 +35,104 @@ final class MemberService extends IService
         private readonly MiniAppInterface $miniApp,
     ) {}
 
+    /**
+     * 创建会员.
+     */
+    public function create(MemberInput $dto): Member
+    {
+        // 1. 通过 Mapper 获取新实体
+        $entity = MemberMapper::getNewEntity();
+
+        // 2. 调用实体的 create 行为方法
+        $entity->create($dto);
+
+        // 3. 调用仓储持久化
+        $member = $this->repository->save($entity);
+
+        // 4. 同步标签
+        if ($entity->getTagIds() !== []) {
+            $this->applyTags($member->id, $entity->getTagIds());
+        }
+
+        return $member;
+    }
+
+    /**
+     * 更新会员档案.
+     */
+    public function update(MemberInput $dto): Member
+    {
+        // 1. 通过仓储获取 Model
+        $model = $this->repository->findById($dto->getId());
+        if (! $model) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+        }
+
+        // 2. 通过 Mapper 将 Model 转换为 Entity
+        $entity = MemberMapper::fromModel($model);
+
+        // 3. 调用实体的 update 行为方法
+        $entity->update($dto);
+
+        // 4. 持久化修改
+        $this->repository->updateEntity($entity);
+
+        return $model->refresh();
+    }
+
+    /**
+     * 更新会员状态.
+     */
+    public function updateStatus(int $memberId, string $status): Member
+    {
+        // 1. 获取实体
+        $entity = $this->getEntity($memberId);
+
+        // 2. 调用实体的 updateStatus 行为方法
+        $entity->updateStatus($status);
+
+        // 3. 持久化修改
+        $this->repository->updateEntity($entity);
+
+        /** @var Member $model */
+        return $this->repository->findById($memberId);
+    }
+
+    /**
+     * 同步会员标签.
+     */
+    public function syncTags(int $memberId, array $tagIds): void
+    {
+        $this->ensureMemberExists($memberId);
+        $this->applyTags($memberId, $tagIds);
+    }
+
+    /**
+     * 获取会员实体.
+     *
+     * 通过 ID 获取 Model，然后通过 Mapper 转换为 Entity.
+     * 用于需要调用实体行为方法的场景.
+     *
+     * @param int $memberId 会员ID
+     * @return MemberEntity 会员实体对象
+     * @throws BusinessException 当会员不存在时
+     */
+    public function getEntity(int $memberId): MemberEntity
+    {
+        /** @var null|Member $model */
+        $model = $this->repository->findById($memberId);
+
+        if (! $model) {
+            throw new BusinessException(ResultCode::NOT_FOUND, "会员不存在: ID={$memberId}");
+        }
+
+        return MemberMapper::fromModel($model);
+    }
+
     public function getInfoByOpenId(string $openId): ?Member
     {
         /* @var null|Member $member */
         return $this->repository->findByOpenid($openId);
-    }
-
-    public function getEntity(int $memberId): MemberEntity
-    {
-        /** @var null|Member $member */
-        $member = $this->findById($memberId);
-        if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
-        }
-
-        return MemberMapper::fromModel($member);
     }
 
     /**
@@ -73,63 +157,6 @@ final class MemberService extends IService
     public function detail(int $id): ?array
     {
         return $this->repository->detail($id);
-    }
-
-    public function create(MemberEntity $entity): void
-    {
-        if (! $entity->getSource()) {
-            $entity->setSource('admin');
-        }
-
-        $member = $this->repository->save($entity);
-
-        $entity->setId($member->id);
-
-        if ($entity->getTagIds() !== []) {
-            $this->applyTags($entity->getId(), $entity->getTagIds());
-        }
-    }
-
-    /**
-     * 更新会员档案.
-     */
-    public function update(MemberEntity $entity): void
-    {
-        $this->ensureMemberExists($entity->getId());
-        $this->repository->updateEntity($entity);
-    }
-
-    /**
-     * 更新会员状态.
-     */
-    public function updateStatus(MemberEntity $entity): void
-    {
-        $memberId = $entity->getId();
-        $this->ensureMemberExists($memberId);
-
-        if (! $entity->getStatus()) {
-            throw new \InvalidArgumentException('会员状态不能为空');
-        }
-
-        $this->repository->updateEntity($entity);
-    }
-
-    /**
-     * 获取会员信息.
-     */
-    public function getInfoEntity(int $memberId): MemberEntity
-    {
-        return $this->getEntity($memberId);
-    }
-
-    /**
-     * 同步会员标签.
-     */
-    public function syncTags(MemberEntity $entity): void
-    {
-        $memberId = $entity->getId();
-        $this->ensureMemberExists($memberId);
-        $this->applyTags($memberId, $entity->getTagIds());
     }
 
     /**
@@ -199,7 +226,7 @@ final class MemberService extends IService
     private function ensureMemberExists(int $memberId): void
     {
         if (! $this->repository->existsById($memberId)) {
-            throw new \RuntimeException('会员不存在');
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
         }
     }
 

@@ -15,7 +15,7 @@ namespace App\Interface\Admin\Controller\Permission;
 use App\Application\Commad\MenuCommandService;
 use App\Application\Query\MenuQueryService;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\DTO\Permission\DeleteDto;
+use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\MenuRequest;
 use App\Interface\Common\CurrentUser;

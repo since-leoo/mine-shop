@@ -16,7 +16,7 @@ use App\Application\Commad\LeaderCommandService;
 use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\LeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\DTO\Permission\LeaderDeleteDto;
+use App\Interface\Admin\Dto\Permission\LeaderDeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\LeaderRequest;
 use App\Interface\Common\CurrentUser;

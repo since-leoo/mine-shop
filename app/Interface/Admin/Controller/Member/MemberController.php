@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Member;
 
 use App\Application\Commad\MemberCommandService;
-use App\Application\Mapper\MemberAssembler;
 use App\Application\Query\MemberQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -37,16 +37,15 @@ final class MemberController extends AbstractController
     public function __construct(
         private readonly MemberQueryService $queryService,
         private readonly MemberCommandService $commandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[PostMapping(path: '')]
     #[Permission(code: 'member:member:create')]
     public function store(MemberRequest $request): Result
     {
-        $payload = $request->validated();
-        $entity = MemberAssembler::toCreateEntity($payload);
-        $this->commandService->create($entity);
-        return $this->success([], '会员已创建');
+        $member = $this->commandService->create($request->toDto(null, $this->currentUser->id()));
+        return $this->success($member, '会员已创建', 201);
     }
 
     #[GetMapping(path: 'list')]
@@ -90,10 +89,8 @@ final class MemberController extends AbstractController
     #[Permission(code: 'member:member:update')]
     public function update(int $id, MemberRequest $request): Result
     {
-        $payload = $request->validated();
-        $entity = MemberAssembler::toUpdateEntity($id, $payload);
-        $this->commandService->update($entity);
-        return $this->success([], '会员资料已更新');
+        $member = $this->commandService->update($request->toDto($id, $this->currentUser->id()));
+        return $this->success($member, '会员资料已更新');
     }
 
     #[PutMapping(path: '{id:\d+}/status')]
@@ -101,8 +98,7 @@ final class MemberController extends AbstractController
     public function updateStatus(int $id, MemberRequest $request): Result
     {
         $payload = $request->validated();
-        $entity = MemberAssembler::toStatusEntity($id, (string) $payload['status']);
-        $this->commandService->updateStatus($entity);
+        $this->commandService->updateStatus($id, (string) $payload['status']);
         return $this->success([], '会员状态已更新');
     }
 
@@ -112,8 +108,7 @@ final class MemberController extends AbstractController
     {
         $payload = $request->validated();
         $tags = \is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
-        $entity = MemberAssembler::toTagEntity($id, $tags);
-        $this->commandService->syncTags($entity);
+        $this->commandService->syncTags($id, $tags);
         return $this->success([], '会员标签已更新');
     }
 }

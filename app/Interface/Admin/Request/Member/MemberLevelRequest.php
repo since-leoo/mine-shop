@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Member;
 
+use App\Domain\Member\Contract\MemberLevelInput;
+use App\Interface\Admin\DTO\Member\MemberLevelDto;
 use App\Interface\Common\Request\BaseRequest;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 use Hyperf\Validation\Rules\Unique;
 
@@ -77,6 +80,20 @@ class MemberLevelRequest extends BaseRequest
             'point_rate' => '积分倍率',
             'status' => '状态',
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param null|int $id 会员等级ID，创建时为null，更新时传入
+     * @param int $operatorId 操作者ID
+     */
+    public function toDto(?int $id, int $operatorId): MemberLevelInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+        $params['operator_id'] = $operatorId;
+
+        return Mapper::map($params, new MemberLevelDto());
     }
 
     private function uniqueRule(string $column, ?int $ignoreId = null): Unique
