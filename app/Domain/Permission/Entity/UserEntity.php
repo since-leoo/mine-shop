@@ -339,19 +339,19 @@ final class UserEntity
     public function toArray(): array
     {
         $data = [
-            'username' => $this->username,
-            'password' => $this->password,
-            'user_type' => $this->userType,
-            'nickname' => $this->nickname,
-            'phone' => $this->phone,
-            'email' => $this->email,
-            'avatar' => $this->avatar,
-            'signed' => $this->signed,
-            'status' => $this->status,
-            'backend_setting' => $this->backendSetting,
-            'remark' => $this->remark,
-            'created_by' => $this->createdBy ?: null,
-            'updated_by' => $this->updatedBy ?: null,
+            'username' => $this->getUsername(),
+            'password' => $this->getPassword(),
+            'user_type' => $this->getUserType(),
+            'nickname' => $this->getNickname(),
+            'phone' => $this->getPhone(),
+            'email' => $this->getPhone(),
+            'avatar' => $this->getAvatar(),
+            'signed' => $this->getSigned(),
+            'status' => $this->getStatus(),
+            'backend_setting' => $this->getBackendSetting(),
+            'remark' => $this->getRemark(),
+            'created_by' => $this->getCreatedBy(),
+            'updated_by' => $this->getUpdatedBy(),
         ];
 
         if ($this->dirty === []) {
@@ -399,6 +399,9 @@ final class UserEntity
         return $this;
     }
 
+    /**
+     * 更新.
+     */
     public function update(UserInput $input): self
     {
         $input->getUsername() && $this->setUsername($input->getUsername());
