@@ -56,8 +56,8 @@ final class ProductMapper
         // 使用之前保存的 attributes JSON 字段值
         $entity->setAttributesJson(\is_array($attributesJson) ? $attributesJson : null);
 
-        $entity->setMinPrice((float) $model->min_price);
-        $entity->setMaxPrice((float) $model->max_price);
+        $entity->setMinPrice($model->min_price);
+        $entity->setMaxPrice($model->max_price);
         $entity->setVirtualSales($model->virtual_sales);
         $entity->setRealSales($model->real_sales);
         $entity->setIsRecommend($model->is_recommend);
@@ -122,8 +122,8 @@ final class ProductMapper
         $entity->setDescription($payload['description'] ?? null);
         $entity->setDetailContent($payload['detail_content'] ?? null);
         $entity->setAttributesJson($payload['attributes'] ?? null);
-        $entity->setMinPrice(isset($payload['min_price']) ? (float) $payload['min_price'] : ($forcePriceDefaults ? 0.0 : null));
-        $entity->setMaxPrice(isset($payload['max_price']) ? (float) $payload['max_price'] : ($forcePriceDefaults ? 0.0 : null));
+        $entity->setMinPrice(isset($payload['min_price']) ? (int) $payload['min_price'] : ($forcePriceDefaults ? 0 : null));
+        $entity->setMaxPrice(isset($payload['max_price']) ? (int) $payload['max_price'] : ($forcePriceDefaults ? 0 : null));
         $entity->setVirtualSales(isset($payload['virtual_sales']) ? (int) $payload['virtual_sales'] : null);
         $entity->setRealSales(isset($payload['real_sales']) ? (int) $payload['real_sales'] : null);
         $entity->setIsRecommend(isset($payload['is_recommend']) ? (bool) $payload['is_recommend'] : null);
@@ -156,9 +156,9 @@ final class ProductMapper
             $sku->setSkuName((string) ($item['sku_name'] ?? ''));
             $sku->setSpecValues($item['spec_values'] ?? null);
             $sku->setImage($item['image'] ?? null);
-            $sku->setCostPrice(isset($item['cost_price']) ? (float) $item['cost_price'] : 0.0);
-            $sku->setMarketPrice(isset($item['market_price']) ? (float) $item['market_price'] : 0.0);
-            $sku->setSalePrice(isset($item['sale_price']) ? (float) $item['sale_price'] : 0.0);
+            $sku->setCostPrice(isset($item['cost_price']) ? (int) $item['cost_price'] : 0);
+            $sku->setMarketPrice(isset($item['market_price']) ? (int) $item['market_price'] : 0);
+            $sku->setSalePrice(isset($item['sale_price']) ? (int) $item['sale_price'] : 0);
             $sku->setStock(isset($item['stock']) ? (int) $item['stock'] : 0);
             $sku->setWarningStock(isset($item['warning_stock']) ? (int) $item['warning_stock'] : 0);
             $sku->setWeight(isset($item['weight']) ? (float) $item['weight'] : 0.0);
@@ -194,10 +194,10 @@ final class ProductMapper
         $skuEntity->setSkuCode($sku->sku_code);
         $skuEntity->setSkuName($sku->sku_name);
         $skuEntity->setStock((int) $sku->stock);
-        $skuEntity->setCostPrice((float) $sku->cost_price);
+        $skuEntity->setCostPrice((int) $sku->cost_price);
         $skuEntity->setImage($sku->image);
-        $skuEntity->setMarketPrice((float) $sku->market_price);
-        $skuEntity->setSalePrice((float) $sku->sale_price);
+        $skuEntity->setMarketPrice((int) $sku->market_price);
+        $skuEntity->setSalePrice((int) $sku->sale_price);
         $skuEntity->setStatus($sku->status);
         $skuEntity->setSpecValues($sku->spec_values);
         $skuEntity->setWeight((float) $sku->weight);

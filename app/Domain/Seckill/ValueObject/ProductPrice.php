@@ -17,11 +17,11 @@ namespace App\Domain\Seckill\ValueObject;
  */
 final class ProductPrice
 {
-    private readonly float $originalPrice;
+    private readonly int $originalPrice;
 
-    private readonly float $seckillPrice;
+    private readonly int $seckillPrice;
 
-    public function __construct(float $originalPrice, float $seckillPrice)
+    public function __construct(int $originalPrice, int $seckillPrice)
     {
         $this->originalPrice = $originalPrice;
         $this->seckillPrice = $seckillPrice;
@@ -29,16 +29,19 @@ final class ProductPrice
         $this->validate();
     }
 
-    public function getOriginalPrice(): float
+    public function getOriginalPrice(): int
     {
         return $this->originalPrice;
     }
 
-    public function getSeckillPrice(): float
+    public function getSeckillPrice(): int
     {
         return $this->seckillPrice;
     }
 
+    /**
+     * 折扣百分比.
+     */
     public function getDiscount(): float
     {
         if ($this->originalPrice === 0) {
@@ -48,9 +51,12 @@ final class ProductPrice
         return round(($this->originalPrice - $this->seckillPrice) / $this->originalPrice * 100, 2);
     }
 
-    public function getSavings(): float
+    /**
+     * 节省金额（分）.
+     */
+    public function getSavings(): int
     {
-        return round($this->originalPrice - $this->seckillPrice, 2);
+        return $this->originalPrice - $this->seckillPrice;
     }
 
     public function toArray(): array

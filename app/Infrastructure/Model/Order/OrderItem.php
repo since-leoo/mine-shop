@@ -26,9 +26,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $sku_name
  * @property null|string $product_image
  * @property null|array $spec_values
- * @property float $unit_price
+ * @property int $unit_price
  * @property int $quantity
- * @property float $total_price
+ * @property int $total_price
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -56,30 +56,15 @@ class OrderItem extends Model
         'product_id' => 'integer',
         'sku_id' => 'integer',
         'spec_values' => 'array',
-        'unit_price' => 'decimal:2',
+        'unit_price' => 'integer',
         'quantity' => 'integer',
-        'total_price' => 'decimal:2',
+        'total_price' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-    ];
-
-    protected array $appends = [
-        'price',
-        'total_amount',
     ];
 
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'order_id', 'id');
-    }
-
-    public function getPriceAttribute(): float
-    {
-        return (float) $this->unit_price;
-    }
-
-    public function getTotalAmountAttribute(): float
-    {
-        return (float) $this->total_price;
     }
 }

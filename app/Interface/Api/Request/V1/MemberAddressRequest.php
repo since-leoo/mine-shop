@@ -12,12 +12,23 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
+use App\Domain\Member\Contract\MemberAddressInput;
+use App\Interface\Api\DTO\Member\MemberAddressDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 final class MemberAddressRequest extends BaseRequest
 {
     use NoAuthorizeTrait;
+
+    /**
+     * 转换为 DTO.
+     */
+    public function toDto(): MemberAddressInput
+    {
+        return Mapper::map($this->validated(), new MemberAddressDto());
+    }
 
     /**
      * @return array<string, mixed>
@@ -41,22 +52,15 @@ final class MemberAddressRequest extends BaseRequest
     private function ruleset(): array
     {
         return [
-            'name' => ['required_without:name', 'nullable', 'string', 'max:50'],
-            'phone' => ['required_without:phone', 'nullable', 'string', 'max:20'],
-            'province' => ['required_without:provinceName', 'nullable', 'string', 'max:50'],
-            'provinceName' => ['required_without:province', 'nullable', 'string', 'max:50'],
-            'provinceCode' => ['nullable', 'string', 'max:20'],
+            'name' => ['required', 'string', 'max:50'],
+            'phone' => ['required', 'string', 'max:20'],
+            'province' => ['required', 'string', 'max:50'],
             'province_code' => ['nullable', 'string', 'max:20'],
-            'city' => ['required_without:cityName', 'nullable', 'string', 'max:50'],
-            'cityName' => ['required_without:city', 'nullable', 'string', 'max:50'],
-            'cityCode' => ['nullable', 'string', 'max:20'],
+            'city' => ['required', 'string', 'max:50'],
             'city_code' => ['nullable', 'string', 'max:20'],
-            'district' => ['required_without:districtName', 'nullable', 'string', 'max:50'],
-            'districtName' => ['required_without:district', 'nullable', 'string', 'max:50'],
-            'districtCode' => ['nullable', 'string', 'max:20'],
+            'district' => ['required', 'string', 'max:50'],
             'district_code' => ['nullable', 'string', 'max:20'],
-            'detail' => ['required_without:detailAddress', 'nullable', 'string', 'max:200'],
-            'detailAddress' => ['required_without:detail', 'nullable', 'string', 'max:200'],
+            'detail' => ['required', 'string', 'max:255'],
             'is_default' => ['nullable', 'boolean'],
         ];
     }

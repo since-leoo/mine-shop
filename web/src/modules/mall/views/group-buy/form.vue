@@ -15,6 +15,7 @@ import { detail as productDetail, page as productPage } from '~/mall/api/product
 import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { centsToYuan, yuanToCents } from '@/utils/price'
 
 defineOptions({ name: 'mall:group-buy:form' })
 
@@ -49,6 +50,9 @@ useForm('groupBuyForm').then(async (form: MaFormExpose) => {
   formRef.value = form
   if (formType === 'edit' && data) {
     Object.assign(model.value, data)
+    // API返回分，表单显示元
+    model.value.original_price = centsToYuan(data.original_price) as any
+    model.value.group_price = centsToYuan(data.group_price) as any
     await loadSkus(model.value.product_id as number)
   }
   await loadProducts()
@@ -56,9 +60,17 @@ useForm('groupBuyForm').then(async (form: MaFormExpose) => {
   form.setOptions({ labelWidth: '110px' })
 })
 
+function buildPayload(): GroupBuyVo {
+  const payload = { ...model.value }
+  // 表单中金额为元，提交时转换为分
+  payload.original_price = yuanToCents(payload.original_price) as any
+  payload.group_price = yuanToCents(payload.group_price) as any
+  return payload
+}
+
 function add(): Promise<any> {
   return new Promise((resolve, reject) => {
-    create(model.value).then((res: any) => {
+    create(buildPayload()).then((res: any) => {
       res.code === ResultCode.SUCCESS ? resolve(res) : reject(res)
     }).catch(reject)
   })
@@ -66,7 +78,7 @@ function add(): Promise<any> {
 
 function edit(): Promise<any> {
   return new Promise((resolve, reject) => {
-    save(model.value.id as number, model.value).then((res: any) => {
+    save(model.value.id as number, buildPayload()).then((res: any) => {
       res.code === ResultCode.SUCCESS ? resolve(res) : reject(res)
     }).catch(reject)
   })

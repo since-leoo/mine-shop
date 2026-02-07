@@ -1,37 +1,57 @@
 <view class="person-info">
+  <!-- 未授权头像昵称时，显示提示 -->
+  <view class="person-info__authorize-card" wx:if="{{!personInfo.authorizedProfile}}">
+    <view class="person-info__authorize-tip">请完善头像和昵称信息</view>
+  </view>
+
   <t-cell-group>
-    <t-cell
-      title="头像"
-      center="{{true}}"
-      data-type="avatarUrl"
-      bind:click="onClickCell"
-      arrow
-      t-class-left="order-group__left"
-    >
-      <t-image slot="note" src="{{personInfo.avatarUrl}}" t-class="avatarUrl" mode="aspectFill" />
+    <!-- 头像：使用 chooseAvatar 能力 -->
+    <t-cell title="头像" center="{{true}}" t-class-left="order-group__left">
+      <view slot="note" class="avatar-cell">
+        <button
+          class="avatar-button"
+          open-type="chooseAvatar"
+          bind:chooseavatar="onChooseAvatar"
+        >
+          <image
+            class="avatar-image"
+            src="{{personInfo.avatarUrl || defaultAvatarUrl}}"
+            mode="aspectFill"
+          />
+        </button>
+        <t-icon name="chevron-right" size="40rpx" color="#bbb" />
+      </view>
     </t-cell>
-    <t-cell
-      title="昵称"
-      arrow
-      note="{{personInfo.nickName}}"
-      data-type="name"
-      bind:click="onClickCell"
-      t-class="t-cell-class"
-      t-class-left="order-group__left"
-    />
+
+    <!-- 昵称：使用 nickname 输入能力 -->
+    <t-cell title="昵称" t-class="t-cell-class" t-class-left="order-group__left">
+      <input
+        slot="note"
+        type="nickname"
+        class="nickname-input"
+        value="{{personInfo.nickName}}"
+        placeholder="请输入昵称"
+        bindinput="onNicknameInput"
+        bindblur="onNicknameBlur"
+      />
+    </t-cell>
+
+    <!-- 性别 -->
     <t-cell
       title="性别"
       arrow
-      note="{{genderMap[personInfo.gender]}}"
+      note="{{genderMap[personInfo.gender] || '未知'}}"
       data-type="gender"
       bind:click="onClickCell"
       t-class="t-cell-class"
       t-class-left="order-group__left"
     />
+
+    <!-- 手机号 -->
     <t-cell
       bordered="{{false}}"
       title="手机号"
-      arrow="{{!displayPhoneNumber}}"
+      arrow="{{false}}"
       t-class="t-cell-class"
       t-class-left="order-group__left"
     >
@@ -51,10 +71,21 @@
       </t-button>
     </t-cell>
   </t-cell-group>
+
+  <!-- 保存按钮：头像或昵称有变更时显示 -->
+  <view class="person-info__save-wrapper" wx:if="{{hasProfileChange}}">
+    <t-button
+      block
+      shape="round"
+      theme="primary"
+      loading="{{profileSaving}}"
+      bind:tap="onSaveProfile"
+    >
+      保存
+    </t-button>
+  </view>
 </view>
-<view class="person-info__wrapper">
-  <view class="person-info__btn" bind:tap="openUnbindConfirm"> 切换账号登录 </view>
-</view>
+
 <t-select-picker
   show="{{typeVisible}}"
   picker-options="{{pickerOptions}}"

@@ -24,8 +24,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $session_id
  * @property int $product_id
  * @property int $product_sku_id
- * @property float $original_price
- * @property float $seckill_price
+ * @property int $original_price
+ * @property int $seckill_price
  * @property int $quantity
  * @property int $sold_quantity
  * @property int $max_quantity_per_user
@@ -57,8 +57,8 @@ class SeckillProduct extends Model
         'session_id' => 'integer',
         'product_id' => 'integer',
         'product_sku_id' => 'integer',
-        'original_price' => 'decimal:2',
-        'seckill_price' => 'decimal:2',
+        'original_price' => 'integer',
+        'seckill_price' => 'integer',
         'quantity' => 'integer',
         'sold_quantity' => 'integer',
         'max_quantity_per_user' => 'integer',

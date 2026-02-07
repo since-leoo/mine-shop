@@ -24,9 +24,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $sku_name
  * @property null|array $spec_values
  * @property null|string $image
- * @property float $cost_price
- * @property float $market_price
- * @property float $sale_price
+ * @property int $cost_price
+ * @property int $market_price
+ * @property int $sale_price
  * @property int $stock
  * @property int $warning_stock
  * @property float $weight
@@ -63,9 +63,9 @@ class ProductSku extends Model
         'id' => 'integer',
         'product_id' => 'integer',
         'spec_values' => 'array',
-        'cost_price' => 'decimal:2',
-        'market_price' => 'decimal:2',
-        'sale_price' => 'decimal:2',
+        'cost_price' => 'integer',
+        'market_price' => 'integer',
+        'sale_price' => 'integer',
         'stock' => 'integer',
         'warning_stock' => 'integer',
         'weight' => 'decimal:3',
@@ -76,9 +76,7 @@ class ProductSku extends Model
     public function creating(Creating $event): void
     {
         if (empty($this->sku_code)) {
-            $this->sku_code = $this->resolveUniqueCode();
-        } elseif (! self::isCodeUnique($this->sku_code)) {
-            throw new \InvalidArgumentException('SKU编码已存在');
+            $this->sku_code = self::generateSkuCode();
         }
         if (empty($this->status)) {
             $this->status = self::STATUS_ACTIVE;
@@ -112,29 +110,5 @@ class ProductSku extends Model
         $random = mb_str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
 
         return $prefix . $timestamp . $random;
-    }
-
-    public static function isCodeUnique(string $code, int $excludeId = 0): bool
-    {
-        $query = self::where('sku_code', $code);
-
-        if ($excludeId > 0) {
-            $query->where('id', '!=', $excludeId);
-        }
-
-        return $query->count() === 0;
-    }
-
-    private function resolveUniqueCode(): string
-    {
-        $maxAttempts = 10;
-        for ($i = 0; $i < $maxAttempts; ++$i) {
-            $candidate = self::generateSkuCode();
-            if (self::isCodeUnique($candidate)) {
-                return $candidate;
-            }
-        }
-
-        throw new \RuntimeException('无法生成唯一SKU编码');
     }
 }

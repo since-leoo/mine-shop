@@ -62,8 +62,12 @@ final class ProductRepository extends IRepository
                 $skuData = $sku->toArray();
 
                 if ($sku->getId()) {
-                    // 更新已存在的 SKU
-                    $model->skus()->where('id', $sku->getId())->update($skuData);
+                    // 使用模型实例更新，确保 $casts 生效（spec_values 等 JSON 字段）
+                    $skuModel = $model->skus()->where('id', $sku->getId())->first();
+                    if ($skuModel) {
+                        $skuModel->fill($skuData);
+                        $skuModel->save();
+                    }
                 } else {
                     // 创建新的 SKU（移除 id 字段）
                     unset($skuData['id']);
@@ -135,8 +139,8 @@ final class ProductRepository extends IRepository
             ->when(isset($params['is_recommend']), static fn (Builder $q) => $q->where('is_recommend', (bool) $params['is_recommend']))
             ->when(isset($params['is_hot']), static fn (Builder $q) => $q->where('is_hot', (bool) $params['is_hot']))
             ->when(isset($params['is_new']), static fn (Builder $q) => $q->where('is_new', (bool) $params['is_new']))
-            ->when(isset($params['min_price']) && $params['min_price'] !== '', static fn (Builder $q) => $q->where('min_price', '>=', (float) $params['min_price']))
-            ->when(isset($params['max_price']) && $params['max_price'] !== '', static fn (Builder $q) => $q->where('max_price', '<=', (float) $params['max_price']))
+            ->when(isset($params['min_price']) && $params['min_price'] !== '', static fn (Builder $q) => $q->where('min_price', '>=', (int) $params['min_price']))
+            ->when(isset($params['max_price']) && $params['max_price'] !== '', static fn (Builder $q) => $q->where('max_price', '<=', (int) $params['max_price']))
             ->when(isset($params['sales_min']) && $params['sales_min'] !== '', static fn (Builder $q) => $q->where('real_sales', '>=', (int) $params['sales_min']))
             ->when(isset($params['sales_max']) && $params['sales_max'] !== '', static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
             ->with(['category', 'brand']);

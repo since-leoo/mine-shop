@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Cart;
 
+use App\Domain\Member\Contract\CartItemInput;
 use App\Domain\Member\Service\MemberCartService;
 
 final class CartCommandApiService
@@ -22,27 +23,29 @@ final class CartCommandApiService
     ) {}
 
     /**
-     * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function addItem(int $memberId, array $payload): array
+    public function addItem(int $memberId, CartItemInput $input): array
     {
-        $skuId = (int) ($payload['sku_id'] ?? 0);
-        $quantity = (int) ($payload['quantity'] ?? 1);
-        $isSelected = (bool) ($payload['is_selected'] ?? false);
-
-        $this->cartService->addItem($memberId, $skuId, $quantity, $isSelected);
+        $this->cartService->addItem(
+            $memberId,
+            $input->getSkuId(),
+            $input->getQuantity(),
+            $input->getIsSelected() ?? true
+        );
 
         return $this->queryService->overview($memberId);
     }
 
     /**
-     * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function updateItem(int $memberId, int $skuId, array $payload): array
+    public function updateItem(int $memberId, int $skuId, CartItemInput $input): array
     {
-        $this->cartService->updateItem($memberId, $skuId, $payload);
+        $this->cartService->updateItem($memberId, $skuId, [
+            'quantity' => $input->getQuantity(),
+            'is_selected' => $input->getIsSelected(),
+        ]);
 
         return $this->queryService->overview($memberId);
     }

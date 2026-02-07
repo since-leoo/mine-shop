@@ -13,18 +13,21 @@ declare(strict_types=1);
 namespace App\Application\Api\Member;
 
 use App\Domain\Coupon\Service\CouponUserService;
-use App\Domain\Member\Api\MemberCenterReadService;
+use App\Domain\Member\Service\MemberService;
 use App\Domain\Order\Service\OrderService;
 use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Common\ResultCode;
 
 final class MemberCenterQueryApiService
 {
     public function __construct(
-        private readonly MemberCenterReadService $readService,
+        private readonly MemberService $memberService,
         private readonly OrderService $orderService,
         private readonly CouponUserService $couponUserService,
         private readonly MallSettingService $mallSettingService,
-        private readonly MemberCenterTransformer $transformer,
+        private readonly MemberProfileTransformer $profileTransformer,
+        private readonly MemberCenterTransformer $centerTransformer,
     ) {}
 
     /**
@@ -32,7 +35,12 @@ final class MemberCenterQueryApiService
      */
     public function profile(int $memberId): array
     {
-        return $this->readService->profile($memberId);
+        $member = $this->memberService->detail($memberId);
+        if ($member === null) {
+            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+        }
+
+        return $this->profileTransformer->transform($member);
     }
 
     /**
@@ -48,6 +56,6 @@ final class MemberCenterQueryApiService
 
         $servicePhone = $this->mallSettingService->order()->customerServicePhone();
 
-        return $this->transformer->transform($profile, $orderCounts, $couponCount, $servicePhone);
+        return $this->centerTransformer->transform($profile, $orderCounts, $couponCount, $servicePhone);
     }
 }

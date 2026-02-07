@@ -112,10 +112,10 @@ export default function getFormItems(
       itemProps: { rules: [{ required: true, message: '请选择SKU', trigger: ['change'] }] },
     },
     {
-      label: () => '原价',
+      label: () => '原价（元）',
       prop: 'original_price',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full' },
+      renderProps: { min: 0, precision: 2, class: 'w-full' },
       itemProps: {
         rules: [
           numberRule('原价', { allowZero: true, min: 0 }),
@@ -123,10 +123,10 @@ export default function getFormItems(
       },
     },
     {
-      label: () => '团购价',
+      label: () => '团购价（元）',
       prop: 'group_price',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full' },
+      renderProps: { min: 0, precision: 2, class: 'w-full' },
       itemProps: {
         rules: [
           numberRule('团购价', { min: 0.01 }),

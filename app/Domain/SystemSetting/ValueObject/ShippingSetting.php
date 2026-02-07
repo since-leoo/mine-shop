@@ -24,7 +24,7 @@ final class ShippingSetting
         private readonly string $defaultMethod,
         private readonly bool $enablePickup,
         private readonly string $pickupAddress,
-        private readonly float $freeShippingThreshold,
+        private readonly int $freeShippingThreshold,
         private readonly array $supportedProviders,
     ) {}
 
@@ -43,7 +43,7 @@ final class ShippingSetting
         return $this->pickupAddress;
     }
 
-    public function freeShippingThreshold(): float
+    public function freeShippingThreshold(): int
     {
         return $this->freeShippingThreshold;
     }

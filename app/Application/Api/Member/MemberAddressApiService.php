@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
+use App\Domain\Member\Contract\MemberAddressInput;
 use App\Domain\Member\Service\MemberAddressService;
 
 final class MemberAddressApiService
@@ -40,22 +41,20 @@ final class MemberAddressApiService
     }
 
     /**
-     * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function create(int $memberId, array $payload): array
+    public function create(int $memberId, MemberAddressInput $input): array
     {
-        $address = $this->addressService->create($memberId, $payload);
+        $address = $this->addressService->create($memberId, $input);
         return $this->transformer->transform($address);
     }
 
     /**
-     * @param array<string, mixed> $payload
      * @return array<string, mixed>
      */
-    public function update(int $memberId, int $addressId, array $payload): array
+    public function update(int $memberId, int $addressId, MemberAddressInput $input): array
     {
-        $address = $this->addressService->update($memberId, $addressId, $payload);
+        $address = $this->addressService->update($memberId, $addressId, $input);
         return $this->transformer->transform($address);
     }
 

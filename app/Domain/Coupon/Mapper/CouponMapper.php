@@ -28,8 +28,8 @@ final class CouponMapper
         $entity->setId((int) $coupon->id);
         $entity->setName($coupon->name);
         $entity->setType($coupon->type);
-        $entity->setValue($coupon->value !== null ? (float) $coupon->value : null);
-        $entity->setMinAmount($coupon->min_amount !== null ? (float) $coupon->min_amount : null);
+        $entity->setValue($coupon->value !== null ? (int) $coupon->value : null);
+        $entity->setMinAmount($coupon->min_amount !== null ? (int) $coupon->min_amount : null);
         $entity->setTotalQuantity($coupon->total_quantity !== null ? (int) $coupon->total_quantity : null);
         $entity->setUsedQuantity($coupon->used_quantity !== null ? (int) $coupon->used_quantity : null);
         $entity->setPerUserLimit($coupon->per_user_limit !== null ? (int) $coupon->per_user_limit : null);

@@ -27,7 +27,7 @@ class MemberWalletDto implements MemberWalletInput
     public string $type = 'balance';
 
     #[Required]
-    public float $value = 0.0;
+    public int $value = 0;
 
     public string $source = 'manual';
 
@@ -46,7 +46,7 @@ class MemberWalletDto implements MemberWalletInput
         return $this->type;
     }
 
-    public function getValue(): float
+    public function getValue(): int
     {
         return $this->value;
     }

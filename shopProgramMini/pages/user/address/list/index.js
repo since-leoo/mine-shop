@@ -189,12 +189,11 @@ Page({
     const payload = {
       name: res.userName || '',
       phone: res.telNumber || '',
-      provinceName: res.provinceName || '',
-      cityName: res.cityName || '',
-      districtName: res.countyName || res.countryName || '',
-      detailAddress: res.detailInfo || '',
-      addressTag: '微信地址',
-      isDefault: this.data.addressList.length === 0,
+      province: res.provinceName || '',
+      city: res.cityName || '',
+      district: res.countyName || res.countryName || '',
+      detail: res.detailInfo || '',
+      is_default: this.data.addressList.length === 0,
     };
     createDeliveryAddress(payload)
       .then(() => {

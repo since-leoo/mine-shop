@@ -27,9 +27,9 @@ interface SeckillProductInput
 
     public function getProductSkuId(): ?int;
 
-    public function getOriginalPrice(): ?float;
+    public function getOriginalPrice(): ?int;
 
-    public function getSeckillPrice(): ?float;
+    public function getSeckillPrice(): ?int;
 
     public function getQuantity(): ?int;
 

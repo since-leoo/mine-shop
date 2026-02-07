@@ -98,7 +98,7 @@ final class MallSettingService extends IService
             (string) $this->value('mall.shipping.default_method', 'express'),
             (bool) $this->value('mall.shipping.enable_pickup', true),
             (string) $this->value('mall.shipping.pickup_address', ''),
-            (float) $this->value('mall.shipping.free_shipping_threshold', 0.0),
+            (int) $this->value('mall.shipping.free_shipping_threshold', 0),
             $this->normalizeStringArray($this->value('mall.shipping.supported_providers', [])),
         );
     }

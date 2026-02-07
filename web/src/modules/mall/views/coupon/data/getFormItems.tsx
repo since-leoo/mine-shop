@@ -27,8 +27,9 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
         return
       }
       if (model.type === 'percent') {
-        if (value <= 0 || value > 100) {
-          callback(new Error('折扣值需在 0-100 之间'))
+        // 表单输入折扣值如 8.5 表示8.5折，有效范围 0.1-9.9
+        if (value <= 0 || value >= 10) {
+          callback(new Error('折扣值需在 0.1-9.9 之间（如8.5表示8.5折）'))
           return
         }
       }
@@ -126,7 +127,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           onUpdate:modelValue={(val: number | null) => model.value = typeof val === 'number' ? val : undefined}
           min={0.01}
           precision={2}
-          placeholder="请输入优惠金额/折扣值"
+          placeholder={model.type === 'percent' ? '如8.5表示8.5折' : '请输入优惠金额（元）'}
           controls-position="right"
           class="w-full"
         />
@@ -138,7 +139,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
       },
     },
     {
-      label: () => '最低使用金额',
+      label: () => '最低使用金额（元）',
       prop: 'min_amount',
       render: () => (
         <el-input-number

@@ -76,29 +76,3 @@ export const ensureMiniProgramLogin = (options = {}) => {
 
   return runLoginRequest({ encryptedData, iv, openid });
 };
-
-const requestUserProfile = (desc = '用于完善您的会员资料') => {
-  if (wx.getUserProfile) {
-    return new Promise((resolve, reject) => {
-      wx.getUserProfile({
-        desc,
-        lang: 'zh_CN',
-        success: resolve,
-        fail: reject,
-      });
-    });
-  }
-
-  return new Promise((resolve, reject) => {
-    wx.getUserInfo({
-      lang: 'zh_CN',
-      withCredentials: true,
-      success: resolve,
-      fail: reject,
-    });
-  });
-};
-
-export const authorizeUserProfile = (desc = '用于完善您的会员资料') => {
-  return requestUserProfile(desc);
-};

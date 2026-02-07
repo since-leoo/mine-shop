@@ -54,16 +54,14 @@ final class MemberAddressController extends AbstractController
     #[PostMapping(path: '')]
     public function store(MemberAddressRequest $request): Result
     {
-        $payload = $request->validated();
-        $address = $this->addressService->create($this->currentMember->id(), $payload);
+        $address = $this->addressService->create($this->currentMember->id(), $request->toDto());
         return $this->success($address, '新增成功');
     }
 
     #[PutMapping(path: '{id}')]
     public function update(MemberAddressRequest $request, int $id): Result
     {
-        $payload = $request->validated();
-        $address = $this->addressService->update($this->currentMember->id(), $id, $payload);
+        $address = $this->addressService->update($this->currentMember->id(), $id, $request->toDto());
         return $this->success($address, '更新成功');
     }
 

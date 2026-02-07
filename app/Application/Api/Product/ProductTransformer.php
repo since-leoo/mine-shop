@@ -256,16 +256,19 @@ final class ProductTransformer
         return $normalized;
     }
 
+    /**
+     * 确保金额为整数（分）。数据库已存储为分，无需转换.
+     */
     private function toCent(mixed $price): int
     {
         if (\is_string($price)) {
-            $price = (float) $price;
+            return (int) $price;
         }
 
-        if (! \is_float($price) && ! \is_int($price)) {
-            $price = 0;
+        if (! \is_int($price) && ! \is_float($price)) {
+            return 0;
         }
 
-        return (int) round(((float) $price) * 100);
+        return (int) $price;
     }
 }

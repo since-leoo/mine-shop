@@ -81,22 +81,26 @@ class PayService
      */
     public function payByBalance(): array
     {
-        $walletEntity = $this->memberEntity->getWallet();
+        // 通过 WalletService 加载钱包实体（而非依赖 MemberEntity 上未加载的 wallet）
+        $walletEntity = $this->walletService->getEntity(
+            $this->memberEntity->getId(),
+            'balance'
+        );
 
-        $walletEntity->changeBalance();
-        $walletEntity->setChangeBalance($this->orderEntity->getPayAmount());
+        // 先设置变动金额（负数表示消费扣款），再执行变更
+        $walletEntity->setChangeBalance(-$this->orderEntity->getPayAmount());
         $walletEntity->setSource(MemberWalletTransactionType::Consume->value);
         $walletEntity->setRemark('余额支付:' . $this->orderEntity->getOrderNo() . '订单支付成功');
+        $walletEntity->changeBalance();
 
         $this->orderEntity->setPayMethod(PayType::BALANCE->value);
-        $this->orderEntity->setPayMethod(PayType::WECHAT->value);
         $this->orderEntity->setPayNo(uniqid());
         $this->orderEntity->setPayAmount($this->orderEntity->getTotalAmount());
         $this->orderEntity->markPaid();
 
         $this->orderService->update($this->orderEntity);
-        // 调整余额
-        $this->walletService->adjustBalance($walletEntity);
+        // 持久化钱包变更
+        $this->walletService->saveEntity($walletEntity);
 
         return [];
     }

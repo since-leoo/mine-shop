@@ -27,9 +27,9 @@ interface GroupBuyUpdateInput
 
     public function getSkuId(): int;
 
-    public function getOriginalPrice(): float;
+    public function getOriginalPrice(): int;
 
-    public function getGroupPrice(): float;
+    public function getGroupPrice(): int;
 
     public function getMinPeople(): int;
 

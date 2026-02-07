@@ -23,10 +23,10 @@ function mockFetchPerson() {
   return delay().then(() => ({
     ...genSimpleUserInfo(),
     address: {
-      provinceName: address.provinceName,
-      provinceCode: address.provinceCode,
-      cityName: address.cityName,
-      cityCode: address.cityCode,
+      province: address.province,
+      province_code: address.province_code,
+      city: address.city,
+      city_code: address.city_code,
     },
   }));
 }
@@ -43,10 +43,15 @@ export function fetchPerson() {
   }).then((data = {}) => {
     const profile = data.member || {};
     return {
-      avatarUrl: profile.avatarUrl || '',
-      nickName: profile.nickName || '',
-      phoneNumber: profile.phoneNumber || '',
+      avatarUrl: profile.avatar || '',
+      nickName: profile.nickname || '',
+      phoneNumber: profile.phone || '',
       gender: normalizeGender(profile.gender),
+      levelName: profile.level_name || null,
+      level: profile.level || null,
+      balance: profile.balance || 0,
+      points: profile.points || 0,
+      authorizedProfile: Boolean(profile.authorized_profile),
     };
   });
 }

@@ -16,6 +16,7 @@ import { couponRemove, couponToggleStatus } from '~/mall/api/coupon'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
+import { formatYuan } from '@/utils/price'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 export default function getTableColumns(
@@ -39,11 +40,11 @@ export default function getTableColumns(
     },
     { label: () => '优惠值', prop: 'value', width: '100px',
       cellRender: ({ row }: { row: CouponVo }) => row.type === 'percent'
-        ? `${row.value ?? 0}%`
-        : `¥${row.value ?? 0}`,
+        ? `${(row.value ?? 0) / 100}折`
+        : `¥${formatYuan(row.value)}`,
     },
     { label: () => '最低消费', prop: 'min_amount', width: '110px',
-      cellRender: ({ row }: { row: CouponVo }) => `¥${row.min_amount ?? 0}`,
+      cellRender: ({ row }: { row: CouponVo }) => `¥${formatYuan(row.min_amount)}`,
     },
     { label: () => '发放/总量', prop: 'total_quantity', width: '130px',
       cellRender: ({ row }: { row: CouponVo }) => `${row.issued_quantity ?? 0} / ${row.total_quantity ?? 0}`,

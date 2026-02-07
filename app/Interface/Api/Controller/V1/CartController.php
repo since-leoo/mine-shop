@@ -47,8 +47,7 @@ final class CartController extends AbstractController
     #[PostMapping(path: 'items')]
     public function store(CartItemStoreRequest $request): Result
     {
-        $payload = $request->validated();
-        $data = $this->commandService->addItem($this->currentMember->id(), $payload);
+        $data = $this->commandService->addItem($this->currentMember->id(), $request->toDto());
 
         return $this->success($data, '加入购物车成功');
     }
@@ -56,8 +55,7 @@ final class CartController extends AbstractController
     #[PutMapping(path: 'items/{skuId}')]
     public function update(CartItemUpdateRequest $request, int $skuId): Result
     {
-        $payload = $request->validated();
-        $data = $this->commandService->updateItem($this->currentMember->id(), $skuId, $payload);
+        $data = $this->commandService->updateItem($this->currentMember->id(), $skuId, $request->toDto());
 
         return $this->success($data, '更新成功');
     }

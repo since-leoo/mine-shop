@@ -16,10 +16,10 @@ use App\Interface\Common\Request\BaseRequest;
 
 class PhoneAuthorizeRequest extends BaseRequest
 {
-    public function bindPhoneRules()
+    public function bindPhoneRules(): array
     {
         return [
-            'code' => 'required|string|max:6',
+            'code' => 'required|string',
         ];
     }
 

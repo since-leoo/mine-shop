@@ -15,6 +15,7 @@ import { page as mallProductPage, detail as mallProductDetail } from '~/mall/api
 import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { centsToYuan, yuanToCents } from '@/utils/price'
 
 defineOptions({ name: 'mall:seckill:product:form' })
 
@@ -50,7 +51,7 @@ async function loadSkus(productId?: number) {
     skuOptions.value = (res.data.skus || []).map((sku: any) => ({
       id: sku.id,
       label: sku.sku_name || `SKU-${sku.id}`,
-      price: parseFloat(sku.sale_price) || 0,
+      price: centsToYuan(sku.sale_price),
     }))
   }
   catch (e) {
@@ -81,6 +82,9 @@ useForm('productForm').then(async (form: MaFormExpose) => {
   formRef.value = form
   if (formType === 'edit' && data) {
     Object.assign(model.value, data)
+    // API返回分，表单显示元
+    model.value.original_price = centsToYuan(data.original_price) as any
+    model.value.seckill_price = centsToYuan(data.seckill_price) as any
   }
   model.value.session_id = sessionId
   model.value.activity_id = activityId
@@ -91,9 +95,16 @@ useForm('productForm').then(async (form: MaFormExpose) => {
   form.setOptions({ labelWidth: '90px' })
 })
 
+function buildPayload(): SeckillProductVo {
+  const payload = { ...model.value }
+  payload.original_price = yuanToCents(payload.original_price) as any
+  payload.seckill_price = yuanToCents(payload.seckill_price) as any
+  return payload
+}
+
 function add(): Promise<any> {
   return new Promise((resolve, reject) => {
-    productCreate(model.value).then((res: any) => {
+    productCreate(buildPayload()).then((res: any) => {
       res.code === ResultCode.SUCCESS ? resolve(res) : reject(res)
     }).catch(reject)
   })
@@ -101,7 +112,7 @@ function add(): Promise<any> {
 
 function edit(): Promise<any> {
   return new Promise((resolve, reject) => {
-    productUpdate(model.value.id as number, model.value).then((res: any) => {
+    productUpdate(model.value.id as number, buildPayload()).then((res: any) => {
       res.code === ResultCode.SUCCESS ? resolve(res) : reject(res)
     }).catch(reject)
   })

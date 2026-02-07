@@ -25,9 +25,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $wallet_type
  * @property string $transaction_no
  * @property string $type
- * @property float $amount
- * @property float $balance_before
- * @property float $balance_after
+ * @property int $amount
+ * @property int $balance_before
+ * @property int $balance_after
  * @property null|string $source
  * @property null|string $related_type
  * @property null|int $related_id
@@ -63,9 +63,9 @@ class MemberWalletTransaction extends Model
     ];
 
     protected array $casts = [
-        'amount' => 'decimal:2',
-        'balance_before' => 'decimal:2',
-        'balance_after' => 'decimal:2',
+        'amount' => 'integer',
+        'balance_before' => 'integer',
+        'balance_after' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -66,13 +66,13 @@
           </el-table-column>
           <el-table-column label="单价" width="100" align="right">
             <template #default="{ row }">
-              ¥{{ row.price }}
+              ¥{{ formatYuan(row.price) }}
             </template>
           </el-table-column>
           <el-table-column label="数量" prop="quantity" width="80" align="center" />
           <el-table-column label="小计" width="100" align="right">
             <template #default="{ row }">
-              ¥{{ row.total_amount }}
+              ¥{{ formatYuan(row.total_amount) }}
             </template>
           </el-table-column>
         </el-table>
@@ -80,16 +80,16 @@
 
       <el-descriptions title="金额信息" :column="2" border>
         <el-descriptions-item label="商品总额">
-          ¥{{ order.total_amount }}
+          ¥{{ formatYuan(order.total_amount) }}
         </el-descriptions-item>
         <el-descriptions-item label="运费">
-          ¥{{ order.shipping_fee }}
+          ¥{{ formatYuan(order.shipping_fee) }}
         </el-descriptions-item>
         <el-descriptions-item label="优惠金额">
-          -¥{{ order.discount_amount }}
+          -¥{{ formatYuan(order.discount_amount) }}
         </el-descriptions-item>
         <el-descriptions-item label="实付金额">
-          <span class="text-red-500 font-semibold">¥{{ order.pay_amount }}</span>
+          <span class="text-red-500 font-semibold">¥{{ formatYuan(order.pay_amount) }}</span>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -112,6 +112,7 @@
 import { watch } from 'vue'
 import type { OrderVo } from '~/mall/api/order'
 import dayjs from 'dayjs'
+import { formatYuan } from '@/utils/price'
 
 defineOptions({ name: 'MallOrderDetailDrawer' })
 

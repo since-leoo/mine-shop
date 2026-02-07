@@ -21,24 +21,18 @@ final class MemberAddressTransformer
     public function transform(array $address): array
     {
         return [
-            'id' => (string) $address['id'],
-            'addressId' => (string) $address['id'],
-            'name' => $address['name'] ?? '',
-            'phone' => $address['phone'] ?? '',
-            'countryName' => $address['country'] ?? '中国',
-            'countryCode' => $address['country_code'] ?? 'chn',
-            'provinceName' => $address['province'] ?? '',
-            'provinceCode' => $address['province_code'] ?? '',
-            'cityName' => $address['city'] ?? '',
-            'cityCode' => $address['city_code'] ?? '',
-            'districtName' => $address['district'] ?? '',
-            'districtCode' => $address['district_code'] ?? '',
-            'detailAddress' => $address['detail'] ?? '',
-            'fullAddress' => $address['full_address'] ?? '',
-            'isDefault' => ! empty($address['is_default']) ? 1 : 0,
-            'addressTag' => $address['tag'] ?? '',
-            'latitude' => $address['latitude'] ?? null,
-            'longitude' => $address['longitude'] ?? null,
+            'id' => (int) $address['id'],
+            'name' => (string) ($address['name'] ?? ''),
+            'phone' => (string) ($address['phone'] ?? ''),
+            'province' => (string) ($address['province'] ?? ''),
+            'province_code' => (string) ($address['province_code'] ?? ''),
+            'city' => (string) ($address['city'] ?? ''),
+            'city_code' => (string) ($address['city_code'] ?? ''),
+            'district' => (string) ($address['district'] ?? ''),
+            'district_code' => (string) ($address['district_code'] ?? ''),
+            'detail' => (string) ($address['detail'] ?? ''),
+            'full_address' => (string) ($address['full_address'] ?? ''),
+            'is_default' => ! empty($address['is_default']),
         ];
     }
 }

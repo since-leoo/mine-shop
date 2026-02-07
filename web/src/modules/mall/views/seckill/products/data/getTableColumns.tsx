@@ -15,6 +15,7 @@ import { productRemove, productToggleStatus } from '~/mall/api/seckill'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
+import { formatYuan } from '@/utils/price'
 
 export default function getTableColumns(dialog: UseDialogExpose, tableRef: { value: MaProTableExpose | undefined }): MaProTableColumns[] {
   const msg = useMessage()
@@ -33,12 +34,12 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { label: () => 'SKU', prop: 'sku_name', width: '120px', showOverflowTooltip: true },
     { label: () => '原价', prop: 'original_price', width: '100px',
       cellRender: ({ row }: { row: SeckillProductVo }) => (
-        <span class="text-gray-400 line-through">¥{row.original_price}</span>
+        <span class="text-gray-400 line-through">¥{formatYuan(row.original_price)}</span>
       ),
     },
     { label: () => '秒杀价', prop: 'seckill_price', width: '100px',
       cellRender: ({ row }: { row: SeckillProductVo }) => (
-        <span class="text-red-500 font-semibold">¥{row.seckill_price}</span>
+        <span class="text-red-500 font-semibold">¥{formatYuan(row.seckill_price)}</span>
       ),
     },
     { label: () => '库存', prop: 'quantity', width: '80px' },

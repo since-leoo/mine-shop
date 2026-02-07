@@ -1,5 +1,6 @@
 import { fetchCouponDetail } from '../../../services/coupon/index';
 import { fetchGoodsList } from '../../../services/good/fetchGoods';
+import { formatPrice } from '../../../utils/price';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 Page({
@@ -27,7 +28,7 @@ Page({
       if (detail.type === 2) {
         if (detail.base > 0) {
           this.setData({
-            couponTypeDesc: `满${detail.base / 100}元${detail.value}折`,
+            couponTypeDesc: `满${formatPrice(detail.base)}元${detail.value}折`,
           });
         } else {
           this.setData({ couponTypeDesc: `${detail.value}折` });
@@ -35,10 +36,10 @@ Page({
       } else if (detail.type === 1) {
         if (detail.base > 0) {
           this.setData({
-            couponTypeDesc: `满${detail.base / 100}元减${detail.value / 100}元`,
+            couponTypeDesc: `满${formatPrice(detail.base)}元减${formatPrice(detail.value)}元`,
           });
         } else {
-          this.setData({ couponTypeDesc: `减${detail.value / 100}元` });
+          this.setData({ couponTypeDesc: `减${formatPrice(detail.value)}元` });
         }
       }
     });

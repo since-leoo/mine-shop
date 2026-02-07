@@ -1,27 +1,18 @@
-/** 地址 */
+/** 地址（mock 数据，字段与后端 API 一致，使用 snake_case） */
 export function genAddress(id) {
   return {
-    saasId: '88888888',
-    uid: `8888888820550${id}`,
-    authToken: null,
-    id: `${id}`,
-    addressId: `${id}`,
-    phone: '17612345678',
+    id: id,
     name: `测试用户${id}`,
-    countryName: '中国',
-    countryCode: 'chn',
-    provinceName: '甘肃省',
-    provinceCode: '620000',
-    cityName: '甘南藏族自治州',
-    cityCode: '623000',
-    districtName: '碌曲县',
-    districtCode: '623026',
-    detailAddress: `松日鼎盛大厦${id}层${id}号`,
-    isDefault: `${id}` === '0' ? 1 : 0,
-    addressTag: id === 0 ? '' : '公司',
-    latitude: '34.59103',
-    longitude: '102.48699',
-    storeId: null,
+    phone: '17612345678',
+    province: '甘肃省',
+    province_code: '620000',
+    city: '甘南藏族自治州',
+    city_code: '623000',
+    district: '碌曲县',
+    district_code: '623026',
+    detail: `松日鼎盛大厦${id}层${id}号`,
+    full_address: `甘肃省甘南藏族自治州碌曲县松日鼎盛大厦${id}层${id}号`,
+    is_default: id === 0,
   };
 }
 

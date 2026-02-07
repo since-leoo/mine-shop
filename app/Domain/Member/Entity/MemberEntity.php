@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Member\Entity;
 
 use App\Domain\Member\Contract\MemberInput;
+use App\Domain\Member\Contract\ProfileAuthorizeInput;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -169,7 +170,7 @@ final class MemberEntity
     public function setOpenid(?string $openid): void
     {
         $this->openid = $openid;
-        $this->markDirty('openid', $openid);
+        $this->markDirty('openid');
     }
 
     public function getUnionid(): ?string
@@ -180,7 +181,7 @@ final class MemberEntity
     public function setUnionid(?string $unionid): void
     {
         $this->unionid = $unionid;
-        $this->markDirty('unionid', $unionid);
+        $this->markDirty('unionid');
     }
 
     public function getNickname(): ?string
@@ -191,7 +192,7 @@ final class MemberEntity
     public function setNickname(?string $nickname): void
     {
         $this->nickname = $nickname;
-        $this->markDirty('nickname', $nickname);
+        $this->markDirty('nickname');
     }
 
     public function getAvatar(): ?string
@@ -202,7 +203,7 @@ final class MemberEntity
     public function setAvatar(?string $avatar): void
     {
         $this->avatar = $avatar;
-        $this->markDirty('avatar', $avatar);
+        $this->markDirty('avatar');
     }
 
     public function getGender(): ?string
@@ -218,7 +219,7 @@ final class MemberEntity
             default => 'unknown',
         };
         $this->gender = $gender;
-        $this->markDirty('gender', $gender);
+        $this->markDirty('gender');
     }
 
     public function getPhone(): ?string
@@ -229,7 +230,7 @@ final class MemberEntity
     public function setPhone(?string $phone): void
     {
         $this->phone = $phone;
-        $this->markDirty('phone', $phone);
+        $this->markDirty('phone');
     }
 
     public function getBirthday(): ?Carbon
@@ -240,7 +241,7 @@ final class MemberEntity
     public function setBirthday(?Carbon $birthday): void
     {
         $this->birthday = $birthday;
-        $this->markDirty('birthday', $birthday?->toDateString());
+        $this->markDirty('birthday');
     }
 
     public function getCity(): ?string
@@ -251,7 +252,7 @@ final class MemberEntity
     public function setCity(?string $city): void
     {
         $this->city = $city;
-        $this->markDirty('city', $city);
+        $this->markDirty('city');
     }
 
     public function getProvince(): ?string
@@ -262,7 +263,7 @@ final class MemberEntity
     public function setProvince(?string $province): void
     {
         $this->province = $province;
-        $this->markDirty('province', $province);
+        $this->markDirty('province');
     }
 
     public function getDistrict(): ?string
@@ -273,7 +274,7 @@ final class MemberEntity
     public function setDistrict(?string $district): void
     {
         $this->district = $district;
-        $this->markDirty('district', $district);
+        $this->markDirty('district');
     }
 
     public function getStreet(): ?string
@@ -284,7 +285,7 @@ final class MemberEntity
     public function setStreet(?string $street): void
     {
         $this->street = $street;
-        $this->markDirty('street', $street);
+        $this->markDirty('street');
     }
 
     public function getRegionPath(): ?string
@@ -295,7 +296,7 @@ final class MemberEntity
     public function setRegionPath(?string $regionPath): void
     {
         $this->regionPath = $regionPath;
-        $this->markDirty('region_path', $regionPath);
+        $this->markDirty('region_path');
     }
 
     public function getCountry(): ?string
@@ -306,7 +307,7 @@ final class MemberEntity
     public function setCountry(?string $country): void
     {
         $this->country = $country;
-        $this->markDirty('country', $country);
+        $this->markDirty('country');
     }
 
     public function getLevel(): ?string
@@ -317,7 +318,7 @@ final class MemberEntity
     public function setLevel(?string $level): void
     {
         $this->level = $level;
-        $this->markDirty('level', $level);
+        $this->markDirty('level');
     }
 
     public function getLevelId(): ?int
@@ -328,7 +329,7 @@ final class MemberEntity
     public function setLevelId(?int $levelId): void
     {
         $this->levelId = $levelId;
-        $this->markDirty('level_id', $levelId);
+        $this->markDirty('level_id');
     }
 
     public function getGrowthValue(): ?int
@@ -339,7 +340,7 @@ final class MemberEntity
     public function setGrowthValue(?int $growthValue): void
     {
         $this->growthValue = $growthValue;
-        $this->markDirty('growth_value', $growthValue);
+        $this->markDirty('growth_value');
     }
 
     public function getStatus(): ?string
@@ -350,7 +351,7 @@ final class MemberEntity
     public function setStatus(?string $status): void
     {
         $this->status = $status;
-        $this->markDirty('status', $status);
+        $this->markDirty('status');
     }
 
     public function getSource(): ?string
@@ -361,7 +362,7 @@ final class MemberEntity
     public function setSource(?string $source): void
     {
         $this->source = $source;
-        $this->markDirty('source', $source);
+        $this->markDirty('source');
     }
 
     public function getRemark(): ?string
@@ -372,13 +373,13 @@ final class MemberEntity
     public function setRemark(?string $remark): void
     {
         $this->remark = $remark;
-        $this->markDirty('remark', $remark);
+        $this->markDirty('remark');
     }
 
     public function setLastLoginAt(Carbon $now)
     {
         $this->lastLoginAt = $now;
-        $this->markDirty('last_login_at', $now);
+        $this->markDirty('last_login_at');
     }
 
     public function getLastLoginAt(): Carbon
@@ -394,7 +395,7 @@ final class MemberEntity
     public function setLastLoginIp(string $ip): void
     {
         $this->lastLoginIp = $ip;
-        $this->markDirty('last_login_ip', $ip);
+        $this->markDirty('last_login_ip');
     }
 
     /**
@@ -423,9 +424,36 @@ final class MemberEntity
         $this->wallet = $wallet;
     }
 
-    public function bindPhone(string $phone)
+    public function bindPhone(string $phone): self
     {
-        $this->phone = $phone;
+        if (trim($phone) === '') {
+            throw new \DomainException('手机号不能为空');
+        }
+
+        $this->setPhone($phone);
+        return $this;
+    }
+
+    /**
+     * 授权头像昵称行为方法.
+     */
+    public function authorizeProfile(ProfileAuthorizeInput $input): self
+    {
+        $nickname = $input->getNickname();
+        if ($nickname !== null && trim($nickname) !== '') {
+            $this->setNickname($nickname);
+        }
+
+        $avatarUrl = $input->getAvatarUrl();
+        if ($avatarUrl !== null && trim($avatarUrl) !== '') {
+            $this->setAvatar($avatarUrl);
+        }
+
+        if ($input->getGender() !== null) {
+            $this->setGender($input->getGender());
+        }
+
+        return $this;
     }
 
     public function toArray(): array
@@ -467,17 +495,8 @@ final class MemberEntity
         $this->dirtyFields = [];
     }
 
-    private function markDirty(string $field, mixed $value = null, bool $force = false): void
+    private function markDirty(string $field): void
     {
-        if ($force || \func_num_args() === 1) {
-            $this->dirtyFields[$field] = true;
-            return;
-        }
-
-        if (empty($value)) {
-            return;
-        }
-
         $this->dirtyFields[$field] = true;
     }
 }

@@ -40,10 +40,10 @@
       </el-descriptions>
 
       <el-descriptions title="资产信息" :column="4" border>
-        <el-descriptions-item label="账户余额">¥{{ member.wallet?.balance ?? 0 }}</el-descriptions-item>
-        <el-descriptions-item label="冻结金额">¥{{ member.wallet?.frozen_balance ?? 0 }}</el-descriptions-item>
-        <el-descriptions-item label="累计充值">¥{{ member.wallet?.total_recharge ?? 0 }}</el-descriptions-item>
-        <el-descriptions-item label="累计消费">¥{{ member.wallet?.total_consume ?? 0 }}</el-descriptions-item>
+        <el-descriptions-item label="账户余额">¥{{ formatYuan(member.wallet?.balance) }}</el-descriptions-item>
+        <el-descriptions-item label="冻结金额">¥{{ formatYuan(member.wallet?.frozen_balance) }}</el-descriptions-item>
+        <el-descriptions-item label="累计充值">¥{{ formatYuan(member.wallet?.total_recharge) }}</el-descriptions-item>
+        <el-descriptions-item label="累计消费">¥{{ formatYuan(member.wallet?.total_consume) }}</el-descriptions-item>
         <el-descriptions-item label="积分余额">{{ member.points_wallet?.balance ?? member.points_balance ?? 0 }}</el-descriptions-item>
         <el-descriptions-item label="累计积分">{{ member.points_wallet?.total_recharge ?? member.points_total ?? 0 }}</el-descriptions-item>
       </el-descriptions>
@@ -100,6 +100,7 @@ import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { memberApi, type MemberVo } from '~/member/api/member'
+import { formatYuan } from '@/utils/price'
 
 defineOptions({ name: 'MemberDetailDrawer' })
 

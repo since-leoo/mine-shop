@@ -5,7 +5,6 @@ import { request } from '../request';
 function mockFetchCartGroupData(params) {
   const { delay } = require('../_utils/delay');
   const { genCartGroupData } = require('../../model/cart');
-
   return delay().then(() => genCartGroupData(params));
 }
 
@@ -18,6 +17,66 @@ export function fetchCartGroupData(params) {
     return { data: transformCartResponse(data) };
   });
 }
+
+/** 添加商品到购物车 */
+export function addCartItem({ skuId, quantity, isSelected }) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay(200).then(() => ({ data: {} }));
+  }
+  return request({
+    url: '/api/v1/cart/items',
+    method: 'POST',
+    data: { sku_id: skuId, quantity, is_selected: isSelected },
+    needAuth: true,
+  }).then((data = {}) => ({ data: transformCartResponse(data) }));
+}
+
+/** 更新购物车商品（数量/选中状态） */
+export function updateCartItem(skuId, { quantity, isSelected }) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay(100).then(() => ({ data: {} }));
+  }
+  const body = {};
+  if (quantity !== undefined) body.quantity = quantity;
+  if (isSelected !== undefined) body.is_selected = isSelected;
+
+  return request({
+    url: `/api/v1/cart/items/${skuId}`,
+    method: 'PUT',
+    data: body,
+    needAuth: true,
+  }).then((data = {}) => ({ data: transformCartResponse(data) }));
+}
+
+/** 删除购物车商品 */
+export function deleteCartItem(skuId) {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay(100).then(() => ({ data: {} }));
+  }
+  return request({
+    url: `/api/v1/cart/items/${skuId}`,
+    method: 'DELETE',
+    needAuth: true,
+  }).then((data = {}) => ({ data: transformCartResponse(data) }));
+}
+
+/** 清空失效商品 */
+export function clearInvalidCartItems() {
+  if (config.useMock) {
+    const { delay } = require('../_utils/delay');
+    return delay(100).then(() => ({ data: {} }));
+  }
+  return request({
+    url: '/api/v1/cart/clear-invalid',
+    method: 'POST',
+    needAuth: true,
+  }).then((data = {}) => ({ data: transformCartResponse(data) }));
+}
+
+// ========== 数据转换 ==========
 
 function transformCartResponse(payload) {
   const storeGoods = Array.isArray(payload?.store_goods)
@@ -111,7 +170,6 @@ function normalizeSpecInfo(specInfo) {
   if (!Array.isArray(specInfo)) {
     return [];
   }
-
   return specInfo.map((spec) => ({
     specTitle: spec?.spec_title || spec?.specTitle || '',
     specValue: spec?.spec_value || spec?.specValue || '',

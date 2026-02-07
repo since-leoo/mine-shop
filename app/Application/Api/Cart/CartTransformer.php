@@ -43,7 +43,7 @@ final class CartTransformer
             }
 
             $goods = $this->formatGoods($item, $product, $sku, $memberId);
-            $lastJoinTime ??= $goods['joinCartTime'];
+            $lastJoinTime ??= $goods['join_cart_time'];
 
             if ($this->isSaleable($product, $sku)) {
                 if ((int) ($sku['stock'] ?? 0) > 0) {
@@ -204,21 +204,16 @@ final class CartTransformer
         return $tags;
     }
 
+    /**
+     * 确保金额为字符串（分）。数据库已存储为分，无需转换.
+     */
     private function toCentString(mixed $price): string
     {
         if ($price === null) {
             return '0';
         }
 
-        if (\is_string($price)) {
-            $price = (float) $price;
-        }
-
-        if (! \is_int($price) && ! \is_float($price)) {
-            $price = 0;
-        }
-
-        return (string) ((int) round(((float) $price) * 100));
+        return (string) (int) $price;
     }
 
     /**

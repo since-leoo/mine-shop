@@ -126,4 +126,29 @@ final class CouponUserRepository extends IRepository
             ->pluck('total', 'coupon_id')
             ->toArray();
     }
+
+    /**
+     * 按会员 + 优惠券 ID 列表查找未使用且未过期的 coupon_user 记录.
+     *
+     * @param array<int> $couponIds
+     * @return array<int, CouponUser> coupon_id => CouponUser
+     */
+    public function findUnusedByMemberAndCouponIds(int $memberId, array $couponIds): array
+    {
+        if ($couponIds === []) {
+            return [];
+        }
+
+        return CouponUser::with('coupon')
+            ->where('member_id', $memberId)
+            ->whereIn('coupon_id', $couponIds)
+            ->where('status', 'unused')
+            ->where(static function ($q) {
+                $q->whereNull('expire_at')
+                    ->orWhere('expire_at', '>', now());
+            })
+            ->get()
+            ->keyBy('coupon_id')
+            ->all();
+    }
 }

@@ -16,6 +16,7 @@ import { remove, toggleStatus } from '~/mall/api/group-buy'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
+import { formatYuan } from '@/utils/price'
 
 const statusTextMap: Record<string, string> = {
   pending: '待开始',
@@ -53,8 +54,8 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { label: () => '价格', prop: 'price', width: '140px',
       cellRender: ({ row }: { row: GroupBuyVo }) => (
         <div>
-          <div class="text-red-500 font-semibold">¥{row.group_price}</div>
-          <div class="text-xs text-gray-400 line-through">¥{row.original_price}</div>
+          <div class="text-red-500 font-semibold">¥{formatYuan(row.group_price)}</div>
+          <div class="text-xs text-gray-400 line-through">¥{formatYuan(row.original_price)}</div>
         </div>
       ),
     },

@@ -12,11 +12,22 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
+use App\Domain\Member\Contract\CartItemInput;
+use App\Interface\Api\DTO\Cart\CartItemDto;
 use App\Interface\Common\Request\BaseRequest;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Validator;
 
 final class CartItemUpdateRequest extends BaseRequest
 {
+    /**
+     * 转换为 DTO.
+     */
+    public function toDto(): CartItemInput
+    {
+        return Mapper::map($this->validated(), new CartItemDto());
+    }
+
     public function rules(): array
     {
         return [

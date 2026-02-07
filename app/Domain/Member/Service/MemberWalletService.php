@@ -49,6 +49,14 @@ final class MemberWalletService extends IService
     }
 
     /**
+     * 持久化钱包实体（已在外部完成余额变更逻辑后调用）.
+     */
+    public function saveEntity(MemberWalletEntity $entity): void
+    {
+        $this->walletRepository->save($entity);
+    }
+
+    /**
      * 获取钱包实体.
      *
      * 通过会员ID和钱包类型获取 Model，然后通过 Mapper 转换为 Entity.

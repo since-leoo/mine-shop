@@ -13,16 +13,16 @@ declare(strict_types=1);
 namespace App\Domain\Member\ValueObject;
 
 /**
- * 余额变更值对象.
+ * 余额变更值对象（金额单位为分或积分整数）.
  */
 final class BalanceChangeVo
 {
     public function __construct(
         public readonly int $memberId,
         public readonly string $walletType,
-        public readonly float $beforeBalance,
-        public readonly float $afterBalance,
-        public readonly float $changeAmount,
+        public readonly int $beforeBalance,
+        public readonly int $afterBalance,
+        public readonly int $changeAmount,
         public readonly bool $success = true,
         public readonly string $message = '',
     ) {}
@@ -33,9 +33,9 @@ final class BalanceChangeVo
     public static function success(
         int $memberId,
         string $walletType,
-        float $beforeBalance,
-        float $afterBalance,
-        float $changeAmount
+        int $beforeBalance,
+        int $afterBalance,
+        int $changeAmount
     ): self {
         return new self(
             memberId: $memberId,
@@ -56,9 +56,9 @@ final class BalanceChangeVo
         return new self(
             memberId: 0,
             walletType: '',
-            beforeBalance: 0.0,
-            afterBalance: 0.0,
-            changeAmount: 0.0,
+            beforeBalance: 0,
+            afterBalance: 0,
+            changeAmount: 0,
             success: false,
             message: $message
         );

@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Domain\Order\Factory;
 
 use App\Domain\Order\Contract\OrderTypeStrategyInterface;
-use App\Domain\Order\Strategy\NormalOrderStrategy;
 
 final class OrderTypeStrategyFactory
 {
@@ -22,21 +21,19 @@ final class OrderTypeStrategyFactory
      */
     private array $strategies = [];
 
-    public function __construct(NormalOrderStrategy $normalStrategy)
+    /**
+     * @param OrderTypeStrategyInterface[] $strategies
+     */
+    public function __construct(array $strategies)
     {
-        if (! isset($this->strategies[$normalStrategy->type()])) {
-            $this->strategies = [
-                $normalStrategy->type() => $normalStrategy,
-            ];
+        foreach ($strategies as $strategy) {
+            $this->strategies[$strategy->type()] = $strategy;
         }
     }
 
     public function make(string $type): OrderTypeStrategyInterface
     {
-        if (! isset($this->strategies[$type])) {
-            throw new \RuntimeException(\sprintf('不支持的订单类型：%s', $type));
-        }
-
-        return $this->strategies[$type];
+        return $this->strategies[$type]
+            ?? throw new \RuntimeException(\sprintf('不支持的订单类型：%s', $type));
     }
 }

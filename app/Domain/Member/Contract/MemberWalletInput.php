@@ -21,7 +21,7 @@ interface MemberWalletInput
 
     public function getType(): string;
 
-    public function getValue(): float;
+    public function getValue(): int;
 
     public function getSource(): string;
 

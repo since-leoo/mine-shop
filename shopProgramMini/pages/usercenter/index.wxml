@@ -1,73 +1,84 @@
-<t-user-center-card
-  userInfo="{{userInfo}}"
-  isPhoneHide="{{true}}"
-  name-class="custom-name-class"
-  phone-class="custom-phone-class"
-  avatar-class="customer-avatar-class"
-  currAuthStep="{{currAuthStep}}"
-  isNeedGetUserInfo="{{isNeedGetUserInfo}}"
-  bind:gotoUserEditPage="gotoUserEditPage"
->
-  <view slot="getUserInfo" wx:if="{{isNeedGetUserInfo}}" class="user-center__authorize">
-    <t-button
-      size="small"
-      shape="round"
-      theme="primary"
-      loading="{{authLoading}}"
-      bind:tap="handleAuthorizeUserInfo"
-    >
-      授权头像昵称
-    </t-button>
+<view class="page-container">
+  <!-- 顶部用户卡片 -->
+  <t-user-center-card
+    userInfo="{{userInfo}}"
+    currAuthStep="{{currAuthStep}}"
+    couponCount="{{couponCount}}"
+    bind:gotoUserEditPage="gotoUserEditPage"
+    bind:onTapPoints="onTapPoints"
+    bind:onTapBalance="onTapBalance"
+    bind:onTapCoupon="onTapCoupon"
+  />
+
+  <!-- 内容区域 -->
+  <view class="content-wrapper">
+    <!-- 我的订单 -->
+    <view class="section">
+      <t-order-group
+        orderTagInfos="{{orderTagInfos}}"
+        bind:onClickTop="jumpAllOrder"
+        bind:onClickItem="jumpNav"
+      />
+    </view>
+
+    <!-- 我的资产 -->
+    <view class="section" wx:if="{{currAuthStep !== 1}}">
+      <view class="section-card">
+        <view class="section-header">
+          <text class="section-title">我的资产</text>
+        </view>
+        <view class="assets-row">
+          <view class="assets-item" bind:tap="onTapPoints">
+            <view class="assets-value">{{userInfo.points || 0}}</view>
+            <view class="assets-label">积分</view>
+          </view>
+          <view class="assets-item" bind:tap="onTapBalance">
+            <view class="assets-value">{{userInfo.balance || '0.00'}}</view>
+            <view class="assets-label">余额</view>
+          </view>
+          <view class="assets-item" bind:tap="onTapCoupon">
+            <view class="assets-value assets-value--coupon">{{couponCount || 0}}<text class="assets-sup" wx:if="{{couponCount > 0}}">+</text></view>
+            <view class="assets-label">优惠券</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 服务与工具 -->
+    <view class="section">
+      <view class="section-card">
+        <view class="section-header">
+          <text class="section-title">服务与工具</text>
+        </view>
+        <view class="tools-grid">
+          <view
+            class="tools-item"
+            wx:for="{{toolsData}}"
+            wx:key="type"
+            data-type="{{item.type}}"
+            bind:tap="onClickCell"
+          >
+            <view class="tools-icon tools-icon--{{item.type}}">
+              <t-icon name="{{item.iconName}}" size="44rpx" color="#fff" />
+            </view>
+            <text class="tools-item-title">{{item.title}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
-</t-user-center-card>
-<view class="user-center__authorize user-center__authorize-phone" wx:if="{{showPhoneAuthorize}}">
-  <t-button
-    size="small"
-    shape="round"
-    variant="outline"
-    theme="primary"
-    loading="{{phoneAuthLoading}}"
-    open-type="getPhoneNumber"
-    lang="zh_CN"
-    bind:getphonenumber="onGetPhoneNumber"
-  >
-    授权手机号
-  </t-button>
+
+  <view class="footer__version" wx:if="{{versionNo !== ''}}">当前版本 {{versionNo}}</view>
 </view>
-<view class="content-wrapper">
-  <view class="order-group-wrapper">
-    <t-order-group orderTagInfos="{{orderTagInfos}}" bind:onClickTop="jumpAllOrder" bind:onClickItem="jumpNav" />
-  </view>
-  <view wx:for="{{menuData}}" wx:key="item" class="cell-box">
-    <t-cell-group>
-      <t-cell
-        wx:for="{{item}}"
-        wx:for-item="xitem"
-        wx:for-index="xindex"
-        wx:key="xindex"
-        title="{{xitem.title}}"
-        arrow="{{!xitem.icon}}"
-        note="{{xitem.tit}}"
-        data-type="{{xitem.type}}"
-        bordered="{{false}}"
-        bind:click="onClickCell"
-        t-class="t-cell-padding"
-        t-class-note="order-group-note"
-        t-class-left="order-group__left"
-      >
-        <t-icon name="{{xitem.icon}}" size="48rpx" slot="note" />
-      </t-cell>
-    </t-cell-group>
-  </view>
-</view>
-<view class="footer__version" wx:if="{{versionNo !== ''}}">当前版本 {{versionNo}}</view>
-<t-popup visible="{{showMakePhone}}" placement="bottom" bind:visible-change="closeMakePhone" data-index="2">
+
+<!-- 客服弹窗 -->
+<t-popup visible="{{showMakePhone}}" placement="bottom" bind:visible-change="closeMakePhone">
   <view class="popup-content">
-    <view class="popup-title border-bottom-1px" wx:if="{{customerServiceInfo.serviceTimeDuration}}">
+    <view class="popup-title" wx:if="{{customerServiceInfo.serviceTimeDuration}}">
       服务时间: {{customerServiceInfo.serviceTimeDuration}}
     </view>
-    <view class="popup-phone {{showKefu ? 'border-bottom-1px' : ''}}" bind:tap="call">电话客服</view>
-    <button class="popup-phone border-bottom-1px online" open-type="contact" wx:if="{{showKefu}}">在线客服</button>
+    <view class="popup-phone" bind:tap="call">电话客服</view>
+    <button class="popup-phone popup-phone--online" open-type="contact" wx:if="{{showKefu}}">在线客服</button>
     <view class="popup-close" bind:tap="closeMakePhone">取消</view>
   </view>
 </t-popup>

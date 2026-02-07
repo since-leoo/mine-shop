@@ -30,7 +30,7 @@ final class OrderAssemblerTest extends TestCase
                 [
                     'sku_id' => 5,
                     'quantity' => 3,
-                    'unit_price' => 99.9,
+                    'unit_price' => 9990,
                     'product_name' => '测试商品',
                 ],
             ],

@@ -7,6 +7,7 @@ import {
   getGoodsDetailsCommentsCount,
 } from '../../../services/good/fetchGoodsDetailsComments';
 import { ensureMiniProgramLogin, getStoredMemberProfile } from '../../../common/auth';
+import { addCartItem } from '../../../services/cart/cart';
 
 import { cdnBase } from '../../../config/index';
 
@@ -19,12 +20,6 @@ const obj2Params = (obj = {}, encode = false) => {
   Object.keys(obj).forEach((key) => result.push(`${key}=${encode ? encodeURIComponent(obj[key]) : obj[key]}`));
 
   return result.join('&');
-};
-
-const toCent = (price) => {
-  const num = Number(price);
-  if (!Number.isFinite(num)) return 0;
-  return Math.round(num * 100);
 };
 
 const hashString = (input = '') => {
@@ -162,8 +157,8 @@ const buildSkuList = (skus = []) =>
         specValue: spec.value,
       })),
       priceInfo: [
-        { priceType: 1, price: toCent(sku && sku.sale_price) },
-        { priceType: 2, price: toCent((sku && sku.market_price) || (sku && sku.sale_price)) },
+        { priceType: 1, price: Number((sku && sku.sale_price) || 0) },
+        { priceType: 2, price: Number((sku && sku.market_price) || (sku && sku.sale_price) || 0) },
       ],
       stockInfo: {
         stockQuantity: Number((sku && sku.stock) || 0),
@@ -390,14 +385,49 @@ Page({
   },
 
   addCart() {
-    const { isAllSelectedSku } = this.data;
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: isAllSelectedSku ? '点击加入购物车' : '请选择规格',
-      icon: '',
-      duration: 1000,
-    });
+    const { isAllSelectedSku, selectItem, buyNum } = this.data;
+    if (!isAllSelectedSku || !selectItem) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择规格',
+        icon: '',
+        duration: 1000,
+      });
+      return;
+    }
+    const skuId = Number(selectItem.skuId || 0);
+    const quantity = Number(buyNum || 1);
+    if (skuId <= 0) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '请选择规格',
+        icon: '',
+        duration: 1000,
+      });
+      return;
+    }
+    addCartItem({ skuId, quantity, isSelected: true })
+      .then(() => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '已加入购物车',
+          icon: 'check-circle',
+          duration: 1500,
+        });
+        this.handlePopupHide();
+      })
+      .catch((err) => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: err?.msg || '加入购物车失败',
+          theme: 'error',
+          duration: 1500,
+        });
+      });
   },
 
   async gotoBuy(event) {
@@ -583,9 +613,9 @@ Page({
         limitInfo,
         activityList: promotionArray,
         isStock: stockQuantity > 0,
-        maxSalePrice: toCent(product.max_price),
-        maxLinePrice: toCent(product.max_price),
-        minSalePrice: toCent(product.min_price),
+        maxSalePrice: Number(product.max_price || 0),
+        maxLinePrice: Number(product.max_price || 0),
+        minSalePrice: Number(product.min_price || 0),
         list: promotionArray,
         couponList,
         couponTotal,

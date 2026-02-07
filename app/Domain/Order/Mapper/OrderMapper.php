@@ -44,7 +44,7 @@ class OrderMapper
         $entity->setShippingFee($model->shipping_fee);
         $entity->setDiscountAmount($model->discount_amount);
         $entity->setTotalAmount($model->total_amount);
-        $entity->setPayAmount((float) $model->pay_amount);
+        $entity->setPayAmount((int) $model->pay_amount);
         $entity->setPayTime($model->pay_time ? Carbon::parse($model->pay_time) : null);
         $entity->setPayNo((string) $model->pay_no);
         $entity->setPayMethod((string) $model->pay_method);
@@ -87,7 +87,7 @@ class OrderMapper
                 $itemEntity->setTotalPrice($item->total_price);
                 $itemEntity->setUnitPrice($item->unit_price);
                 $entity->setItems($itemEntity);
-            }, (array) $items);
+            }, $items->all());
         }
 
         // 获取订单包裹信息并映射到实体对象

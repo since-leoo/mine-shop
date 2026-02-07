@@ -20,8 +20,8 @@ use App\Domain\Product\Entity\ProductSkuEntity;
 final class PriceRangeVo
 {
     public function __construct(
-        public readonly float $minPrice,
-        public readonly float $maxPrice
+        public readonly int $minPrice,
+        public readonly int $maxPrice
     ) {
         if ($minPrice < 0) {
             throw new \DomainException('最低价不能小于0');
@@ -44,16 +44,16 @@ final class PriceRangeVo
     public static function fromSkus(array $skus): self
     {
         if ($skus === []) {
-            return new self(0.0, 0.0);
+            return new self(0, 0);
         }
 
         $prices = array_filter(
             array_map(static fn ($sku) => $sku->getSalePrice(), $skus),
-            static fn (float $price) => $price >= 0.0
+            static fn (int $price) => $price >= 0
         );
 
         if ($prices === []) {
-            return new self(0.0, 0.0);
+            return new self(0, 0);
         }
 
         return new self(min($prices), max($prices));

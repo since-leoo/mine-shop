@@ -22,8 +22,11 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $name
  * @property string $phone
  * @property string $province
+ * @property string $province_code
  * @property string $city
+ * @property string $city_code
  * @property string $district
+ * @property string $district_code
  * @property string $detail
  * @property string $full_address
  * @property bool $is_default
@@ -39,8 +42,11 @@ class MemberAddress extends Model
         'name',
         'phone',
         'province',
+        'province_code',
         'city',
+        'city_code',
         'district',
+        'district_code',
         'detail',
         'full_address',
         'is_default',

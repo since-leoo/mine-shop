@@ -29,11 +29,11 @@ final class ProductSkuEntity
 
     private ?string $image = null;
 
-    private float $costPrice = 0.0;
+    private int $costPrice = 0;
 
-    private float $marketPrice = 0.0;
+    private int $marketPrice = 0;
 
-    private float $salePrice = 0.0;
+    private int $salePrice = 0;
 
     private int $stock = 0;
 
@@ -93,32 +93,32 @@ final class ProductSkuEntity
         $this->image = $image;
     }
 
-    public function getCostPrice(): float
+    public function getCostPrice(): int
     {
         return $this->costPrice;
     }
 
-    public function setCostPrice(float $costPrice): void
+    public function setCostPrice(int $costPrice): void
     {
         $this->costPrice = $costPrice;
     }
 
-    public function getMarketPrice(): float
+    public function getMarketPrice(): int
     {
         return $this->marketPrice;
     }
 
-    public function setMarketPrice(float $marketPrice): void
+    public function setMarketPrice(int $marketPrice): void
     {
         $this->marketPrice = $marketPrice;
     }
 
-    public function getSalePrice(): float
+    public function getSalePrice(): int
     {
         return $this->salePrice;
     }
 
-    public function setSalePrice(float $salePrice): void
+    public function setSalePrice(int $salePrice): void
     {
         $this->salePrice = $salePrice;
     }

@@ -21,18 +21,15 @@ use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;
-use Carbon\Carbon;
-use Plugin\Wechat\Interfaces\MiniAppInterface;
 
 /**
- * 会员领域服务.
+ * 会员领域服务：负责会员档案的增删改查及标签管理.
  */
 final class MemberService extends IService
 {
     public function __construct(
         protected readonly MemberRepository $repository,
         private readonly MemberTagRepository $memberTagRepository,
-        private readonly MiniAppInterface $miniApp,
     ) {}
 
     /**
@@ -129,12 +126,6 @@ final class MemberService extends IService
         return MemberMapper::fromModel($model);
     }
 
-    public function getInfoByOpenId(string $openId): ?Member
-    {
-        /* @var null|Member $member */
-        return $this->repository->findByOpenid($openId);
-    }
-
     /**
      * @return array<string, int>
      */
@@ -157,70 +148,6 @@ final class MemberService extends IService
     public function detail(int $id): ?array
     {
         return $this->repository->detail($id);
-    }
-
-    /**
-     * 小程序登录.
-     */
-    public function miniProgramLogin(string $code, ?string $encryptedData = null, ?string $iv = null, ?string $ip = null, ?string $manualOpenid = null): MemberEntity
-    {
-        if (! empty($encryptedData) && ! empty($iv)) {
-            $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
-        } else {
-            $payload = $this->miniApp->silentAuthorize($code);
-        }
-
-        $openid = $manualOpenid ?: (string) ($payload['openid'] ?? '');
-
-        if (empty($openid)) {
-            throw new \InvalidArgumentException('授权失败');
-        }
-
-        $memberEntity = $this->repository->findByOpenid($openid);
-
-        if (! $memberEntity) {
-            $memberEntity = MemberMapper::fromMiniProfile($payload);
-            $memberEntity->setLastLoginAt(Carbon::now());
-            $memberEntity->setLastLoginIp($ip ?? '');
-            $model = $this->repository->save($memberEntity);
-            $memberEntity->setId($model->id);
-        } else {
-            $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
-            $memberEntity->setNickname($payload['nickname'] ?? $memberEntity->getNickname());
-            $memberEntity->setAvatar($payload['avatarUrl'] ?? $memberEntity->getAvatar());
-            $memberEntity->setGender($payload['gender'] ?? $memberEntity->getGender());
-            $memberEntity->setSource('mini_program');
-            $memberEntity->setLastLoginAt(Carbon::now());
-            $memberEntity->setLastLoginIp($ip ?? '');
-            $this->repository->updateEntity($memberEntity);
-        }
-
-        return $memberEntity;
-    }
-
-    /**
-     * 绑定会员手机号.
-     *
-     * @return array{phoneNumber: string, purePhoneNumber: string, countryCode: null|string}
-     */
-    public function bindPhoneNumber(MemberEntity $memberEntity, string $code): array
-    {
-        $payload = $this->miniApp->getPhoneNumber($code);
-        $phoneInfo = $payload['phone_info'] ?? $payload;
-        $phoneNumber = (string) ($phoneInfo['phoneNumber'] ?? $phoneInfo['purePhoneNumber'] ?? '');
-
-        if (trim($phoneNumber) === '') {
-            throw new \InvalidArgumentException('获取手机号失败');
-        }
-
-        $memberEntity->setPhone($phoneNumber);
-        $this->repository->updateEntity($memberEntity);
-
-        return [
-            'phoneNumber' => $phoneNumber,
-            'purePhoneNumber' => (string) ($phoneInfo['purePhoneNumber'] ?? $phoneNumber),
-            'countryCode' => $phoneInfo['countryCode'] ?? null,
-        ];
     }
 
     private function ensureMemberExists(int $memberId): void

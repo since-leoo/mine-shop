@@ -25,8 +25,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $description
  * @property int $product_id
  * @property int $sku_id
- * @property float $original_price
- * @property float $group_price
+ * @property int $original_price
+ * @property int $group_price
  * @property int $min_people
  * @property int $max_people
  * @property Carbon $start_time
@@ -79,8 +79,8 @@ class GroupBuy extends Model
     protected array $casts = [
         'product_id' => 'integer',
         'sku_id' => 'integer',
-        'original_price' => 'decimal:2',
-        'group_price' => 'decimal:2',
+        'original_price' => 'integer',
+        'group_price' => 'integer',
         'min_people' => 'integer',
         'max_people' => 'integer',
         'start_time' => 'datetime',

@@ -22,5 +22,9 @@ interface OrderTypeStrategyInterface
 
     public function buildDraft(OrderEntity $orderEntity): OrderEntity;
 
+    public function applyCoupon(OrderEntity $orderEntity, array $couponList): void;
+
+    public function adjustPrice(OrderEntity $orderEntity): void;
+
     public function postCreate(OrderEntity $orderEntity): void;
 }

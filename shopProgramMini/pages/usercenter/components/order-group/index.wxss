@@ -1,56 +1,83 @@
 .order-group {
-  margin-bottom: 24rpx;
-  background-color: #ffffff;
-  border-radius: 16rpx 16rpx 0 0;
-}
-.order-group .order-group__top {
-  padding: 24rpx 18rpx 24rpx 32rpx;
-  border-radius: 16rpx 16rpx 0 0;
-}
-.order-group__top___title {
-  font-size: 32rpx;
-  line-height: 48rpx;
-  font-weight: bold;
-}
-.order-group__top__note {
-  font-size: 28rpx;
-}
-.order-group__content {
-  overflow: hidden;
-  width: 100%;
-  height: 164rpx;
-  display: flex;
   background-color: #fff;
-  border-radius: 0 0 16rpx 16rpx;
-}
-.order-group__item {
+  border-radius: 16rpx;
   overflow: hidden;
+}
+
+.order-group__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 32rpx 12rpx;
+}
+
+.order-group__title {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.order-group__more {
+  display: flex;
+  align-items: center;
+}
+
+.order-group__more-text {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.order-group__arrow {
+  font-size: 30rpx;
+  color: #ccc;
+  margin-left: 4rpx;
+}
+
+.order-group__content {
+  display: flex;
+  padding: 20rpx 0 32rpx;
+}
+
+.order-group__item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.order-group__item-icon-wrap {
+  position: relative;
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  flex: 1;
+  margin-bottom: 16rpx;
 }
-.order-group__item:first-child {
-  border-radius: 0 0 0 16rpx;
+
+.order-group__badge {
+  position: absolute;
+  top: -10rpx;
+  right: -16rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  background-color: #ff4646;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8rpx;
+  box-sizing: border-box;
 }
-.order-group__item:last-child {
-  border-radius: 0 0 16rpx 0;
+
+.order-group__badge-text {
+  font-size: 20rpx;
+  color: #fff;
+  line-height: 32rpx;
 }
-.order-group__item__title {
+
+.order-group__item-title {
   font-size: 24rpx;
   color: #666;
   line-height: 32rpx;
-}
-.order-group__item__icon {
-  margin-bottom: 20rpx;
-  width: 56rpx;
-  height: 56rpx;
-  position: relative;
-}
-.order-group__top__title {
-  font-weight: bold;
-}
-.order-group .order-group__left {
-  margin-right: 0;
 }

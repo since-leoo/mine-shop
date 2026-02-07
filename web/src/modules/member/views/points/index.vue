@@ -86,13 +86,18 @@
         <el-table-column label="变动金额" width="140">
           <template #default="{ row }">
             <span :class="isIncome(row.type) ? 'text-green-600' : 'text-red-500'">
-              {{ isIncome(row.type) ? '+' : '-' }}{{ row.amount }}
+              {{ isIncome(row.type) ? '+' : '-' }}{{ row.wallet_type === 'balance' ? formatYuan(row.amount) : row.amount }}
             </span>
           </template>
         </el-table-column>
         <el-table-column label="变动前/后" min-width="220">
           <template #default="{ row }">
-            {{ row.balance_before }} → {{ row.balance_after }}
+            <template v-if="row.wallet_type === 'balance'">
+              {{ formatYuan(row.balance_before) }} → {{ formatYuan(row.balance_after) }}
+            </template>
+            <template v-else>
+              {{ row.balance_before }} → {{ row.balance_after }}
+            </template>
           </template>
         </el-table-column>
         <el-table-column label="来源" prop="source" width="140" />
@@ -128,7 +133,14 @@
           </el-select>
         </el-form-item>
         <el-form-item label="变动金额" prop="value">
-          <el-input-number v-model="adjustForm.value" :min="-1000000" :max="1000000" class="w-full" />
+          <el-input-number
+            v-model="adjustForm.value"
+            :min="-1000000"
+            :max="1000000"
+            :precision="adjustForm.type === 'balance' ? 2 : 0"
+            class="w-full"
+          />
+          <div v-if="adjustForm.type === 'balance'" class="text-xs text-gray-400 mt-1">单位：元</div>
         </el-form-item>
         <el-form-item label="来源" prop="source">
           <el-select
@@ -173,6 +185,7 @@ import {
   type MemberAccountLogParams,
   type MemberWalletLog,
 } from '~/member/api/member'
+import { formatYuan, yuanToCents } from '@/utils/price'
 
 defineOptions({ name: 'member:wallet' })
 
@@ -284,7 +297,12 @@ const submitAdjust = async () => {
   await adjustFormRef.value.validate()
   adjustLoading.value = true
   try {
-    await memberAccountApi.adjustWallet({ ...adjustForm })
+    const payload = { ...adjustForm }
+    // 余额钱包：表单输入元，提交转换为分
+    if (payload.type === 'balance') {
+      payload.value = yuanToCents(payload.value)
+    }
+    await memberAccountApi.adjustWallet(payload)
     ElMessage.success('操作成功')
     adjustDialogVisible.value = false
     loadLogs()

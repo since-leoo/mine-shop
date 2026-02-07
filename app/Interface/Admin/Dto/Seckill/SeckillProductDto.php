@@ -29,9 +29,9 @@ final class SeckillProductDto implements SeckillProductInput
 
     public ?int $product_sku_id = null;
 
-    public ?float $original_price = null;
+    public ?int $original_price = null;
 
-    public ?float $seckill_price = null;
+    public ?int $seckill_price = null;
 
     public ?int $quantity = null;
 
@@ -64,12 +64,12 @@ final class SeckillProductDto implements SeckillProductInput
         return $this->product_sku_id;
     }
 
-    public function getOriginalPrice(): ?float
+    public function getOriginalPrice(): ?int
     {
         return $this->original_price;
     }
 
-    public function getSeckillPrice(): ?float
+    public function getSeckillPrice(): ?int
     {
         return $this->seckill_price;
     }

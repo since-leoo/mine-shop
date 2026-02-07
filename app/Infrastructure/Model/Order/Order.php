@@ -30,11 +30,11 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $member_id
  * @property string $order_type
  * @property string $status
- * @property float $goods_amount
- * @property float $shipping_fee
- * @property float $discount_amount
- * @property float $total_amount
- * @property null|float $pay_amount
+ * @property int $goods_amount
+ * @property int $shipping_fee
+ * @property int $discount_amount
+ * @property int $total_amount
+ * @property null|int $pay_amount
  * @property string $pay_status
  * @property null|Carbon $pay_time
  * @property null|string $pay_no
@@ -80,11 +80,11 @@ class Order extends Model
     ];
 
     protected array $casts = [
-        'goods_amount' => 'decimal:2',
-        'shipping_fee' => 'decimal:2',
-        'discount_amount' => 'decimal:2',
-        'total_amount' => 'decimal:2',
-        'pay_amount' => 'decimal:2',
+        'goods_amount' => 'integer',
+        'shipping_fee' => 'integer',
+        'discount_amount' => 'integer',
+        'total_amount' => 'integer',
+        'pay_amount' => 'integer',
         'pay_time' => 'datetime',
         'expire_time' => 'datetime',
         'created_at' => 'datetime',

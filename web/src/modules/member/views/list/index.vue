@@ -155,7 +155,7 @@
         <el-table-column label="订单数" width="100" prop="total_orders" />
         <el-table-column label="累计消费" width="120">
           <template #default="{ row }">
-            ¥{{ row.total_amount || 0 }}
+            ¥{{ formatYuan(row.total_amount) }}
           </template>
         </el-table-column>
         <el-table-column label="最近登录" width="170">
@@ -323,6 +323,7 @@ import TagManager from './tag-manager.vue'
 import MemberDetail from './detail.vue'
 import { useGeo } from '@/hooks/useGeo.ts'
 import { memberApi, memberTagApi, type MallMember, type MemberTag } from '~/member/api/member'
+import { formatYuan } from '@/utils/price'
 
 defineOptions({ name: 'member:list' })
 

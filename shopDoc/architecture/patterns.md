@@ -14,7 +14,7 @@ Mine Shop 在多个上下文中系统化应用经典设计模式，以保持代�
 | **Event / Observer** | 领域事件、异步解耦 | `app/Domain/**/Event` + `Listener` |
 | **Template Method** | 统一流程骨架 | `AttachmentService` 上传流程 |
 | **Decorator** | 组合能力 | `DataScope` + `PermissionMiddleware` |
-| **Builder** | 构建复杂实体 | `OrderSubmitCommand` → `OrderEntity` |
+| **Builder** | 构建复杂实体 | `OrderPreviewInput` / `OrderSubmitInput` → `OrderEntity` |
 
 ## Repository 模式
 
@@ -61,7 +61,7 @@ interface OrderTypeStrategyInterface
 
 ## Builder
 
-`OrderSubmitCommand` 封装下单入参，Builder 将其转换为 `OrderEntity`、`OrderItemEntity`、`OrderAddressValue` 等，保证字段完整性与校验集中。
+`OrderPreviewInput` / `OrderSubmitInput` 契约接口封装下单入参，`OrderService::buildEntityFromInput()` 将其转换为 `OrderEntity`、`OrderItemEntity`、`OrderAddressValue` 等，保证字段完整性与校验集中。
 
 ## 演进建议
 

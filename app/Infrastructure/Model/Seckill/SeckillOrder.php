@@ -25,9 +25,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $product_id
  * @property int $product_sku_id
  * @property int $quantity
- * @property float $original_price
- * @property float $seckill_price
- * @property float $total_amount
+ * @property int $original_price
+ * @property int $seckill_price
+ * @property int $total_amount
  * @property string $status
  * @property null|Carbon $seckill_time
  * @property null|Carbon $pay_time
@@ -68,9 +68,9 @@ class SeckillOrder extends Model
         'product_id' => 'integer',
         'product_sku_id' => 'integer',
         'quantity' => 'integer',
-        'original_price' => 'decimal:2',
-        'seckill_price' => 'decimal:2',
-        'total_amount' => 'decimal:2',
+        'original_price' => 'integer',
+        'seckill_price' => 'integer',
+        'total_amount' => 'integer',
         'seckill_time' => 'datetime',
         'pay_time' => 'datetime',
         'cancel_time' => 'datetime',

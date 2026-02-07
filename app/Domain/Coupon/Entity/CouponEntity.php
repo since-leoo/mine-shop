@@ -26,9 +26,9 @@ final class CouponEntity
 
     private ?string $type;
 
-    private ?float $value;
+    private ?int $value;
 
-    private ?float $minAmount;
+    private ?int $minAmount;
 
     private ?int $totalQuantity;
 
@@ -148,13 +148,13 @@ final class CouponEntity
         return $this;
     }
 
-    public function setValue(?float $value): self
+    public function setValue(?int $value): self
     {
         $this->value = $value;
         return $this;
     }
 
-    public function setMinAmount(?float $minAmount): self
+    public function setMinAmount(?int $minAmount): self
     {
         $this->minAmount = $minAmount;
         return $this;
@@ -325,12 +325,12 @@ final class CouponEntity
         return $this->type;
     }
 
-    public function getValue(): ?float
+    public function getValue(): ?int
     {
         return $this->value;
     }
 
-    public function getMinAmount(): ?float
+    public function getMinAmount(): ?int
     {
         return $this->minAmount;
     }

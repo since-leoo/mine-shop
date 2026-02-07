@@ -32,8 +32,8 @@ class GroupBuyMapper
         $entity->setDescription($model->description);
         $entity->setProductId((int) $model->product_id);
         $entity->setSkuId((int) $model->sku_id);
-        $entity->setOriginalPrice((float) $model->original_price);
-        $entity->setGroupPrice((float) $model->group_price);
+        $entity->setOriginalPrice((int) $model->original_price);
+        $entity->setGroupPrice((int) $model->group_price);
         $entity->setMinPeople((int) $model->min_people);
         $entity->setMaxPeople((int) $model->max_people);
         $entity->setStartTime($model->start_time->format('Y-m-d H:i:s'));

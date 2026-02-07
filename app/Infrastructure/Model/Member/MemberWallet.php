@@ -20,10 +20,10 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $id 自增ID
  * @property int $member_id 会员ID
  * @property string $type 钱包类型
- * @property float $balance 账户余额
- * @property float $frozen_balance 冻结金额
- * @property float $total_recharge 累计充值金额
- * @property float $total_consume 累计消费金额
+ * @property int $balance 账户余额
+ * @property int $frozen_balance 冻结金额
+ * @property int $total_recharge 累计充值金额
+ * @property int $total_consume 累计消费金额
  * @property null|string $pay_password 密码
  * @property string $status 状态
  * @property Carbon $created_at
@@ -46,10 +46,10 @@ class MemberWallet extends Model
 
     protected array $casts = [
         'type' => 'string',
-        'balance' => 'decimal:2',
-        'frozen_balance' => 'decimal:2',
-        'total_recharge' => 'decimal:2',
-        'total_consume' => 'decimal:2',
+        'balance' => 'integer',
+        'frozen_balance' => 'integer',
+        'total_recharge' => 'integer',
+        'total_consume' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

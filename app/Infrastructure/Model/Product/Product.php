@@ -31,8 +31,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $description
  * @property null|string $detail_content
  * @property null|array $attributes
- * @property float $min_price
- * @property float $max_price
+ * @property int $min_price
+ * @property int $max_price
  * @property int $virtual_sales
  * @property int $real_sales
  * @property bool $is_recommend
@@ -90,8 +90,8 @@ class Product extends Model
         'brand_id' => 'integer',
         'gallery_images' => 'array',
         'attributes' => 'array',
-        'min_price' => 'decimal:2',
-        'max_price' => 'decimal:2',
+        'min_price' => 'integer',
+        'max_price' => 'integer',
         'virtual_sales' => 'integer',
         'real_sales' => 'integer',
         'is_recommend' => 'boolean',

@@ -12,10 +12,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Service;
 
+use App\Domain\Coupon\Service\CouponUserService;
+use App\Domain\Member\Service\MemberAddressService;
+use App\Domain\Order\Contract\OrderPreviewInput;
+use App\Domain\Order\Contract\OrderSubmitInput;
 use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Mapper\OrderMapper;
 use App\Domain\Order\Repository\OrderRepository;
+use App\Domain\Order\ValueObject\OrderAddressValue;
 use App\Domain\SystemSetting\Service\MallSettingService;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
@@ -29,12 +34,14 @@ final class OrderService extends IService
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly OrderStockService $stockService,
         private readonly MallSettingService $mallSettingService,
+        private readonly MemberAddressService $addressService,
+        private readonly CouponUserService $couponUserService,
     ) {}
 
     /**
      * 更新订单.
      */
-    public function update(OrderEntity $entity)
+    public function update(OrderEntity $entity): bool
     {
         return $this->repository->updateById($entity->getId(), $entity->toArray());
     }
@@ -72,12 +79,24 @@ final class OrderService extends IService
     /**
      * 预览订单.
      */
-    public function preview(OrderEntity $orderEntity): OrderEntity
+    public function preview(OrderPreviewInput $input): OrderEntity
     {
-        $orderEntity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
-        $strategy = $this->strategyFactory->make($orderEntity->getOrderType());
-        $strategy->validate($orderEntity);
-        return $strategy->buildDraft($orderEntity);
+        // 构建 Entity
+        $entity = $this->buildEntityFromInput($input);
+        // 获取商品配置
+        $entity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
+        // 构建策略
+        $strategy = $this->strategyFactory->make($entity->getOrderType());
+        // 策略验证
+        $strategy->validate($entity);
+        // 构建订单
+        $strategy->buildDraft($entity);
+        // 优惠券
+        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
+        // 调整价格
+        $strategy->adjustPrice($entity);
+
+        return $entity;
     }
 
     /**
@@ -85,34 +104,38 @@ final class OrderService extends IService
      *
      * @throws \Throwable
      */
-    public function submit(OrderEntity $orderEntity): OrderEntity
+    public function submit(OrderSubmitInput $input): OrderEntity
     {
-        $orderEntity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
-        $orderEntity->applySubmissionPolicy($this->mallSettingService->order());
-        // 获取订单策略
-        $strategy = $this->strategyFactory->make($orderEntity->getOrderType());
-        // 验证
-        $strategy->validate($orderEntity);
-        // 获取订单商品
-        $items = array_map(static function ($item) {return $item->toArray(); }, $orderEntity->getItems());
-        // 锁定库存
+        $entity = $this->buildEntityFromInput($input);
+        $entity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
+        $entity->applySubmissionPolicy($this->mallSettingService->order());
+        $strategy = $this->strategyFactory->make($entity->getOrderType());
+        $strategy->validate($entity);
+        // 先 buildDraft（校验商品状态），再扣库存
+        $strategy->buildDraft($entity);
+        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
+        $strategy->adjustPrice($entity);
+        // 价格校验
+        $entity->verifyPrice($input->getTotalAmount());
+        // 库存扣减
+        $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
         $locks = $this->stockService->acquireLocks($items);
         try {
-            // 库存扣除（LUA）
             $this->stockService->reserve($items);
-
             try {
-                $orderEntity = $this->repository->save($strategy->buildDraft($orderEntity));
-                $strategy->postCreate($orderEntity);
-            } catch (\Throwable $throwable) {
+                $entity = $this->repository->save($entity);
+                // 标记优惠券已使用
+                $this->markCouponsUsed($entity);
+                $strategy->postCreate($entity);
+            } catch (\Throwable $e) {
                 $this->stockService->rollback($items);
-                throw $throwable;
+                throw $e;
             }
         } finally {
             $this->stockService->releaseLocks($locks);
         }
 
-        return $orderEntity;
+        return $entity;
     }
 
     public function ship(OrderEntity $entity): OrderEntity
@@ -133,5 +156,53 @@ final class OrderService extends IService
     public function countByMemberAndStatuses(int $memberId): array
     {
         return $this->repository->countByMemberAndStatuses($memberId);
+    }
+
+    /**
+     * 从 Input 构建 Entity（原 PayloadFactory 逻辑下沉到领域层）.
+     */
+    private function buildEntityFromInput(OrderPreviewInput $input): OrderEntity
+    {
+        $entity = OrderMapper::getNewEntity();
+        $entity->initFromInput($input);
+        // 地址解析
+        $address = $this->resolveAddress($input);
+        if ($address) {
+            $entity->setAddress($address);
+        }
+
+        return $entity;
+    }
+
+    /**
+     * 解析用户地址：优先使用直接传入的地址，其次按 ID 查询，最后使用默认地址.
+     */
+    private function resolveAddress(OrderPreviewInput $input): ?OrderAddressValue
+    {
+        if ($input->getUserAddress()) {
+            return OrderAddressValue::fromArray($input->getUserAddress());
+        }
+        if ($input->getAddressId()) {
+            $detail = $this->addressService->detail($input->getMemberId(), $input->getAddressId());
+            return OrderAddressValue::fromArray($detail);
+        }
+        $default = $this->addressService->default($input->getMemberId());
+        return $default ? OrderAddressValue::fromArray($default) : null;
+    }
+
+    /**
+     * 标记订单关联的优惠券为已使用.
+     */
+    private function markCouponsUsed(OrderEntity $entity): void
+    {
+        $couponUserIds = $entity->getAppliedCouponUserIds();
+        if (empty($couponUserIds)) {
+            return;
+        }
+
+        foreach ($couponUserIds as $couponUserId) {
+            $couponUserEntity = $this->couponUserService->getEntity($couponUserId);
+            $this->couponUserService->markUsed($couponUserEntity, $entity->getId());
+        }
     }
 }

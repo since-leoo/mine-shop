@@ -18,10 +18,31 @@ export function fetchUserCenter() {
     url: '/api/v1/member/center',
     method: 'GET',
     needAuth: true,
-  }).then((data = {}) => ({
-    userInfo: data.userInfo || {},
-    countsData: data.countsData || [],
-    orderTagInfos: data.orderTagInfos || [],
-    customerServiceInfo: data.customerServiceInfo || {},
-  }));
+  }).then((data = {}) => {
+    const raw = data.user_info || {};
+    return {
+      userInfo: {
+        avatarUrl: raw.avatar || '',
+        nickName: raw.nickname || '',
+        phoneNumber: raw.phone || '',
+        gender: raw.gender || 'unknown',
+        levelName: raw.level_name || null,
+        authorizedProfile: Boolean(raw.authorized_profile),
+        balance: raw.balance || 0,
+        points: raw.points || 0,
+      },
+      countsData: data.counts_data || [],
+      orderTagInfos: (data.order_tag_infos || []).map((item) => ({
+        title: item.title,
+        iconName: item.icon_name,
+        orderNum: item.order_num || 0,
+        tabType: item.tab_type,
+        status: item.status,
+      })),
+      customerServiceInfo: {
+        servicePhone: (data.customer_service_info || {}).service_phone || '',
+        serviceTimeDuration: (data.customer_service_info || {}).service_time_duration || '',
+      },
+    };
+  });
 }

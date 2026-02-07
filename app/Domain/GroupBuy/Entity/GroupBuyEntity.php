@@ -33,9 +33,9 @@ final class GroupBuyEntity
 
     private int $skuId = 0;
 
-    private float $originalPrice = 0.0;
+    private int $originalPrice = 0;
 
-    private float $groupPrice = 0.0;
+    private int $groupPrice = 0;
 
     private int $minPeople = 2;
 
@@ -312,24 +312,24 @@ final class GroupBuyEntity
         return $this;
     }
 
-    public function getOriginalPrice(): float
+    public function getOriginalPrice(): int
     {
         return $this->originalPrice;
     }
 
-    public function setOriginalPrice(float $originalPrice): self
+    public function setOriginalPrice(int $originalPrice): self
     {
         $this->originalPrice = $originalPrice;
         $this->markDirty('original_price');
         return $this;
     }
 
-    public function getGroupPrice(): float
+    public function getGroupPrice(): int
     {
         return $this->groupPrice;
     }
 
-    public function setGroupPrice(float $groupPrice): self
+    public function setGroupPrice(int $groupPrice): self
     {
         $this->groupPrice = $groupPrice;
         $this->markDirty('group_price');

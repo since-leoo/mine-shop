@@ -40,7 +40,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|int $level_id
  * @property int $growth_value
  * @property int $total_orders
- * @property float $total_amount
+ * @property int $total_amount
  * @property null|Carbon $last_login_at
  * @property null|string $last_login_ip
  * @property string $status
@@ -86,7 +86,7 @@ class Member extends Model
         'growth_value' => 'integer',
         'level_id' => 'integer',
         'total_orders' => 'integer',
-        'total_amount' => 'decimal:2',
+        'total_amount' => 'integer',
         'last_login_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

@@ -24,9 +24,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $order_no
  * @property int $member_id
  * @property string $payment_method
- * @property float $payment_amount
- * @property float $paid_amount
- * @property float $refund_amount
+ * @property int $payment_amount
+ * @property int $paid_amount
+ * @property int $refund_amount
  * @property string $currency
  * @property string $status
  * @property null|string $third_party_no
@@ -66,9 +66,9 @@ class OrderPayment extends Model
     protected array $casts = [
         'order_id' => 'integer',
         'member_id' => 'integer',
-        'payment_amount' => 'decimal:2',
-        'paid_amount' => 'decimal:2',
-        'refund_amount' => 'decimal:2',
+        'payment_amount' => 'integer',
+        'paid_amount' => 'integer',
+        'refund_amount' => 'integer',
         'third_party_response' => 'array',
         'callback_data' => 'array',
         'extra_data' => 'array',

@@ -40,7 +40,7 @@ final class OrderController extends AbstractController
     #[RateLimit(create: 60, capacity: 20)]
     public function preview(OrderPreviewRequest $request): Result
     {
-        $data = $this->checkoutService->preview($this->currentMember->id(), $request->validated());
+        $data = $this->checkoutService->preview($request->toDto($this->currentMember->id()));
         return $this->success($data, '订单预览');
     }
 
@@ -48,7 +48,7 @@ final class OrderController extends AbstractController
     #[RateLimit(create: 30, capacity: 10)]
     public function submit(OrderCommitRequest $request): Result
     {
-        $data = $this->checkoutService->submit($this->currentMember->id(), $request->validated());
+        $data = $this->checkoutService->submit($request->toDto($this->currentMember->id()));
         return $this->success($data, '下单成功');
     }
 

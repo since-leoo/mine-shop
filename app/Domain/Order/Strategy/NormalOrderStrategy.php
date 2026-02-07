@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Strategy;
 
+use App\Domain\Coupon\Repository\CouponUserRepository;
 use App\Domain\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Entity\OrderItemEntity;
@@ -23,7 +24,8 @@ use App\Infrastructure\Model\Product\ProductSku;
 final class NormalOrderStrategy implements OrderTypeStrategyInterface
 {
     public function __construct(
-        private readonly ProductSnapshotInterface $snapshotService
+        private readonly ProductSnapshotInterface $snapshotService,
+        private readonly CouponUserRepository $couponUserRepository,
     ) {}
 
     public function type(): string
@@ -83,15 +85,115 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         $orderEntity->syncPriceDetailFromItems();
 
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
-        $priceDetail->setDiscountAmount(0.0);
-        $priceDetail->setShippingFee(0.0);
+        $priceDetail->setDiscountAmount(0);
+        $priceDetail->setShippingFee(0);
         $orderEntity->setPriceDetail($priceDetail);
 
         return $orderEntity;
     }
 
+    /**
+     * 应用优惠券：验证归属/状态/有效期/满减门槛，计算折扣写入 Entity.
+     *
+     * @param array<int, array{coupon_id: int}> $couponList
+     */
+    public function applyCoupon(OrderEntity $orderEntity, array $couponList): void
+    {
+        if (empty($couponList)) {
+            $orderEntity->setCouponAmount(0);
+            return;
+        }
+
+        $couponIds = array_filter(array_map(
+            static fn (array $item) => (int) ($item['coupon_id'] ?? 0),
+            $couponList,
+        ));
+        $couponIds = array_unique($couponIds);
+
+        if (empty($couponIds)) {
+            $orderEntity->setCouponAmount(0);
+            return;
+        }
+
+        // 查找该会员未使用且未过期的 coupon_user 记录
+        $couponUserMap = $this->couponUserRepository->findUnusedByMemberAndCouponIds(
+            $orderEntity->getMemberId(),
+            $couponIds,
+        );
+
+        $goodsAmount = $orderEntity->getPriceDetail()?->getGoodsAmount() ?? 0;
+        $totalDiscount = 0;
+        $appliedCouponUserIds = [];
+
+        foreach ($couponIds as $couponId) {
+            $couponUser = $couponUserMap[$couponId] ?? null;
+            if (! $couponUser) {
+                throw new \RuntimeException(\sprintf('优惠券 %d 不可用或已使用', $couponId));
+            }
+
+            $coupon = $couponUser->coupon;
+            if (! $coupon || $coupon->status !== 'active') {
+                throw new \RuntimeException(\sprintf('优惠券 %d 已失效', $couponId));
+            }
+
+            // 满减门槛检查（分）
+            $minAmount = (int) $coupon->min_amount;
+            if ($minAmount > 0 && $goodsAmount < $minAmount) {
+                throw new \RuntimeException(\sprintf(
+                    '优惠券 %s 需满 %d 分可用，当前商品金额 %d 分',
+                    $coupon->name,
+                    $minAmount,
+                    $goodsAmount,
+                ));
+            }
+
+            // 计算折扣金额（分）
+            $discount = $this->calculateCouponDiscount($coupon, $goodsAmount);
+            $totalDiscount += $discount;
+            $appliedCouponUserIds[] = (int) $couponUser->id;
+        }
+
+        // 折扣不能超过商品总额
+        if ($totalDiscount > $goodsAmount) {
+            $totalDiscount = $goodsAmount;
+        }
+
+        $orderEntity->setCouponAmount($totalDiscount);
+        $orderEntity->setAppliedCouponUserIds($appliedCouponUserIds);
+
+        // 将优惠券金额写入 priceDetail 的 discountAmount
+        $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
+        $currentDiscount = $priceDetail->getDiscountAmount();
+        $priceDetail->setDiscountAmount($currentDiscount + $totalDiscount);
+        $orderEntity->setPriceDetail($priceDetail);
+    }
+
+    /**
+     * 调整价格（普通订单默认不做额外价格调整，直通）.
+     */
+    public function adjustPrice(OrderEntity $orderEntity): void
+    {
+        // 普通订单不做额外价格调整
+    }
+
     public function postCreate(OrderEntity $orderEntity): void
     {
         // 普通订单暂不需要特殊后置逻辑
+    }
+
+    /**
+     * 根据优惠券类型计算折扣金额（分）.
+     */
+    private function calculateCouponDiscount(object $coupon, int $goodsAmount): int
+    {
+        $value = (int) ($coupon->value ?? 0);
+        $type = (string) ($coupon->type ?? 'fixed');
+
+        return match ($type) {
+            // percent/discount: value=850 表示 8.5 折，折扣 = 商品金额 - 折后金额
+            'percent', 'discount' => $goodsAmount - (int) round($goodsAmount * $value / 1000),
+            // fixed: 面值（分）直接减
+            default => $value,
+        };
     }
 }

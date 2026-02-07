@@ -1,37 +1,26 @@
 <view class="order-group">
-  <t-cell-group wx:if="{{isTop}}">
-    <t-cell
-      t-class="order-group__top"
-      t-class-left="order-group__left"
-      t-class-title="order-group__top__title"
-      t-class-note="order-group__top__note"
-      title="{{title}}"
-      note="{{desc}}"
-      bordered="{{false}}"
-      arrow
-      bind:tap="onClickTop"
-    />
-  </t-cell-group>
+  <view class="order-group__header" bind:tap="onClickTop">
+    <text class="order-group__title">{{title}}</text>
+    <view class="order-group__more">
+      <text class="order-group__more-text">{{desc}}</text>
+      <text class="order-group__arrow">›</text>
+    </view>
+  </view>
   <view class="order-group__content">
     <view
       class="order-group__item"
       wx:for="{{orderTagInfos}}"
-      wx:for-item="item"
       wx:key="index"
       data-item="{{item}}"
       bindtap="onClickItem"
     >
-      <view class="order-group__item__icon icon-class">
-        <t-badge count="{{item.orderNum}}" max-count="{{99}}" color="#FF4646">
-          <t-icon
-            prefix="{{classPrefix}}"
-            name="{{item.iconName}}"
-            size="56rpx"
-            customStyle="background-image: -webkit-linear-gradient(90deg, #6a6a6a 0%,#929292 100%);-webkit-background-clip: text;-webkit-text-fill-color: transparent;"
-          />
-        </t-badge>
+      <view class="order-group__item-icon-wrap">
+        <t-icon prefix="{{classPrefix}}" name="{{item.iconName}}" size="48rpx" color="#333" />
+        <view class="order-group__badge" wx:if="{{item.orderNum > 0}}">
+          <text class="order-group__badge-text">{{item.orderNum > 99 ? '99+' : item.orderNum}}</text>
+        </view>
       </view>
-      <view class="order-group__item__title title-class">{{item.title}}</view>
+      <text class="order-group__item-title">{{item.title}}</text>
     </view>
   </view>
 </view>

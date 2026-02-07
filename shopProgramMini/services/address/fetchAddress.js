@@ -1,7 +1,7 @@
 import { config } from '../../config/index';
 import { request } from '../request';
 
-/** 获取收货地址 */
+/** 获取收货地址（mock） */
 function mockFetchDeliveryAddress(id) {
   const { delay } = require('../_utils/delay');
   const { genAddress } = require('../../model/address');
@@ -23,23 +23,20 @@ export function fetchDeliveryAddress(id = 0) {
     url: `/api/v1/member/addresses/${id}`,
     method: 'GET',
     needAuth: true,
-  }).then((data = {}) => normalizeAddressDetail(data));
+  });
 }
 
-/** 获取收货地址列表 */
+/** 获取收货地址列表（mock） */
 function mockFetchDeliveryAddressList(len = 0) {
   const { delay } = require('../_utils/delay');
   const { genAddressList } = require('../../model/address');
 
   return delay().then(() =>
-    genAddressList(len).map((address) => {
-      return {
-        ...address,
-        phoneNumber: address.phone,
-        address: `${address.provinceName}${address.cityName}${address.districtName}${address.detailAddress}`,
-        tag: address.addressTag,
-      };
-    }),
+    genAddressList(len).map((address) => ({
+      ...address,
+      phoneNumber: address.phone,
+      address: `${address.province}${address.city}${address.district}${address.detail}`,
+    })),
   );
 }
 
@@ -64,63 +61,42 @@ export function fetchDeliveryAddressList(len = 10) {
 
 const normalizeBoolean = (value) => value === true || value === 1 || value === '1';
 
-const normalizeAddressDetail = (detail = {}) => {
-  const normalized = {
-    ...detail,
-    id: detail.id ? String(detail.id) : detail.id,
-    addressId: detail.addressId ? String(detail.addressId) : String(detail.id || ''),
-    isDefault: normalizeBoolean(detail.isDefault),
-  };
-  normalized.phone = normalized.phone || normalized.phoneNumber || normalized.phone || '';
-  normalized.phoneNumber = normalized.phoneNumber || normalized.phone || '';
-  normalized.name = normalized.name || normalized.name || '';
-  normalized.provinceName = normalized.provinceName || normalized.province || '';
-  normalized.provinceCode = normalized.provinceCode || normalized.province_code || '';
-  normalized.cityName = normalized.cityName || normalized.city || '';
-  normalized.cityCode = normalized.cityCode || normalized.city_code || '';
-  normalized.districtName = normalized.districtName || normalized.district || '';
-  normalized.districtCode = normalized.districtCode || normalized.district_code || '';
-  normalized.detailAddress = normalized.detailAddress || normalized.detail || '';
-  normalized.addressTag = normalized.addressTag || normalized.tag || '';
-  return normalized;
-};
+/**
+ * 归一化地址列表项，补充前端 UI 组件所需的衍生字段.
+ * 后端返回 snake_case，这里补充 UI 组件绑定所需的展示字段.
+ */
+const normalizeAddressItem = (address = {}) => ({
+  ...address,
+  id: address.id ? String(address.id) : '',
+  phoneNumber: address.phone || '',
+  address: address.full_address || buildFullAddress(address),
+  isDefault: normalizeBoolean(address.is_default) ? 1 : 0,
+});
 
 const buildFullAddress = (address = {}) => {
-  if (address.fullAddress) {
-    return address.fullAddress;
-  }
   const parts = [
-    address.provinceName || address.province || '',
-    address.cityName || address.city || '',
-    address.districtName || address.district || '',
-    address.detailAddress || address.detail || '',
+    address.province || '',
+    address.city || '',
+    address.district || '',
+    address.detail || '',
   ];
   return parts.join('').trim();
 };
 
-const normalizeAddressItem = (address = {}) => {
-  const normalized = normalizeAddressDetail(address);
-  return {
-    ...normalized,
-    phoneNumber: normalized.phone || normalized.phoneNumber || '',
-    address: buildFullAddress(normalized),
-    isDefault: normalizeBoolean(normalized.isDefault),
-    tag: normalized.addressTag || normalized.tag || '',
-  };
-};
-
+/**
+ * 构建提交到后端的 payload，字段名与后端 API 完全一致（snake_case）.
+ */
 const buildAddressPayload = (address = {}) => ({
   name: address.name || '',
-  phone: address.phone || address.phoneNumber || '',
-  provinceName: address.provinceName || address.province || '',
-  provinceCode: address.provinceCode || address.province_code || '',
-  cityName: address.cityName || address.city || '',
-  cityCode: address.cityCode || address.city_code || '',
-  districtName: address.districtName || address.district || '',
-  districtCode: address.districtCode || address.district_code || '',
-  detailAddress: address.detailAddress || address.detail || '',
-  addressTag: address.addressTag || address.tag || '',
-  isDefault: normalizeBoolean(address.isDefault),
+  phone: address.phone || '',
+  province: address.province || '',
+  province_code: address.province_code || '',
+  city: address.city || '',
+  city_code: address.city_code || '',
+  district: address.district || '',
+  district_code: address.district_code || '',
+  detail: address.detail || '',
+  is_default: normalizeBoolean(address.is_default),
 });
 
 export function createDeliveryAddress(payload = {}) {
@@ -132,7 +108,7 @@ export function createDeliveryAddress(payload = {}) {
     method: 'POST',
     needAuth: true,
     data: buildAddressPayload(payload),
-  }).then((data = {}) => normalizeAddressItem(data));
+  });
 }
 
 export function updateDeliveryAddress(addressId, payload = {}) {
@@ -140,14 +116,14 @@ export function updateDeliveryAddress(addressId, payload = {}) {
     return Promise.reject(new Error('缺少地址ID'));
   }
   if (config.useMock) {
-    return Promise.resolve(normalizeAddressItem({ ...payload, id: addressId, addressId }));
+    return Promise.resolve(normalizeAddressItem({ ...payload, id: addressId }));
   }
   return request({
     url: `/api/v1/member/addresses/${addressId}`,
     method: 'PUT',
     needAuth: true,
     data: buildAddressPayload(payload),
-  }).then((data = {}) => normalizeAddressItem(data));
+  });
 }
 
 export function deleteDeliveryAddress(addressId) {

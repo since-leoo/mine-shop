@@ -28,7 +28,10 @@ final class MemberWalletRepository
     public function save(MemberWalletEntity $wallet): void
     {
         /** @var null|MemberWallet $info */
-        $info = $this->model::where('member_id', $wallet->getMemberId())->lockForUpdate()->first();
+        $info = $this->model::where('member_id', $wallet->getMemberId())
+            ->where('type', $wallet->getType())
+            ->lockForUpdate()
+            ->first();
 
         $info?->fill($wallet->toArray())->save();
     }

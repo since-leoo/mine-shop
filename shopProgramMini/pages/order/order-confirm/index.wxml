@@ -1,25 +1,16 @@
 <wxs module="order" src="./order.wxs" />
 
 <wxs module="handleInvoice" src="./handleInvoice.wxs" />
-<wxs module="getNotes" src="./getNotes.wxs" />
 <view class="order-sure" wx:if="{{!loading}}">
   <address-card addressData="{{userAddress}}" bind:addclick="onGotoAddress" bind:addressclick="onGotoAddress" />
-  <view
-    class="order-wrapper"
-    wx:for="{{settleDetailData.storeGoodsList}}"
-    wx:for-item="stores"
-    wx:for-index="storeIndex"
-    wx:key="storeIndex"
-  >
+  <view class="order-wrapper">
     <view class="store-wrapper">
       <t-icon prefix="wr" size="40rpx" color="#333333" name="store" class="store-logo" />
-      {{stores.storeName}}
+      {{settleDetailData.storeName}}
     </view>
     <view
-      wx:if="{{orderCardList[storeIndex].goodsList.length > 0}}"
-      wx:for="{{orderCardList[storeIndex].goodsList}}"
+      wx:for="{{goodsCardList}}"
       wx:for-item="goods"
-      wx:for-index="gIndex"
       wx:key="id"
       class="goods-wrapper"
     >
@@ -41,15 +32,15 @@
         fill
         decimalSmaller
         wr-class="pay-item__right font-bold"
-        price="{{settleDetailData.totalSalePrice || '0'}}"
+        price="{{settleDetailData.price.goodsAmount || 0}}"
       />
     </view>
     <view class="pay-item">
       <text>运费</text>
       <view class="pay-item__right font-bold">
-        <block wx:if="{{settleDetailData.totalDeliveryFee && settleDetailData.totalDeliveryFee != 0}}">
+        <block wx:if="{{settleDetailData.price.shippingFee && settleDetailData.price.shippingFee != 0}}">
           +
-          <price fill decimalSmaller price="{{settleDetailData.totalDeliveryFee}}" />
+          <price fill decimalSmaller price="{{settleDetailData.price.shippingFee}}" />
         </block>
         <text wx:else>免运费</text>
       </view>
@@ -58,23 +49,18 @@
       <text>活动优惠</text>
       <view class="pay-item__right primary font-bold">
         -
-        <price fill price="{{settleDetailData.totalPromotionAmount || 0}}" />
+        <price fill price="{{settleDetailData.price.discountAmount || 0}}" />
       </view>
     </view>
     <view class="pay-item">
       <text>优惠券</text>
-      <view
-        class="pay-item__right"
-        data-storeid="{{settleDetailData.storeGoodsList[0].storeId}}"
-        catchtap="onOpenCoupons"
-      >
-        <block wx:if="{{submitCouponList.length}}">
-          <block wx:if="{{settleDetailData.totalCouponAmount && settleDetailData.totalCouponAmount !== '0'}}">
-            -<price fill decimalSmaller price="{{settleDetailData.totalCouponAmount}}" />
-          </block>
-          <block wx:else>选择优惠券</block>
+      <view class="pay-item__right" catchtap="onOpenCoupons">
+        <block wx:if="{{settleDetailData.couponAmount && settleDetailData.couponAmount != 0}}">
+          -<price fill decimalSmaller price="{{settleDetailData.couponAmount}}" />
         </block>
-        <text wx:else>无可用</text>
+        <block wx:else>
+          <text>{{submitCouponList.length ? '选择优惠券' : '无可用'}}</text>
+        </block>
         <t-icon name="chevron-right" size="32rpx" color="#BBBBBB" />
       </view>
     </view>
@@ -87,24 +73,22 @@
     </view>
     <view class="pay-item">
       <text>订单备注</text>
-      <view class="pay-item__right" data-storenoteindex="{{0}}" catchtap="onNotes">
-        <text class="pay-remark"
-          >{{getNotes(storeInfoList, 0) ? getNotes(storeInfoList, 0) :'选填，建议先和商家沟通确认'}}</text
-        >
+      <view class="pay-item__right" catchtap="onNotes">
+        <text class="pay-remark">{{remark ? remark : '选填，建议先和商家沟通确认'}}</text>
         <t-icon name="chevron-right" size="32rpx" color="#BBBBBB" />
       </view>
     </view>
   </view>
   <view class="amount-wrapper">
     <view class="pay-amount">
-      <text class="order-num">共{{settleDetailData.totalGoodsCount}}件</text>
+      <text class="order-num">共{{settleDetailData.goodsCount}}件</text>
       <text>小计</text>
-      <price class="total-price" price="{{settleDetailData.totalPayAmount}}" fill="{{false}}" decimalSmaller />
+      <price class="total-price" price="{{settleDetailData.price.payAmount}}" fill="{{false}}" decimalSmaller />
     </view>
   </view>
   <view class="wx-pay-cover">
     <view class="wx-pay">
-      <price decimalSmaller fill class="price" price="{{settleDetailData.totalPayAmount || '0'}}" />
+      <price decimalSmaller fill class="price" price="{{settleDetailData.price.payAmount || 0}}" />
       <view class="submit-btn {{ settleDetailData.settleType === 1 ? '':'btn-gray'}}" bindtap="submitOrder">
         提交订单
       </view>
@@ -127,7 +111,7 @@
       focus="{{dialogShow}}"
       class="notes"
       t-class="add-notes__textarea"
-      value="{{storeInfoList[storeNoteIndex] && storeInfoList[storeNoteIndex].remark}}"
+      value="{{remark}}"
       placeholder="备注信息"
       t-class-textarea="add-notes__textarea__font"
       bindfocus="onFocus"
@@ -141,9 +125,7 @@
   </t-popup>
   <select-coupons
     bind:sure="onCoupons"
-    storeId="{{currentStoreId}}"
-    orderSureCouponList="{{couponList}}"
-    promotionGoodsList="{{promotionGoodsList}}"
+    selectedCouponIds="{{selectedCouponIds}}"
     couponsShow="{{couponsShow}}"
   />
 </view>

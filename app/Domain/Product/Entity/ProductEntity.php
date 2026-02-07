@@ -72,9 +72,9 @@ final class ProductEntity
     /** @var null|array<string, mixed> */
     private ?array $attributesJson = null;
 
-    private ?float $minPrice = null;
+    private ?int $minPrice = null;
 
-    private ?float $maxPrice = null;
+    private ?int $maxPrice = null;
 
     private ?int $virtualSales = null;
 
@@ -139,9 +139,9 @@ final class ProductEntity
                 $sku->setSkuName($item['sku_name'] ?? '');
                 $sku->setSpecValues($item['spec_values'] ?? null);
                 $sku->setImage($item['image'] ?? null);
-                $sku->setCostPrice((float) ($item['cost_price'] ?? 0.0));
-                $sku->setMarketPrice((float) ($item['market_price'] ?? 0.0));
-                $sku->setSalePrice((float) ($item['sale_price'] ?? 0.0));
+                $sku->setCostPrice((int) ($item['cost_price'] ?? 0));
+                $sku->setMarketPrice((int) ($item['market_price'] ?? 0));
+                $sku->setSalePrice((int) ($item['sale_price'] ?? 0));
                 $sku->setStock((int) ($item['stock'] ?? 0));
                 $sku->setWarningStock((int) ($item['warning_stock'] ?? 0));
                 $sku->setWeight((float) ($item['weight'] ?? 0.0));
@@ -248,9 +248,9 @@ final class ProductEntity
                 $sku->setSkuName($item['sku_name'] ?? '');
                 $sku->setSpecValues($item['spec_values'] ?? null);
                 $sku->setImage($item['image'] ?? null);
-                $sku->setCostPrice((float) ($item['cost_price'] ?? 0.0));
-                $sku->setMarketPrice((float) ($item['market_price'] ?? 0.0));
-                $sku->setSalePrice((float) ($item['sale_price'] ?? 0.0));
+                $sku->setCostPrice((int) ($item['cost_price'] ?? 0));
+                $sku->setMarketPrice((int) ($item['market_price'] ?? 0));
+                $sku->setSalePrice((int) ($item['sale_price'] ?? 0));
                 $sku->setStock((int) ($item['stock'] ?? 0));
                 $sku->setWarningStock((int) ($item['warning_stock'] ?? 0));
                 $sku->setWeight((float) ($item['weight'] ?? 0.0));
@@ -407,22 +407,22 @@ final class ProductEntity
         $this->attributesJson = $attributes;
     }
 
-    public function getMinPrice(): ?float
+    public function getMinPrice(): ?int
     {
         return $this->minPrice;
     }
 
-    public function setMinPrice(?float $minPrice): void
+    public function setMinPrice(?int $minPrice): void
     {
         $this->minPrice = $minPrice;
     }
 
-    public function getMaxPrice(): ?float
+    public function getMaxPrice(): ?int
     {
         return $this->maxPrice;
     }
 
-    public function setMaxPrice(?float $maxPrice): void
+    public function setMaxPrice(?int $maxPrice): void
     {
         $this->maxPrice = $maxPrice;
     }
@@ -675,8 +675,8 @@ final class ProductEntity
     {
         $skus = $this->getSkus();
         if ($skus === null || $skus === []) {
-            $this->setMinPrice(0.0);
-            $this->setMaxPrice(0.0);
+            $this->setMinPrice(0);
+            $this->setMaxPrice(0);
             return;
         }
 

@@ -347,7 +347,7 @@ class ProductMockDataService
     }
 
     /**
-     * @return array{records: array<int, array<string, mixed>>, min: float, max: float}
+     * @return array{records: array<int, array<string, mixed>>, min: int, max: int}
      */
     private function buildSkuRecords(array $template, array $specSchema, array $galleryImages, string $productName): array
     {
@@ -357,10 +357,10 @@ class ProductMockDataService
 
         foreach ($combinations as $index => $combo) {
             $salePrice = $this->calculateSalePrice($template['price'] ?? [], $combo);
-            $marketDelta = $template['price']['market_delta'] ?? 300;
-            $marketPrice = round($salePrice + $marketDelta, 2);
+            $marketDelta = $template['price']['market_delta'] ?? 30000;
+            $marketPrice = $salePrice + $marketDelta;
             $costRatio = $template['price']['cost_ratio'] ?? 0.6;
-            $costPrice = round($salePrice * $costRatio, 2);
+            $costPrice = (int) round($salePrice * $costRatio);
             $stockRange = $template['stock_range'] ?? [40, 160];
             $stock = $this->faker->numberBetween($stockRange[0], $stockRange[1]);
             $warning = max(5, (int) round($stock * 0.12));
@@ -387,8 +387,8 @@ class ProductMockDataService
             $prices[] = $salePrice;
         }
 
-        $min = $prices ? min($prices) : 0.0;
-        $max = $prices ? max($prices) : 0.0;
+        $min = $prices ? min($prices) : 0;
+        $max = $prices ? max($prices) : 0;
 
         return [
             'records' => $records,
@@ -422,9 +422,9 @@ class ProductMockDataService
         return $combinations;
     }
 
-    private function calculateSalePrice(array $priceConfig, array $combo): float
+    private function calculateSalePrice(array $priceConfig, array $combo): int
     {
-        $price = $priceConfig['base'] ?? 0.0;
+        $price = $priceConfig['base'] ?? 0;
         $increments = $priceConfig['increments'] ?? [];
 
         foreach ($combo as $specName => $specValue) {
@@ -433,7 +433,7 @@ class ProductMockDataService
             }
         }
 
-        return round($price, 2);
+        return $price;
     }
 
     private function buildAttributeRows(array $template): array
@@ -891,12 +891,12 @@ class ProductMockDataService
                     '存储' => ['12GB+256GB', '16GB+512GB'],
                 ],
                 'price' => [
-                    'base' => 4499,
-                    'market_delta' => 500,
+                    'base' => 449900,
+                    'market_delta' => 50000,
                     'cost_ratio' => 0.61,
                     'increments' => [
-                        '颜色' => ['曜石黑' => 0, '星际蓝' => 150, '冰川白' => 200],
-                        '存储' => ['12GB+256GB' => 0, '16GB+512GB' => 900],
+                        '颜色' => ['曜石黑' => 0, '星际蓝' => 15000, '冰川白' => 20000],
+                        '存储' => ['12GB+256GB' => 0, '16GB+512GB' => 90000],
                     ],
                 ],
                 'brand_tags' => ['phone', 'digital'],
@@ -935,12 +935,12 @@ class ProductMockDataService
                     '形态' => ['横向折叠', '竖向折叠'],
                 ],
                 'price' => [
-                    'base' => 6999,
-                    'market_delta' => 800,
+                    'base' => 699900,
+                    'market_delta' => 80000,
                     'cost_ratio' => 0.58,
                     'increments' => [
-                        '颜色' => ['晨曦金' => 300, '青山黛' => 200, '曜夜黑' => 0],
-                        '形态' => ['横向折叠' => 0, '竖向折叠' => 600],
+                        '颜色' => ['晨曦金' => 30000, '青山黛' => 20000, '曜夜黑' => 0],
+                        '形态' => ['横向折叠' => 0, '竖向折叠' => 60000],
                     ],
                 ],
                 'brand_tags' => ['phone', 'wearable'],
@@ -979,12 +979,12 @@ class ProductMockDataService
                     '硬盘' => ['1TB SSD', '2TB SSD'],
                 ],
                 'price' => [
-                    'base' => 6299,
-                    'market_delta' => 700,
+                    'base' => 629900,
+                    'market_delta' => 70000,
                     'cost_ratio' => 0.59,
                     'increments' => [
-                        '内存' => ['16GB' => 0, '32GB' => 700],
-                        '硬盘' => ['1TB SSD' => 0, '2TB SSD' => 900],
+                        '内存' => ['16GB' => 0, '32GB' => 70000],
+                        '硬盘' => ['1TB SSD' => 0, '2TB SSD' => 90000],
                     ],
                 ],
                 'brand_tags' => ['laptop', 'digital'],
@@ -1023,12 +1023,12 @@ class ProductMockDataService
                     '硬盘' => ['1TB SSD', '2TB SSD'],
                 ],
                 'price' => [
-                    'base' => 10999,
-                    'market_delta' => 1200,
+                    'base' => 1099900,
+                    'market_delta' => 120000,
                     'cost_ratio' => 0.57,
                     'increments' => [
-                        '显卡' => ['RTX 4060' => 0, 'RTX 4070' => 1800],
-                        '硬盘' => ['1TB SSD' => 0, '2TB SSD' => 1200],
+                        '显卡' => ['RTX 4060' => 0, 'RTX 4070' => 180000],
+                        '硬盘' => ['1TB SSD' => 0, '2TB SSD' => 120000],
                     ],
                 ],
                 'brand_tags' => ['laptop', 'digital'],
@@ -1067,12 +1067,12 @@ class ProductMockDataService
                     '耳垫材质' => ['蛋白皮', '亲肤织物'],
                 ],
                 'price' => [
-                    'base' => 1899,
-                    'market_delta' => 300,
+                    'base' => 189900,
+                    'market_delta' => 30000,
                     'cost_ratio' => 0.55,
                     'increments' => [
-                        '颜色' => ['曜岩黑' => 0, '雾霜白' => 80, '绚光铜' => 120],
-                        '耳垫材质' => ['蛋白皮' => 0, '亲肤织物' => 50],
+                        '颜色' => ['曜岩黑' => 0, '雾霜白' => 8000, '绚光铜' => 12000],
+                        '耳垫材质' => ['蛋白皮' => 0, '亲肤织物' => 5000],
                     ],
                 ],
                 'brand_tags' => ['audio'],
@@ -1111,12 +1111,12 @@ class ProductMockDataService
                     '声道' => ['2.1 声道', '3D 全景声'],
                 ],
                 'price' => [
-                    'base' => 1699,
-                    'market_delta' => 320,
+                    'base' => 169900,
+                    'market_delta' => 32000,
                     'cost_ratio' => 0.5,
                     'increments' => [
-                        '配色' => ['雾白' => 0, '夜航灰' => 80],
-                        '声道' => ['2.1 声道' => 0, '3D 全景声' => 600],
+                        '配色' => ['雾白' => 0, '夜航灰' => 8000],
+                        '声道' => ['2.1 声道' => 0, '3D 全景声' => 60000],
                     ],
                 ],
                 'brand_tags' => ['audio', 'smart-home'],
@@ -1155,12 +1155,12 @@ class ProductMockDataService
                     '表带' => ['氟橡胶', '编织', '金属链'],
                 ],
                 'price' => [
-                    'base' => 2399,
-                    'market_delta' => 280,
+                    'base' => 239900,
+                    'market_delta' => 28000,
                     'cost_ratio' => 0.54,
                     'increments' => [
-                        '颜色' => ['曜夜黑' => 0, '光纱银' => 120, '赤茶金' => 180],
-                        '表带' => ['氟橡胶' => 0, '编织' => 90, '金属链' => 320],
+                        '颜色' => ['曜夜黑' => 0, '光纱银' => 12000, '赤茶金' => 18000],
+                        '表带' => ['氟橡胶' => 0, '编织' => 9000, '金属链' => 32000],
                     ],
                 ],
                 'brand_tags' => ['wearable', 'digital'],
@@ -1199,12 +1199,12 @@ class ProductMockDataService
                     '传感器数量' => ['6 件套', '10 件套'],
                 ],
                 'price' => [
-                    'base' => 2999,
-                    'market_delta' => 400,
+                    'base' => 299900,
+                    'market_delta' => 40000,
                     'cost_ratio' => 0.52,
                     'increments' => [
-                        '网关' => ['Zigbee 3.0' => 0, 'Matter 双模' => 500],
-                        '传感器数量' => ['6 件套' => 0, '10 件套' => 700],
+                        '网关' => ['Zigbee 3.0' => 0, 'Matter 双模' => 50000],
+                        '传感器数量' => ['6 件套' => 0, '10 件套' => 70000],
                     ],
                 ],
                 'brand_tags' => ['smart-home'],
@@ -1243,12 +1243,12 @@ class ProductMockDataService
                     '容积' => ['428L', '518L'],
                 ],
                 'price' => [
-                    'base' => 6999,
-                    'market_delta' => 900,
+                    'base' => 699900,
+                    'market_delta' => 90000,
                     'cost_ratio' => 0.56,
                     'increments' => [
-                        '颜色' => ['晨雾银' => 0, '曜夜黑' => 300],
-                        '容积' => ['428L' => 0, '518L' => 1200],
+                        '颜色' => ['晨雾银' => 0, '曜夜黑' => 30000],
+                        '容积' => ['428L' => 0, '518L' => 120000],
                     ],
                 ],
                 'brand_tags' => ['kitchen', 'appliance'],
@@ -1287,12 +1287,12 @@ class ProductMockDataService
                     '容量' => ['4L', '6L'],
                 ],
                 'price' => [
-                    'base' => 799,
-                    'market_delta' => 180,
+                    'base' => 79900,
+                    'market_delta' => 18000,
                     'cost_ratio' => 0.52,
                     'increments' => [
-                        '颜色' => ['砂岩白' => 0, '玄铁黑' => 50],
-                        '容量' => ['4L' => 0, '6L' => 200],
+                        '颜色' => ['砂岩白' => 0, '玄铁黑' => 5000],
+                        '容量' => ['4L' => 0, '6L' => 20000],
                     ],
                 ],
                 'brand_tags' => ['kitchen', 'appliance'],
@@ -1331,12 +1331,12 @@ class ProductMockDataService
                     '配色' => ['陶瓷白', '星夜灰'],
                 ],
                 'price' => [
-                    'base' => 4299,
-                    'market_delta' => 600,
+                    'base' => 429900,
+                    'market_delta' => 60000,
                     'cost_ratio' => 0.58,
                     'increments' => [
-                        '基站' => ['自动集尘' => 0, '洗拖一体' => 1200],
-                        '配色' => ['陶瓷白' => 0, '星夜灰' => 200],
+                        '基站' => ['自动集尘' => 0, '洗拖一体' => 120000],
+                        '配色' => ['陶瓷白' => 0, '星夜灰' => 20000],
                     ],
                 ],
                 'brand_tags' => ['appliance', 'smart-home'],
@@ -1375,12 +1375,12 @@ class ProductMockDataService
                     '尺寸' => ['三人位', '四人位+贵妃'],
                 ],
                 'price' => [
-                    'base' => 8999,
-                    'market_delta' => 1500,
+                    'base' => 899900,
+                    'market_delta' => 150000,
                     'cost_ratio' => 0.52,
                     'increments' => [
-                        '颜色' => ['云雾灰' => 0, '暮蓝' => 400],
-                        '尺寸' => ['三人位' => 0, '四人位+贵妃' => 2000],
+                        '颜色' => ['云雾灰' => 0, '暮蓝' => 40000],
+                        '尺寸' => ['三人位' => 0, '四人位+贵妃' => 200000],
                     ],
                 ],
                 'brand_tags' => ['furniture'],
@@ -1419,12 +1419,12 @@ class ProductMockDataService
                     '硬度' => ['软适中', '偏硬'],
                 ],
                 'price' => [
-                    'base' => 5699,
-                    'market_delta' => 700,
+                    'base' => 569900,
+                    'market_delta' => 70000,
                     'cost_ratio' => 0.5,
                     'increments' => [
-                        '尺寸' => ['1.5m' => 0, '1.8m' => 600],
-                        '硬度' => ['软适中' => 0, '偏硬' => 300],
+                        '尺寸' => ['1.5m' => 0, '1.8m' => 60000],
+                        '硬度' => ['软适中' => 0, '偏硬' => 30000],
                     ],
                 ],
                 'brand_tags' => ['bedding'],
@@ -1463,12 +1463,12 @@ class ProductMockDataService
                     '适用面积' => ['70㎡', '100㎡'],
                 ],
                 'price' => [
-                    'base' => 2599,
-                    'market_delta' => 350,
+                    'base' => 259900,
+                    'market_delta' => 35000,
                     'cost_ratio' => 0.53,
                     'increments' => [
-                        '滤芯' => ['HEPA13' => 0, '双重碳滤' => 400],
-                        '适用面积' => ['70㎡' => 0, '100㎡' => 600],
+                        '滤芯' => ['HEPA13' => 0, '双重碳滤' => 40000],
+                        '适用面积' => ['70㎡' => 0, '100㎡' => 60000],
                     ],
                 ],
                 'brand_tags' => ['air'],
@@ -1507,12 +1507,12 @@ class ProductMockDataService
                     '水箱容量' => ['2L', '3.5L'],
                 ],
                 'price' => [
-                    'base' => 1299,
-                    'market_delta' => 200,
+                    'base' => 129900,
+                    'market_delta' => 20000,
                     'cost_ratio' => 0.5,
                     'increments' => [
-                        '颜色' => ['陶土橙' => 0, '云母白' => 80],
-                        '水箱容量' => ['2L' => 0, '3.5L' => 180],
+                        '颜色' => ['陶土橙' => 0, '云母白' => 8000],
+                        '水箱容量' => ['2L' => 0, '3.5L' => 18000],
                     ],
                 ],
                 'brand_tags' => ['aroma', 'air', 'home'],
@@ -1551,12 +1551,12 @@ class ProductMockDataService
                     '尺码' => ['39', '40', '41', '42', '43', '44'],
                 ],
                 'price' => [
-                    'base' => 1399,
-                    'market_delta' => 200,
+                    'base' => 139900,
+                    'market_delta' => 20000,
                     'cost_ratio' => 0.48,
                     'increments' => [
-                        '颜色' => ['霓虹橙' => 0, '银河白' => 40, '天际蓝' => 60],
-                        '尺码' => ['39' => 0, '40' => 0, '41' => 20, '42' => 20, '43' => 30, '44' => 30],
+                        '颜色' => ['霓虹橙' => 0, '银河白' => 4000, '天际蓝' => 6000],
+                        '尺码' => ['39' => 0, '40' => 0, '41' => 2000, '42' => 2000, '43' => 3000, '44' => 3000],
                     ],
                 ],
                 'brand_tags' => ['sports', 'running'],
@@ -1595,12 +1595,12 @@ class ProductMockDataService
                     '套件' => ['105 Di2', 'Ultegra Di2'],
                 ],
                 'price' => [
-                    'base' => 22800,
-                    'market_delta' => 2000,
+                    'base' => 2280000,
+                    'market_delta' => 200000,
                     'cost_ratio' => 0.46,
                     'increments' => [
-                        '车架' => ['碳纤维轻量' => 0, '碳纤维爬坡' => 2500],
-                        '套件' => ['105 Di2' => 0, 'Ultegra Di2' => 4800],
+                        '车架' => ['碳纤维轻量' => 0, '碳纤维爬坡' => 250000],
+                        '套件' => ['105 Di2' => 0, 'Ultegra Di2' => 480000],
                     ],
                 ],
                 'brand_tags' => ['cycling', 'sports'],
@@ -1639,12 +1639,12 @@ class ProductMockDataService
                     '容量' => ['28L', '38L'],
                 ],
                 'price' => [
-                    'base' => 1399,
-                    'market_delta' => 220,
+                    'base' => 139900,
+                    'market_delta' => 22000,
                     'cost_ratio' => 0.5,
                     'increments' => [
-                        '颜色' => ['岩石灰' => 0, '苔藓绿' => 60],
-                        '容量' => ['28L' => 0, '38L' => 260],
+                        '颜色' => ['岩石灰' => 0, '苔藓绿' => 6000],
+                        '容量' => ['28L' => 0, '38L' => 26000],
                     ],
                 ],
                 'brand_tags' => ['outdoor', 'travel'],
@@ -1683,12 +1683,12 @@ class ProductMockDataService
                     '规格' => ['标准装', '豪华礼盒'],
                 ],
                 'price' => [
-                    'base' => 1599,
-                    'market_delta' => 260,
+                    'base' => 159900,
+                    'market_delta' => 26000,
                     'cost_ratio' => 0.48,
                     'increments' => [
-                        '肤质' => ['干皮' => 0, '混合' => 40, '油皮' => 80],
-                        '规格' => ['标准装' => 0, '豪华礼盒' => 300],
+                        '肤质' => ['干皮' => 0, '混合' => 4000, '油皮' => 8000],
+                        '规格' => ['标准装' => 0, '豪华礼盒' => 30000],
                     ],
                 ],
                 'brand_tags' => ['beauty'],
@@ -1727,12 +1727,12 @@ class ProductMockDataService
                     '包装规格' => ['250g', '500g'],
                 ],
                 'price' => [
-                    'base' => 129,
-                    'market_delta' => 40,
+                    'base' => 12900,
+                    'market_delta' => 4000,
                     'cost_ratio' => 0.42,
                     'increments' => [
-                        '烘焙度' => ['浅烘' => 0, '中烘' => 10, '中深烘' => 15],
-                        '包装规格' => ['250g' => 0, '500g' => 60],
+                        '烘焙度' => ['浅烘' => 0, '中烘' => 1000, '中深烘' => 1500],
+                        '包装规格' => ['250g' => 0, '500g' => 6000],
                     ],
                 ],
                 'brand_tags' => ['coffee'],

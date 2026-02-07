@@ -29,11 +29,11 @@ final class OrderItemEntity
      */
     private ?array $specValues = [];
 
-    private float $unitPrice = 0.0;
+    private int $unitPrice = 0;
 
     private int $quantity = 0;
 
-    private float $totalPrice = 0.0;
+    private int $totalPrice = 0;
 
     private float $weight = 0.0;
 
@@ -103,13 +103,13 @@ final class OrderItemEntity
         return $this->specValues;
     }
 
-    public function setUnitPrice(float $unitPrice): void
+    public function setUnitPrice(int $unitPrice): void
     {
-        $this->unitPrice = round($unitPrice, 2);
+        $this->unitPrice = $unitPrice;
         $this->syncTotalPrice();
     }
 
-    public function getUnitPrice(): float
+    public function getUnitPrice(): int
     {
         return $this->unitPrice;
     }
@@ -125,12 +125,12 @@ final class OrderItemEntity
         return $this->quantity;
     }
 
-    public function setTotalPrice(float $totalPrice): void
+    public function setTotalPrice(int $totalPrice): void
     {
-        $this->totalPrice = round($totalPrice, 2);
+        $this->totalPrice = $totalPrice;
     }
 
-    public function getTotalPrice(): float
+    public function getTotalPrice(): int
     {
         return $this->totalPrice;
     }
@@ -158,7 +158,7 @@ final class OrderItemEntity
         $item->setProductImage($payload['product_image'] ?? null);
         $item->setSpecValues(\is_array($payload['spec_values'] ?? null) ? $payload['spec_values'] : []);
         if (isset($payload['unit_price'])) {
-            $item->setUnitPrice((float) $payload['unit_price']);
+            $item->setUnitPrice((int) $payload['unit_price']);
         }
         $item->setQuantity((int) ($payload['quantity'] ?? 0));
         $item->ensureQuantityPositive();
@@ -183,7 +183,7 @@ final class OrderItemEntity
             $this->setSpecValues($specValues);
         }
         if (isset($snapshot['sale_price'])) {
-            $this->setUnitPrice((float) $snapshot['sale_price']);
+            $this->setUnitPrice((int) $snapshot['sale_price']);
         }
         if (isset($snapshot['weight'])) {
             $this->setWeight((float) $snapshot['weight']);
@@ -200,28 +200,26 @@ final class OrderItemEntity
     public function toArray(): array
     {
         return [
+            'product_id' => $this->getProductId(),
             'sku_id' => $this->getSkuId(),
             'product_name' => $this->getProductName(),
             'sku_name' => $this->getSkuName(),
             'product_image' => $this->getProductImage(),
             'spec_values' => $this->getSpecValues(),
-            'unit_price' => $this->getUnitPrice(),
+            'unit_price' => $this->getUnitPrice(),  // int 分
             'quantity' => $this->getQuantity(),
-            'total_price' => $this->getTotalPrice(),
+            'total_price' => $this->getTotalPrice(), // int 分
+            'weight' => $this->getWeight(),
         ];
     }
 
     private function syncTotalPrice(): void
     {
         if ($this->quantity <= 0) {
-            $this->totalPrice = 0.0;
+            $this->totalPrice = 0;
             return;
         }
 
-        $this->totalPrice = (float) bcmul(
-            number_format($this->unitPrice, 2, '.', ''),
-            (string) $this->quantity,
-            2
-        );
+        $this->totalPrice = $this->unitPrice * $this->quantity;
     }
 }

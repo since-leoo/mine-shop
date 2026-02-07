@@ -363,18 +363,18 @@ export default function getFormItems(
       step: 4,
     },
     {
-      label: () => '最低价',
+      label: () => '最低价（元）',
       prop: 'min_price',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full' },
+      renderProps: { min: 0, precision: 2, class: 'w-full' },
       cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
-      label: () => '最高价',
+      label: () => '最高价（元）',
       prop: 'max_price',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full' },
+      renderProps: { min: 0, precision: 2, class: 'w-full' },
       cols: { md: 12, xs: 24 },
       step: 2,
     },
@@ -598,39 +598,42 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="成本价" width="110">
+            <el-table-column label="成本价（元）" width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
                     modelValue={row.cost_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.cost_price = val}
                     min={0}
+                    precision={2}
                     class="w-full"
                     controls-position="right"
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="市场价" width="110">
+            <el-table-column label="市场价（元）" width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
                     modelValue={row.market_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.market_price = val}
                     min={0}
+                    precision={2}
                     class="w-full"
                     controls-position="right"
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="销售价" width="110">
+            <el-table-column label="销售价（元）" width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
                     modelValue={row.sale_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.sale_price = val}
                     min={0}
+                    precision={2}
                     class="w-full"
                     controls-position="right"
                   />

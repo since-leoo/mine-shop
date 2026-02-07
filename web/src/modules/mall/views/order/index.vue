@@ -202,7 +202,7 @@
         </el-table-column>
         <el-table-column label="实付金额" width="120">
           <template #default="{ row }">
-            <span class="text-red-500 font-semibold">¥{{ row.pay_amount }}</span>
+            <span class="text-red-500 font-semibold">¥{{ formatYuan(row.pay_amount) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="订单状态" width="110">
@@ -333,6 +333,7 @@ import {
   Tickets,
 } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
+import { formatYuan } from '@/utils/price'
 import { orderApi, type OrderVo } from '~/mall/api/order'
 import OrderDetail from './detail.vue'
 

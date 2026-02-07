@@ -14,65 +14,65 @@ namespace App\Domain\Order\ValueObject;
 
 final class OrderPriceValue
 {
-    private float $goodsAmount = 0.0;
+    private int $goodsAmount = 0;
 
-    private float $discountAmount = 0.0;
+    private int $discountAmount = 0;
 
-    private float $shippingFee = 0.0;
+    private int $shippingFee = 0;
 
-    private float $totalAmount = 0.0;
+    private int $totalAmount = 0;
 
-    private float $payAmount = 0.0;
+    private int $payAmount = 0;
 
-    public function setGoodsAmount(float $goodsAmount): void
+    public function setGoodsAmount(int $goodsAmount): void
     {
-        $this->goodsAmount = round($goodsAmount, 2);
+        $this->goodsAmount = $goodsAmount;
         $this->recalculate();
     }
 
-    public function getGoodsAmount(): float
+    public function getGoodsAmount(): int
     {
         return $this->goodsAmount;
     }
 
-    public function setDiscountAmount(float $discountAmount): void
+    public function setDiscountAmount(int $discountAmount): void
     {
-        $this->discountAmount = round($discountAmount, 2);
+        $this->discountAmount = $discountAmount;
         $this->recalculate();
     }
 
-    public function getDiscountAmount(): float
+    public function getDiscountAmount(): int
     {
         return $this->discountAmount;
     }
 
-    public function setShippingFee(float $shippingFee): void
+    public function setShippingFee(int $shippingFee): void
     {
-        $this->shippingFee = round($shippingFee, 2);
+        $this->shippingFee = $shippingFee;
         $this->recalculate();
     }
 
-    public function getShippingFee(): float
+    public function getShippingFee(): int
     {
         return $this->shippingFee;
     }
 
-    public function setTotalAmount(float $totalAmount): void
+    public function setTotalAmount(int $totalAmount): void
     {
-        $this->totalAmount = round($totalAmount, 2);
+        $this->totalAmount = $totalAmount;
     }
 
-    public function getTotalAmount(): float
+    public function getTotalAmount(): int
     {
         return $this->totalAmount;
     }
 
-    public function setPayAmount(float $payAmount): void
+    public function setPayAmount(int $payAmount): void
     {
-        $this->payAmount = round($payAmount, 2);
+        $this->payAmount = $payAmount;
     }
 
-    public function getPayAmount(): float
+    public function getPayAmount(): int
     {
         return $this->payAmount;
     }
@@ -90,7 +90,7 @@ final class OrderPriceValue
 
     private function recalculate(): void
     {
-        $this->totalAmount = round($this->goodsAmount - $this->discountAmount, 2);
-        $this->payAmount = round($this->totalAmount + $this->shippingFee, 2);
+        $this->totalAmount = $this->goodsAmount - $this->discountAmount;
+        $this->payAmount = $this->totalAmount + $this->shippingFee;
     }
 }

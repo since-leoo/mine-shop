@@ -5,9 +5,6 @@ const AuthStepType = {
 };
 
 Component({
-  options: {
-    multipleSlots: true,
-  },
   properties: {
     currAuthStep: {
       type: Number,
@@ -17,19 +14,35 @@ Component({
       type: Object,
       value: {},
     },
-    isNeedGetUserInfo: {
-      type: Boolean,
-      value: false,
+    couponCount: {
+      type: Number,
+      value: 0,
     },
   },
   data: {
-    defaultAvatarUrl: 'https://tdesign.gtimg.com/miniprogram/template/retail/usercenter/icon-user-center-avatar@2x.png',
+    defaultAvatarUrl:
+      'https://tdesign.gtimg.com/miniprogram/template/retail/usercenter/icon-user-center-avatar@2x.png',
     AuthStepType,
+    statusBarHeight: 20,
+  },
+  lifetimes: {
+    attached() {
+      const sysInfo = wx.getSystemInfoSync();
+      this.setData({ statusBarHeight: sysInfo.statusBarHeight || 20 });
+    },
   },
   methods: {
     gotoUserEditPage() {
       this.triggerEvent('gotoUserEditPage');
     },
-    stopTap() {},
+    onTapPoints() {
+      this.triggerEvent('onTapPoints');
+    },
+    onTapBalance() {
+      this.triggerEvent('onTapBalance');
+    },
+    onTapCoupon() {
+      this.triggerEvent('onTapCoupon');
+    },
   },
 });

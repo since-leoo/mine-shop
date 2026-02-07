@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
+use App\Domain\Member\Contract\MemberAddressInput;
 use App\Domain\Member\Repository\MemberAddressRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
@@ -37,8 +38,9 @@ final class MemberAddressService extends IService
         return $address->toArray();
     }
 
-    public function create(int $memberId, array $payload): array
+    public function create(int $memberId, MemberAddressInput $input): array
     {
+        $payload = $input->toArray();
         $isDefault = (bool) ($payload['is_default'] ?? false);
         if ($isDefault) {
             $this->repository->unsetDefault($memberId);
@@ -50,13 +52,14 @@ final class MemberAddressService extends IService
         return $address->toArray();
     }
 
-    public function update(int $memberId, int $addressId, array $payload): array
+    public function update(int $memberId, int $addressId, MemberAddressInput $input): array
     {
         $address = $this->repository->findForMember($memberId, $addressId);
         if ($address === null) {
             throw new BusinessException(ResultCode::NOT_FOUND, '地址不存在');
         }
 
+        $payload = $input->toArray();
         if (isset($payload['is_default']) && (bool) $payload['is_default'] === true) {
             $this->repository->unsetDefault($memberId);
         }

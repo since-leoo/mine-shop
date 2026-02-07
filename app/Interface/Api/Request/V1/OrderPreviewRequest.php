@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
+use App\Domain\Order\Contract\OrderPreviewInput;
+use App\Interface\Api\DTO\Order\OrderPreviewDto;
 use App\Interface\Common\Request\BaseRequest;
 
 class OrderPreviewRequest extends BaseRequest
@@ -22,11 +24,19 @@ class OrderPreviewRequest extends BaseRequest
             'goods_request_list' => ['required', 'array', 'min:1'],
             'goods_request_list.*.sku_id' => ['required', 'integer', 'min:1'],
             'goods_request_list.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
-            'user_address' => ['nullable', 'array'],
+            'order_type' => ['nullable', 'string', 'in:normal'],
             'address_id' => ['nullable', 'integer', 'min:1'],
+            'user_address' => ['nullable', 'array'],
+            'user_address.name' => ['nullable', 'string', 'max:60'],
+            'user_address.phone' => ['nullable', 'string', 'max:20'],
+            'user_address.province' => ['nullable', 'string', 'max:30'],
+            'user_address.city' => ['nullable', 'string', 'max:30'],
+            'user_address.district' => ['nullable', 'string', 'max:30'],
+            'user_address.detail' => ['nullable', 'string', 'max:200'],
             'coupon_list' => ['nullable', 'array'],
-            'coupon_list.*.coupon_id' => ['nullable', 'integer', 'min:1'],
+            'coupon_list.*.coupon_id' => ['required', 'integer', 'min:1'],
             'store_info_list' => ['nullable', 'array'],
+            'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
         ];
     }
 
@@ -40,28 +50,17 @@ class OrderPreviewRequest extends BaseRequest
         ];
     }
 
-    protected function prepareForValidation(): void
+    public function toDto(int $memberId): OrderPreviewInput
     {
-        $data = $this->all();
-
-        if (isset($data['goodsRequestList']) && ! isset($data['goods_request_list'])) {
-            $this->merge(['goods_request_list' => $data['goodsRequestList']]);
-        }
-
-        if (isset($data['userAddressReq']) && ! isset($data['user_address'])) {
-            $this->merge(['user_address' => $data['userAddressReq']]);
-        }
-
-        if (isset($data['addressId']) && ! isset($data['address_id'])) {
-            $this->merge(['address_id' => $data['addressId']]);
-        }
-
-        if (isset($data['couponList']) && ! isset($data['coupon_list'])) {
-            $this->merge(['coupon_list' => $data['couponList']]);
-        }
-
-        if (isset($data['storeInfoList']) && ! isset($data['store_info_list'])) {
-            $this->merge(['store_info_list' => $data['storeInfoList']]);
-        }
+        $dto = new OrderPreviewDto();
+        $params = $this->validated();
+        $dto->member_id = $memberId;
+        $dto->order_type = $params['order_type'] ?? 'normal';
+        $dto->goods_request_list = $params['goods_request_list'];
+        $dto->address_id = $params['address_id'] ?? null;
+        $dto->user_address = $params['user_address'] ?? null;
+        $dto->coupon_list = $params['coupon_list'] ?? null;
+        $dto->store_info_list = $params['store_info_list'] ?? null;
+        return $dto;
     }
 }

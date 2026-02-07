@@ -35,10 +35,10 @@ class GroupBuyDto implements GroupBuyCreateInput, GroupBuyUpdateInput
     public int $sku_id = 0;
 
     #[Required]
-    public float $original_price = 0.0;
+    public int $original_price = 0;
 
     #[Required]
-    public float $group_price = 0.0;
+    public int $group_price = 0;
 
     #[Required]
     public int $min_people = 2;
@@ -96,12 +96,12 @@ class GroupBuyDto implements GroupBuyCreateInput, GroupBuyUpdateInput
         return $this->sku_id;
     }
 
-    public function getOriginalPrice(): float
+    public function getOriginalPrice(): int
     {
         return $this->original_price;
     }
 
-    public function getGroupPrice(): float
+    public function getGroupPrice(): int
     {
         return $this->group_price;
     }

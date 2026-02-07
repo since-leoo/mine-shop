@@ -11,6 +11,7 @@ declare(strict_types=1);
  */
 use App\Domain\Attachment\Listener\UploadSubscriber;
 use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
+use App\Domain\Order\Listener\OrderCreatedListener;
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
 use App\Domain\Product\Listener\ProductStockWarningListener;
@@ -46,4 +47,6 @@ return [
     OrderStatusNotifyListener::class,
     // 会员账户流水
     RecordMemberBalanceLogListener::class,
+    // 订单创建日志
+    OrderCreatedListener::class,
 ];

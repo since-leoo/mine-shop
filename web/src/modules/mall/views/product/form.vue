@@ -14,6 +14,7 @@ import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { centsToYuan, yuanToCents } from '@/utils/price'
 
 defineOptions({ name: 'mall:product:form' })
 
@@ -37,19 +38,19 @@ async function loadDetail() {
   }
   const res = await detail(data.id)
   
-  // 转换数字类型字段
+  // 转换数字类型字段（API返回分，表单显示元）
   const normalizedData = {
     ...res.data,
-    min_price: res.data.min_price ? Number(res.data.min_price) : 0,
-    max_price: res.data.max_price ? Number(res.data.max_price) : 0,
+    min_price: centsToYuan(res.data.min_price),
+    max_price: centsToYuan(res.data.max_price),
     virtual_sales: res.data.virtual_sales ? Number(res.data.virtual_sales) : 0,
     real_sales: res.data.real_sales ? Number(res.data.real_sales) : 0,
     sort: res.data.sort ? Number(res.data.sort) : 0,
     skus: res.data.skus?.map((sku: any) => ({
       ...sku,
-      cost_price: sku.cost_price ? Number(sku.cost_price) : 0,
-      market_price: sku.market_price ? Number(sku.market_price) : 0,
-      sale_price: sku.sale_price ? Number(sku.sale_price) : 0,
+      cost_price: centsToYuan(sku.cost_price),
+      market_price: centsToYuan(sku.market_price),
+      sale_price: centsToYuan(sku.sale_price),
       stock: sku.stock ? Number(sku.stock) : 0,
       warning_stock: sku.warning_stock ? Number(sku.warning_stock) : 0,
       weight: sku.weight ? Number(sku.weight) : 0,
@@ -91,7 +92,15 @@ function normalizeSkus(skus: ProductSkuVo[] = []): ProductSkuVo[] {
 
 function buildPayload(): ProductVo {
   const payload: ProductVo = { ...model.value }
-  payload.skus = normalizeSkus(payload.skus || [])
+  // 表单中价格为元，提交时转换为分
+  payload.min_price = yuanToCents(payload.min_price) as any
+  payload.max_price = yuanToCents(payload.max_price) as any
+  payload.skus = normalizeSkus(payload.skus || []).map((sku) => ({
+    ...sku,
+    cost_price: yuanToCents(sku.cost_price),
+    market_price: yuanToCents(sku.market_price),
+    sale_price: yuanToCents(sku.sale_price),
+  }))
   if (payload.gallery_images) {
     payload.gallery = payload.gallery_images.map((url, index) => ({
       image_url: url,

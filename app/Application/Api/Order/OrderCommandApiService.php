@@ -12,36 +12,34 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Order;
 
+use App\Domain\Order\Contract\OrderPreviewInput;
+use App\Domain\Order\Contract\OrderSubmitInput;
 use App\Domain\Order\Event\OrderCreatedEvent;
-use App\Domain\Order\Mapper\OrderMapper;
 use App\Domain\Order\Service\OrderService;
 use App\Domain\SystemSetting\Service\MallSettingService;
+use Hyperf\DbConnection\Db;
 
 final class OrderCommandApiService
 {
     public function __construct(
-        private readonly OrderPayloadFactory $payloadFactory,
         private readonly OrderService $orderService,
         private readonly OrderCheckoutTransformer $transformer,
         private readonly MallSettingService $mallSettingService
     ) {}
 
-    public function preview(OrderCreateDto $dto): array
+    public function preview(OrderPreviewInput $input): array
     {
-        $orderEntity = OrderMapper::getNewEntity();
-        $orderEntity->create($dto);
-        $draft = $this->orderService->preview($orderEntity);
+        $draft = $this->orderService->preview($input);
 
         return $this->transformer->transform($draft);
     }
 
     /**
-     * @param array<string, mixed> $payload
      * @throws \Throwable
      */
-    public function submit(int $memberId, array $payload): array
+    public function submit(OrderSubmitInput $input): array
     {
-        $orderEntity = $this->orderService->submit($this->payloadFactory->make($memberId, $payload));
+        $orderEntity = Db::transaction(fn () => $this->orderService->submit($input));
         // 订单创建成功
         event(new OrderCreatedEvent($orderEntity));
 

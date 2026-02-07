@@ -19,6 +19,7 @@ use App\Interface\Common\ResultCode;
 
 /**
  * 会员钱包实体：聚合积分余额、累计值以及成长值信息.
+ * 余额钱包金额单位为分（int），积分钱包为整数.
  */
 final class MemberWalletEntity
 {
@@ -28,19 +29,19 @@ final class MemberWalletEntity
 
     private string $type = 'balance';
 
-    private float $balance = 0.0;
+    private int $balance = 0;
 
-    private float $changeBalance = 0.0;
+    private int $changeBalance = 0;
 
-    private float $beforeBalance = 0.0;
+    private int $beforeBalance = 0;
 
-    private float $afterBalance = 0.0;
+    private int $afterBalance = 0;
 
-    private float $frozenBalance = 0.0;
+    private int $frozenBalance = 0;
 
-    private float $totalRecharge = 0.0;
+    private int $totalRecharge = 0;
 
-    private float $totalConsume = 0.0;
+    private int $totalConsume = 0;
 
     private string $payPassword = '';
 
@@ -55,7 +56,7 @@ final class MemberWalletEntity
      */
     public function adjustBalance(MemberWalletInput $dto): BalanceChangeVo
     {
-        $this->setChangeBalance($dto->getValue());
+        $this->setChangeBalance((int) $dto->getValue());
         $this->setSource($dto->getSource());
         $this->setRemark($dto->getRemark());
 
@@ -86,27 +87,27 @@ final class MemberWalletEntity
         $this->type = $type;
     }
 
-    public function setBalance(float $balance): void
+    public function setBalance(int $balance): void
     {
         $this->balance = $balance;
     }
 
-    public function setChangeBalance(float $changeBalance): void
+    public function setChangeBalance(int $changeBalance): void
     {
         $this->changeBalance = $changeBalance;
     }
 
-    public function setFrozenBalance(float $frozenBalance): void
+    public function setFrozenBalance(int $frozenBalance): void
     {
         $this->frozenBalance = $frozenBalance;
     }
 
-    public function setTotalRecharge(float $totalRecharge): void
+    public function setTotalRecharge(int $totalRecharge): void
     {
         $this->totalRecharge = $totalRecharge;
     }
 
-    public function setTotalConsume(float $totalConsume): void
+    public function setTotalConsume(int $totalConsume): void
     {
         $this->totalConsume = $totalConsume;
     }
@@ -131,17 +132,17 @@ final class MemberWalletEntity
         $this->source = $source;
     }
 
-    public function setBeforeBalance(float $beforeBalance): void
+    public function setBeforeBalance(int $beforeBalance): void
     {
         $this->beforeBalance = $beforeBalance;
     }
 
-    public function setAfterBalance(float $afterBalance): void
+    public function setAfterBalance(int $afterBalance): void
     {
         $this->afterBalance = $afterBalance;
     }
 
-    public function getBeforeBalance(): float
+    public function getBeforeBalance(): int
     {
         return $this->beforeBalance;
     }
@@ -161,32 +162,32 @@ final class MemberWalletEntity
         return $this->type;
     }
 
-    public function getBalance(): float
+    public function getBalance(): int
     {
         return $this->balance;
     }
 
-    public function getChangeBalance(): float
+    public function getChangeBalance(): int
     {
         return $this->changeBalance;
     }
 
-    public function getAfterBalance(): float
+    public function getAfterBalance(): int
     {
         return $this->afterBalance;
     }
 
-    public function getFrozenBalance(): float
+    public function getFrozenBalance(): int
     {
         return $this->frozenBalance;
     }
 
-    public function getTotalRecharge(): float
+    public function getTotalRecharge(): int
     {
         return $this->totalRecharge;
     }
 
-    public function getTotalConsume(): float
+    public function getTotalConsume(): int
     {
         return $this->totalConsume;
     }
@@ -212,22 +213,22 @@ final class MemberWalletEntity
     }
 
     /**
-     * 调整积分，返回变更前后的余额.
+     * 执行余额变更（整数运算，单位为分或积分）.
      */
     public function changeBalance(): void
     {
-        if ($this->changeBalance === 0.0) {
+        if ($this->changeBalance === 0) {
             throw new BusinessException(ResultCode::FAIL, '变动值不能为 0');
         }
 
         $this->setBeforeBalance($this->balance);
-        $after = (float) bcadd((string) $this->balance, (string) $this->changeBalance, 2);
+        $after = $this->balance + $this->changeBalance;
 
         // 领域不变量：余额不能为负数
         if ($after < 0) {
             throw new BusinessException(
                 ResultCode::FAIL,
-                \sprintf('余额不足，当前余额：%.2f，变动金额：%.2f', $this->balance, $this->changeBalance)
+                \sprintf('余额不足，当前余额：%d，变动金额：%d', $this->balance, $this->changeBalance)
             );
         }
 
@@ -236,10 +237,9 @@ final class MemberWalletEntity
 
         // 更新累计充值或消费
         if ($this->changeBalance > 0) {
-            $this->totalRecharge = (float) bcadd((string) $this->totalRecharge, (string) $this->changeBalance, 2);
+            $this->totalRecharge += $this->changeBalance;
         } else {
-            $consume = (string) abs($this->changeBalance);
-            $this->totalConsume = (float) bcadd((string) $this->totalConsume, $consume, 2);
+            $this->totalConsume += abs($this->changeBalance);
         }
     }
 

@@ -10,17 +10,14 @@
 </wxs>
 
 <view class="address-card wr-class">
-	<t-cell wx:if="{{addressData && addressData.detailAddress}}" bindtap="onAddressTap" hover>
+	<t-cell wx:if="{{addressData && addressData.detail}}" bindtap="onAddressTap" hover>
 		<view class="order-address" slot="title">
 			<t-icon name="location" color="#333333" size="40rpx" />
 			<view class="address-content">
 				<view class="title">
-					<view class="address-tag" wx:if="{{addressData.addressTag}}">
-						{{addressData.addressTag}}
-					</view>
-					{{addressData.provinceName}} {{addressData.cityName}} {{addressData.districtName}}
+					{{addressData.province}} {{addressData.city}} {{addressData.district}}
 				</view>
-				<view class="detail">{{addressData.detailAddress}}</view>
+				<view class="detail">{{addressData.detail}}</view>
 				<view class="info">
 					{{addressData.name}} {{utils.hidePhoneNum(addressData.phone)}}
 				</view>
@@ -43,4 +40,3 @@
 	</t-cell>
 	<view class="top-line" />
 </view>
-

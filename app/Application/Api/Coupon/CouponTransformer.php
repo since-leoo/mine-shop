@@ -68,16 +68,18 @@ final class CouponTransformer
     private function resolveValue(Coupon $coupon): float|int
     {
         return $this->normalizeType($coupon) === 'discount'
-            ? (float) $coupon->value
+            ? (int) $coupon->value
             : $this->toCent($coupon->value);
     }
 
     private function formatDiscountValue(Coupon $coupon): int
     {
         if ($this->normalizeType($coupon) === 'discount') {
-            return (int) round(((float) $coupon->value) * 10);
+            // percent类型value存储为850表示8.5折，直接返回
+            return (int) $coupon->value;
         }
 
+        // fixed类型value已经是分
         return $this->toCent($coupon->value);
     }
 
@@ -95,7 +97,8 @@ final class CouponTransformer
     {
         $minAmount = $this->formatAmount($coupon->min_amount ?? 0);
         if ($this->normalizeType($coupon) === 'discount') {
-            $discount = rtrim(rtrim(number_format((float) $coupon->value, 1, '.', ''), '0'), '.');
+            // value 850 → 8.5折
+            $discount = rtrim(rtrim(number_format((int) $coupon->value / 100, 1, '.', ''), '0'), '.');
             return $minAmount === '0'
                 ? \sprintf('%s折', $discount)
                 : \sprintf('满%s享%s折', $minAmount, $discount);
@@ -109,10 +112,14 @@ final class CouponTransformer
         return \sprintf('满%s减%s', $minAmount, $discountValue);
     }
 
+    /**
+     * 分转元显示字符串，如 9990 → '99.9', 10000 → '100'.
+     */
     private function formatAmount(mixed $value): string
     {
-        $number = (float) $value;
-        $formatted = number_format($number, 2, '.', '');
+        $cents = (int) $value;
+        $yuan = $cents / 100;
+        $formatted = number_format($yuan, 2, '.', '');
         $trimmed = rtrim(rtrim($formatted, '0'), '.');
         return $trimmed === '' ? '0' : $trimmed;
     }
@@ -135,16 +142,19 @@ final class CouponTransformer
         );
     }
 
+    /**
+     * 确保金额为整数（分）。数据库已存储为分，无需转换.
+     */
     private function toCent(mixed $price): int
     {
         if (\is_string($price)) {
-            $price = (float) $price;
+            return (int) $price;
         }
 
         if (! \is_int($price) && ! \is_float($price)) {
-            $price = 0;
+            return 0;
         }
 
-        return (int) round(((float) $price) * 100);
+        return (int) $price;
     }
 }

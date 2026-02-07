@@ -77,7 +77,7 @@ return 1
 
 ## 扣减流程
 
-1. **收集 SKU**：`OrderSubmitCommand` 中的 SKU/数量被转换为 `StockItem` 列表。
+1. **收集 SKU**：`OrderSubmitInput` 中的 SKU/数量被转换为 `StockItem` 列表。
 2. **尝试锁定**：`acquireLocks()` 构造锁键，多个 SKU 可按 ID 升序处理避免死锁。
 3. **调用 Lua**：`reserve()` 使用 `Redis::eval()` 执行脚本。若返回 `-1` 会在协程内重试，最多 `LOCK_RETRY` 次。
 4. **保存订单**：扣减成功后保存订单；若数据库操作失败，立刻调用 `rollback()`。

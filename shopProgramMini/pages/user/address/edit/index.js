@@ -69,13 +69,22 @@ Page({
   getAddressDetail(id) {
     fetchDeliveryAddress(id)
       .then((detail) => {
+        // 后端返回 snake_case，映射为页面内部 camelCase 状态
         this.setData(
           {
             locationState: {
               ...this.data.locationState,
-              ...detail,
-              isDefault: Boolean(detail?.isDefault),
-              labelIndex: detail?.addressTag ? this.findLabelIndex(detail.addressTag) : null,
+              addressId: String(detail?.id || ''),
+              name: detail?.name || '',
+              phone: detail?.phone || '',
+              provinceName: detail?.province || '',
+              provinceCode: detail?.province_code || '',
+              cityName: detail?.city || '',
+              cityCode: detail?.city_code || '',
+              districtName: detail?.district || '',
+              districtCode: detail?.district_code || '',
+              detailAddress: detail?.detail || '',
+              isDefault: Boolean(detail?.is_default),
             },
           },
           () => {
@@ -378,15 +387,14 @@ Page({
     return {
       name: state.name || '',
       phone: state.phone || '',
-      provinceName: state.provinceName || '',
-      provinceCode: state.provinceCode || '',
-      cityName: state.cityName || '',
-      cityCode: state.cityCode || '',
-      districtName: state.districtName || '',
-      districtCode: state.districtCode || '',
-      detailAddress: state.detailAddress || '',
-      addressTag: state.addressTag || '',
-      isDefault: Boolean(state.isDefault),
+      province: state.provinceName || '',
+      province_code: state.provinceCode || '',
+      city: state.cityName || '',
+      city_code: state.cityCode || '',
+      district: state.districtName || '',
+      district_code: state.districtCode || '',
+      detail: state.detailAddress || '',
+      is_default: Boolean(state.isDefault),
     };
   },
 

@@ -64,10 +64,10 @@ Page({
     params.minPrice = minVal ? minVal * 100 : 0;
     params.maxPrice = maxVal ? maxVal * 100 : undefined;
     if (minVal) {
-      params.rawMinPrice = Number(minVal);
+      params.rawMinPrice = Number(minVal) * 100;
     }
     if (maxVal) {
-      params.rawMaxPrice = Number(maxVal);
+      params.rawMaxPrice = Number(maxVal) * 100;
     }
     if (categoryId) {
       params.categoryId = categoryId;

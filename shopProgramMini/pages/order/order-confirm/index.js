@@ -11,14 +11,12 @@ Page({
     stripeImg,
     loading: false,
     settleDetailData: {
-      storeGoodsList: [], //正常下单商品列表
-      outOfStockGoodsList: [], //库存不足商品
-      abnormalDeliveryGoodsList: [], // 不能正常配送商品
-      inValidGoodsList: [], // 失效或者库存不足
-      limitGoodsList: [], //限购商品
-      couponList: [], //门店优惠券信息
+      items: [],
+      price: { goodsAmount: 0, discountAmount: 0, shippingFee: 0, totalAmount: 0, payAmount: 0 },
+      couponAmount: 0,
+      storeName: '',
     }, // 获取结算页详情 data
-    orderCardList: [], // 仅用于商品卡片展示
+    goodsCardList: [], // 仅用于商品卡片展示
     couponsShow: false, // 显示优惠券的弹框
     invoiceData: {
       email: '', // 发票发送邮箱
@@ -33,12 +31,9 @@ Page({
     userAddressReq: null,
     popupShow: false, // 不在配送范围 失效 库存不足 商品展示弹框
     notesPosition: 'center',
-    storeInfoList: [],
-    storeNoteIndex: 0, //当前填写备注门店index
-    promotionGoodsList: [], //当前门店商品列表(优惠券)
-    couponList: [], //当前门店所选优惠券
-    submitCouponList: [], //所有门店所选优惠券
-    currentStoreId: null, //当前优惠券storeId
+    remark: '',
+    submitCouponList: [],
+    selectedCouponIds: [],
     userAddress: null,
     payMethods: [],
     showPaySheet: false,
@@ -46,8 +41,7 @@ Page({
   },
 
   payLock: false,
-  noteInfo: [],
-  tempNoteInfo: [],
+  tempRemark: '',
   onLoad(options) {
     this.setData({
       loading: true,
@@ -75,39 +69,25 @@ Page({
   },
   // 处理不同情况下跳转到结算页时需要的参数
   handleOptionsParams(options, couponList) {
-    let { goodsRequestList } = this; // 商品列表
-    let { userAddressReq } = this; // 收货地址
+    let { goodsRequestList } = this;
+    let { userAddressReq } = this;
 
-    const storeInfoList = []; // 门店列表
-    // 如果是从地址选择页面返回，则使用地址显选择页面新选择的地址去获取结算数据
     if (options.userAddressReq) {
       userAddressReq = options.userAddressReq;
     }
     if (options.type === 'cart') {
-      // 从购物车跳转过来时，获取传入的商品列表数据
       const goodsRequestListJson = wx.getStorageSync('order.goodsRequestList');
       goodsRequestList = JSON.parse(goodsRequestListJson);
     } else if (typeof options.goodsRequestList === 'string') {
       goodsRequestList = this.safeParseGoodsList(options.goodsRequestList);
     }
-    //获取结算页请求数据列表
-    const storeMap = {};
-    goodsRequestList.forEach((goods) => {
-      if (!storeMap[goods.storeId]) {
-        storeInfoList.push({
-          storeId: goods.storeId,
-          storeName: goods.storeName,
-        });
-        storeMap[goods.storeId] = true;
-      }
-    });
+
     this.goodsRequestList = goodsRequestList;
-    this.storeInfoList = storeInfoList;
     this.userAddressReq = userAddressReq || null;
     this.setData({ userAddressReq: this.userAddressReq });
     const params = {
       goodsRequestList,
-      storeInfoList,
+      storeInfoList: [],
       userAddressReq,
       couponList,
     };
@@ -153,16 +133,6 @@ Page({
   },
 
   isInvalidOrder(data) {
-    // 失效 不在配送范围 限购的商品 提示弹窗
-    if (
-      (data.limitGoodsList && data.limitGoodsList.length > 0) ||
-      (data.abnormalDeliveryGoodsList && data.abnormalDeliveryGoodsList.length > 0) ||
-      (data.inValidGoodsList && data.inValidGoodsList.length > 0)
-    ) {
-      this.setData({ popupShow: true });
-      return true;
-    }
-    this.setData({ popupShow: false });
     if (data.settleType === 0) {
       return true;
     }
@@ -185,82 +155,19 @@ Page({
       loading: false,
     });
   },
-  getRequestGoodsList(storeGoodsList) {
-    const filterStoreGoodsList = [];
-    storeGoodsList &&
-      storeGoodsList.forEach((store) => {
-        const { storeName } = store;
-        store.skuDetailVos &&
-          store.skuDetailVos.forEach((goods) => {
-            const data = goods;
-            data.storeName = storeName;
-            filterStoreGoodsList.push(data);
-          });
-      });
-    return filterStoreGoodsList;
-  },
-  handleGoodsRequest(goods, isOutStock = false) {
-    const { reminderStock, quantity, storeId, uid, saasId, spuId, goodsName, skuId, storeName, roomId } = goods;
-    const resQuantity = isOutStock ? reminderStock : quantity;
-    return {
-      quantity: resQuantity,
-      storeId,
-      uid,
-      saasId,
-      spuId,
-      goodsName,
-      skuId,
-      storeName,
-      roomId,
-    };
-  },
   handleResToGoodsCard(data) {
-    // 转换数据 符合 goods-card展示
-    const orderCardList = []; // 订单卡片列表
-    const storeInfoList = [];
-    const submitCouponList = []; //使用优惠券列表;
+    const goodsCardList = (data.items || []).map((item, index) => ({
+      id: index,
+      thumb: item.productImage,
+      title: item.productName,
+      specs: Array.isArray(item.specValues) ? item.specValues.map((s) => s.value || s) : [],
+      price: item.unitPrice || 0,
+      num: item.quantity,
+      skuId: item.skuId,
+      spuId: item.productId,
+    }));
 
-    data.storeGoodsList &&
-      data.storeGoodsList.forEach((ele) => {
-        const orderCard = {
-          id: ele.storeId,
-          storeName: ele.storeName,
-          status: 0,
-          statusDesc: '',
-          amount: ele.storeTotalPayAmount,
-          goodsList: [],
-        }; // 订单卡片
-        ele.skuDetailVos.forEach((item, index) => {
-          orderCard.goodsList.push({
-            id: index,
-            thumb: item.image,
-            title: item.goodsName,
-            specs: item.skuSpecLst.map((s) => s.specValue), // 规格列表 string[]
-            price: item.tagPrice || item.settlePrice || '0', // 优先取限时活动价
-            settlePrice: item.settlePrice,
-            titlePrefixTags: item.tagText ? [{ text: item.tagText }] : [],
-            num: item.quantity,
-            skuId: item.skuId,
-            spuId: item.spuId,
-            storeId: item.storeId,
-          });
-        });
-
-        storeInfoList.push({
-          storeId: ele.storeId,
-          storeName: ele.storeName,
-          remark: '',
-        });
-        submitCouponList.push({
-          storeId: ele.storeId,
-          couponList: ele.couponList || [],
-        });
-        this.noteInfo.push('');
-        this.tempNoteInfo.push('');
-        orderCardList.push(orderCard);
-      });
-
-    this.setData({ orderCardList, storeInfoList, submitCouponList });
+    this.setData({ goodsCardList });
     return data;
   },
   onGotoAddress() {
@@ -285,17 +192,14 @@ Page({
       url: `/pages/user/address/list/index?selectMode=1&isOrderSure=1${id}`,
     });
   },
-  onNotes(e) {
-    const { storenoteindex: storeNoteIndex } = e.currentTarget.dataset;
+  onNotes() {
     // 添加备注信息
     this.setData({
       dialogShow: true,
-      storeNoteIndex,
     });
   },
   onInput(e) {
-    const { storeNoteIndex } = this.data;
-    this.noteInfo[storeNoteIndex] = e.detail.value;
+    this.tempRemark = e.detail.value;
   },
   onBlur() {
     this.setData({
@@ -314,50 +218,27 @@ Page({
   },
   onNoteConfirm() {
     // 备注信息 确认按钮
-    const { storeInfoList, storeNoteIndex } = this.data;
-    this.tempNoteInfo[storeNoteIndex] = this.noteInfo[storeNoteIndex];
-    storeInfoList[storeNoteIndex].remark = this.noteInfo[storeNoteIndex];
-
+    const remark = this.tempRemark ?? this.data.remark;
     this.setData({
       dialogShow: false,
-      storeInfoList,
+      remark,
     });
   },
   onNoteCancel() {
     // 备注信息 取消按钮
-    const { storeNoteIndex } = this.data;
-    this.noteInfo[storeNoteIndex] = this.tempNoteInfo[storeNoteIndex];
+    this.tempRemark = this.data.remark;
     this.setData({
       dialogShow: false,
     });
   },
 
   onSureCommit() {
-    // 商品库存不足继续结算
-    const { settleDetailData } = this.data;
-    const { outOfStockGoodsList, storeGoodsList, inValidGoodsList } = settleDetailData;
-    if ((outOfStockGoodsList && outOfStockGoodsList.length > 0) || (inValidGoodsList && storeGoodsList)) {
-      // 合并正常商品 和 库存 不足商品继续支付
-      // 过滤不必要的参数
-      const filterOutGoodsList = [];
-      outOfStockGoodsList &&
-        outOfStockGoodsList.forEach((outOfStockGoods) => {
-          const { storeName } = outOfStockGoods;
-          outOfStockGoods.unSettlementGoods.forEach((ele) => {
-            const data = ele;
-            data.quantity = ele.reminderStock;
-            data.storeName = storeName;
-            filterOutGoodsList.push(data);
-          });
-        });
-      const filterStoreGoodsList = this.getRequestGoodsList(storeGoodsList);
-      const goodsRequestList = filterOutGoodsList.concat(filterStoreGoodsList);
-      this.handleOptionsParams({ goodsRequestList });
-    }
+    // 库存不足时重新结算，使用当前商品列表刷新
+    this.handleOptionsParams({ goodsRequestList: this.goodsRequestList });
   },
   // 提交订单
   submitOrder() {
-    const { settleDetailData, invoiceData, storeInfoList, submitCouponList } = this.data;
+    const { settleDetailData, invoiceData, remark, submitCouponList } = this.data;
     const { goodsRequestList } = this;
 
     const addressPayload = settleDetailData.userAddress || this.data.userAddressReq || this.userAddressReq;
@@ -373,19 +254,19 @@ Page({
 
       return;
     }
-    if (this.payLock || !settleDetailData.settleType || !settleDetailData.totalAmount) {
+    const { price } = settleDetailData;
+    if (this.payLock || !settleDetailData.settleType || !price.goodsAmount) {
       return;
     }
     this.payLock = true;
-    const resSubmitCouponList = this.handleCouponList(submitCouponList);
     const params = {
       userAddressReq: addressPayload,
       goodsRequestList: goodsRequestList,
       userName: addressPayload && addressPayload.name ? addressPayload.name : '',
-      totalAmount: settleDetailData.totalPayAmount, //取优惠后的结算金额
+      totalAmount: price.payAmount,
       invoiceRequest: null,
-      storeInfoList,
-      couponList: resSubmitCouponList,
+      storeInfoList: remark ? [{ remark }] : [],
+      couponList: submitCouponList || [],
     };
     if (invoiceData && invoiceData.email) {
       params.invoiceRequest = invoiceData;
@@ -467,7 +348,7 @@ Page({
   // 处理支付
   handlePay(data, settleDetailData) {
     const { tradeNo, payMethods = [], payAmount } = data;
-    const { totalAmount, totalPayAmount } = settleDetailData;
+    const { price } = settleDetailData;
     const normalizedPayMethods = Array.isArray(payMethods)
       ? payMethods.filter((method) => method && method.enabled !== false)
       : [];
@@ -475,8 +356,8 @@ Page({
     const payOrderInfo = {
       orderId: tradeNo,
       tradeNo,
-      orderAmt: totalAmount,
-      payAmt: payAmount || totalPayAmount,
+      orderAmt: price.goodsAmount,
+      payAmt: payAmount || price.payAmount,
     };
 
     this.setData({
@@ -510,35 +391,26 @@ Page({
   },
 
   onCoupons(e) {
-    const { submitCouponList, currentStoreId } = this.data;
     const { goodsRequestList } = this;
     const { selectedList } = e.detail;
-    const tempSubmitCouponList = submitCouponList.map((storeCoupon) => {
-      return {
-        couponList: storeCoupon.storeId === currentStoreId ? selectedList : storeCoupon.couponList,
-      };
-    });
-    const resSubmitCouponList = this.handleCouponList(tempSubmitCouponList);
-    //确定选择优惠券
-    this.handleOptionsParams({ goodsRequestList }, resSubmitCouponList);
+    // selectedList 是 [{couponId: xxx}, ...] 格式
+    this.setData({ submitCouponList: selectedList || [] });
+    // 确定选择优惠券，重新请求 preview
+    this.handleOptionsParams({ goodsRequestList }, selectedList);
     this.setData({ couponsShow: false });
   },
-  onOpenCoupons(e) {
-    const { storeid } = e.currentTarget.dataset;
+  onOpenCoupons() {
+    const { submitCouponList } = this.data;
+    const selectedCouponIds = (submitCouponList || []).map((c) => String(c.couponId || c.coupon_id || ''));
     this.setData({
       couponsShow: true,
-      currentStoreId: storeid,
+      selectedCouponIds,
     });
   },
 
-  handleCouponList(storeCouponList) {
-    //处理门店优惠券   转换成接口需要
-    if (!storeCouponList) return [];
-    const resSubmitCouponList = [];
-    storeCouponList.forEach((ele) => {
-      resSubmitCouponList.push(...ele.couponList);
-    });
-    return resSubmitCouponList;
+  handleCouponList(couponList) {
+    if (!couponList) return [];
+    return couponList;
   },
 
   onSelectPayMethod(e) {
@@ -625,10 +497,9 @@ Page({
       },
     } = e;
     const index = this.goodsRequestList.findIndex(
-      ({ storeId, spuId, skuId }) => goods.storeId === storeId && goods.spuId === spuId && goods.skuId === skuId,
+      ({ skuId }) => goods.skuId === skuId,
     );
     if (index >= 0) {
-      // eslint-disable-next-line no-confusing-arrow
       const goodsRequestList = this.goodsRequestList.map((item, i) =>
         i === index ? { ...item, quantity: value } : item,
       );

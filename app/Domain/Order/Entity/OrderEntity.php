@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Order\Entity;
 
+use App\Domain\Order\Contract\OrderPreviewInput;
 use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Enum\PaymentStatus;
 use App\Domain\Order\Enum\ShippingStatus;
 use App\Domain\Order\Trait\OrderSettingsTrait;
 use App\Domain\Order\ValueObject\OrderAddressValue;
 use App\Domain\Order\ValueObject\OrderPriceValue;
-use App\Infrastructure\Model\Order\Order;
 use Carbon\Carbon;
 
 final class OrderEntity
@@ -33,15 +33,15 @@ final class OrderEntity
 
     private string $orderType = 'normal';
 
-    private float $goodsAmount = 0;
+    private int $goodsAmount = 0;
 
-    private float $shippingFee = 0;
+    private int $shippingFee = 0;
 
-    private float $discountAmount = 0;
+    private int $discountAmount = 0;
 
-    private float $totalAmount = 0;
+    private int $totalAmount = 0;
 
-    private float $payAmount = 0;
+    private int $payAmount = 0;
 
     private string $payNo = '';
 
@@ -73,6 +73,12 @@ final class OrderEntity
     private ?OrderAddressValue $address = null;
 
     private ?OrderPriceValue $priceDetail = null;
+
+    /** @var int 优惠券抵扣金额（分） */
+    private int $couponAmount = 0;
+
+    /** @var array<int, int> 已应用的 coupon_user IDs（用于 submit 后标记已使用） */
+    private array $appliedCouponUserIds = [];
 
     public function getId(): int
     {
@@ -114,52 +120,52 @@ final class OrderEntity
         return $this->orderType;
     }
 
-    public function getGoodsAmount(): float
+    public function getGoodsAmount(): int
     {
         return $this->goodsAmount;
     }
 
-    public function setGoodsAmount(float $goodsAmount): void
+    public function setGoodsAmount(int $goodsAmount): void
     {
         $this->goodsAmount = $goodsAmount;
     }
 
-    public function getShippingFee(): float
+    public function getShippingFee(): int
     {
         return $this->shippingFee;
     }
 
-    public function setShippingFee(float $shippingFee): void
+    public function setShippingFee(int $shippingFee): void
     {
         $this->shippingFee = $shippingFee;
     }
 
-    public function getDiscountAmount(): float
+    public function getDiscountAmount(): int
     {
         return $this->discountAmount;
     }
 
-    public function setDiscountAmount(float $discountAmount): void
+    public function setDiscountAmount(int $discountAmount): void
     {
         $this->discountAmount = $discountAmount;
     }
 
-    public function getTotalAmount(): float
+    public function getTotalAmount(): int
     {
         return $this->totalAmount;
     }
 
-    public function setTotalAmount(float $totalAmount): void
+    public function setTotalAmount(int $totalAmount): void
     {
         $this->totalAmount = $totalAmount;
     }
 
-    public function getPayAmount(): float
+    public function getPayAmount(): int
     {
         return $this->payAmount;
     }
 
-    public function setPayAmount(float $payAmount): void
+    public function setPayAmount(int $payAmount): void
     {
         $this->payAmount = $payAmount;
     }
@@ -325,6 +331,44 @@ final class OrderEntity
         return $this->address;
     }
 
+    public function getCouponAmount(): int
+    {
+        return $this->couponAmount;
+    }
+
+    public function setCouponAmount(int $couponAmount): void
+    {
+        $this->couponAmount = $couponAmount;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getAppliedCouponUserIds(): array
+    {
+        return $this->appliedCouponUserIds;
+    }
+
+    /**
+     * @param array<int, int> $ids
+     */
+    public function setAppliedCouponUserIds(array $ids): void
+    {
+        $this->appliedCouponUserIds = $ids;
+    }
+
+    public function syncPriceDetailFromItems(): void
+    {
+        $sum = 0;
+        foreach ($this->items as $item) {
+            $sum += $item->getTotalPrice();
+        }
+
+        $detail = $this->priceDetail ?? new OrderPriceValue();
+        $detail->setGoodsAmount($sum);
+        $this->setPriceDetail($detail);
+    }
+
     public function setPriceDetail(OrderPriceValue $priceDetail): void
     {
         $this->priceDetail = $priceDetail;
@@ -338,31 +382,6 @@ final class OrderEntity
     public function getPriceDetail(): ?OrderPriceValue
     {
         return $this->priceDetail;
-    }
-
-    public static function fromModel(Order $model): self
-    {
-        $entity = new self();
-        $entity->setId((int) $model->id);
-        $entity->setOrderNo((string) $model->order_no);
-        $entity->setMemberId((int) $model->member_id);
-        $entity->setOrderType((string) $model->order_type);
-        $entity->setStatus((string) $model->status);
-        $entity->setGoodsAmount((float) $model->goods_amount);
-        $entity->setShippingFee((float) $model->shipping_fee);
-        $entity->setDiscountAmount((float) $model->discount_amount);
-        $entity->setTotalAmount((float) $model->total_amount);
-        $entity->setPayAmount((float) $model->pay_amount);
-        $entity->setPayTime($model->pay_time ? Carbon::parse($model->pay_time) : null);
-        $entity->setPayNo((string) $model->pay_no);
-        $entity->setPayMethod((string) $model->pay_method);
-        $entity->setBuyerRemark((string) $model->buyer_remark);
-        $entity->setSellerRemark((string) $model->seller_remark);
-        $entity->setExpireTime($model->expire_time ? Carbon::parse($model->expire_time) : null);
-        $entity->setShippingStatus((string) $model->shipping_status);
-        $entity->setPayStatus((string) $model->pay_status);
-        $entity->setPackageCount((int) ($model->package_count ?? 0));
-        return $entity;
     }
 
     public function ship(): self
@@ -419,16 +438,28 @@ final class OrderEntity
         $this->setPayTime(Carbon::now());
     }
 
-    public function syncPriceDetailFromItems(): void
+    /**
+     * 从预览输入契约初始化订单实体.
+     */
+    public function initFromInput(OrderPreviewInput $input): void
     {
-        $sum = '0';
-        foreach ($this->items as $item) {
-            $sum = bcadd($sum, (string) $item->getTotalPrice(), 2);
-        }
+        $this->setMemberId($input->getMemberId());
+        $this->setOrderType($input->getOrderType());
+        $this->replaceItemsFromPayload($input->getGoodsRequestList());
+        $this->setBuyerRemark($input->getBuyerRemark());
+    }
 
-        $detail = $this->priceDetail ?? new OrderPriceValue();
-        $detail->setGoodsAmount((float) $sum);
-        $this->setPriceDetail($detail);
+    /**
+     * 价格校验（分为单位比较），防止前端价格篡改.
+     *
+     * @param int $frontendAmountCent 前端传入的总金额（分）
+     * @throws \DomainException 当前端金额与后端计算金额不一致时
+     */
+    public function verifyPrice(int $frontendAmountCent): void
+    {
+        if ($frontendAmountCent !== $this->getPayAmount()) {
+            throw new \DomainException('商品价格已变动，请重新下单');
+        }
     }
 
     public function toArray(): array
@@ -453,14 +484,5 @@ final class OrderEntity
             'shipping_status' => $this->getShippingStatus(),
             'package_count' => $this->getPackageCount(),
         ];
-    }
-
-    public function create(OrderCreateDto $dto): void
-    {
-        $this->setMemberId($dto->memberId);
-        $this->setOrderType($dto->orderType);
-        $this->replaceItemsFromPayload($dto->items);
-        $this->useAddressPayload($dto->address);
-        $this->setBuyerRemark($dto->remark);
     }
 }

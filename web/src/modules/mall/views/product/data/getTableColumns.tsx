@@ -16,6 +16,7 @@ import { remove } from '~/mall/api/product'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
+import { formatYuan } from '@/utils/price'
 
 const statusTextMap: Record<string, string> = {
   draft: '草稿',
@@ -51,7 +52,7 @@ export default function getTableColumns(dialog: UseDialogExpose): MaProTableColu
       cellRender: ({ row }: { row: ProductVo }) => row.brand?.name ?? '-',
     },
     { label: () => '价格区间', prop: 'min_price', width: '140px',
-      cellRender: ({ row }: { row: ProductVo }) => `${row.min_price ?? '-'} ~ ${row.max_price ?? '-'}`,
+      cellRender: ({ row }: { row: ProductVo }) => `¥${formatYuan(row.min_price)} ~ ¥${formatYuan(row.max_price)}`,
     },
     { label: () => '状态', prop: 'status', width: '100px',
       cellRender: ({ row }: { row: ProductVo }) => (

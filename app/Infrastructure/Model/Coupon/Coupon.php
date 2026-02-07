@@ -20,8 +20,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $id
  * @property null|string $name
  * @property null|string $type
- * @property null|float $value
- * @property null|float $min_amount
+ * @property null|int $value
+ * @property null|int $min_amount
  * @property null|int $total_quantity
  * @property null|int $used_quantity
  * @property null|int $per_user_limit
@@ -51,8 +51,8 @@ class Coupon extends Model
     ];
 
     protected array $casts = [
-        'value' => 'decimal:2',
-        'min_amount' => 'decimal:2',
+        'value' => 'integer',
+        'min_amount' => 'integer',
         'total_quantity' => 'integer',
         'used_quantity' => 'integer',
         'per_user_limit' => 'integer',

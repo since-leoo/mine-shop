@@ -34,19 +34,20 @@ Page({
     let statusInFetch = '';
     switch (Number(status)) {
       case 0: {
-        statusInFetch = 'default';
+        statusInFetch = 'unused';
         break;
       }
       case 1: {
-        statusInFetch = 'useless';
+        statusInFetch = 'used';
         break;
       }
       case 2: {
-        statusInFetch = 'disabled';
+        statusInFetch = 'expired';
         break;
       }
       default: {
-        throw new Error(`unknown fetchStatus: ${statusInFetch}`);
+        statusInFetch = 'unused';
+        break;
       }
     }
     return fetchCouponList(statusInFetch).then((couponList) => {
