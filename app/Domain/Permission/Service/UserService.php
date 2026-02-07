@@ -32,8 +32,8 @@ final class UserService extends IService
      * 构造函数.
      */
     public function __construct(
-        private readonly UserRepository $repository,
-        private readonly RoleRepository $roleRepository
+        protected readonly UserRepository $repository,
+        protected readonly RoleRepository $roleRepository
     ) {}
 
     /**

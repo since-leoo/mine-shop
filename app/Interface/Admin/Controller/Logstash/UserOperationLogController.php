@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Logstash;
 
 use App\Application\Commad\UserOperationLogCommandService;
+use App\Application\Query\UserOperationLogQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -31,7 +32,8 @@ use Mine\Access\Attribute\Permission;
 final class UserOperationLogController extends AbstractController
 {
     public function __construct(
-        protected readonly UserOperationLogCommandService $service,
+        protected readonly UserOperationLogQueryService $service,
+        protected readonly UserOperationLogCommandService $commandService,
         protected readonly CurrentUser $currentUser
     ) {}
 
@@ -49,7 +51,7 @@ final class UserOperationLogController extends AbstractController
     #[Permission(code: 'log:userOperation:delete')]
     public function delete(RequestInterface $request): Result
     {
-        $this->service->delete($request->input('ids'));
+        $this->commandService->delete($request->input('ids'));
         return $this->success();
     }
 }

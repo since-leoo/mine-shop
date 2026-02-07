@@ -25,4 +25,9 @@ final class UserOperationLogCommandService
     {
         return $this->userOperationLogService->create($payload);
     }
+
+    public function delete(mixed $ids): int
+    {
+        return $this->userOperationLogService->delete($ids);
+    }
 }
