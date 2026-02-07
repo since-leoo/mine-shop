@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Domain\Product;
 
 use App\Application\Mapper\ProductAssembler;
-use App\Domain\Product\Entity\ProductAttributeEntity;
-use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\Product\Enum\ProductStatus;
+use App\Domain\Catalog\Product\Entity\ProductAttributeEntity;
+use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
+use App\Domain\Catalog\Product\Enum\ProductStatus;
 use PHPUnit\Framework\TestCase;
 
 /**

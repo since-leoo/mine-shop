@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Order;
 
-use App\Application\Commad\AppOrderCommandService;
-use App\Application\Query\AppOrderQueryService;
+use App\Application\Admin\Trade\AppOrderCommandService;
+use App\Application\Admin\Trade\AppOrderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\OrderRequest;

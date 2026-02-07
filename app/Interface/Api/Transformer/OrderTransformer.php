@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Transformer;
 
-use App\Domain\Order\Enum\OrderStatus;
+use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Infrastructure\Model\Order\Order;
 
 final class OrderTransformer

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Product;
 
-use App\Domain\Product\Contract\ProductInput;
+use App\Domain\Catalog\Product\Contract\ProductInput;
 
 /**
  * 商品 DTO.

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Product;
 
-use App\Domain\Product\Contract\CategoryInput;
-use App\Domain\Product\Repository\CategoryRepository;
+use App\Domain\Catalog\Category\Contract\CategoryInput;
+use App\Domain\Catalog\Category\Repository\CategoryRepository;
 use App\Interface\Admin\Dto\Product\CategoryDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;

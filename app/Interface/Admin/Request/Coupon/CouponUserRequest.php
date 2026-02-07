@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Coupon;
 
-use App\Domain\Coupon\Contract\CouponUserInput;
+use App\Domain\Marketing\Coupon\Contract\CouponUserInput;
 use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;

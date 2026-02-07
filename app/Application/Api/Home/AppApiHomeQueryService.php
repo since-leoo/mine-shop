@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Application\Api\Home;
 
 use App\Application\Api\Product\AppApiProductQueryService;
-use App\Domain\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\SystemSetting\Service\DomainSystemSettingService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 
 /**
  * 首页数据聚合应用服务.

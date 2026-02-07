@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\SystemSetting;
 
-use App\Domain\SystemSetting\ValueObject\ShippingSetting;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
 use PHPUnit\Framework\TestCase;
 
 /**

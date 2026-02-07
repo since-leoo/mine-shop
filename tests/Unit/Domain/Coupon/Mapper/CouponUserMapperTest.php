@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Coupon\Mapper;
 
-use App\Domain\Coupon\Entity\CouponUserEntity;
-use App\Domain\Coupon\Mapper\CouponUserMapper;
+use App\Domain\Marketing\Coupon\Entity\CouponUserEntity;
+use App\Domain\Marketing\Coupon\Mapper\CouponUserMapper;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 
 /**
  * @internal
- * @coversDefaultClass \App\Domain\Coupon\Mapper\CouponUserMapper
+ * @coversDefaultClass \App\Domain\Marketing\Coupon\Mapper\CouponUserMapper
  */
 final class CouponUserMapperTest extends TestCase
 {

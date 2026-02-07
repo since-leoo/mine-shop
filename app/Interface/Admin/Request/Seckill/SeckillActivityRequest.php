@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Seckill;
 
-use App\Domain\Seckill\Contract\SeckillActivityInput;
+use App\Domain\Marketing\Seckill\Contract\SeckillActivityInput;
 use App\Interface\Admin\Dto\Seckill\SeckillActivityDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\AppMemberTagCommandService;
-use App\Application\Query\AppMemberTagQueryService;
+use App\Application\Admin\Member\AppMemberTagCommandService;
+use App\Application\Admin\Member\AppMemberTagQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberTagRequest;

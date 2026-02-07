@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Permission;
 
-use App\Domain\Permission\Contract\Position\PositionSetDataPermissionInput;
+use App\Domain\Organization\Contract\Position\PositionSetDataPermissionInput;
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
 
 final class PositionSetDataPermissionDto implements PositionSetDataPermissionInput

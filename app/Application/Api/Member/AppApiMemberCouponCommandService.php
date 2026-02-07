@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
-use App\Domain\Coupon\Api\Command\DomainApiCouponUserCommandService;
+use App\Domain\Marketing\Coupon\Api\Command\DomainApiCouponUserCommandService;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use Hyperf\DbConnection\Db;
 

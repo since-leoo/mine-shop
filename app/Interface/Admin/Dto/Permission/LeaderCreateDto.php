@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Permission;
 
-use App\Domain\Permission\Contract\Leader\LeaderCreateInput;
+use App\Domain\Organization\Contract\Leader\LeaderCreateInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

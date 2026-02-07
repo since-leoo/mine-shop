@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Order;
 
-use App\Domain\Order\Api\Query\DomainApiOrderQueryService;
+use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 

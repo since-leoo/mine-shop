@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Order;
 
-use App\Domain\Order\Contract\OrderShipInput;
+use App\Domain\Trade\Order\Contract\OrderShipInput;
 
 final class OrderShipDto implements OrderShipInput
 {

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Order;
 
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Order\Enum\PaymentStatus;
+use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Trade\Order\Enum\PaymentStatus;
 use App\Interface\Admin\Dto\Order\OrderCancelDto;
 use App\Interface\Admin\Dto\Order\OrderShipDto;
 use App\Interface\Common\Request\BaseRequest;

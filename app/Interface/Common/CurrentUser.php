@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Common;
 
-use App\Application\Commad\AppAuthCommandService;
-use App\Application\Query\AppMenuQueryService;
-use App\Application\Query\AppUserQueryService;
+use App\Application\Admin\Permission\AppAuthCommandService;
+use App\Application\Admin\Permission\AppMenuQueryService;
+use App\Application\Admin\Permission\AppUserQueryService;
 use App\Domain\Auth\Enum\Status;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\Context\Context;

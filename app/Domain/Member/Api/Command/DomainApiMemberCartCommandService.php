@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Api\Query\DomainApiMemberCartQueryService;
-use App\Domain\Product\Repository\ProductSkuRepository;
+use App\Domain\Catalog\Product\Repository\ProductSkuRepository;
 use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;

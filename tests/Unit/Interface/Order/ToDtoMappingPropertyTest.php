@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Interface\Order;
 
-use App\Domain\Order\Contract\OrderPreviewInput;
-use App\Domain\Order\Contract\OrderSubmitInput;
+use App\Domain\Trade\Order\Contract\OrderPreviewInput;
+use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Interface\Api\DTO\Order\OrderCommitDto;
 use App\Interface\Api\DTO\Order\OrderPreviewDto;
 use App\Interface\Api\Request\V1\OrderPreviewRequest;

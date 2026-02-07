@@ -9,13 +9,13 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Domain\Attachment\Listener\UploadSubscriber;
+use App\Domain\Infrastructure\Attachment\Listener\UploadSubscriber;
 use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
-use App\Domain\Order\Listener\OrderCreatedListener;
-use App\Domain\Order\Listener\OrderStatusNotifyListener;
-use App\Domain\Product\Listener\ProductSkuStockListener;
-use App\Domain\Product\Listener\ProductSnapshotListener;
-use App\Domain\Product\Listener\ProductStockWarningListener;
+use App\Domain\Trade\Order\Listener\OrderCreatedListener;
+use App\Domain\Trade\Order\Listener\OrderStatusNotifyListener;
+use App\Domain\Catalog\Product\Listener\ProductSkuStockListener;
+use App\Domain\Catalog\Product\Listener\ProductSnapshotListener;
+use App\Domain\Catalog\Product\Listener\ProductStockWarningListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 use Mine\Core\Subscriber\BootApplicationSubscriber;
 use Mine\Core\Subscriber\DbQueryExecutedSubscriber;

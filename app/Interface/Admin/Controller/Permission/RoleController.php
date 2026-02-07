@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\AppRoleCommandService;
-use App\Application\Query\AppRoleQueryService;
+use App\Application\Admin\Permission\AppRoleCommandService;
+use App\Application\Admin\Permission\AppRoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
 use App\Interface\Admin\Controller\AbstractController;

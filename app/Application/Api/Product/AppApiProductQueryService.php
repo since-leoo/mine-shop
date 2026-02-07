@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Product;
 
-use App\Domain\Product\Api\Query\DomainApiProductQueryService;
+use App\Domain\Catalog\Product\Api\Query\DomainApiProductQueryService;
 
 /**
  * 小程序/前台商品读应用服务.

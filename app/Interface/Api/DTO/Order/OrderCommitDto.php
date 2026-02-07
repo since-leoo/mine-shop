@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\DTO\Order;
 
-use App\Domain\Order\Contract\OrderSubmitInput;
+use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 
 /**
  * 订单提交 DTO.

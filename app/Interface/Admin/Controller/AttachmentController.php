@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Commad\AppAttachmentCommandService;
-use App\Application\Query\AppAttachmentQueryService;
+use App\Application\Admin\Infrastructure\AppAttachmentCommandService;
+use App\Application\Admin\Infrastructure\AppAttachmentQueryService;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\UploadRequest;
 use App\Interface\Common\CurrentUser;

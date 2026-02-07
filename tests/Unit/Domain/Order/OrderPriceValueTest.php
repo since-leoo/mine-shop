@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Order\ValueObject\OrderPriceValue;
+use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use PHPUnit\Framework\TestCase;
 
 /**

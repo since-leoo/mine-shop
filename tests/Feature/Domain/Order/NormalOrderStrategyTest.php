@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Order;
 
-use App\Domain\Coupon\Repository\CouponUserRepository;
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Entity\OrderItemEntity;
-use App\Domain\Order\Strategy\NormalOrderStrategy;
-use App\Domain\Order\ValueObject\OrderAddressValue;
-use App\Domain\Order\ValueObject\OrderPriceValue;
-use App\Domain\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Marketing\Coupon\Repository\CouponUserRepository;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Entity\OrderItemEntity;
+use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
+use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
+use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;

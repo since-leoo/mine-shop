@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Seckill;
 
-use App\Domain\Seckill\Contract\SeckillProductInput;
+use App\Domain\Marketing\Seckill\Contract\SeckillProductInput;
 
 /**
  * 秒杀商品DTO.

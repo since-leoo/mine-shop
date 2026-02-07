@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Product;
 
-use App\Domain\Product\Entity\ProductAttributeEntity;
-use App\Domain\Product\Entity\ProductEntity;
-use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\Product\Enum\ProductStatus;
+use App\Domain\Catalog\Product\Entity\ProductAttributeEntity;
+use App\Domain\Catalog\Product\Entity\ProductEntity;
+use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
+use App\Domain\Catalog\Product\Enum\ProductStatus;
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Relations\HasMany;

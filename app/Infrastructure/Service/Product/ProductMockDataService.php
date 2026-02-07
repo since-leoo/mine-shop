@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Service\Product;
 
-use App\Domain\Product\Enum\BrandStatus;
-use App\Domain\Product\Enum\CategoryStatus;
-use App\Domain\Product\Enum\ProductStatus;
+use App\Domain\Catalog\Brand\Enum\BrandStatus;
+use App\Domain\Catalog\Category\Enum\CategoryStatus;
+use App\Domain\Catalog\Product\Enum\ProductStatus;
 use App\Infrastructure\Model\Product\Brand;
 use App\Infrastructure\Model\Product\Category;
 use App\Infrastructure\Model\Product\Product;

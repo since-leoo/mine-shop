@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Product;
 
-use App\Domain\Product\Contract\BrandInput;
+use App\Domain\Catalog\Brand\Contract\BrandInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

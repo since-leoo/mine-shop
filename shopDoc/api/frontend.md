@@ -1,125 +1,146 @@
-# 前端接口（Frontend API）
+# 小程序 / 前端接口（API V1）
 
-前端接口以 `/api` 为前缀，供 B2C 网站、小程序、App 等终端调用。部分接口需登录（Bearer Token），其余为开放读取。
+所有前端接口以 `/api/v1` 为前缀，供微信小程序、H5、App 等终端调用。写操作需登录（Bearer Token），部分读接口开放。
 
-## 认证与会员
+> 金额单位统一为**分（int）**，避免浮点精度问题。
 
-| 功能 | 方法 & 路径 | 说明 |
-| ---- | ----------- | ---- |
-| 手机号注册 | `POST /api/user/register` | `mobile` + `password` + 验证码 |
-| 登录 | `POST /api/user/login` | 支持手机号/密码或第三方登录（可扩展） |
-| 获取个人信息 | `GET /api/user/profile` | 返回昵称、头像、等级、余额、积分等 |
-| 更新信息 | `PUT /api/user/profile` | 支持头像、昵称、生日等 |
-| 刷新 Token / 登出 | 同 Admin，参见 [认证授权](/api/auth) |
+## 登录
 
-## 商品 & 内容
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `POST` | `/api/v1/login/miniApp` | 微信小程序登录，传 `code`、可选 `encrypted_data`/`iv`/`openid` |
 
-| 功能 | 方法 & 路径 | 关键参数 |
-| ---- | ----------- | -------- |
-| 商品列表 | `GET /api/product/list` | `page`, `category_id`, `keyword`, `sort` |
-| 商品详情 | `GET /api/product/{id}` | 含图片、详情、SKU、规格、营销标签 |
-| 团购/秒杀列表 | `GET /api/group-buy/list`, `GET /api/seckill/session/{id}/products` | 返回实时库存与倒计时 |
-| 优惠券可领取列表 | `GET /api/v1/coupons/available` | `spu_id`、`limit` 查询可领取优惠券 |
-| 优惠券详情 | `GET /api/v1/coupons/{id}` | 返回单券基础信息、规则、可领状态 |
-| 领取优惠券 | `POST /api/coupon/claim` | 登录后调用，传 `coupon_id` |
+登录成功返回 JWT Token，后续请求通过 `Authorization: Bearer {token}` 鉴权。
 
-> 商品详情接口由 **ProductCacheService** 提供数据：后台事件写入 `spu:%id`/`sku:%id` 缓存，接口优先命中缓存，缺失时自动回源数据库并回写，保证高并发下的稳定读取。
+## 首页
 
-## 购物车与下单
+| 方法 | 路径 | 登录 | 说明 |
+| ---- | ---- | ---- | ---- |
+| `GET` | `/api/v1/home` | 否 | 首页聚合数据（轮播、推荐、公告等） |
 
-| 功能 | 方法 & 路径 |
-| ---- | ----------- |
-| 添加购物车 | `POST /api/cart/add` `{ "sku_id": 1, "quantity": 2 }` |
-| 购物车列表 | `GET /api/cart/list` |
-| 更新数量 | `PUT /api/cart/{id}` |
-| 删除/批量删除 | `DELETE /api/cart/{id}` 或 `POST /api/cart/batch-delete` |
+## 商品 & 分类
 
-购物车列表同样依赖 `ProductCacheService`：服务端会批量读取 `spu`/`sku` 缓存，只有在单个商品缺失时才回源数据库，因此能在保证一致性的同时减少热点 SKU 的数据库压力。
+| 方法 | 路径 | 登录 | 说明 |
+| ---- | ---- | ---- | ---- |
+| `GET` | `/api/v1/products` | 否 | 商品列表，支持 `page`/`page_size`/`category_id`/`keyword` 等筛选 |
+| `GET` | `/api/v1/products/{id}` | 否 | 商品详情（含 SKU、规格、图片、快照缓存） |
+| `GET` | `/api/v1/categories` | 否 | 分类树 |
+
+## 优惠券
+
+| 方法 | 路径 | 登录 | 说明 |
+| ---- | ---- | ---- | ---- |
+| `GET` | `/api/v1/coupons/available` | 否 | 可领取优惠券列表，支持 `spu_id`/`limit` |
+| `GET` | `/api/v1/coupons/{id}` | 否 | 优惠券详情 |
+| `GET` | `/api/v1/member/coupons` | 是 | 我的优惠券，`status` 筛选（可用/已用/已过期） |
+| `POST` | `/api/v1/member/coupons/receive` | 是 | 领取优惠券，传 `coupon_id` |
+
+## 购物车
+
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `GET` | `/api/v1/cart` | 购物车列表（含商品快照、价格、库存状态） |
+| `POST` | `/api/v1/cart/items` | 加入购物车 `{ "sku_id": 1, "quantity": 2 }` |
+| `PUT` | `/api/v1/cart/items/{skuId}` | 更新数量 |
+| `DELETE` | `/api/v1/cart/items/{skuId}` | 删除单项 |
+| `POST` | `/api/v1/cart/clear-invalid` | 清理失效商品 |
+
+所有购物车接口需登录。
+
+## 订单
+
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `POST` | `/api/v1/order/preview` | 预览订单（计算金额、运费、可用优惠券） |
+| `POST` | `/api/v1/order/submit` | 提交订单 |
+| `POST` | `/api/v1/order/payment` | 发起支付 |
+| `GET` | `/api/v1/order/list` | 订单列表，`status` 筛选，分页 |
+| `GET` | `/api/v1/order/detail/{orderNo}` | 订单详情 |
+| `GET` | `/api/v1/order/statistics` | 各状态订单数量统计 |
+| `POST` | `/api/v1/order/cancel` | 取消订单（待付款），传 `order_no` |
+| `POST` | `/api/v1/order/confirm-receipt` | 确认收货（已发货），传 `order_no` |
+
+所有订单接口需登录，且有限流保护（preview 60次/分，submit 30次/分）。
 
 ### 下单流程
 
-1. **预览订单**：`POST /api/order/preview`
-   ```json
-   {
-     "items": [{ "sku_id": 1, "quantity": 1 }],
-     "address_id": 3,
-     "coupon_ids": [8],
-     "remark": "请周末送达"
-   }
-   ```
-   返回：商品金额、运费、优惠、合计、可用优惠券列表、预计发货时间等。
+```
+预览 POST /api/v1/order/preview
+  → 返回：商品金额、运费、优惠、合计、可用优惠券
+  
+提交 POST /api/v1/order/submit
+  → 返回：order_no、pay_methods
+  
+支付 POST /api/v1/order/payment
+  → 传入：order_no、pay_method (wechat/balance)
+  → 微信支付返回 prepay_id 等参数；余额支付直接完成
+```
 
-2. **提交订单**：`POST /api/order/submit`
-   - 需登录。
-   - 支持普通订单/团购/秒杀，在 `order_type` 或 SKU 上标记。
-   - 返回 `order_id`、`order_no`、`pay_amount`。
-
-3. **订单列表/详情**：`GET /api/order/list`、`GET /api/order/{id}`。
-   - 列表支持按状态过滤（`pending`, `paid`, `shipped`, `completed`, `cancelled`）。
-   - 详情包含订单项、地址、物流信息、支付状态、倒计时等。
-
-4. **订单操作**：
-   - 取消：`POST /api/order/{id}/cancel`
-   - 确认收货：`POST /api/order/{id}/confirm`
-   - 查看物流：`GET /api/order/{id}/express` *(如已对接)*
-
-## 支付
-
-| 功能 | 方法 & 路径 | 说明 |
-| ---- | ----------- | ---- |
-| 创建支付 | `POST /api/payment/create` | `{ "order_id": 1, "payment_method": "alipay" }` |
-| 查询支付状态 | `GET /api/payment/query/{order_id}` | 轮询或前端触发 |
-| 支持方式 | `alipay` / `wechat` / `balance`（根据 `config/autoload/pay.php` 决定） |
-
-回调地址示例：
-
-- `POST /api/payment/alipay/notify`
-- `POST /api/payment/wechat/notify`
-
-## 会员资产
-
-| 功能 | 方法 & 路径 | 说明 |
-| ---- | ----------- | ---- |
-| 钱包流水 | `GET /api/wallet/logs?type=balance` | 余额/积分通用 |
-| 钱包概览 | `GET /api/wallet/summary` | 余额、冻结、累计充值/消费 |
-| 可用优惠券 | `GET /api/coupon/my` | 支持筛选状态（可用/已用/已过期） |
-| 地址管理 | `GET/POST/PUT/DELETE /api/address` | 字段含 `province`、`city`、`district`、`street`、`region_path` |
-| 设置默认地址 | `POST /api/address/{id}/default` | |
-
-地址表单数据可通过 `/geo/pcas`、`/geo/search`（无需登录）获取，保证四级地区一致性。
-
-## Geo 与公共接口
-
-| 接口 | 是否需登录 | 描述 |
-| ---- | ---------- | ---- |
-| `GET /geo/pcas` | 否 | 返回最新版本的四级联动树 `items[]` 与 `version` |
-| `GET /geo/search?keyword=杭州&limit=10` | 否 | 模糊匹配省、市、区、街，带 `level` 和 `path_codes` |
-| `GET /common/setting` | 否 | 获取商城基础设置（LOGO、客服、公告等） |
-
-## 错误示例
+预览/提交入参示例：
 
 ```json
 {
-  "code": 400,
-  "message": "库存不足",
-  "data": { "sku_id": 10086 }
+  "items": [{ "sku_id": 1, "quantity": 1 }],
+  "address_id": 3,
+  "coupon_list": [{ "coupon_id": 8 }],
+  "buyer_remark": "请周末送达"
 }
 ```
+
+## 会员
+
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `GET` | `/api/v1/member/profile` | 个人信息（昵称、头像、等级等） |
+| `GET` | `/api/v1/member/center` | 个人中心聚合（订单统计、优惠券数、客服电话） |
+| `POST` | `/api/v1/member/phone/bind` | 微信手机号授权绑定，传 `code` |
+| `POST` | `/api/v1/member/profile/authorize` | 头像昵称授权 |
+
+## 收货地址
+
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `GET` | `/api/v1/member/addresses` | 地址列表，支持 `limit` |
+| `GET` | `/api/v1/member/addresses/{id}` | 地址详情 |
+| `POST` | `/api/v1/member/addresses` | 新增地址 |
+| `PUT` | `/api/v1/member/addresses/{id}` | 更新地址 |
+| `DELETE` | `/api/v1/member/addresses/{id}` | 删除地址 |
+| `POST` | `/api/v1/member/addresses/{id}/default` | 设为默认地址 |
+
+## 文件上传
+
+| 方法 | 路径 | 说明 |
+| ---- | ---- | ---- |
+| `POST` | `/api/v1/upload/image` | 上传图片（jpg/png/gif/webp，≤5MB），返回 `url` |
+
+需登录，`multipart/form-data` 格式，字段名 `file`。
+
+## 统一响应格式
 
 ```json
 {
-  "code": 401,
-  "message": "请先登录",
-  "data": null
+  "code": 200,
+  "message": "操作成功",
+  "data": { ... }
 }
 ```
 
-## 最佳实践
+常见错误码：
 
-1. **Token 续期**：在 `401` 且 message 为 Token 失效时，调用 `/api/auth/refresh` 获取新 Token，再重试一次。
-2. **地区字段**：提交地址/会员资料时使用 `region_path = |省code|市code|区code|街code|`，便于后台地区统计。
-3. **幂等下单**：前端可传 `client_request_id`（定制）放入扩展字段，后端按需做幂等校验。
-4. **网络错误**：支付状态必须以查询接口为准，不要依赖前端跳转。
-5. **灰度发布**：可在 Header 中携带 `X-Client-Version`，后端根据版本控制返回字段或行为（如启用新的运营位）。
+| code | 含义 |
+| ---- | ---- |
+| `200` | 成功 |
+| `400` | 参数错误 |
+| `401` | 未登录 / Token 失效 |
+| `403` | 无权限 |
+| `404` | 资源不存在 |
+| `500` | 服务器错误 |
 
-更多后台能力参考 [Admin API](/api/admin)，认证细节见 [认证授权](/api/auth)。*** End Patch
+## 接入建议
+
+1. Token 失效时（401），调用登录接口重新获取，再重试请求
+2. 金额字段均为**分（int）**，前端展示时除以 100
+3. 支付结果以 `GET /api/v1/order/detail/{orderNo}` 查询为准，不依赖前端跳转回调
+4. 地址提交使用 `region_path`（如 `|110000|110100|110101|`）保证地区一致性
+
+更多后台接口参考 [Admin API](/api/admin)，认证细节见 [认证授权](/api/auth)。

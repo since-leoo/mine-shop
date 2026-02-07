@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\AppMenuCommandService;
-use App\Application\Query\AppMenuQueryService;
+use App\Application\Admin\Permission\AppMenuCommandService;
+use App\Application\Admin\Permission\AppMenuQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

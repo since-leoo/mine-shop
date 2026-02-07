@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Api\Query;
 
-use App\Domain\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Infrastructure\Abstract\ICache;
 
 /**

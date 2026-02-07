@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Shipping;
 
-use App\Application\Commad\AppShippingTemplateCommandService;
-use App\Application\Query\AppShippingTemplateQueryService;
+use App\Application\Admin\Trade\AppShippingTemplateCommandService;
+use App\Application\Admin\Trade\AppShippingTemplateQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Shipping\ShippingTemplateRequest;

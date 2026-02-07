@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\AppUserCommandService;
-use App\Application\Query\AppUserQueryService;
+use App\Application\Admin\Permission\AppUserCommandService;
+use App\Application\Admin\Permission\AppUserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;

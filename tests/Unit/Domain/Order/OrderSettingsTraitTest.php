@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Entity\OrderShipEntity;
-use App\Domain\SystemSetting\ValueObject\OrderSetting;
-use App\Domain\SystemSetting\ValueObject\ShippingSetting;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Entity\OrderShipEntity;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 

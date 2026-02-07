@@ -55,7 +55,15 @@ export default defineConfig({
           { text: 'API 概览', link: '/api/' },
           { text: '后台接口', link: '/api/admin' },
           { text: '前端接口', link: '/api/frontend' },
-          { text: '认证授权', link: '/api/auth' }
+          { text: '认证授权', link: '/api/auth' },
+          { text: 'Admin API 速查', link: '/admin-api' },
+          { text: '小程序 API 速查', link: '/mini-api' }
+        ]
+      },
+      {
+        text: '规范',
+        items: [
+          { text: 'DDD 分层规范', link: '/ddd-conventions' }
         ]
       }
     ],

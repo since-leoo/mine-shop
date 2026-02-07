@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Order;
 
-use App\Domain\Order\Contract\OrderCancelInput;
+use App\Domain\Trade\Order\Contract\OrderCancelInput;
 
 final class OrderCancelDto implements OrderCancelInput
 {

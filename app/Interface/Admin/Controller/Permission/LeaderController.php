@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\AppLeaderCommandService;
-use App\Application\Query\AppLeaderQueryService;
+use App\Application\Admin\Organization\AppLeaderCommandService;
+use App\Application\Admin\Organization\AppLeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\LeaderDeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

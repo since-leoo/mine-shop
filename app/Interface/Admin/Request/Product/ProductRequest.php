@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Product;
 
-use App\Domain\Product\Contract\ProductInput;
-use App\Domain\Product\Enum\ProductStatus;
+use App\Domain\Catalog\Product\Contract\ProductInput;
+use App\Domain\Catalog\Product\Enum\ProductStatus;
 use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;

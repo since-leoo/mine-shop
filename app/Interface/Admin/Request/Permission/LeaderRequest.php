@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
-use App\Domain\Permission\Contract\Leader\LeaderCreateInput;
+use App\Domain\Organization\Contract\Leader\LeaderCreateInput;
 use App\Interface\Admin\Dto\Permission\LeaderCreateDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;

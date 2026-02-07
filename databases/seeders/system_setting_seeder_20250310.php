@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-use App\Domain\SystemSetting\Entity\SystemSettingEntity;
+use App\Domain\Infrastructure\SystemSetting\Entity\SystemSettingEntity;
 use App\Infrastructure\Model\Setting\SystemSetting;
 use Hyperf\Database\Seeders\Seeder;
 

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Seckill;
 
-use App\Domain\Seckill\Enum\SeckillStatus;
+use App\Domain\Marketing\Seckill\Enum\SeckillStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;

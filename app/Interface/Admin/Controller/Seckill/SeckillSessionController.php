@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Commad\AppSeckillSessionCommandService;
-use App\Application\Query\AppSeckillSessionQueryService;
+use App\Application\Admin\Marketing\AppSeckillSessionCommandService;
+use App\Application\Admin\Marketing\AppSeckillSessionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillSessionRequest;

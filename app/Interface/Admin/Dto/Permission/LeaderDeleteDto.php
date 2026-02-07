@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Permission;
 
-use App\Domain\Permission\Contract\Leader\LeaderDeleteInput;
+use App\Domain\Organization\Contract\Leader\LeaderDeleteInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

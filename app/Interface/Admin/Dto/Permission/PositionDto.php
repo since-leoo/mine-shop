@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Permission;
 
-use App\Domain\Permission\Contract\Position\PositionInput;
+use App\Domain\Organization\Contract\Position\PositionInput;
 
 final class PositionDto implements PositionInput
 {

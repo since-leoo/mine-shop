@@ -9,11 +9,11 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-use App\Application\Query\JwtTokenChecker;
-use App\Domain\Order\Factory\OrderTypeStrategyFactory;
-use App\Domain\Order\Strategy\NormalOrderStrategy;
-use App\Domain\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Product\Service\DomainProductSnapshotService;
+use App\Application\Admin\Infrastructure\JwtTokenChecker;
+use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
+use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Catalog\Product\Service\DomainProductSnapshotService;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 use Mine\Upload\Factory;
 use Mine\Upload\UploadInterface;

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Logstash;
 
-use App\Application\Commad\AppUserOperationLogCommandService;
-use App\Application\Query\AppUserOperationLogQueryService;
+use App\Application\Admin\Infrastructure\AppUserOperationLogCommandService;
+use App\Application\Admin\Infrastructure\AppUserOperationLogQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;

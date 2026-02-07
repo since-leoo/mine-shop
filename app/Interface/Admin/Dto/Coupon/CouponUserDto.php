@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Coupon;
 
-use App\Domain\Coupon\Contract\CouponUserInput;
+use App\Domain\Marketing\Coupon\Contract\CouponUserInput;
 
 /**
  * 用户优惠券DTO.

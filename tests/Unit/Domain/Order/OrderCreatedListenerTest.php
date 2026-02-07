@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Event\OrderCreatedEvent;
-use App\Domain\Order\Listener\OrderCreatedListener;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Event\OrderCreatedEvent;
+use App\Domain\Trade\Order\Listener\OrderCreatedListener;
 use Hyperf\Logger\LoggerFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;

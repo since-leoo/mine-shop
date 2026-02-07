@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
-use App\Domain\Order\Contract\OrderPreviewInput;
+use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Interface\Api\DTO\Order\OrderPreviewDto;
 use App\Interface\Common\Request\BaseRequest;
 

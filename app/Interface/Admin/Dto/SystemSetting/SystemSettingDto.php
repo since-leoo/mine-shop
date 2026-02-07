@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\SystemSetting;
 
-use App\Domain\SystemSetting\Contract\SystemSettingInput;
+use App\Domain\Infrastructure\SystemSetting\Contract\SystemSettingInput;
 
 final class SystemSettingDto implements SystemSettingInput
 {

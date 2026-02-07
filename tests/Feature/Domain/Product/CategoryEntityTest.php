@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Product;
 
-use App\Domain\Product\Entity\CategoryEntity;
-use App\Domain\Product\Enum\CategoryStatus;
+use App\Domain\Catalog\Category\Entity\CategoryEntity;
+use App\Domain\Catalog\Category\Enum\CategoryStatus;
 use PHPUnit\Framework\TestCase;
 
 /**

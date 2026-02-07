@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Product;
 
-use App\Domain\Product\Enum\CategoryStatus;
+use App\Domain\Catalog\Category\Enum\CategoryStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Collection;
 use Hyperf\Database\Model\Relations\BelongsTo;

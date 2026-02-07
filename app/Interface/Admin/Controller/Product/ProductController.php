@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\AppProductCommandService;
-use App\Application\Query\AppProductQueryService;
+use App\Application\Admin\Catalog\AppProductCommandService;
+use App\Application\Admin\Catalog\AppProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

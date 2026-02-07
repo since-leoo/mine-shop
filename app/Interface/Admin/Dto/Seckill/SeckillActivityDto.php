@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Seckill;
 
-use App\Domain\Seckill\Contract\SeckillActivityInput;
+use App\Domain\Marketing\Seckill\Contract\SeckillActivityInput;
 
 /**
  * 秒杀活动DTO.

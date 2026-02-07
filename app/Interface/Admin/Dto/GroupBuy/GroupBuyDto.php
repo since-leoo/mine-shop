@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\GroupBuy;
 
-use App\Domain\GroupBuy\Contract\GroupBuyCreateInput;
-use App\Domain\GroupBuy\Contract\GroupBuyUpdateInput;
+use App\Domain\Marketing\GroupBuy\Contract\GroupBuyCreateInput;
+use App\Domain\Marketing\GroupBuy\Contract\GroupBuyUpdateInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

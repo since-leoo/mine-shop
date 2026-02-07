@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\AppPositionCommandService;
-use App\Application\Query\AppPositionQueryService;
+use App\Application\Admin\Organization\AppPositionCommandService;
+use App\Application\Admin\Organization\AppPositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;

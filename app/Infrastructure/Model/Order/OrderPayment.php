@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\Order;
 
-use App\Domain\Order\Enum\PaymentStatus;
+use App\Domain\Trade\Order\Enum\PaymentStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\DbConnection\Model\Model;

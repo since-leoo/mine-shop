@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Commad\AppAuthCommandService;
+use App\Application\Admin\Permission\AppAuthCommandService;
 use App\Interface\Admin\Request\PassportLoginRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentUser;

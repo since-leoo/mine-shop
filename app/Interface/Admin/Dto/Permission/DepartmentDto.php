@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Permission;
 
-use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
-use App\Domain\Permission\Contract\Department\DepartmentUpdateInput;
+use App\Domain\Organization\Contract\Department\DepartmentCreateInput;
+use App\Domain\Organization\Contract\Department\DepartmentUpdateInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

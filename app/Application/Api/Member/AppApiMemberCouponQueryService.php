@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
-use App\Domain\Coupon\Api\Query\DomainApiCouponUserQueryService;
+use App\Domain\Marketing\Coupon\Api\Query\DomainApiCouponUserQueryService;
 
 final class AppApiMemberCouponQueryService
 {

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\AppMemberCommandService;
-use App\Application\Query\AppMemberQueryService;
+use App\Application\Admin\Member\AppMemberCommandService;
+use App\Application\Admin\Member\AppMemberQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberRequest;

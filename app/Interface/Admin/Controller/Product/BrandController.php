@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\AppBrandCommandService;
-use App\Application\Query\AppBrandQueryService;
+use App\Application\Admin\Catalog\AppBrandCommandService;
+use App\Application\Admin\Catalog\AppBrandQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\BrandRequest;

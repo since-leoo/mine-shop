@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Product;
 
-use App\Domain\Product\Contract\CategoryInput;
+use App\Domain\Catalog\Category\Contract\CategoryInput;
 use Hyperf\DTO\Annotation\Validation\Required;
 
 /**

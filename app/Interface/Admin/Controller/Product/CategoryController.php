@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\AppCategoryCommandService;
-use App\Application\Query\AppCategoryQueryService;
+use App\Application\Admin\Catalog\AppCategoryCommandService;
+use App\Application\Admin\Catalog\AppCategoryQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\CategoryRequest;

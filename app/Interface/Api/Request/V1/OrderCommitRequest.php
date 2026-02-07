@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Request\V1;
 
-use App\Domain\Order\Contract\OrderSubmitInput;
+use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Interface\Api\DTO\Order\OrderCommitDto;
 
 final class OrderCommitRequest extends OrderPreviewRequest

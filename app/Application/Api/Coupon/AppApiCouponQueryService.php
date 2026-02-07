@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Coupon;
 
-use App\Domain\Coupon\Api\Query\DomainApiCouponQueryService;
-use App\Domain\Coupon\Api\Query\DomainApiCouponUserQueryService;
+use App\Domain\Marketing\Coupon\Api\Query\DomainApiCouponQueryService;
+use App\Domain\Marketing\Coupon\Api\Query\DomainApiCouponUserQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Interface\Common\ResultCode;

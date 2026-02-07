@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Domain\Logstash\Repository\UserOperationLogRepository;
+use App\Domain\Infrastructure\AuditLog\Repository\UserOperationLogRepository;
 use App\Infrastructure\Model\System\UserOperationLog;
 use Faker\Provider\Internet;
 use Hyperf\Collection\Collection;

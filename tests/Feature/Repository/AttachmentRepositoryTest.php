@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Repository;
 
-use App\Domain\Attachment\Repository\AttachmentRepository;
+use App\Domain\Infrastructure\Attachment\Repository\AttachmentRepository;
 use App\Infrastructure\Model\Attachment\Attachment;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;

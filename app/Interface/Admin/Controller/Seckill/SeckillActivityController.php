@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Commad\AppSeckillActivityCommandService;
-use App\Application\Query\AppSeckillActivityQueryService;
+use App\Application\Admin\Marketing\AppSeckillActivityCommandService;
+use App\Application\Admin\Marketing\AppSeckillActivityQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;

@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Product;
 
-use App\Domain\Product\Entity\ProductEntity;
-use App\Domain\Product\Entity\ProductSkuEntity;
-use App\Domain\SystemSetting\ValueObject\ContentSetting;
-use App\Domain\SystemSetting\ValueObject\ProductSetting;
+use App\Domain\Catalog\Product\Entity\ProductEntity;
+use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\ContentSetting;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\ProductSetting;
 use PHPUnit\Framework\TestCase;
 
 /**

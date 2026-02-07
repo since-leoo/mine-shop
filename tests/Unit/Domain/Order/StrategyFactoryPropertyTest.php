@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Order\Contract\OrderTypeStrategyInterface;
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Factory\OrderTypeStrategyFactory;
+use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use PHPUnit\Framework\TestCase;
 
 /**

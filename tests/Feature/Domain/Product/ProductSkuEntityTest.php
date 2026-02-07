@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Product;
 
-use App\Domain\Product\Entity\ProductSkuEntity;
+use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
 use PHPUnit\Framework\TestCase;
 
 /**

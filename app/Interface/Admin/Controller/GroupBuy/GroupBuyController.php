@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\GroupBuy;
 
-use App\Application\Commad\AppGroupBuyCommandService;
-use App\Application\Query\AppGroupBuyQueryService;
+use App\Application\Admin\Marketing\AppGroupBuyCommandService;
+use App\Application\Admin\Marketing\AppGroupBuyQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;

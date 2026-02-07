@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Payment;
 
-use App\Domain\Order\Entity\OrderEntity;
-use App\Domain\Order\Enum\OrderStatus;
-use App\Domain\Payment\Enum\PayType;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Trade\Payment\Enum\PayType;
 use PHPUnit\Framework\TestCase;
 
 /**

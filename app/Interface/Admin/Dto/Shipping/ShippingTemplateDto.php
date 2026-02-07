@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\Shipping;
 
-use App\Domain\Shipping\Contract\ShippingTemplateInput;
+use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
 
 /**
  * 运费模板 DTO.

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\AppMemberAccountCommandService;
-use App\Application\Query\AppMemberWalletTransactionQueryService;
+use App\Application\Admin\Member\AppMemberAccountCommandService;
+use App\Application\Admin\Member\AppMemberWalletTransactionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberAccountRequest;

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Product;
 
-use App\Domain\Product\Api\Query\DomainApiCategoryQueryService;
+use App\Domain\Catalog\Category\Api\Query\DomainApiCategoryQueryService;
 use Hyperf\Database\Model\Collection;
 
 final class AppApiCategoryQueryService

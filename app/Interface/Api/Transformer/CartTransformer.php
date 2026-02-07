@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Transformer;
 
-use App\Domain\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 

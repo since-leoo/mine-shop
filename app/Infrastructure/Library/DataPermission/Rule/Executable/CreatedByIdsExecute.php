@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule\Executable;
 
-use App\Domain\Permission\Repository\DepartmentRepository;
+use App\Domain\Organization\Repository\DepartmentRepository;
 use App\Infrastructure\Model\Permission\Department;
 use App\Infrastructure\Model\Permission\Position;
 use App\Infrastructure\Model\Permission\User;

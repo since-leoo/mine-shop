@@ -14,7 +14,7 @@ namespace App\Domain\Auth\Entity;
 
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Auth\ValueObject\ClientInfo;
-use App\Interface\Admin\Dto\PassportLoginDto;
+use App\Domain\Auth\Contract\LoginInput;
 
 /**
  * 登录实体，聚合基础认证参数.
@@ -78,10 +78,9 @@ final class LoginEntity
         return $this;
     }
 
-    public function login(PassportLoginDto $dto)
+    public function login(LoginInput $input): self
     {
-        // 判断密码是否正确
-        $this->setUsername($dto->username)->setPassword($dto->password);
+        $this->setUsername($input->getUsername())->setPassword($input->getPassword());
 
         return $this;
     }
