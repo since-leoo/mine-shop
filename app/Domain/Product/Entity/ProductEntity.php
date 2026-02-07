@@ -184,6 +184,9 @@ final class ProductEntity
         $oldMinPrice = $this->minPrice;
         $oldMaxPrice = $this->maxPrice;
         $oldStatus = $this->status;
+        $oldFreightType = $this->freightType;
+        $oldFlatFreightAmount = $this->flatFreightAmount;
+        $oldShippingTemplateId = $this->shippingTemplateId;
 
         // 更新基本信息
         if ($input->getProductCode() !== null) {
@@ -294,12 +297,16 @@ final class ProductEntity
         // 检测变更
         $priceChanged = $oldMinPrice !== $this->minPrice || $oldMaxPrice !== $this->maxPrice;
         $statusChanged = $oldStatus !== $this->status;
+        $freightChanged = $oldFreightType !== $this->freightType
+            || $oldFlatFreightAmount !== $this->flatFreightAmount
+            || $oldShippingTemplateId !== $this->shippingTemplateId;
 
         return new ProductChangeVo(
             productId: $this->id,
             priceChanged: $priceChanged,
             statusChanged: $statusChanged,
-            stockChanged: $skuData !== null
+            stockChanged: $skuData !== null,
+            freightChanged: $freightChanged
         );
     }
 

@@ -40,10 +40,11 @@ final class DomainProductSnapshotService implements ProductSnapshotInterface
      * @param ProductSku $productSkuModel 商品SKU模型实例
      */
     public function __construct(
-        private readonly ICache $cache,
+        private ICache $cache,
         private readonly Product $productModel,
         private readonly ProductSku $productSkuModel
     ) {
+        $this->cache = clone $cache;
         $this->cache->setPrefix(self::CACHE_PREFIX);
     }
 
@@ -324,6 +325,9 @@ final class DomainProductSnapshotService implements ProductSnapshotInterface
             'product_image' => $product->main_image,
             'product_min_price' => (int) $product->min_price,
             'product_max_price' => (int) $product->max_price,
+            'freight_type' => $product->freight_type ?? 'default',
+            'flat_freight_amount' => (int) ($product->flat_freight_amount ?? 0),
+            'shipping_template_id' => $product->shipping_template_id,
             'sku_id' => (int) $sku->id,
             'sku_code' => (string) $sku->sku_code,
             'sku_name' => (string) $sku->sku_name,

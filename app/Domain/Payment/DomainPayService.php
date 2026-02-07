@@ -119,7 +119,6 @@ class DomainPayService
         // 更新订单支付信息
         $this->orderEntity->setPayMethod(PayType::BALANCE->value);
         $this->orderEntity->setPayNo($payment->payment_no);
-        $this->orderEntity->setPayAmount($this->orderEntity->getTotalAmount());
         $this->orderEntity->markPaid();
         $this->orderService->update($this->orderEntity);
 

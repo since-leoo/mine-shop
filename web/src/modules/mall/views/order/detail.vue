@@ -66,13 +66,13 @@
           </el-table-column>
           <el-table-column label="单价" width="100" align="right">
             <template #default="{ row }">
-              ¥{{ formatYuan(row.price) }}
+              ¥{{ formatYuan(row.unit_price) }}
             </template>
           </el-table-column>
           <el-table-column label="数量" prop="quantity" width="80" align="center" />
           <el-table-column label="小计" width="100" align="right">
             <template #default="{ row }">
-              ¥{{ formatYuan(row.total_amount) }}
+              ¥{{ formatYuan(row.total_price) }}
             </template>
           </el-table-column>
         </el-table>

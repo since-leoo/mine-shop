@@ -59,6 +59,8 @@ export interface ProductVo {
   is_recommend?: boolean
   is_hot?: boolean
   is_new?: boolean
+  freight_type?: string
+  flat_freight_amount?: number
   shipping_template_id?: number
   sort?: number
   status?: string

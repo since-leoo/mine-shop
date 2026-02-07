@@ -9,7 +9,7 @@
  */
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
-import Message from 'vue-m-message'
+import { ElNotification } from 'element-plus'
 import { useDebounceFn } from '@vueuse/core'
 import { useNProgress } from '@vueuse/integrations/useNProgress'
 import useCache from '@/hooks/useCache.ts'
@@ -69,7 +69,11 @@ http.interceptors.response.use(
           reader.onload = () => {
             const result = JSON.parse(reader.result as string)
             if (result.code !== ResultCode.SUCCESS) {
-              Message.error(result.message || '下载失败', { zIndex: 9999 })
+              ElNotification({
+                title: '错误',
+                message: result.message || '下载失败',
+                type: 'error',
+              })
               reject(result)
             }
           }
@@ -105,7 +109,11 @@ http.interceptors.response.use(
             if (isLogout === false) {
               isLogout = true
               setTimeout(() => isLogout = false, 5000)
-              Message.error(response?.data?.message ?? '登录已过期', { zIndex: 9999 })
+              ElNotification({
+                title: '提示',
+                message: response?.data?.message ?? '登录已过期',
+                type: 'warning',
+              })
               await useUserStore().logout()
             }
           }
@@ -162,13 +170,34 @@ http.interceptors.response.use(
           }
         }
         case ResultCode.DISABLED: {
-          Message.error(response?.data?.message ?? '账号已被禁用', {zIndex: 9999})
+          ElNotification({
+            title: '错误',
+            message: response?.data?.message ?? '账号已被禁用',
+            type: 'error',
+          })
           await useUserStore().logout()
           break
         }
-        default:
-          Message.error(response?.data?.message ?? '服务器错误', { zIndex: 9999 })
+        default: {
+          // 根据 HTTP 状态码和业务 code 区分通知类型
+          let notificationType: 'success' | 'warning' | 'info' | 'error' = 'error'
+          const code = response?.data?.code
+          
+          if (code >= 200 && code < 300) {
+            notificationType = 'success'
+          } else if (code >= 400 && code < 500) {
+            notificationType = 'warning'
+          } else if (code >= 500) {
+            notificationType = 'error'
+          }
+          
+          ElNotification({
+            title: notificationType === 'error' ? '错误' : notificationType === 'warning' ? '警告' : '提示',
+            message: response?.data?.message ?? '服务器错误',
+            type: notificationType,
+          })
           break
+        }
       }
 
       return Promise.reject(response.data ? response.data : null)
@@ -178,7 +207,11 @@ http.interceptors.response.use(
     isLoading.value = false
     const serverError = useDebounceFn(async () => {
       if (error && error.response && error.response.status === 500) {
-        Message.error(error.message ?? '服务器错误', { zIndex: 9999 })
+        ElNotification({
+          title: '服务器错误',
+          message: error.message ?? '服务器错误',
+          type: 'error',
+        })
       }
     }, 3000, { maxWait: 5000 })
     await serverError()

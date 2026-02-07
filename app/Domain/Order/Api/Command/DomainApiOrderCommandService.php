@@ -90,7 +90,9 @@ final class DomainApiOrderCommandService extends IService
         // 订单类型策略
         $strategy = $this->strategyFactory->make($entity->getOrderType());
         // 订单数据验证/构建验证商品/计算运费
-        $strategy->validate($entity) && $strategy->buildDraft($entity) && $this->applyFreight($entity);
+        $strategy->validate($entity);
+        $strategy->buildDraft($entity);
+        $this->applyFreight($entity);
         // 优惠券使用
         $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
         // 订单价格调整

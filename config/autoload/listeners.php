@@ -14,6 +14,7 @@ use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
 use App\Domain\Order\Listener\OrderCreatedListener;
 use App\Domain\Order\Listener\OrderStatusNotifyListener;
 use App\Domain\Product\Listener\ProductSkuStockListener;
+use App\Domain\Product\Listener\ProductSnapshotListener;
 use App\Domain\Product\Listener\ProductStockWarningListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
 use Mine\Core\Subscriber\BootApplicationSubscriber;
@@ -49,4 +50,6 @@ return [
     RecordMemberBalanceLogListener::class,
     // 订单创建日志
     OrderCreatedListener::class,
+    // 商品缓存
+    ProductSnapshotListener::class,
 ];

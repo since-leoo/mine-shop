@@ -52,7 +52,7 @@ final class ProductRepository extends IRepository
     public function update(ProductEntity $entity): void
     {
         /** @var Product $model */
-        $model = $this->findById($entity->getId());
+        $model = $this->model::find($entity->getId());
         $data = ProductMapper::toArray($entity, $model);
         $model->update($data);
 

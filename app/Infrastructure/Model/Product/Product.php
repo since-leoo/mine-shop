@@ -39,6 +39,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property bool $is_hot
  * @property bool $is_new
  * @property null|int $shipping_template_id
+ * @property null|string $freight_type
+ * @property null|int $flat_freight_amount
  * @property int $sort
  * @property string $status
  * @property Carbon $created_at
@@ -79,6 +81,8 @@ class Product extends Model
         'is_recommend',
         'is_hot',
         'is_new',
+        'freight_type',
+        'flat_freight_amount',
         'shipping_template_id',
         'sort',
         'status',
@@ -98,6 +102,8 @@ class Product extends Model
         'is_hot' => 'boolean',
         'is_new' => 'boolean',
         'shipping_template_id' => 'integer',
+        'freight_type' => 'string',
+        'flat_freight_amount' => 'integer',
         'sort' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',

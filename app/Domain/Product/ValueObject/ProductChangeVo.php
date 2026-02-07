@@ -24,6 +24,7 @@ final class ProductChangeVo
      * @param bool $priceChanged 价格是否变更
      * @param bool $statusChanged 状态是否变更
      * @param bool $stockChanged 库存是否变更
+     * @param bool $freightChanged 运费配置是否变更
      */
     public function __construct(
         public readonly int $productId,
@@ -31,7 +32,8 @@ final class ProductChangeVo
         public readonly array $deletedAttributeIds = [],
         public readonly bool $priceChanged = false,
         public readonly bool $statusChanged = false,
-        public readonly bool $stockChanged = false
+        public readonly bool $stockChanged = false,
+        public readonly bool $freightChanged = false
     ) {}
 
     public function hasSkuDeleted(): bool
@@ -46,6 +48,6 @@ final class ProductChangeVo
 
     public function needsCacheRefresh(): bool
     {
-        return $this->priceChanged || $this->statusChanged || $this->stockChanged;
+        return $this->priceChanged || $this->statusChanged || $this->stockChanged || $this->freightChanged;
     }
 }

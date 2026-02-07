@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Listener;
 
-use App\Application\Query\AppProductQueryService;
 use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
+use App\Domain\Product\Service\DomainProductService;
 use App\Domain\Product\Service\DomainProductSnapshotService;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\Log\LoggerInterface;
@@ -27,7 +27,7 @@ final class ProductSnapshotListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainProductSnapshotService $snapshotService,
-        private readonly AppProductQueryService $queryService,
+        private readonly DomainProductService $queryService,
         private readonly LoggerInterface $logger
     ) {}
 
@@ -64,7 +64,7 @@ final class ProductSnapshotListener implements ListenerInterface
     private function handleCreated(ProductCreated $event): void
     {
         // 查询完整的商品信息（包含关联关系）
-        $product = $this->queryService->find($event->productId);
+        $product = $this->queryService->findById($event->productId);
         if ($product) {
             $this->snapshotService->rememberProduct($product);
         }
@@ -75,12 +75,10 @@ final class ProductSnapshotListener implements ListenerInterface
      */
     private function handleUpdated(ProductUpdated $event): void
     {
-        // 根据变更信息决定是否刷新缓存
-        if ($event->changes->needsCacheRefresh()) {
-            $product = $this->queryService->find($event->productId);
-            if ($product) {
-                $this->snapshotService->rememberProduct($product);
-            }
+        // 事件已触发即表示商品已变更，直接刷新缓存
+        $product = $this->queryService->findById($event->productId);
+        if ($product) {
+            $this->snapshotService->rememberProduct($product);
         }
 
         // 删除已删除的 SKU 快照

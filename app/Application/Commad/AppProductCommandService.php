@@ -23,7 +23,6 @@ use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\DbConnection\Db;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * 商品命令服务：处理所有写操作.
@@ -33,7 +32,6 @@ final class AppProductCommandService
     public function __construct(
         private readonly DomainProductService $productService,
         private readonly AppProductQueryService $queryService,
-        private readonly EventDispatcherInterface $dispatcher
     ) {}
 
     /**
@@ -48,7 +46,7 @@ final class AppProductCommandService
         }
 
         // 3. 发布领域事件
-        $this->dispatcher->dispatch(new ProductCreated(
+        event(new ProductCreated(
             productId: $entity->getId(),
             skuIds: $this->extractSkuIds($model),
             stockData: $entity->getStockData()
@@ -65,8 +63,7 @@ final class AppProductCommandService
         $changes = $this->productService->update($input);
         $entity = $this->productService->getEntity($input->getId());
 
-        // 4. 发布领域事件
-        $this->dispatcher->dispatch(new ProductUpdated(
+        event(new ProductUpdated(
             productId: $input->getId(),
             changes: $changes,
             stockData: $entity->getStockData()

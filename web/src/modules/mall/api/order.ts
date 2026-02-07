@@ -18,9 +18,9 @@ export interface OrderItemVo {
   sku_id?: number
   product_name: string
   sku_name?: string
-  price: number
+  unit_price: number
   quantity: number
-  total_amount: number
+  total_price: number
   product_image?: string
 }
 

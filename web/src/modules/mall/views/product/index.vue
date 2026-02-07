@@ -36,7 +36,7 @@ const statsData = ref({
 const msg = useMessage()
 
 const maDrawer: UseDrawerExpose = useDrawer({
-  size: '55%',
+  size: '100%',
   direction: 'rtl',
   ok: ({ formType }, okLoadingState: (state: boolean) => void) => {
     okLoadingState(true)

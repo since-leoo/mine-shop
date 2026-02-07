@@ -34,6 +34,7 @@ export default function getFormItems(
 ): MaFormItem[] {
   const categoryOptions = ref<CategoryVo[]>([])
   const brandOptions = ref<BrandOption[]>([])
+  const shippingTemplateOptions = ref<{ id: number; name: string }[]>([])
   const specItems = ref<SpecItem[]>((model as any).specs || [])
 
   if (formType === 'add') {
@@ -44,6 +45,10 @@ export default function getFormItems(
     model.sort = model.sort ?? 0
     model.virtual_sales = model.virtual_sales ?? 0
     model.real_sales = model.real_sales ?? 0
+    model.freight_type = model.freight_type ?? 'default'
+    model.flat_freight_amount = model.flat_freight_amount ?? 0
+    model.min_price = model.min_price ?? 0
+    model.max_price = model.max_price ?? 0
   }
 
   if (!model.skus) {
@@ -100,6 +105,10 @@ export default function getFormItems(
   })
   useHttp().get('/admin/product/brand/options').then((res: any) => {
     brandOptions.value = res.data || []
+  })
+  useHttp().get('/admin/shipping/templates/list', { params: { page: 1, page_size: 100 } }).then((res: any) => {
+    const list = res.data?.list || res.data?.data || res.data || []
+    shippingTemplateOptions.value = Array.isArray(list) ? list : []
   })
 
   const addSku = () => {
@@ -310,24 +319,75 @@ export default function getFormItems(
       label: () => '是否推荐',
       prop: 'is_recommend',
       render: () => <el-switch active-value={true} inactive-value={false} />,
+      cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
       label: () => '是否热销',
       prop: 'is_hot',
       render: () => <el-switch active-value={true} inactive-value={false} />,
+      cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
       label: () => '是否新品',
       prop: 'is_new',
       render: () => <el-switch active-value={true} inactive-value={false} />,
+      cols: { md: 8, xs: 24 },
+      step: 1,
+    },
+    {
+      label: () => '运费类型',
+      prop: 'freight_type',
+      render: () => (
+        <el-select placeholder="请选择运费类型" class="w-full">
+          <el-option label="系统默认" value="default" />
+          <el-option label="免运费" value="free" />
+          <el-option label="统一运费" value="flat" />
+          <el-option label="运费模板" value="template" />
+        </el-select>
+      ),
+      itemProps: {
+        rules: [{ required: true, message: '请选择运费类型' }],
+        help: '系统默认将使用商城全局运费配置。',
+      },
+      cols: { md: 12, xs: 24 },
+      step: 1,
+    },
+    {
+      label: () => '运费金额（元）',
+      prop: 'flat_freight_amount',
+      render: 'inputNumber',
+      renderProps: { min: 0, max: 999.99, precision: 2, class: 'w-full' },
+      itemProps: {
+        rules: [{ required: true, message: '请输入运费金额' }],
+      },
+      cols: { md: 12, xs: 24 },
+      show: () => model.freight_type === 'flat',
+      step: 1,
+    },
+    {
+      label: () => '运费模板',
+      prop: 'shipping_template_id',
+      render: () => (
+        <el-select placeholder="请选择运费模板" clearable class="w-full">
+          {shippingTemplateOptions.value.map(t => (
+            <el-option key={t.id} label={t.name} value={t.id} />
+          ))}
+        </el-select>
+      ),
+      itemProps: {
+        rules: [{ required: true, message: '请选择运费模板' }],
+      },
+      cols: { md: 12, xs: 24 },
+      show: () => model.freight_type === 'template',
       step: 1,
     },
     {
       label: () => '主图',
       prop: 'main_image',
       render: () => MaUploadImage,
+      cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
@@ -339,6 +399,7 @@ export default function getFormItems(
         limit: 8,
       },
       itemProps: { help: '最多 8 张，第一张将作为默认主图。' },
+      cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
@@ -712,7 +773,16 @@ export default function getFormItems(
   const showStep = (step: number) => () => activeStep.value === step
   const showWithStep = (step: number) => (item: MaFormItem) => ({ ...item, show: showStep(step) })
 
-  const step1 = items.filter(item => (item as any).step === 1).map(showWithStep(1))
+  const step1 = items.filter(item => (item as any).step === 1).map((item) => {
+    const prop = (item as any).prop
+    if (prop === 'flat_freight_amount') {
+      return { ...item, show: () => activeStep.value === 1 && model.freight_type === 'flat' }
+    }
+    if (prop === 'shipping_template_id') {
+      return { ...item, show: () => activeStep.value === 1 && model.freight_type === 'template' }
+    }
+    return showWithStep(1)(item)
+  })
   const step2 = items.filter(item => (item as any).step === 2).map(showWithStep(2))
   const step3 = items
     .filter(item => (item as any).step === 3)
