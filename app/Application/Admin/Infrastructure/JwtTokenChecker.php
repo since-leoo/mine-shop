@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Infrastructure;
 
+use App\Application\Admin\Permission\AppAuthQueryService;
 use Lcobucci\JWT\UnencryptedToken;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 
