@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\GroupBuy;
 
 use App\Application\Commad\GroupBuyCommandService;
-use App\Application\Mapper\GroupBuyAssembler;
 use App\Application\Query\GroupBuyQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -73,35 +72,32 @@ final class GroupBuyController extends AbstractController
     #[Permission(code: 'promotion:group_buy:create')]
     public function store(GroupBuyRequest $request): Result
     {
-        $entity = GroupBuyAssembler::toCreateEntity($request->validated());
-        $groupBuy = $this->commandService->create($entity);
-        return $this->success($groupBuy->toArray(), '创建团购活动成功', 201);
+        $act = $this->commandService->create($request->toDto(null));
+        return $act ? $this->success([], '创建团购活动成功', 201) : $this->error('创建团购活动失败');
     }
 
     #[PutMapping(path: '{id:\d+}')]
     #[Permission(code: 'promotion:group_buy:update')]
     public function update(int $id, GroupBuyRequest $request): Result
     {
-        $entity = GroupBuyAssembler::toUpdateEntity($id, $request->validated());
-        $this->commandService->update($entity);
+        $act = $this->commandService->update($request->toDto($id));
 
-        $groupBuy = $this->queryService->find($id);
-        return $this->success($groupBuy?->toArray() ?? [], '更新团购活动成功');
+        return $act ? $this->success([], '更新团购活动成功') : $this->error('更新团购活动失败');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]
     #[Permission(code: 'promotion:group_buy:delete')]
     public function delete(int $id): Result
     {
-        $this->commandService->delete($id);
-        return $this->success(null, '删除团购活动成功');
+        $act = $this->commandService->delete($id);
+        return $act ? $this->success(null, '删除团购活动成功') : $this->error('删除团购活动失败');
     }
 
     #[PutMapping(path: '{id:\d+}/toggle-status')]
     #[Permission(code: 'promotion:group_buy:update')]
     public function toggleStatus(int $id): Result
     {
-        $this->commandService->toggleStatus($id);
-        return $this->success(null, '切换状态成功');
+        $act = $this->commandService->toggleStatus($id);
+        return $act ? $this->success(null, '切换状态成功') : $this->error('切换状态失败');
     }
 }

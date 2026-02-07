@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Domain\Coupon\Entity;
 
 use App\Domain\Coupon\Entity\CouponUserEntity;
-use App\Interface\Admin\DTO\Coupon\CouponUserDto;
+use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 use PHPUnit\Framework\TestCase;
 
 /**

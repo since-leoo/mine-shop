@@ -18,7 +18,7 @@ use App\Domain\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
-use App\Interface\Admin\DTO\Seckill\SeckillProductDto;
+use App\Interface\Admin\Dto\Seckill\SeckillProductDto;
 use Hyperf\DTO\Mapper;
 
 /**

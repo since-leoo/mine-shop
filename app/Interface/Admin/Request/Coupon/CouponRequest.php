@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Request\Coupon;
 
 use App\Domain\Coupon\Contract\CouponInput;
-use App\Interface\Admin\DTO\Coupon\CouponDto;
+use App\Interface\Admin\Dto\Coupon\CouponDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

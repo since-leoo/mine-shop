@@ -10,10 +10,10 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace HyperfTests\Unit\Interface\Admin\DTO\Coupon;
+namespace HyperfTests\Unit\Interface\Admin\Dto\Coupon;
 
 use App\Domain\Coupon\Contract\CouponUserInput;
-use App\Interface\Admin\DTO\Coupon\CouponUserDto;
+use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 use PHPUnit\Framework\TestCase;
 
 /**

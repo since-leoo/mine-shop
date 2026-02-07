@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\DTO\Product;
+namespace App\Interface\Admin\Dto\Product;
 
 use App\Domain\Product\Contract\ProductInput;
 

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\DTO\Member;
+namespace App\Interface\Admin\Dto\Member;
 
 use App\Domain\Member\Contract\MemberTagInput;
 use Hyperf\DTO\Annotation\Validation\Required;

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Request\Member;
 
 use App\Domain\Member\Contract\MemberWalletInput;
-use App\Interface\Admin\DTO\Member\MemberWalletDto;
+use App\Interface\Admin\Dto\Member\MemberWalletDto;
 use App\Interface\Common\Request\BaseRequest;
 use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;

@@ -741,6 +741,7 @@ final class DepartmentService
 - ✅ 枚举验证（in、exists）
 - ✅ 唯一性验证（unique）
 - ✅ 正则表达式验证
+- ✅ **值的基础判断（如大于0、小于某个值等）**
 
 **原则：** 能在 Request 层验证的，就在 Request 层验证。Request 层是第一道防线。
 
@@ -749,154 +750,179 @@ final class DepartmentService
 public function storeRules(): array
 {
     return [
-        'nickname' => ['required', 'string', 'max:100'],
-        'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
-        'email' => ['nullable', 'email', 'max:255'],
-        'age' => ['nullable', 'integer', 'min:0', 'max:150'],
-        'status' => ['required', Rule::in(['active', 'inactive', 'banned'])],
-        'growth_value' => ['nullable', 'integer', 'min:0'],
+        'title' => ['required', 'string', 'max:255'],
+        'product_id' => ['required', 'integer', 'exists:products,id', 'min:1'],
+        'sku_id' => ['required', 'integer', 'exists:product_skus,id', 'min:1'],
+        'original_price' => ['required', 'numeric', 'min:0.01'],
+        'group_price' => ['required', 'numeric', 'min:0.01', 'lt:original_price'],
+        'min_people' => ['required', 'integer', 'min:2', 'max:100'],
+        'max_people' => ['required', 'integer', 'gte:min_people', 'max:1000'],
+        'group_time_limit' => ['required', 'integer', 'min:1', 'max:720'],
+        'total_quantity' => ['required', 'integer', 'min:1'],
+        'status' => ['nullable', Rule::in(['pending', 'active', 'ended', 'cancelled'])],
     ];
+}
+```
+
+### 值对象验证（业务规则）
+
+**应该在值对象中验证的内容：**
+- ✅ **跨字段的业务逻辑**（如：团购价必须小于原价）
+- ✅ **复杂的业务规则**（如：活动时长不能超过30天）
+- ✅ **领域概念的完整性**（如：最多成团人数不能小于最少成团人数）
+
+**原则：** 值对象只验证业务规则，不验证基础的值判断。
+
+**示例：**
+```php
+// ✅ 正确：在值对象中验证业务规则
+class PriceVo
+{
+    private function validate(): void
+    {
+        // 业务规则：团购价必须小于原价
+        if ($this->groupPrice >= $this->originalPrice) {
+            throw new \DomainException('团购价必须小于原价');
+        }
+    }
+}
+
+// ❌ 错误：在值对象中验证基础值
+class PriceVo
+{
+    private function validate(): void
+    {
+        if ($this->originalPrice <= 0) {  // 这应该在 Request 层验证
+            throw new \DomainException('原价必须大于0');
+        }
+    }
 }
 ```
 
 ### Entity 层验证（业务规则）
 
 **应该在 Entity 层验证的内容：**
-- ✅ 复杂的业务规则（如：折扣率必须在会员等级允许的范围内）
-- ✅ 跨字段的业务逻辑（如：最高成长值必须大于最低成长值）
-- ✅ 状态转换规则（如：已支付的订单不能取消）
-- ✅ 领域不变量（如：账户余额不能为负数）
-- ✅ 需要查询数据库的业务规则（如：检查库存是否充足）
+- ✅ **状态转换规则**（如：已支付的订单不能取消）
+- ✅ **领域不变量**（如：账户余额不能为负数）
+- ✅ **需要查询数据库的业务规则**（如：检查库存是否充足）
+- ✅ **复杂的业务行为验证**（如：活动是否可以启用）
 
-**原则：** Entity 层只验证业务规则，不验证格式。
+**原则：** Entity 层只验证业务规则，不验证格式和基础值。
 
 **示例：**
 ```php
-// ❌ 错误：在 Entity 中验证格式
-public function setPhone(?string $phone): void
-{
-    if ($phone !== null && ! preg_match('/^1[3-9]\d{9}$/', $phone)) {
-        throw new BusinessException(ResultCode::FAIL, '手机号格式不正确');
-    }
-    // ...
-}
-
-// ✅ 正确：在 Request 中验证格式
-public function storeRules(): array
-{
-    return [
-        'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
-    ];
-}
-
 // ✅ 正确：在 Entity 中验证业务规则
-public function setGrowthMax(?int $value): self
+public function increaseSoldQuantity(int $quantity): self
 {
-    if ($value !== null && $this->growthMin !== null && $value < $this->growthMin) {
-        throw new BusinessException(ResultCode::FAIL, '最高成长值不能小于最低成长值');
-    }
-    // ...
-}
-```
-
-### 验证层次对比
-
-| 验证类型 | Request 层 | Entity 层 |
-|---------|-----------|----------|
-| 格式验证 | ✅ 优先 | ❌ 不应该 |
-| 长度验证 | ✅ 优先 | ❌ 不应该 |
-| 类型验证 | ✅ 优先 | ❌ 不应该 |
-| 必填验证 | ✅ 优先 | ❌ 不应该 |
-| 范围验证 | ✅ 优先 | ⚠️ 看情况 |
-| 枚举验证 | ✅ 优先 | ⚠️ 看情况 |
-| 业务规则 | ❌ 不应该 | ✅ 必须 |
-| 跨字段逻辑 | ⚠️ 简单的可以 | ✅ 复杂的必须 |
-| 状态转换 | ❌ 不应该 | ✅ 必须 |
-| 领域不变量 | ❌ 不应该 | ✅ 必须 |
-
-### 实际案例
-
-#### 案例 1：会员昵称验证
-
-```php
-// Request 层：验证格式和长度
-public function storeRules(): array
-{
-    return [
-        'nickname' => ['required', 'string', 'max:100'],
-    ];
-}
-
-// Entity 层：不需要再验证（已在 Request 层验证）
-public function setNickname(?string $nickname): void
-{
-    $this->nickname = $nickname;
-    $this->markDirty('nickname', $nickname);
-}
-```
-
-#### 案例 2：会员等级成长值验证
-
-```php
-// Request 层：验证基本范围
-public function storeRules(): array
-{
-    return [
-        'growth_value_min' => ['required', 'integer', 'min:0'],
-        'growth_value_max' => ['nullable', 'integer', 'gte:growth_value_min'],
-    ];
-}
-
-// Entity 层：验证业务规则（跨字段逻辑）
-public function setGrowthMax(?int $value): self
-{
-    if ($value !== null && $this->growthMin !== null && $value < $this->growthMin) {
-        throw new BusinessException(ResultCode::FAIL, '最高成长值不能小于最低成长值');
+    $newSoldQuantity = $this->soldQuantity + $quantity;
+    
+    // 业务规则：检查库存是否充足
+    if ($newSoldQuantity > $this->totalQuantity) {
+        throw new \DomainException('库存不足');
     }
     
-    $this->growthMax = $value;
-    $this->markDirty('growth_value_max');
+    $this->setSoldQuantity($newSoldQuantity);
+    return $this;
+}
+
+// ❌ 错误：在 Entity 中验证基础值
+public function setProductId(int $productId): self
+{
+    if ($productId <= 0) {  // 这应该在 Request 层验证
+        throw new \DomainException('商品ID必须大于0');
+    }
+    
+    $this->productId = $productId;
     return $this;
 }
 ```
 
-#### 案例 3：订单状态转换验证
+---
+
+## 字段对齐规范
+
+### 数据库表字段
+
+根据迁移文件 `databases/migrations/2024_01_01_000018_create_mall_group_buys_table.php`，
+`group_buys` 表的字段如下：
 
 ```php
-// Request 层：验证状态值是否有效
-public function updateStatusRules(): array
-{
-    return [
-        'status' => ['required', Rule::in(['pending', 'paid', 'shipped', 'completed', 'cancelled'])],
-    ];
-}
+- id (bigint)
+- title (string, 255)
+- description (text, nullable)
+- product_id (bigint)
+- sku_id (bigint)
+- original_price (decimal, 10, 2)
+- group_price (decimal, 10, 2)
+- min_people (int, default: 2)
+- max_people (int, default: 100)
+- start_time (timestamp)
+- end_time (timestamp)
+- group_time_limit (int, default: 24)
+- status (enum: pending, active, ended, cancelled, sold_out)
+- total_quantity (int, default: 0)
+- sold_quantity (int, default: 0)
+- group_count (int, default: 0)
+- success_group_count (int, default: 0)
+- sort_order (int, default: 0)
+- is_enabled (boolean, default: true)
+- rules (json, nullable)
+- images (json, nullable)
+- remark (text, nullable)
+- created_at (timestamp)
+- updated_at (timestamp)
+- deleted_at (timestamp, nullable)
+```
 
-// Entity 层：验证状态转换规则（业务规则）
-public function updateStatus(string $newStatus): self
+### DTO/Entity/ValueObject 字段对齐原则
+
+**✅ 必须遵守的规则：**
+
+1. **DTO 字段必须与数据库表字段一一对应**
+   - 不能添加数据库中不存在的字段（如 `operator_id`）
+   - 字段名必须使用下划线命名（snake_case），与数据库一致
+   - 字段类型必须与数据库类型匹配
+
+2. **Entity 字段必须与数据库表字段一一对应**
+   - 可以使用驼峰命名（camelCase）作为属性名
+   - 但 `toArray()` 方法必须返回下划线命名的键
+
+3. **ValueObject 可以包含计算字段**
+   - 值对象可以提供计算方法（如折扣率、剩余时间）
+   - 但这些计算字段不会持久化到数据库
+
+**❌ 错误示例：**
+```php
+// DTO 中添加了数据库不存在的字段
+class GroupBuyDto
 {
-    // 已支付的订单不能取消
-    if ($this->status === 'paid' && $newStatus === 'cancelled') {
-        throw new BusinessException(ResultCode::FAIL, '已支付的订单不能取消');
-    }
-    
-    // 已完成的订单不能修改状态
-    if ($this->status === 'completed') {
-        throw new BusinessException(ResultCode::FAIL, '已完成的订单不能修改状态');
-    }
-    
-    $this->status = $newStatus;
-    $this->markDirty('status');
-    return $this;
+    public int $operator_id = 0;  // ❌ 数据库中没有这个字段
 }
 ```
 
-### 总结
+**✅ 正确示例：**
+```php
+// DTO 字段与数据库对齐
+class GroupBuyDto
+{
+    public ?int $id = null;
+    public string $title = '';
+    public ?string $description = null;
+    public int $product_id = 0;
+    public int $sku_id = 0;
+    // ... 其他字段与数据库一致
+}
 
-**验证职责划分原则：**
-1. **Request 层是第一道防线** - 验证所有格式、类型、长度、范围等基础验证
-2. **Entity 层是业务规则守护者** - 只验证业务规则和领域不变量
-3. **避免重复验证** - Request 层验证过的，Entity 层不需要再验证
-4. **保持 Entity 纯粹** - Entity 专注于业务逻辑，不关心数据格式
+// ValueObject 可以提供计算方法
+class PriceVo
+{
+    // 计算折扣率（不持久化）
+    public function getDiscountRate(): float
+    {
+        return round(($this->groupPrice / $this->originalPrice) * 100, 2);
+    }
+}
+```
 
 ---
 

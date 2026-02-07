@@ -14,7 +14,7 @@ namespace App\Interface\Admin\Request\Product;
 
 use App\Domain\Product\Contract\CategoryInput;
 use App\Domain\Product\Repository\CategoryRepository;
-use App\Interface\Admin\DTO\Product\CategoryDto;
+use App\Interface\Admin\Dto\Product\CategoryDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

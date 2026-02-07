@@ -14,7 +14,7 @@ namespace App\Interface\Admin\Request\Product;
 
 use App\Domain\Product\Contract\ProductInput;
 use App\Domain\Product\Enum\ProductStatus;
-use App\Interface\Admin\DTO\Product\ProductDto;
+use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

@@ -12,36 +12,242 @@ declare(strict_types=1);
 
 namespace App\Domain\GroupBuy\Entity;
 
+use App\Domain\GroupBuy\Contract\GroupBuyCreateInput;
+use App\Domain\GroupBuy\Contract\GroupBuyUpdateInput;
+use App\Domain\GroupBuy\ValueObject\ActivityTimeVo;
+use App\Domain\GroupBuy\ValueObject\GroupPeopleVo;
+use App\Domain\GroupBuy\ValueObject\PriceVo;
+
 /**
  * 团购活动实体.
  */
 final class GroupBuyEntity
 {
-    public function __construct(
-        private int $id = 0,
-        private ?string $title = null,
-        private ?string $description = null,
-        private ?int $productId = null,
-        private ?int $skuId = null,
-        private ?float $originalPrice = null,
-        private ?float $groupPrice = null,
-        private ?int $minPeople = null,
-        private ?int $maxPeople = null,
-        private ?string $startTime = null,
-        private ?string $endTime = null,
-        private ?int $groupTimeLimit = null,
-        private ?string $status = null,
-        private ?int $totalQuantity = null,
-        private ?int $soldQuantity = null,
-        private ?int $groupCount = null,
-        private ?int $successGroupCount = null,
-        private ?int $sortOrder = null,
-        private ?bool $isEnabled = null,
-        private ?array $rules = null,
-        private ?array $images = null,
-        private ?string $remark = null
-    ) {}
+    private int $id = 0;
 
+    private string $title = '';
+
+    private ?string $description = null;
+
+    private int $productId = 0;
+
+    private int $skuId = 0;
+
+    private float $originalPrice = 0.0;
+
+    private float $groupPrice = 0.0;
+
+    private int $minPeople = 2;
+
+    private int $maxPeople = 10;
+
+    private string $startTime = '';
+
+    private string $endTime = '';
+
+    private int $groupTimeLimit = 24;
+
+    private string $status = 'pending';
+
+    private int $totalQuantity = 0;
+
+    private int $soldQuantity = 0;
+
+    private int $groupCount = 0;
+
+    private int $successGroupCount = 0;
+
+    private int $sortOrder = 0;
+
+    private bool $isEnabled = true;
+
+    private ?array $rules = null;
+
+    private ?array $images = null;
+
+    private ?string $remark = null;
+
+    /**
+     * @var array<string, bool> dirty 追踪机制
+     */
+    private array $dirty = [];
+
+    /**
+     * 创建行为方法：接收 DTO，内部组装设置值.
+     */
+    public function create(GroupBuyCreateInput $dto): self
+    {
+        $this->setTitle($dto->getTitle());
+        $this->setDescription($dto->getDescription());
+        $this->setProductId($dto->getProductId());
+        $this->setSkuId($dto->getSkuId());
+
+        // 使用价格值对象验证价格
+        $priceVo = new PriceVo($dto->getOriginalPrice(), $dto->getGroupPrice());
+        $this->setOriginalPrice($priceVo->getOriginalPrice());
+        $this->setGroupPrice($priceVo->getGroupPrice());
+
+        // 使用成团人数值对象验证人数
+        $peopleVo = new GroupPeopleVo($dto->getMinPeople(), $dto->getMaxPeople());
+        $this->setMinPeople($peopleVo->getMinPeople());
+        $this->setMaxPeople($peopleVo->getMaxPeople());
+
+        // 使用活动时间值对象验证时间
+        $timeVo = new ActivityTimeVo($dto->getStartTime(), $dto->getEndTime());
+        $this->setStartTime($timeVo->getStartTime());
+        $this->setEndTime($timeVo->getEndTime());
+
+        $this->setGroupTimeLimit($dto->getGroupTimeLimit());
+        $this->setStatus($dto->getStatus());
+        $this->setTotalQuantity($dto->getTotalQuantity());
+        $this->setSoldQuantity(0);
+        $this->setGroupCount(0);
+        $this->setSuccessGroupCount(0);
+        $this->setSortOrder($dto->getSortOrder());
+        $this->setIsEnabled($dto->getIsEnabled());
+        $this->setRules($dto->getRules());
+        $this->setImages($dto->getImages());
+        $this->setRemark($dto->getRemark());
+
+        return $this;
+    }
+
+    /**
+     * 更新行为方法：接收 DTO，内部组装设置值.
+     */
+    public function update(GroupBuyUpdateInput $dto): self
+    {
+        $this->setTitle($dto->getTitle());
+        $this->setDescription($dto->getDescription());
+        $this->setProductId($dto->getProductId());
+        $this->setSkuId($dto->getSkuId());
+
+        // 使用价格值对象验证价格
+        $priceVo = new PriceVo($dto->getOriginalPrice(), $dto->getGroupPrice());
+        $this->setOriginalPrice($priceVo->getOriginalPrice());
+        $this->setGroupPrice($priceVo->getGroupPrice());
+
+        // 使用成团人数值对象验证人数
+        $peopleVo = new GroupPeopleVo($dto->getMinPeople(), $dto->getMaxPeople());
+        $this->setMinPeople($peopleVo->getMinPeople());
+        $this->setMaxPeople($peopleVo->getMaxPeople());
+
+        // 使用活动时间值对象验证时间
+        $timeVo = new ActivityTimeVo($dto->getStartTime(), $dto->getEndTime());
+        $this->setStartTime($timeVo->getStartTime());
+        $this->setEndTime($timeVo->getEndTime());
+
+        $this->setGroupTimeLimit($dto->getGroupTimeLimit());
+
+        if ($dto->getStatus() !== null) {
+            $this->setStatus($dto->getStatus());
+        }
+
+        $this->setTotalQuantity($dto->getTotalQuantity());
+        $this->setSortOrder($dto->getSortOrder());
+        $this->setIsEnabled($dto->getIsEnabled());
+        $this->setRules($dto->getRules());
+        $this->setImages($dto->getImages());
+        $this->setRemark($dto->getRemark());
+
+        return $this;
+    }
+
+    /**
+     * 启用活动.
+     */
+    public function enable(): self
+    {
+        if (! $this->canEnable()) {
+            throw new \DomainException('活动不满足启用条件');
+        }
+
+        $this->setIsEnabled(true);
+        return $this;
+    }
+
+    /**
+     * 禁用活动.
+     */
+    public function disable(): self
+    {
+        $this->setIsEnabled(false);
+        return $this;
+    }
+
+    /**
+     * 增加销量.
+     */
+    public function increaseSoldQuantity(int $quantity): self
+    {
+        if ($quantity <= 0) {
+            throw new \DomainException('销量增加数量必须大于0');
+        }
+
+        $newSoldQuantity = $this->soldQuantity + $quantity;
+
+        if ($newSoldQuantity > $this->totalQuantity) {
+            throw new \DomainException('库存不足');
+        }
+
+        $this->setSoldQuantity($newSoldQuantity);
+
+        // 检查是否售罄
+        if ($newSoldQuantity >= $this->totalQuantity) {
+            $this->setStatus('sold_out');
+        }
+
+        return $this;
+    }
+
+    /**
+     * 增加成团数.
+     */
+    public function increaseGroupCount(): self
+    {
+        $this->setGroupCount($this->groupCount + 1);
+        return $this;
+    }
+
+    /**
+     * 增加成功成团数.
+     */
+    public function increaseSuccessGroupCount(): self
+    {
+        $this->setSuccessGroupCount($this->successGroupCount + 1);
+        return $this;
+    }
+
+    /**
+     * 检查活动是否可以参与.
+     */
+    public function canJoin(): bool
+    {
+        // 必须启用
+        if (! $this->isEnabled) {
+            return false;
+        }
+
+        // 状态必须是进行中
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        // 检查库存
+        if ($this->soldQuantity >= $this->totalQuantity) {
+            return false;
+        }
+
+        // 检查时间
+        $timeVo = new ActivityTimeVo($this->startTime, $this->endTime);
+        if (! $timeVo->isActive()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Getter 和 Setter 方法
     public function getId(): int
     {
         return $this->id;
@@ -53,67 +259,272 @@ final class GroupBuyEntity
         return $this;
     }
 
-    public function getTitle(): ?string
+    public function getTitle(): string
     {
         return $this->title;
     }
 
-    public function setTitle(?string $title): self
+    public function setTitle(string $title): self
     {
+        $title = trim($title);
+        if ($title === '') {
+            throw new \DomainException('活动标题不能为空');
+        }
+
         $this->title = $title;
+        $this->markDirty('title');
         return $this;
     }
 
-    public function getProductId(): ?int
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        $this->markDirty('description');
+        return $this;
+    }
+
+    public function getProductId(): int
     {
         return $this->productId;
     }
 
-    public function getSkuId(): ?int
+    public function setProductId(int $productId): self
+    {
+        $this->productId = $productId;
+        $this->markDirty('product_id');
+        return $this;
+    }
+
+    public function getSkuId(): int
     {
         return $this->skuId;
     }
 
-    public function getOriginalPrice(): ?float
+    public function setSkuId(int $skuId): self
+    {
+        $this->skuId = $skuId;
+        $this->markDirty('sku_id');
+        return $this;
+    }
+
+    public function getOriginalPrice(): float
     {
         return $this->originalPrice;
     }
 
-    public function getGroupPrice(): ?float
+    public function setOriginalPrice(float $originalPrice): self
+    {
+        $this->originalPrice = $originalPrice;
+        $this->markDirty('original_price');
+        return $this;
+    }
+
+    public function getGroupPrice(): float
     {
         return $this->groupPrice;
     }
 
-    public function getStatus(): ?string
+    public function setGroupPrice(float $groupPrice): self
+    {
+        $this->groupPrice = $groupPrice;
+        $this->markDirty('group_price');
+        return $this;
+    }
+
+    public function getMinPeople(): int
+    {
+        return $this->minPeople;
+    }
+
+    public function setMinPeople(int $minPeople): self
+    {
+        $this->minPeople = $minPeople;
+        $this->markDirty('min_people');
+        return $this;
+    }
+
+    public function getMaxPeople(): int
+    {
+        return $this->maxPeople;
+    }
+
+    public function setMaxPeople(int $maxPeople): self
+    {
+        $this->maxPeople = $maxPeople;
+        $this->markDirty('max_people');
+        return $this;
+    }
+
+    public function getStartTime(): string
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(string $startTime): self
+    {
+        $this->startTime = $startTime;
+        $this->markDirty('start_time');
+        return $this;
+    }
+
+    public function getEndTime(): string
+    {
+        return $this->endTime;
+    }
+
+    public function setEndTime(string $endTime): self
+    {
+        $this->endTime = $endTime;
+        $this->markDirty('end_time');
+        return $this;
+    }
+
+    public function getGroupTimeLimit(): int
+    {
+        return $this->groupTimeLimit;
+    }
+
+    public function setGroupTimeLimit(int $groupTimeLimit): self
+    {
+        $this->groupTimeLimit = $groupTimeLimit;
+        $this->markDirty('group_time_limit');
+        return $this;
+    }
+
+    public function getStatus(): string
     {
         return $this->status;
     }
 
-    public function setStatus(?string $status): self
+    public function setStatus(string $status): self
     {
         $this->status = $status;
+        $this->markDirty('status');
         return $this;
     }
 
-    public function getIsEnabled(): ?bool
+    public function getTotalQuantity(): int
+    {
+        return $this->totalQuantity;
+    }
+
+    public function setTotalQuantity(int $totalQuantity): self
+    {
+        $this->totalQuantity = $totalQuantity;
+        $this->markDirty('total_quantity');
+        return $this;
+    }
+
+    public function getSoldQuantity(): int
+    {
+        return $this->soldQuantity;
+    }
+
+    public function setSoldQuantity(int $soldQuantity): self
+    {
+        $this->soldQuantity = $soldQuantity;
+        $this->markDirty('sold_quantity');
+        return $this;
+    }
+
+    public function getGroupCount(): int
+    {
+        return $this->groupCount;
+    }
+
+    public function setGroupCount(int $groupCount): self
+    {
+        $this->groupCount = $groupCount;
+        $this->markDirty('group_count');
+        return $this;
+    }
+
+    public function getSuccessGroupCount(): int
+    {
+        return $this->successGroupCount;
+    }
+
+    public function setSuccessGroupCount(int $successGroupCount): self
+    {
+        $this->successGroupCount = $successGroupCount;
+        $this->markDirty('success_group_count');
+        return $this;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): self
+    {
+        $this->sortOrder = $sortOrder;
+        $this->markDirty('sort_order');
+        return $this;
+    }
+
+    public function getIsEnabled(): bool
     {
         return $this->isEnabled;
     }
 
-    public function setIsEnabled(?bool $isEnabled): self
+    public function setIsEnabled(bool $isEnabled): self
     {
         $this->isEnabled = $isEnabled;
+        $this->markDirty('is_enabled');
+        return $this;
+    }
+
+    public function getRules(): ?array
+    {
+        return $this->rules;
+    }
+
+    public function setRules(?array $rules): self
+    {
+        $this->rules = $rules;
+        $this->markDirty('rules');
+        return $this;
+    }
+
+    public function getImages(): ?array
+    {
+        return $this->images;
+    }
+
+    public function setImages(?array $images): self
+    {
+        $this->images = $images;
+        $this->markDirty('images');
+        return $this;
+    }
+
+    public function getRemark(): ?string
+    {
+        return $this->remark;
+    }
+
+    public function setRemark(?string $remark): self
+    {
+        $this->remark = $remark;
+        $this->markDirty('remark');
         return $this;
     }
 
     /**
      * 转换为数组（用于持久化）.
+     * 使用 dirty 追踪机制，只返回修改过的字段.
      *
      * @return array<string, mixed>
      */
     public function toArray(): array
     {
-        return array_filter([
+        $data = [
             'title' => $this->title,
             'description' => $this->description,
             'product_id' => $this->productId,
@@ -135,6 +546,46 @@ final class GroupBuyEntity
             'rules' => $this->rules,
             'images' => $this->images,
             'remark' => $this->remark,
-        ], static fn ($v) => $v !== null);
+        ];
+
+        // 如果没有 dirty 标记，返回所有非空字段
+        if ($this->dirty === []) {
+            return array_filter($data, static fn ($value) => $value !== null);
+        }
+
+        // 只返回 dirty 标记的字段
+        return array_filter(
+            $data,
+            function ($value, string $field) {
+                return isset($this->dirty[$field]) && $value !== null;
+            },
+            \ARRAY_FILTER_USE_BOTH
+        );
+    }
+
+    /**
+     * 检查是否可以启用.
+     */
+    private function canEnable(): bool
+    {
+        // 检查必要字段是否完整
+        if (empty($this->title) || $this->productId === 0 || $this->skuId === 0) {
+            return false;
+        }
+
+        // 检查库存
+        if ($this->totalQuantity <= 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 标记字段为已修改.
+     */
+    private function markDirty(string $field): void
+    {
+        $this->dirty[$field] = true;
     }
 }

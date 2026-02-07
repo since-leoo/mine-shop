@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Interface\Admin\Request\Coupon;
 
 use App\Domain\Coupon\Contract\CouponUserInput;
-use App\Interface\Admin\DTO\Coupon\CouponUserDto;
+use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 use Hyperf\DTO\Mapper;
 use PHPUnit\Framework\TestCase;
 

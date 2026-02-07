@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Admin\DTO\Seckill;
+namespace App\Interface\Admin\Dto\Seckill;
 
 use App\Domain\Seckill\Contract\SeckillProductInput;
 

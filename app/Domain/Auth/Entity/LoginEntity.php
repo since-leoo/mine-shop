@@ -14,7 +14,7 @@ namespace App\Domain\Auth\Entity;
 
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Auth\ValueObject\ClientInfo;
-use App\Interface\Admin\DTO\PassportLoginDto;
+use App\Interface\Admin\Dto\PassportLoginDto;
 
 /**
  * 登录实体，聚合基础认证参数.

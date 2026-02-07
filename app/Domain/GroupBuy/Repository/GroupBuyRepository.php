@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\GroupBuy\Repository;
 
-use App\Domain\GroupBuy\Entity\GroupBuyEntity;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 use Hyperf\Database\Model\Builder;
@@ -25,19 +24,6 @@ use Hyperf\Database\Model\Builder;
 final class GroupBuyRepository extends IRepository
 {
     public function __construct(protected readonly GroupBuy $model) {}
-
-    public function createFromEntity(GroupBuyEntity $entity): GroupBuy
-    {
-        $groupBuy = GroupBuy::create($entity->toArray());
-        $entity->setId((int) $groupBuy->id);
-        return $groupBuy;
-    }
-
-    public function updateFromEntity(GroupBuyEntity $entity): bool
-    {
-        $groupBuy = GroupBuy::find($entity->getId());
-        return $groupBuy && $groupBuy->update($entity->toArray());
-    }
 
     public function handleSearch(Builder $query, array $params): Builder
     {

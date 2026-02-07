@@ -12,8 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\GroupBuy;
 
+use App\Domain\GroupBuy\Contract\GroupBuyCreateInput;
+use App\Domain\GroupBuy\Contract\GroupBuyUpdateInput;
+use App\Interface\Admin\Dto\GroupBuy\GroupBuyDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
 
 class GroupBuyRequest extends BaseRequest
@@ -108,5 +112,17 @@ class GroupBuyRequest extends BaseRequest
             'images' => '活动图片',
             'remark' => '备注',
         ];
+    }
+
+    /**
+     * 转换为 DTO.
+     * @param null|int $id 团购活动ID，创建时为null，更新时传入
+     */
+    public function toDto(?int $id): GroupBuyCreateInput|GroupBuyUpdateInput
+    {
+        $params = $this->validated();
+        $params['id'] = $id;
+
+        return Mapper::map($params, new GroupBuyDto());
     }
 }

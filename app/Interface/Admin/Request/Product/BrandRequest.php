@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Request\Product;
 
 use App\Domain\Product\Contract\BrandInput;
-use App\Interface\Admin\DTO\Product\BrandDto;
+use App\Interface\Admin\Dto\Product\BrandDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;

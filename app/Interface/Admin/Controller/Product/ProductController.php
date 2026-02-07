@@ -15,7 +15,7 @@ namespace App\Interface\Admin\Controller\Product;
 use App\Application\Commad\ProductCommandService;
 use App\Application\Query\ProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Admin\DTO\Product\ProductDto;
+use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\ProductRequest;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
