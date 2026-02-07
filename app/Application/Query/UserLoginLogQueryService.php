@@ -12,32 +12,20 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Logstash\Repository\UserLoginLogRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Logstash\Service\UserLoginLogService;
 
 final class UserLoginLogQueryService
 {
-    public function __construct(public readonly UserLoginLogRepository $repository) {}
+    public function __construct(private readonly UserLoginLogService $userLoginLogService) {}
 
     /**
-     * @param array<string, mixed> $payload
+     * 分页查询用户登录日志.
+     *
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
      */
-    public function create(array $payload): mixed
+    public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->create($payload);
-    }
-
-    public function paginate(PageQuery $query): array
-    {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
-    }
-
-    public function delete(mixed $ids): int
-    {
-        return $this->repository->deleteByIds($ids);
+        return $this->userLoginLogService->page($filters, $page, $pageSize);
     }
 }

@@ -31,7 +31,7 @@ final class MemberLevelQueryService
      */
     public function find(int $id): ?array
     {
-        $level = $this->memberLevelService->find($id);
+        $level = $this->memberLevelService->findById($id);
         return $level?->toArray();
     }
 }

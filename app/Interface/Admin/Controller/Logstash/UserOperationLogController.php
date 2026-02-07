@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Logstash;
 
 use App\Application\Commad\UserOperationLogCommandService;
-use App\Application\Mapper\LogQueryAssembler;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -40,13 +39,10 @@ final class UserOperationLogController extends AbstractController
     #[Permission(code: 'log:userOperation:list')]
     public function page(): Result
     {
-        return $this->success($this->service->paginate(
-            LogQueryAssembler::page(
-                $this->getRequestData(),
-                $this->getCurrentPage(),
-                $this->getPageSize()
-            )
-        ));
+        $params = $this->getRequestData();
+        return $this->success(
+            $this->service->page($params, $this->getCurrentPage(), $this->getPageSize())
+        );
     }
 
     #[DeleteMapping(path: '')]

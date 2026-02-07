@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\UserRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Permission\Service\UserService;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\Collection\Collection;
 use Psr\SimpleCache\CacheInterface;
@@ -21,22 +20,24 @@ use Psr\SimpleCache\CacheInterface;
 final class UserQueryService
 {
     public function __construct(
-        public readonly UserRepository $repository,
+        private readonly UserService $userService,
         private readonly CacheInterface $cache
     ) {}
 
-    public function paginate(PageQuery $query): array
+    /**
+     * 分页查询用户.
+     *
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
+     */
+    public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
+        return $this->userService->page($filters, $page, $pageSize);
     }
 
     public function find(int $id): ?User
     {
-        return $this->repository->findById($id);
+        return $this->userService->findById($id);
     }
 
     public function findCached(int $id, int $ttl = 60): ?User
@@ -46,14 +47,14 @@ final class UserQueryService
             $cached = $this->cache->get($key);
             return $cached instanceof User ? $cached : null;
         }
-        $user = $this->repository->findById($id);
+        $user = $this->userService->findById($id);
         $this->cache->set($key, $user, $ttl);
         return $user;
     }
 
     public function getRoles(int $userId): Collection
     {
-        $user = $this->repository->findById($userId);
+        $user = $this->userService->findById($userId);
         if (! $user) {
             return new Collection();
         }

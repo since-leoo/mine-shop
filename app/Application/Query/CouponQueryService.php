@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Coupon\Entity\CouponEntity;
 use App\Domain\Coupon\Service\CouponService;
 
 /**
@@ -36,14 +35,6 @@ final class CouponQueryService
     public function find(int $id): array
     {
         return $this->couponService->getEntity($id)->toArray();
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function findEntity(int $id): CouponEntity
-    {
-        return $this->couponService->getEntity($id);
     }
 
     public function stats(): array

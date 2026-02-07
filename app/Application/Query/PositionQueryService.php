@@ -12,19 +12,20 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\PositionRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Permission\Service\PositionService;
 
 final class PositionQueryService
 {
-    public function __construct(public readonly PositionRepository $repository) {}
+    public function __construct(private readonly PositionService $positionService) {}
 
-    public function paginate(PageQuery $query): array
+    /**
+     * 分页查询职位.
+     *
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
+     */
+    public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
+        return $this->positionService->page($filters, $page, $pageSize);
     }
 }

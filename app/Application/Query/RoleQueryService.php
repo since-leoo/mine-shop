@@ -12,37 +12,38 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\RoleRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Permission\Service\RoleService;
 use App\Infrastructure\Model\Permission\Role;
 use Hyperf\Collection\Collection;
 
 final class RoleQueryService
 {
-    public function __construct(public readonly RoleRepository $repository) {}
+    public function __construct(private readonly RoleService $roleService) {}
 
-    public function paginate(PageQuery $query): array
+    /**
+     * 分页查询角色.
+     *
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
+     */
+    public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
+        return $this->roleService->page($filters, $page, $pageSize);
     }
 
     public function list(array $filters = []): Collection
     {
-        return $this->repository->list($filters);
+        return $this->roleService->getList($filters);
     }
 
     public function find(int $id): ?Role
     {
-        return $this->repository->findById($id);
+        return $this->roleService->findById($id);
     }
 
     public function permissions(int $id): Collection
     {
-        $role = $this->repository->findById($id);
+        $role = $this->roleService->findById($id);
         if (! $role) {
             return new Collection();
         }

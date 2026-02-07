@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Mapper;
 
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Application\Common\PageQuery;
 
 final class PermissionQueryAssembler
 {

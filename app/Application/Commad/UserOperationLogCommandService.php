@@ -12,32 +12,17 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Domain\Logstash\Repository\UserOperationLogRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Logstash\Service\UserOperationLogService;
 
 final class UserOperationLogCommandService
 {
-    public function __construct(public readonly UserOperationLogRepository $repository) {}
+    public function __construct(private readonly UserOperationLogService $userOperationLogService) {}
 
     /**
      * @param array<string, mixed> $payload
      */
     public function create(array $payload): mixed
     {
-        return $this->repository->create($payload);
-    }
-
-    public function paginate(PageQuery $query): array
-    {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
-    }
-
-    public function delete(mixed $ids): int
-    {
-        return $this->repository->deleteByIds($ids);
+        return $this->userOperationLogService->create($payload);
     }
 }

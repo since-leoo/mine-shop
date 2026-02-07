@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\MenuRepository;
+use App\Domain\Permission\Service\MenuService;
 use Hyperf\Collection\Collection;
 
 final class MenuQueryService
 {
-    public function __construct(public readonly MenuRepository $repository) {}
+    public function __construct(private readonly MenuService $menuService) {}
 
     public function list(array $filters = []): Collection
     {
-        return $this->repository->list($filters);
+        return $this->menuService->repository->list($filters);
     }
 }

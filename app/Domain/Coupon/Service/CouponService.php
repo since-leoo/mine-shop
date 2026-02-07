@@ -84,17 +84,17 @@ final class CouponService extends IService
     /**
      * 删除优惠券.
      *
-     * @return bool 删除是否成功
+     * @return int 删除是否成功
      */
-    public function delete(CouponEntity $entity): bool
+    public function deleteById(mixed $id): int
     {
         // 检查是否有发放记录，有则不允许删除
-        $issued = $this->couponUserRepository->countByCouponId($entity->getId());
+        $issued = $this->couponUserRepository->countByCouponId($id);
         if ($issued > 0) {
             throw new \RuntimeException('已有发放记录，无法删除');
         }
 
-        return $this->repository->deleteById($entity->getId()) > 0;
+        return $this->repository->deleteById($id);
     }
 
     /**

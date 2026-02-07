@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\PositionCommandService;
-use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Mapper\PositionAssembler;
 use App\Application\Query\PositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
@@ -48,14 +47,9 @@ class PositionController extends AbstractController
     #[Permission(code: 'permission:position:index')]
     public function pageList(): Result
     {
+        $params = $this->getRequestData();
         return $this->success(
-            $this->queryService->paginate(
-                PermissionQueryAssembler::toPageQuery(
-                    $this->getRequestData(),
-                    $this->getCurrentPage(),
-                    $this->getPageSize()
-                )
-            )
+            $this->queryService->page($params, $this->getCurrentPage(), $this->getPageSize())
         );
     }
 

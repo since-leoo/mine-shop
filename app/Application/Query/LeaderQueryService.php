@@ -12,19 +12,20 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\LeaderRepository;
-use App\Domain\Shared\ValueObject\PageQuery;
+use App\Domain\Permission\Service\LeaderService;
 
 final class LeaderQueryService
 {
-    public function __construct(public readonly LeaderRepository $repository) {}
+    public function __construct(private readonly LeaderService $leaderService) {}
 
-    public function paginate(PageQuery $query): array
+    /**
+     * 分页查询领导.
+     *
+     * @param array<string, mixed> $filters
+     * @return array<string, mixed>
+     */
+    public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->page(
-            $query->getFilters(),
-            $query->getPage(),
-            $query->getPageSize()
-        );
+        return $this->leaderService->page($filters, $page, $pageSize);
     }
 }

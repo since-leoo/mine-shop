@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\RoleCommandService;
-use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Mapper\RoleAssembler;
 use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
@@ -52,14 +51,9 @@ final class RoleController extends AbstractController
     #[Permission(code: 'permission:role:index')]
     public function pageList(): Result
     {
+        $params = $this->getRequestData();
         return $this->success(
-            $this->queryService->paginate(
-                PermissionQueryAssembler::toPageQuery(
-                    $this->getRequestData(),
-                    $this->getCurrentPage(),
-                    $this->getPageSize()
-                )
-            )
+            $this->queryService->page($params, $this->getCurrentPage(), $this->getPageSize())
         );
     }
 

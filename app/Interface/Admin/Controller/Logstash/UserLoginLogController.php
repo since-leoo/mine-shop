@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Logstash;
 
-use App\Application\Mapper\LogQueryAssembler;
+use App\Application\Commad\UserLoginLogCommandService;
 use App\Application\Query\UserLoginLogQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -33,6 +33,7 @@ final class UserLoginLogController extends AbstractController
 {
     public function __construct(
         protected readonly UserLoginLogQueryService $service,
+        protected readonly UserLoginLogCommandService $commandService,
         protected readonly CurrentUser $currentUser
     ) {}
 
@@ -40,14 +41,9 @@ final class UserLoginLogController extends AbstractController
     #[Permission(code: 'log:userLogin:list')]
     public function page(): Result
     {
+        $params = $this->getRequestData();
         return $this->success(
-            $this->service->paginate(
-                LogQueryAssembler::page(
-                    $this->getRequestData(),
-                    $this->getCurrentPage(),
-                    $this->getPageSize()
-                )
-            )
+            $this->service->page($params, $this->getCurrentPage(), $this->getPageSize())
         );
     }
 
@@ -55,7 +51,7 @@ final class UserLoginLogController extends AbstractController
     #[Permission(code: 'log:userLogin:delete')]
     public function delete(RequestInterface $request): Result
     {
-        $this->service->delete($request->input('ids'));
+        $this->commandService->delete($request->input('ids'));
         return $this->success();
     }
 }

@@ -12,20 +12,20 @@ declare(strict_types=1);
 
 namespace App\Application\Query;
 
-use App\Domain\Permission\Repository\DepartmentRepository;
+use App\Domain\Permission\Service\DepartmentService;
 
 final class DepartmentQueryService
 {
-    public function __construct(public readonly DepartmentRepository $repository) {}
+    public function __construct(private readonly DepartmentService $departmentService) {}
 
     public function list(array $filters): array
     {
-        return $this->repository->list($filters)->toArray();
+        return $this->departmentService->getList($filters)->toArray();
     }
 
     public function positions(int $id): array
     {
-        $entity = $this->repository->findById($id);
+        $entity = $this->departmentService->findById($id);
         if (! $entity) {
             return [];
         }

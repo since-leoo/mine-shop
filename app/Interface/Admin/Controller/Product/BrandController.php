@@ -51,7 +51,7 @@ final class BrandController extends AbstractController
     #[Permission(code: 'product:brand:read')]
     public function show(int $id): Result
     {
-        $brand = $this->queryService->find($id);
+        $brand = $this->queryService->findById($id);
         return $brand ? $this->success($brand->toArray()) : $this->error('品牌不存在', 404);
     }
 
@@ -68,8 +68,7 @@ final class BrandController extends AbstractController
     public function update(int $id, BrandRequest $request): Result
     {
         $this->commandService->update($request->toDto($id));
-        $brand = $this->queryService->find($id);
-        return $this->success($brand?->toArray() ?? [], '更新品牌成功');
+        return $this->success([], '更新品牌成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

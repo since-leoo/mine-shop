@@ -62,7 +62,7 @@ final class CategoryController extends AbstractController
     #[Permission(code: 'product:category:read')]
     public function show(int $id): Result
     {
-        $category = $this->queryService->find($id);
+        $category = $this->queryService->findById($id);
         return $category ? $this->success($category->toArray()) : $this->error('分类不存在', 404);
     }
 
@@ -79,8 +79,7 @@ final class CategoryController extends AbstractController
     public function update(int $id, CategoryRequest $request): Result
     {
         $this->commandService->update($request->toDto($id));
-        $category = $this->queryService->find($id);
-        return $this->success($category?->toArray() ?? [], '更新分类成功');
+        return $this->success([], '更新分类成功');
     }
 
     #[DeleteMapping(path: '{id:\d+}')]

@@ -53,7 +53,7 @@ final class MemberLevelController extends AbstractController
     #[Permission(code: 'member:level:read')]
     public function show(int $id): Result
     {
-        $level = $this->queryService->find($id);
+        $level = $this->queryService->findById($id);
         return $level ? $this->success($level) : $this->error('会员等级不存在', 404);
     }
 

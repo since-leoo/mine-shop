@@ -61,7 +61,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:read')]
     public function show(int $id): Result
     {
-        $coupon = $this->queryService->find($id);
+        $coupon = $this->queryService->findById($id);
         return $coupon ? $this->success($coupon) : $this->error('优惠券不存在', 404);
     }
 
@@ -86,7 +86,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:delete')]
     public function delete(int $id): Result
     {
-        $this->commandService->delete($id);
+        $this->commandService->deleteById($id);
         return $this->success(null, '删除优惠券成功');
     }
 

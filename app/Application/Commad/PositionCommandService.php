@@ -14,19 +14,19 @@ namespace App\Application\Commad;
 
 use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Domain\Permission\Contract\Position\PositionSetDataPermissionInput;
-use App\Domain\Permission\Repository\PositionRepository;
+use App\Domain\Permission\Service\PositionService;
 use App\Infrastructure\Model\Permission\Position;
 
 final class PositionCommandService
 {
-    public function __construct(public readonly PositionRepository $repository) {}
+    public function __construct(private readonly PositionService $positionService) {}
 
     /**
      * @param array<string, mixed> $payload
      */
     public function create(array $payload): Position
     {
-        return $this->repository->create($payload);
+        return $this->positionService->create($payload);
     }
 
     /**
@@ -34,12 +34,12 @@ final class PositionCommandService
      */
     public function update(int $id, array $payload): bool
     {
-        return $this->repository->updateById($id, $payload);
+        return $this->positionService->update($id, $payload);
     }
 
     public function delete(DeleteInput $input): int
     {
-        return $this->repository->deleteByIds($input->getIds());
+        return $this->positionService->delete($input->getIds());
     }
 
     public function setDataPermission(PositionSetDataPermissionInput $input): bool
@@ -48,7 +48,7 @@ final class PositionCommandService
         $positionId = $input->getPositionId();
 
         // 步骤2: 通过 Repository 获取 Model
-        $positionModel = $this->repository->findById($positionId);
+        $positionModel = $this->positionService->repository->findById($positionId);
         if ($positionModel === null) {
             return false;
         }

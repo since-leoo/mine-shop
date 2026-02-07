@@ -12,18 +12,17 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Application\Query\CouponUserQueryService;
 use App\Domain\Coupon\Service\CouponUserService;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Coupon\CouponUser;
 
 /**
  * 用户优惠券命令服务.
  */
-final class CouponUserCommandService
+final class CouponUserCommandService extends IService
 {
     public function __construct(
         private readonly CouponUserService $couponUserService,
-        private readonly CouponUserQueryService $queryService
     ) {}
 
     /**
@@ -37,14 +36,14 @@ final class CouponUserCommandService
 
     public function markUsed(int $id): bool
     {
-        $couponUserEntity = $this->queryService->find($id);
+        $couponUserEntity = $this->couponUserService->getEntity($id);
 
         return $this->couponUserService->markUsed($couponUserEntity);
     }
 
     public function markExpired(int $id): bool
     {
-        $couponUserEntity = $this->queryService->find($id);
+        $couponUserEntity = $this->couponUserService->getEntity($id);
 
         return $this->couponUserService->markExpired($couponUserEntity);
     }

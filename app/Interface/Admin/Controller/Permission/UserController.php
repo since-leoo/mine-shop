@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\UserCommandService;
-use App\Application\Mapper\PermissionQueryAssembler;
 use App\Application\Query\UserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
@@ -50,14 +49,9 @@ final class UserController extends AbstractController
     #[Permission(code: 'permission:user:index')]
     public function pageList(): Result
     {
+        $params = $this->getRequestData();
         return $this->success(
-            $this->queryService->paginate(
-                PermissionQueryAssembler::toPageQuery(
-                    $this->getRequestData(),
-                    $this->getCurrentPage(),
-                    $this->getPageSize()
-                )
-            )
+            $this->queryService->page($params, $this->getCurrentPage(), $this->getPageSize())
         );
     }
 
