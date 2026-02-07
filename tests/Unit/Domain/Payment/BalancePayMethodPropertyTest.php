@@ -157,7 +157,7 @@ final class BalancePayMethodPropertyTest extends TestCase
      */
     private function randomOrderNo(): string
     {
-        return 'ORD' . str_pad(
+        return 'ORD' . mb_str_pad(
             (string) random_int(1, 999999999),
             12,
             '0',

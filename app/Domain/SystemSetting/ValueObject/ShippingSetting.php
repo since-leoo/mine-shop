@@ -19,6 +19,8 @@ final class ShippingSetting
 {
     /**
      * @param string[] $supportedProviders
+     * @param string[] $remoteAreaProvinces
+     * @param array<string, mixed> $defaultTemplateConfig
      */
     public function __construct(
         private readonly string $defaultMethod,
@@ -26,6 +28,12 @@ final class ShippingSetting
         private readonly string $pickupAddress,
         private readonly int $freeShippingThreshold,
         private readonly array $supportedProviders,
+        private readonly string $defaultFreightType = 'free',
+        private readonly int $flatFreightAmount = 0,
+        private readonly bool $remoteAreaEnabled = false,
+        private readonly int $remoteAreaSurcharge = 0,
+        private readonly array $remoteAreaProvinces = [],
+        private readonly array $defaultTemplateConfig = [],
     ) {}
 
     public function defaultMethod(): string
@@ -63,5 +71,41 @@ final class ShippingSetting
         }
 
         return \in_array($code, $this->supportedProviders, true);
+    }
+
+    public function defaultFreightType(): string
+    {
+        return $this->defaultFreightType;
+    }
+
+    public function flatFreightAmount(): int
+    {
+        return $this->flatFreightAmount;
+    }
+
+    public function remoteAreaEnabled(): bool
+    {
+        return $this->remoteAreaEnabled;
+    }
+
+    public function remoteAreaSurcharge(): int
+    {
+        return $this->remoteAreaSurcharge;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function remoteAreaProvinces(): array
+    {
+        return $this->remoteAreaProvinces;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function defaultTemplateConfig(): array
+    {
+        return $this->defaultTemplateConfig;
     }
 }

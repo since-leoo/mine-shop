@@ -37,6 +37,18 @@ final class MemberWalletRepository
     }
 
     /**
+     * 创建会员钱包.
+     */
+    public function create(MemberWalletEntity $wallet): MemberWalletEntity
+    {
+        $info = $this->model::query()->create($wallet->toArray());
+
+        $info && $wallet->setId($info->id);
+
+        return $wallet;
+    }
+
+    /**
      * 通过会员ID和类型查找钱包 Model.
      */
     public function findByMemberIdAndType(int $memberId, string $type): ?MemberWallet

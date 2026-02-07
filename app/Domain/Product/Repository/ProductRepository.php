@@ -143,6 +143,6 @@ final class ProductRepository extends IRepository
             ->when(isset($params['max_price']) && $params['max_price'] !== '', static fn (Builder $q) => $q->where('max_price', '<=', (int) $params['max_price']))
             ->when(isset($params['sales_min']) && $params['sales_min'] !== '', static fn (Builder $q) => $q->where('real_sales', '>=', (int) $params['sales_min']))
             ->when(isset($params['sales_max']) && $params['sales_max'] !== '', static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
-            ->with(['category', 'brand']);
+            ->with(['category', 'brand', 'skus']);
     }
 }

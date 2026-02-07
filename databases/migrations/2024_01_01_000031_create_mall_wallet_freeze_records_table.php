@@ -15,9 +15,9 @@ class CreateMallWalletFreezeRecordsTable extends Migration
             $table->string('freeze_no', 50)->unique()->comment('冻结单号');
             $table->unsignedBigInteger('wallet_id')->comment('钱包ID');
             $table->unsignedBigInteger('member_id')->comment('会员ID');
-            $table->decimal('freeze_amount', 10, 2)->comment('申请冻结金额');
-            $table->decimal('frozen_amount', 10, 2)->default(0)->comment('实际冻结金额');
-            $table->decimal('released_amount', 10, 2)->default(0)->comment('已释放金额');
+            $table->unsignedBigInteger('freeze_amount')->comment('申请冻结金额(分)');
+            $table->unsignedBigInteger('frozen_amount')->default(0)->comment('实际冻结金额(分)');
+            $table->unsignedBigInteger('released_amount')->default(0)->comment('已释放金额(分)');
             $table->string('status', 30)->default('frozen')->comment('状态');
             $table->string('freeze_reason', 255)->nullable()->comment('冻结原因');
             $table->string('release_reason', 255)->nullable()->comment('释放原因');

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\CategoryCommandService;
-use App\Application\Query\CategoryQueryService;
+use App\Application\Commad\AppCategoryCommandService;
+use App\Application\Query\AppCategoryQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\CategoryRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class CategoryController extends AbstractController
 {
     public function __construct(
-        private readonly CategoryQueryService $queryService,
-        private readonly CategoryCommandService $commandService
+        private readonly AppCategoryQueryService $queryService,
+        private readonly AppCategoryCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

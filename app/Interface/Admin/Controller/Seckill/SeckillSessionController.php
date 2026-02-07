@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Commad\SeckillSessionCommandService;
-use App\Application\Query\SeckillSessionQueryService;
+use App\Application\Commad\AppSeckillSessionCommandService;
+use App\Application\Query\AppSeckillSessionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillSessionRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class SeckillSessionController extends AbstractController
 {
     public function __construct(
-        private readonly SeckillSessionQueryService $queryService,
-        private readonly SeckillSessionCommandService $commandService
+        private readonly AppSeckillSessionQueryService $queryService,
+        private readonly AppSeckillSessionCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

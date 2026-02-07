@@ -30,9 +30,9 @@ class CreateMallOrderItemsTable extends Migration
             $table->string('sku_name', 200)->comment('SKU名称');
             $table->string('product_image', 255)->nullable()->comment('商品图片');
             $table->json('spec_values')->nullable()->comment('规格值');
-            $table->decimal('unit_price', 10, 2)->comment('单价');
+            $table->unsignedInteger('unit_price')->comment('单价(分)');
             $table->unsignedInteger('quantity')->comment('数量');
-            $table->decimal('total_price', 10, 2)->comment('小计');
+            $table->unsignedInteger('total_price')->comment('小计(分)');
             $table->timestamps();
 
             $table->index(['order_id'], 'idx_order_id');

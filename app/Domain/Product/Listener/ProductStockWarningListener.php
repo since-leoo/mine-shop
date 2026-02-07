@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Product\Listener;
 
 use App\Domain\Product\Event\ProductStockWarningEvent;
-use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Domain\SystemSetting\Service\DomainMallSettingService;
 use Hyperf\Event\Contract\ListenerInterface;
 use Plugin\Since\SystemMessage\Facade\SystemMessage;
 use Psr\Log\LoggerInterface;
@@ -21,7 +21,7 @@ use Psr\Log\LoggerInterface;
 final class ProductStockWarningListener implements ListenerInterface
 {
     public function __construct(
-        private readonly MallSettingService $mallSettingService,
+        private readonly DomainMallSettingService $mallSettingService,
         private readonly LoggerInterface $logger
     ) {}
 

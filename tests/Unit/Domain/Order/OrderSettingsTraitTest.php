@@ -62,7 +62,7 @@ final class OrderSettingsTraitTest extends TestCase
         ]);
         $entity->setShipEntity($ship);
 
-        $setting = new ShippingSetting('express', true, '', 0.0, ['SF', 'YTO']);
+        $setting = new ShippingSetting('express', true, '', 0, ['SF', 'YTO']);
 
         $entity->ensureShippable($setting);
         self::assertTrue(true);
@@ -77,7 +77,7 @@ final class OrderSettingsTraitTest extends TestCase
         ]);
         $entity->setShipEntity($ship);
 
-        $setting = new ShippingSetting('express', true, '', 0.0, ['SF']);
+        $setting = new ShippingSetting('express', true, '', 0, ['SF']);
 
         $this->expectException(\DomainException::class);
         $entity->ensureShippable($setting);

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\PositionCommandService;
-use App\Application\Query\PositionQueryService;
+use App\Application\Commad\AppPositionCommandService;
+use App\Application\Query\AppPositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -39,8 +39,8 @@ class PositionController extends AbstractController
 {
     public function __construct(
         protected readonly CurrentUser $currentUser,
-        protected readonly PositionQueryService $queryService,
-        protected readonly PositionCommandService $commandService
+        protected readonly AppPositionQueryService $queryService,
+        protected readonly AppPositionCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

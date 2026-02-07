@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Coupon;
 
-use App\Application\Commad\CouponUserCommandService;
-use App\Application\Query\CouponUserQueryService;
+use App\Application\Commad\AppCouponUserCommandService;
+use App\Application\Query\AppCouponUserQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Coupon\CouponUserRequest;
@@ -33,8 +33,8 @@ use Mine\Access\Attribute\Permission;
 final class CouponUserController extends AbstractController
 {
     public function __construct(
-        private readonly CouponUserQueryService $queryService,
-        private readonly CouponUserCommandService $commandService
+        private readonly AppCouponUserQueryService $queryService,
+        private readonly AppCouponUserCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

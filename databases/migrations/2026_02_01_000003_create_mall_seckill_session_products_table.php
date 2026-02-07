@@ -23,8 +23,8 @@ class CreateMallSeckillSessionProductsTable extends Migration
             $table->unsignedBigInteger('session_id')->comment('场次ID');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->unsignedBigInteger('product_sku_id')->comment('SKU ID');
-            $table->decimal('original_price', 10, 2)->comment('原价');
-            $table->decimal('seckill_price', 10, 2)->comment('秒杀价');
+            $table->unsignedInteger('original_price')->comment('原价(分)');
+            $table->unsignedInteger('seckill_price')->comment('秒杀价(分)');
             $table->unsignedInteger('quantity')->default(0)->comment('库存');
             $table->unsignedInteger('sold_quantity')->default(0)->comment('已售数量');
             $table->unsignedInteger('max_quantity_per_user')->default(1)->comment('单品每人限购');

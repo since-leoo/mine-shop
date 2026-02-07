@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\BrandCommandService;
-use App\Application\Query\BrandQueryService;
+use App\Application\Commad\AppBrandCommandService;
+use App\Application\Query\AppBrandQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\BrandRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class BrandController extends AbstractController
 {
     public function __construct(
-        private readonly BrandQueryService $queryService,
-        private readonly BrandCommandService $commandService
+        private readonly AppBrandQueryService $queryService,
+        private readonly AppBrandCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

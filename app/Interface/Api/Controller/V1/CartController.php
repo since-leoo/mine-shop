@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Cart\CartCommandApiService;
-use App\Application\Api\Cart\CartQueryApiService;
+use App\Application\Api\Cart\AppApiCartCommandService;
+use App\Application\Api\Cart\AppApiCartQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\CartItemStoreRequest;
 use App\Interface\Api\Request\V1\CartItemUpdateRequest;
+use App\Interface\Api\Transformer\CartTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
@@ -32,45 +33,49 @@ use Hyperf\HttpServer\Annotation\PutMapping;
 final class CartController extends AbstractController
 {
     public function __construct(
-        private readonly CartQueryApiService $queryService,
-        private readonly CartCommandApiService $commandService,
+        private readonly AppApiCartQueryService $queryService,
+        private readonly AppApiCartCommandService $commandService,
+        private readonly CartTransformer $transformer,
         private readonly CurrentMember $currentMember
     ) {}
 
     #[GetMapping(path: '')]
     public function index(): Result
     {
-        $data = $this->queryService->overview($this->currentMember->id());
-        return $this->success($data);
+        $memberId = $this->currentMember->id();
+        $items = $this->queryService->listDetailed($memberId);
+        return $this->success($this->transformer->transform($items, $memberId));
     }
 
     #[PostMapping(path: 'items')]
     public function store(CartItemStoreRequest $request): Result
     {
-        $data = $this->commandService->addItem($this->currentMember->id(), $request->toDto());
-
-        return $this->success($data, '加入购物车成功');
+        $memberId = $this->currentMember->id();
+        $items = $this->commandService->addItem($memberId, $request->toDto());
+        return $this->success($this->transformer->transform($items, $memberId), '加入购物车成功');
     }
 
     #[PutMapping(path: 'items/{skuId}')]
     public function update(CartItemUpdateRequest $request, int $skuId): Result
     {
-        $data = $this->commandService->updateItem($this->currentMember->id(), $skuId, $request->toDto());
-
-        return $this->success($data, '更新成功');
+        $memberId = $this->currentMember->id();
+        $items = $this->commandService->updateItem($memberId, $skuId, $request->toDto());
+        return $this->success($this->transformer->transform($items, $memberId), '更新成功');
     }
 
     #[DeleteMapping(path: 'items/{skuId}')]
     public function destroy(int $skuId): Result
     {
-        $data = $this->commandService->deleteItem($this->currentMember->id(), $skuId);
-        return $this->success($data, '删除成功');
+        $memberId = $this->currentMember->id();
+        $items = $this->commandService->deleteItem($memberId, $skuId);
+        return $this->success($this->transformer->transform($items, $memberId), '删除成功');
     }
 
     #[PostMapping(path: 'clear-invalid')]
     public function clearInvalid(): Result
     {
-        $data = $this->commandService->clearInvalid($this->currentMember->id());
-        return $this->success($data, '清理完成');
+        $memberId = $this->currentMember->id();
+        $items = $this->commandService->clearInvalid($memberId);
+        return $this->success($this->transformer->transform($items, $memberId), '清理完成');
     }
 }

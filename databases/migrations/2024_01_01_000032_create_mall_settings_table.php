@@ -20,6 +20,8 @@ return new class extends Migration {
             $table->string('type', 20)->default('string')->comment('值类型：string,number,boolean,json');
             $table->string('label', 100)->comment('配置标签');
             $table->string('description')->nullable()->comment('配置说明');
+            $table->boolean('is_sensitive')->default(false)->comment('是否包含敏感信息');
+            $table->json('meta')->nullable()->comment('额外的渲染与校验配置');
             $table->integer('sort')->default(0)->comment('排序');
             $table->timestamps();
             

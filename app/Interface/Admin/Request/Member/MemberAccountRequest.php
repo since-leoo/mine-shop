@@ -24,7 +24,7 @@ class MemberAccountRequest extends BaseRequest
     {
         return [
             'member_id' => ['required', 'integer', 'min:1'],
-            'value' => ['required', 'numeric', 'between:-1000000,1000000', 'not_in:0'],
+            'value' => ['required', 'numeric', 'between:-1000000,1000000000000', 'not_in:0'],
             'source' => ['nullable', 'string', 'max:50'],
             'type' => ['required', Rule::in(['balance', 'points'])],
             'remark' => ['nullable', 'string', 'max:255'],

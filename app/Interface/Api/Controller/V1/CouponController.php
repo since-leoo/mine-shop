@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Coupon\CouponQueryApiService;
+use App\Application\Api\Coupon\AppApiCouponQueryService;
 use App\Interface\Api\Request\V1\CouponAvailableRequest;
+use App\Interface\Api\Transformer\CouponTransformer;
 use App\Interface\Common\Controller\AbstractController;
+use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
@@ -22,7 +24,11 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 #[Controller(prefix: '/api/v1/coupons')]
 final class CouponController extends AbstractController
 {
-    public function __construct(private readonly CouponQueryApiService $queryService) {}
+    public function __construct(
+        private readonly AppApiCouponQueryService $queryService,
+        private readonly CouponTransformer $transformer,
+        private readonly CurrentMember $currentMember,
+    ) {}
 
     #[GetMapping(path: 'available')]
     public function available(CouponAvailableRequest $request): Result
@@ -30,17 +36,25 @@ final class CouponController extends AbstractController
         $payload = $request->validated();
         $limit = (int) ($payload['limit'] ?? 20);
         unset($payload['limit']);
+        $memberId = $this->currentMember->id() ?: null;
 
-        $data = $this->queryService->available($payload, null, $limit);
+        $result = $this->queryService->available($payload, $memberId, $limit);
 
-        return $this->success($data);
+        $list = $result['collection']->map(function ($coupon) use ($result) {
+            $received = $result['receivedMap'][(int) $coupon->id] ?? 0;
+            return $this->transformer->transformListItem($coupon, $received);
+        })->toArray();
+
+        return $this->success(['list' => $list, 'total' => $result['total']]);
     }
 
     #[GetMapping(path: '{id}')]
     public function show(int $id): Result
     {
-        $data = $this->queryService->detail($id, null);
+        $result = $this->queryService->detail($id, null);
 
-        return $this->success($data);
+        return $this->success([
+            'detail' => $this->transformer->transformDetail($result['coupon'], $result['receivedQuantity']),
+        ]);
     }
 }

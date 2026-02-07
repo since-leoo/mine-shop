@@ -61,6 +61,10 @@ interface ProductInput
 
     public function getShippingTemplateId(): ?int;
 
+    public function getFreightType(): ?string;
+
+    public function getFlatFreightAmount(): ?int;
+
     public function getSort(): ?int;
 
     public function getStatus(): ?string;

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Product\CategoryQueryApiService;
+use App\Application\Api\Product\AppApiCategoryQueryService;
+use App\Interface\Api\Transformer\CategoryTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -21,11 +22,15 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 #[Controller(prefix: '/api/v1/categories')]
 final class CategoryController extends AbstractController
 {
-    public function __construct(private readonly CategoryQueryApiService $service) {}
+    public function __construct(
+        private readonly AppApiCategoryQueryService $service,
+        private readonly CategoryTransformer $transformer
+    ) {}
 
     #[GetMapping(path: '')]
     public function index(): Result
     {
-        return $this->success(['list' => $this->service->tree()]);
+        $categories = $this->service->tree();
+        return $this->success(['list' => $this->transformer->transformTree($categories)]);
     }
 }

@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Commad\AttachmentCommandService;
-use App\Application\Query\AttachmentQueryService;
+use App\Application\Commad\AppAttachmentCommandService;
+use App\Application\Query\AppAttachmentQueryService;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\UploadRequest;
 use App\Interface\Common\CurrentUser;
@@ -35,8 +35,8 @@ use Symfony\Component\Finder\SplFileInfo;
 final class AttachmentController extends AbstractController
 {
     public function __construct(
-        private readonly AttachmentQueryService $queryService,
-        private readonly AttachmentCommandService $commandService,
+        private readonly AppAttachmentQueryService $queryService,
+        private readonly AppAttachmentCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

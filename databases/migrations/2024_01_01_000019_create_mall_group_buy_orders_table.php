@@ -29,9 +29,9 @@ class CreateMallGroupBuyOrdersTable extends Migration
             $table->string('group_no', 32)->comment('团号');
             $table->boolean('is_leader')->default(false)->comment('是否团长');
             $table->unsignedInteger('quantity')->default(1)->comment('购买数量');
-            $table->decimal('original_price', 10, 2)->comment('原价');
-            $table->decimal('group_price', 10, 2)->comment('团购价');
-            $table->decimal('total_amount', 10, 2)->comment('总金额');
+            $table->unsignedInteger('original_price')->comment('原价(分)');
+            $table->unsignedInteger('group_price')->comment('团购价(分)');
+            $table->unsignedInteger('total_amount')->comment('总金额(分)');
             $table->enum('status', [
                 'pending', 'grouped', 'paid', 'shipped', 'delivered',
                 'completed', 'cancelled', 'failed', 'refunded',

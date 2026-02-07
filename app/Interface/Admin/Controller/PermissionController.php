@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Commad\UserCommandService;
-use App\Application\Query\MenuQueryService;
-use App\Application\Query\RoleQueryService;
+use App\Application\Commad\AppUserCommandService;
+use App\Application\Query\AppMenuQueryService;
+use App\Application\Query\AppRoleQueryService;
 use App\Domain\Auth\Enum\Status;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Admin\Request\Permission\PermissionRequest;
@@ -35,9 +35,9 @@ final class PermissionController extends AbstractController
 {
     public function __construct(
         private readonly CurrentUser $currentUser,
-        private readonly MenuQueryService $menuQueryService,
-        private readonly RoleQueryService $roleQueryService,
-        private readonly UserCommandService $userCommandService
+        private readonly AppMenuQueryService $menuQueryService,
+        private readonly AppRoleQueryService $roleQueryService,
+        private readonly AppUserCommandService $userCommandService
     ) {}
 
     #[GetMapping(path: 'menus')]

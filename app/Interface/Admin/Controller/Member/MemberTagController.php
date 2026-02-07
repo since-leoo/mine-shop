@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\MemberTagCommandService;
-use App\Application\Query\MemberTagQueryService;
+use App\Application\Commad\AppMemberTagCommandService;
+use App\Application\Query\AppMemberTagQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberTagRequest;
@@ -36,8 +36,8 @@ use Mine\Access\Attribute\Permission;
 final class MemberTagController extends AbstractController
 {
     public function __construct(
-        private readonly MemberTagQueryService $queryService,
-        private readonly MemberTagCommandService $commandService,
+        private readonly AppMemberTagQueryService $queryService,
+        private readonly AppMemberTagCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

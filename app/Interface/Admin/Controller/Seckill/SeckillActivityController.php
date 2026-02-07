@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Commad\SeckillActivityCommandService;
-use App\Application\Query\SeckillActivityQueryService;
+use App\Application\Commad\AppSeckillActivityCommandService;
+use App\Application\Query\AppSeckillActivityQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class SeckillActivityController extends AbstractController
 {
     public function __construct(
-        private readonly SeckillActivityQueryService $queryService,
-        private readonly SeckillActivityCommandService $commandService
+        private readonly AppSeckillActivityQueryService $queryService,
+        private readonly AppSeckillActivityCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

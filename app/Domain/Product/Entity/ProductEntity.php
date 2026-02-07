@@ -88,6 +88,10 @@ final class ProductEntity
 
     private ?int $shippingTemplateId = null;
 
+    private ?string $freightType = 'default';
+
+    private ?int $flatFreightAmount = 0;
+
     private ?int $sort = null;
 
     private ?string $status = null;
@@ -125,6 +129,8 @@ final class ProductEntity
         $this->setIsHot($input->getIsHot() ?? false);
         $this->setIsNew($input->getIsNew() ?? false);
         $this->setShippingTemplateId($input->getShippingTemplateId());
+        $this->setFreightType($input->getFreightType() ?? 'default');
+        $this->setFlatFreightAmount($input->getFlatFreightAmount() ?? 0);
         $this->setSort($input->getSort() ?? 0);
         $this->setStatus($input->getStatus() ?? ProductStatus::DRAFT->value);
         $this->setGallery($input->getGallery());
@@ -224,6 +230,12 @@ final class ProductEntity
         }
         if ($input->getShippingTemplateId() !== null) {
             $this->setShippingTemplateId($input->getShippingTemplateId());
+        }
+        if ($input->getFreightType() !== null) {
+            $this->setFreightType($input->getFreightType());
+        }
+        if ($input->getFlatFreightAmount() !== null) {
+            $this->setFlatFreightAmount($input->getFlatFreightAmount());
         }
         if ($input->getSort() !== null) {
             $this->setSort($input->getSort());
@@ -487,6 +499,26 @@ final class ProductEntity
         $this->shippingTemplateId = $shippingTemplateId;
     }
 
+    public function getFreightType(): ?string
+    {
+        return $this->freightType;
+    }
+
+    public function setFreightType(?string $freightType): void
+    {
+        $this->freightType = $freightType;
+    }
+
+    public function getFlatFreightAmount(): ?int
+    {
+        return $this->flatFreightAmount;
+    }
+
+    public function setFlatFreightAmount(?int $flatFreightAmount): void
+    {
+        $this->flatFreightAmount = $flatFreightAmount;
+    }
+
     public function getSort(): ?int
     {
         return $this->sort;
@@ -738,6 +770,8 @@ final class ProductEntity
             'is_hot' => $this->getIsHot(),
             'is_new' => $this->getIsNew(),
             'shipping_template_id' => $this->getShippingTemplateId(),
+            'freight_type' => $this->getFreightType(),
+            'flat_freight_amount' => $this->getFlatFreightAmount(),
             'sort' => $this->getSort(),
             'status' => $this->getStatus(),
             'gallery' => $this->getGallery(),

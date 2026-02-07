@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Common;
 
-use App\Application\Commad\AuthCommandService;
-use App\Application\Query\MenuQueryService;
-use App\Application\Query\UserQueryService;
+use App\Application\Commad\AppAuthCommandService;
+use App\Application\Query\AppMenuQueryService;
+use App\Application\Query\AppUserQueryService;
 use App\Domain\Auth\Enum\Status;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\Context\Context;
@@ -26,9 +26,9 @@ final class CurrentUser
     use RequestScopedTokenTrait;
 
     public function __construct(
-        private readonly AuthCommandService $authCommandService,
-        private readonly UserQueryService $userQueryService,
-        private readonly MenuQueryService $menuQueryService
+        private readonly AppAuthCommandService $authCommandService,
+        private readonly AppUserQueryService $userQueryService,
+        private readonly AppMenuQueryService $menuQueryService
     ) {}
 
     public static function ctxUser(): ?User

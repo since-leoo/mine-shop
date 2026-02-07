@@ -19,7 +19,5 @@ interface CartItemInput
 {
     public function getSkuId(): int;
 
-    public function getQuantity(): int;
-
-    public function getIsSelected(): ?bool;
+    public function getQuantity(): ?int;
 }

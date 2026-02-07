@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Order;
 
-use App\Application\Commad\OrderCommandService;
-use App\Application\Query\OrderQueryService;
+use App\Application\Commad\AppOrderCommandService;
+use App\Application\Query\AppOrderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\OrderRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class OrderController extends AbstractController
 {
     public function __construct(
-        private readonly OrderQueryService $queryService,
-        private readonly OrderCommandService $commandService,
+        private readonly AppOrderQueryService $queryService,
+        private readonly AppOrderCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

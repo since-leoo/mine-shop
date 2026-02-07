@@ -27,8 +27,11 @@ class CreateMallMemberAddressesTable extends Migration
             $table->string('name', 50)->comment('收货人姓名');
             $table->string('phone', 20)->comment('收货人电话');
             $table->string('province', 50)->comment('省份');
+            $table->string('province_code', 20)->default('')->comment('省份编码');
             $table->string('city', 50)->comment('城市');
+            $table->string('city_code', 20)->default('')->comment('城市编码');
             $table->string('district', 50)->comment('区县');
+            $table->string('district_code', 20)->default('')->comment('区县编码');
             $table->string('detail', 255)->comment('详细地址');
             $table->string('full_address', 500)->comment('完整地址');
             $table->boolean('is_default')->default(false)->comment('是否默认地址');

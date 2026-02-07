@@ -18,7 +18,7 @@ class CreateMallPaymentRefundsTable extends Migration
             $table->unsignedBigInteger('order_id')->comment('订单ID');
             $table->string('order_no', 50)->comment('订单号');
             $table->unsignedBigInteger('member_id')->comment('会员ID');
-            $table->decimal('refund_amount', 10, 2)->comment('退款金额');
+            $table->unsignedInteger('refund_amount')->comment('退款金额(分)');
             $table->string('refund_reason', 500)->nullable()->comment('退款原因');
             $table->string('status', 30)->default('refunding')->comment('退款状态');
             $table->string('third_party_refund_no', 100)->nullable()->comment('第三方退款单号');

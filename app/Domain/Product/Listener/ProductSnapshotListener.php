@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Listener;
 
-use App\Application\Query\ProductQueryService;
+use App\Application\Query\AppProductQueryService;
 use App\Domain\Product\Event\ProductCreated;
 use App\Domain\Product\Event\ProductDeleted;
 use App\Domain\Product\Event\ProductUpdated;
-use App\Domain\Product\Service\ProductSnapshotService;
+use App\Domain\Product\Service\DomainProductSnapshotService;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -26,8 +26,8 @@ use Psr\Log\LoggerInterface;
 final class ProductSnapshotListener implements ListenerInterface
 {
     public function __construct(
-        private readonly ProductSnapshotService $snapshotService,
-        private readonly ProductQueryService $queryService,
+        private readonly DomainProductSnapshotService $snapshotService,
+        private readonly AppProductQueryService $queryService,
         private readonly LoggerInterface $logger
     ) {}
 

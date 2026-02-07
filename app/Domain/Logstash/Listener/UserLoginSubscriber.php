@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Logstash\Listener;
 
-use App\Domain\Logstash\Service\UserLoginLogService;
+use App\Domain\Logstash\Service\DomainUserLoginLogService;
 use Hyperf\Engine\Coroutine;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
@@ -22,7 +22,7 @@ use Mine\JwtAuth\Event\UserLoginEvent;
 class UserLoginSubscriber implements ListenerInterface
 {
     public function __construct(
-        private readonly UserLoginLogService $service
+        private readonly DomainUserLoginLogService $service
     ) {}
 
     public function listen(): array

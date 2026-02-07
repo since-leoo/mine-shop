@@ -27,9 +27,9 @@ class CreateMallSeckillSessionOrdersTable extends Migration
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->unsignedBigInteger('product_sku_id')->comment('SKU ID');
             $table->unsignedInteger('quantity')->default(1)->comment('购买数量');
-            $table->decimal('original_price', 10, 2)->comment('原价');
-            $table->decimal('seckill_price', 10, 2)->comment('秒杀价');
-            $table->decimal('total_amount', 10, 2)->comment('总金额');
+            $table->unsignedInteger('original_price')->comment('原价(分)');
+            $table->unsignedInteger('seckill_price')->comment('秒杀价(分)');
+            $table->unsignedInteger('total_amount')->comment('总金额(分)');
             $table->string('status', 30)->default('pending')->comment('订单状态');
             $table->timestamp('seckill_time')->nullable()->comment('秒杀时间');
             $table->timestamp('pay_time')->nullable()->comment('支付时间');

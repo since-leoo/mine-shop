@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\System;
 
-use App\Application\Commad\SystemSettingCommandService;
-use App\Application\Query\SystemSettingQueryService;
+use App\Application\Commad\AppSystemSettingCommandService;
+use App\Application\Query\AppSystemSettingQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\System\SystemSettingRequest;
@@ -33,8 +33,8 @@ use Mine\Access\Attribute\Permission;
 final class SystemSettingController extends AbstractController
 {
     public function __construct(
-        private readonly SystemSettingQueryService $queryService,
-        private readonly SystemSettingCommandService $commandService
+        private readonly AppSystemSettingQueryService $queryService,
+        private readonly AppSystemSettingCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'groups')]

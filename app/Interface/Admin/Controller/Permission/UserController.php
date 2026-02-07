@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\UserCommandService;
-use App\Application\Query\UserQueryService;
+use App\Application\Commad\AppUserCommandService;
+use App\Application\Query\AppUserQueryService;
 use App\Infrastructure\Model\Permission\Role;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
@@ -40,8 +40,8 @@ use Mine\Access\Attribute\Permission;
 final class UserController extends AbstractController
 {
     public function __construct(
-        private readonly UserQueryService $queryService,
-        private readonly UserCommandService $commandService,
+        private readonly AppUserQueryService $queryService,
+        private readonly AppUserCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

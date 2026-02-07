@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\RoleCommandService;
-use App\Application\Query\RoleQueryService;
+use App\Application\Commad\AppRoleCommandService;
+use App\Application\Query\AppRoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
 use App\Interface\Admin\Controller\AbstractController;
@@ -41,8 +41,8 @@ use Mine\Access\Attribute\Permission;
 final class RoleController extends AbstractController
 {
     public function __construct(
-        private readonly RoleQueryService $queryService,
-        private readonly RoleCommandService $commandService,
+        private readonly AppRoleQueryService $queryService,
+        private readonly AppRoleCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

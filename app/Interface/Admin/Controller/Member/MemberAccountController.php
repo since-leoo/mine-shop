@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\MemberAccountCommandService;
-use App\Application\Query\MemberWalletTransactionQueryService;
+use App\Application\Commad\AppMemberAccountCommandService;
+use App\Application\Query\AppMemberWalletTransactionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberAccountRequest;
@@ -34,8 +34,8 @@ use Mine\Access\Attribute\Permission;
 final class MemberAccountController extends AbstractController
 {
     public function __construct(
-        private readonly MemberAccountCommandService $accountCommandService,
-        private readonly MemberWalletTransactionQueryService $walletTransactionQueryService,
+        private readonly AppMemberAccountCommandService $accountCommandService,
+        private readonly AppMemberWalletTransactionQueryService $walletTransactionQueryService,
         private readonly CurrentUser $currentUser,
     ) {}
 

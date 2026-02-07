@@ -25,8 +25,8 @@ class CreateMallCouponsTable extends Migration
             $table->id();
             $table->string('name', 100)->comment('优惠券名称');
             $table->enum('type', ['fixed', 'percent'])->comment('优惠券类型');
-            $table->decimal('value', 10, 2)->comment('优惠值');
-            $table->decimal('min_amount', 10, 2)->default(0)->comment('最低使用金额');
+            $table->unsignedInteger('value')->comment('优惠值(分/折扣率)');
+            $table->unsignedInteger('min_amount')->default(0)->comment('最低使用金额(分)');
             $table->unsignedInteger('total_quantity')->comment('发放总数');
             $table->unsignedInteger('used_quantity')->default(0)->comment('已使用数量');
             $table->unsignedInteger('per_user_limit')->default(1)->comment('每人限领数量');

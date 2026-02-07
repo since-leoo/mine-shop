@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Product;
 
-use App\Application\Commad\ProductCommandService;
-use App\Application\Query\ProductQueryService;
+use App\Application\Commad\AppProductCommandService;
+use App\Application\Query\AppProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -37,8 +37,8 @@ use Mine\Access\Attribute\Permission;
 final class ProductController extends AbstractController
 {
     public function __construct(
-        private readonly ProductQueryService $queryService,
-        private readonly ProductCommandService $commandService
+        private readonly AppProductQueryService $queryService,
+        private readonly AppProductCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

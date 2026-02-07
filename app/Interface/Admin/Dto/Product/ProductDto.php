@@ -57,6 +57,10 @@ class ProductDto implements ProductInput
 
     public ?int $shipping_template_id = null;
 
+    public ?string $freight_type = null;
+
+    public ?int $flat_freight_amount = null;
+
     public ?int $sort = null;
 
     public ?string $status = null;
@@ -160,6 +164,16 @@ class ProductDto implements ProductInput
     public function getShippingTemplateId(): ?int
     {
         return $this->shipping_template_id;
+    }
+
+    public function getFreightType(): ?string
+    {
+        return $this->freight_type;
+    }
+
+    public function getFlatFreightAmount(): ?int
+    {
+        return $this->flat_freight_amount;
     }
 
     public function getSort(): ?int

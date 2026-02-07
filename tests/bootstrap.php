@@ -9,6 +9,7 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+use DG\BypassFinals;
 use Hyperf\Contract\ApplicationInterface;
 use Hyperf\Di\ClassLoader;
 use Mine\AppStore\Plugin;
@@ -33,6 +34,11 @@ date_default_timezone_set('Asia/Shanghai');
 ! defined('HF_VERSION') && define('HF_VERSION', '3.1');     // 定义hyperf版本号
 
 require BASE_PATH . '/vendor/autoload.php';
+
+// Enable BypassFinals before any class loading so final classes can be mocked in tests
+if (class_exists(BypassFinals::class)) {
+    BypassFinals::enable();
+}
 
 Plugin::init();
 ClassLoader::init();

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Product\Entity;
 
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\ProductSku;
+use App\Interface\Common\ResultCode;
 
 /**
  * 商品SKU实体.

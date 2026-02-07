@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Member\MemberAddressApiService;
+use App\Application\Api\Member\AppApiMemberAddressCommandService;
+use App\Application\Api\Member\AppApiMemberAddressQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\MemberAddressRequest;
+use App\Interface\Api\Transformer\MemberAddressTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
@@ -31,7 +33,9 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 final class MemberAddressController extends AbstractController
 {
     public function __construct(
-        private readonly MemberAddressApiService $addressService,
+        private readonly AppApiMemberAddressQueryService $addressService,
+        private readonly AppApiMemberAddressCommandService $commandService,
+        private readonly MemberAddressTransformer $transformer,
         private readonly CurrentMember $currentMember,
         private readonly RequestInterface $request
     ) {}
@@ -41,41 +45,42 @@ final class MemberAddressController extends AbstractController
     {
         $limit = (int) $this->request->query('limit', 20);
         $list = $this->addressService->list($this->currentMember->id(), max(1, min($limit, 50)));
-        return $this->success(['list' => $list]);
+
+        return $this->successWithArrayList($list, fn (array $addr) => $this->transformer->transform($addr));
     }
 
     #[GetMapping(path: '{id}')]
     public function show(int $id): Result
     {
         $address = $this->addressService->detail($this->currentMember->id(), $id);
-        return $this->success($address);
+        return $this->successWithTransform($address, fn (array $addr) => $this->transformer->transform($addr));
     }
 
     #[PostMapping(path: '')]
     public function store(MemberAddressRequest $request): Result
     {
-        $address = $this->addressService->create($this->currentMember->id(), $request->toDto());
-        return $this->success($address, '新增成功');
+        $address = $this->commandService->create($this->currentMember->id(), $request->toDto());
+        return $this->successWithTransform($address, fn (array $addr) => $this->transformer->transform($addr), '新增成功');
     }
 
     #[PutMapping(path: '{id}')]
     public function update(MemberAddressRequest $request, int $id): Result
     {
-        $address = $this->addressService->update($this->currentMember->id(), $id, $request->toDto());
-        return $this->success($address, '更新成功');
+        $address = $this->commandService->update($this->currentMember->id(), $id, $request->toDto());
+        return $this->successWithTransform($address, fn (array $addr) => $this->transformer->transform($addr), '更新成功');
     }
 
     #[DeleteMapping(path: '{id}')]
     public function destroy(int $id): Result
     {
-        $this->addressService->delete($this->currentMember->id(), $id);
+        $this->commandService->delete($this->currentMember->id(), $id);
         return $this->success([], '删除成功');
     }
 
     #[PostMapping(path: '{id}/default')]
     public function markDefault(int $id): Result
     {
-        $this->addressService->setDefault($this->currentMember->id(), $id);
+        $this->commandService->setDefault($this->currentMember->id(), $id);
         return $this->success([], '设置默认地址成功');
     }
 }

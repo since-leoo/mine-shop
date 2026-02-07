@@ -17,7 +17,7 @@ use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 
 final class JwtTokenChecker implements CheckTokenInterface
 {
-    public function __construct(private readonly AuthQueryService $queryService) {}
+    public function __construct(private readonly AppAuthQueryService $queryService) {}
 
     public function checkJwt(UnencryptedToken $token): void
     {

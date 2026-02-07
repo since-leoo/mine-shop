@@ -31,13 +31,6 @@ trait OrderSettingsTrait
         );
     }
 
-    public function guardPreorderAllowed(bool $allowPreorder): void
-    {
-        if ($this->getOrderType() === 'preorder' && ! $allowPreorder) {
-            throw new \DomainException('系统未开启预售功能，请勿提交预售订单。');
-        }
-    }
-
     public function ensureShippable(ShippingSetting $shippingSetting): void
     {
         $shipEntity = $this->getShipEntity();

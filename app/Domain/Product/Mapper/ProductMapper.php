@@ -64,6 +64,8 @@ final class ProductMapper
         $entity->setIsHot($model->is_hot);
         $entity->setIsNew($model->is_new);
         $entity->setShippingTemplateId($model->shipping_template_id);
+        $entity->setFreightType($model->freight_type);
+        $entity->setFlatFreightAmount($model->flat_freight_amount !== null ? (int) $model->flat_freight_amount : null);
         $entity->setSort($model->sort);
         $entity->setStatus($model->status);
 
@@ -130,6 +132,8 @@ final class ProductMapper
         $entity->setIsHot(isset($payload['is_hot']) ? (bool) $payload['is_hot'] : null);
         $entity->setIsNew(isset($payload['is_new']) ? (bool) $payload['is_new'] : null);
         $entity->setShippingTemplateId(isset($payload['shipping_template_id']) ? (int) $payload['shipping_template_id'] : null);
+        $entity->setFreightType($payload['freight_type'] ?? null);
+        $entity->setFlatFreightAmount(isset($payload['flat_freight_amount']) ? (int) $payload['flat_freight_amount'] : null);
         $entity->setSort(isset($payload['sort']) ? (int) $payload['sort'] : null);
 
         $status = $payload['status'] ?? null;

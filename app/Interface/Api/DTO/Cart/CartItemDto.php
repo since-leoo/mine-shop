@@ -21,22 +21,15 @@ class CartItemDto implements CartItemInput
 {
     public int $sku_id = 0;
 
-    public int $quantity = 1;
-
-    public ?bool $is_selected = null;
+    public ?int $quantity = null;
 
     public function getSkuId(): int
     {
         return $this->sku_id;
     }
 
-    public function getQuantity(): int
+    public function getQuantity(): ?int
     {
         return $this->quantity;
-    }
-
-    public function getIsSelected(): ?bool
-    {
-        return $this->is_selected;
     }
 }

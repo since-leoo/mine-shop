@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\GroupBuy;
 
-use App\Application\Commad\GroupBuyCommandService;
-use App\Application\Query\GroupBuyQueryService;
+use App\Application\Commad\AppGroupBuyCommandService;
+use App\Application\Query\AppGroupBuyQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class GroupBuyController extends AbstractController
 {
     public function __construct(
-        private readonly GroupBuyQueryService $queryService,
-        private readonly GroupBuyCommandService $commandService
+        private readonly AppGroupBuyQueryService $queryService,
+        private readonly AppGroupBuyCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

@@ -230,4 +230,11 @@ class Order extends Model
         $this->pay_method = $entity->getPayMethod();
         $this->save();
     }
+
+    public function complete(OrderEntity $entity): void
+    {
+        $this->status = $entity->getStatus();
+        $this->shipping_status = $entity->getShippingStatus();
+        $this->save();
+    }
 }

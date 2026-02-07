@@ -12,16 +12,19 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Coupon\Service\CouponUserService;
-use App\Domain\Member\Service\MemberAddressService;
+use App\Domain\Coupon\Service\DomainCouponUserService;
+use App\Domain\Member\Service\DomainMemberAddressService;
+use App\Domain\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Order\Contract\OrderSubmitInput;
 use App\Domain\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Order\Entity\OrderEntity;
 use App\Domain\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Order\Repository\OrderRepository;
-use App\Domain\Order\Service\OrderService;
-use App\Domain\Order\Service\OrderStockService;
-use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Domain\Order\Service\DomainOrderService;
+use App\Domain\Order\Service\DomainOrderStockService;
+use App\Domain\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Shipping\Service\FreightCalculationService;
+use App\Domain\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\SystemSetting\ValueObject\ProductSetting;
 use DG\BypassFinals;
@@ -74,12 +77,12 @@ final class SubmitOrderPropertyTest extends TestCase
             $strategyFactory = new OrderTypeStrategyFactory([$strategy]);
 
             // Mock StockService — reserve must NEVER be called
-            $stockService = \Mockery::mock(OrderStockService::class);
+            $stockService = \Mockery::mock(DomainOrderStockService::class);
             $stockService->shouldNotReceive('reserve');
             $stockService->shouldNotReceive('acquireLocks');
 
             // Mock MallSettingService
-            $mallSettingService = \Mockery::mock(MallSettingService::class);
+            $mallSettingService = \Mockery::mock(DomainMallSettingService::class);
             $productSetting = new ProductSetting(false, 9, 20, true, []);
             $orderSetting = new OrderSetting(30, 7, 15, true, 'system', '400-888-1000');
             $mallSettingService->shouldReceive('product')->andReturn($productSetting);
@@ -90,7 +93,7 @@ final class SubmitOrderPropertyTest extends TestCase
             $repository->shouldNotReceive('save');
 
             // Mock address service
-            $addressService = \Mockery::mock(MemberAddressService::class);
+            $addressService = \Mockery::mock(DomainMemberAddressService::class);
             $addressService->shouldReceive('default')->andReturn([
                 'name' => '张三',
                 'phone' => '13800138000',
@@ -100,13 +103,24 @@ final class SubmitOrderPropertyTest extends TestCase
                 'detail' => '体育西路',
             ]);
 
-            $orderService = new OrderService(
+            // Mock FreightCalculationService (should not be called since buildDraft throws)
+            $freightService = \Mockery::mock(FreightCalculationService::class);
+            $freightService->shouldNotReceive('calculate');
+
+            // Mock ProductSnapshotInterface (should not be called since buildDraft throws)
+            $snapshotService = \Mockery::mock(ProductSnapshotInterface::class);
+            $snapshotService->shouldNotReceive('getProduct');
+
+            $orderService = new DomainApiOrderCommandService(
                 $repository,
+                \Mockery::mock(DomainOrderService::class),
                 $strategyFactory,
                 $stockService,
                 $mallSettingService,
                 $addressService,
-                \Mockery::mock(CouponUserService::class),
+                \Mockery::mock(DomainCouponUserService::class),
+                $freightService,
+                $snapshotService,
             );
 
             // Act & Assert: submit should throw, reserve should NOT be called
@@ -148,8 +162,7 @@ final class SubmitOrderPropertyTest extends TestCase
             $skuId = random_int(1, 99999);
             $quantity = random_int(1, 10);
             $unitPrice = random_int(1, 1000);
-            $payAmountYuan = (float) bcmul((string) $unitPrice, (string) $quantity, 2);
-            $totalAmountCent = (int) round($payAmountYuan * 100);
+            $totalAmountCent = $unitPrice * $quantity;
 
             $input = $this->createMockInput($memberId, $skuId, $quantity, $totalAmountCent);
 
@@ -158,7 +171,7 @@ final class SubmitOrderPropertyTest extends TestCase
             $strategyFactory = new OrderTypeStrategyFactory([$strategy]);
 
             // Mock StockService that tracks call order
-            $stockService = \Mockery::mock(OrderStockService::class);
+            $stockService = \Mockery::mock(DomainOrderStockService::class);
             $stockService->shouldReceive('acquireLocks')
                 ->once()
                 ->andReturnUsing(static function () use (&$callOrder) {
@@ -176,7 +189,7 @@ final class SubmitOrderPropertyTest extends TestCase
                     $callOrder[] = 'releaseLocks';
                 });
 
-            $mallSettingService = \Mockery::mock(MallSettingService::class);
+            $mallSettingService = \Mockery::mock(DomainMallSettingService::class);
             $productSetting = new ProductSetting(false, 9, 20, true, []);
             $orderSetting = new OrderSetting(30, 7, 15, true, 'system', '400-888-1000');
             $mallSettingService->shouldReceive('product')->andReturn($productSetting);
@@ -191,7 +204,7 @@ final class SubmitOrderPropertyTest extends TestCase
                     return $entity;
                 });
 
-            $addressService = \Mockery::mock(MemberAddressService::class);
+            $addressService = \Mockery::mock(DomainMemberAddressService::class);
             $addressService->shouldReceive('default')->andReturn([
                 'name' => '张三',
                 'phone' => '13800138000',
@@ -201,13 +214,28 @@ final class SubmitOrderPropertyTest extends TestCase
                 'detail' => '体育西路',
             ]);
 
-            $orderService = new OrderService(
+            // Mock FreightCalculationService — returns 0 for simplicity
+            $freightService = \Mockery::mock(FreightCalculationService::class);
+            $freightService->shouldReceive('calculate')->andReturn(0);
+
+            // Mock ProductSnapshotInterface — returns product with default freight
+            $snapshotService = \Mockery::mock(ProductSnapshotInterface::class);
+            $snapshotService->shouldReceive('getProduct')->andReturn([
+                'freight_type' => 'free',
+                'flat_freight_amount' => 0,
+                'shipping_template_id' => null,
+            ]);
+
+            $orderService = new DomainApiOrderCommandService(
                 $repository,
+                \Mockery::mock(DomainOrderService::class),
                 $strategyFactory,
                 $stockService,
                 $mallSettingService,
                 $addressService,
-                \Mockery::mock(CouponUserService::class),
+                \Mockery::mock(DomainCouponUserService::class),
+                $freightService,
+                $snapshotService,
             );
 
             $orderService->submit($input);

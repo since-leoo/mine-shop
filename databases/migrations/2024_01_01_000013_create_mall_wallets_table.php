@@ -25,10 +25,10 @@ class CreateMallWalletsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('member_id')->comment('会员ID');
             $table->enum('type', ['balance', 'points'])->default('balance')->comment('钱包类型');
-            $table->decimal('balance', 10, 2)->default(0)->comment('余额 / 积分余额');
-            $table->decimal('frozen_balance', 10, 2)->default(0)->comment('冻结金额');
-            $table->decimal('total_recharge', 10, 2)->default(0)->comment('累计收入');
-            $table->decimal('total_consume', 10, 2)->default(0)->comment('累计支出');
+            $table->unsignedBigInteger('balance')->default(0)->comment('余额(分) / 积分余额');
+            $table->unsignedBigInteger('frozen_balance')->default(0)->comment('冻结金额(分)');
+            $table->unsignedBigInteger('total_recharge')->default(0)->comment('累计收入(分)');
+            $table->unsignedBigInteger('total_consume')->default(0)->comment('累计支出(分)');
             $table->string('pay_password', 255)->nullable()->comment('支付密码');
             $table->enum('status', ['active', 'frozen'])->default('active')->comment('状态');
             $table->timestamps();

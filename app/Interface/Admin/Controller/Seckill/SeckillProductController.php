@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Seckill;
 
-use App\Application\Commad\SeckillProductCommandService;
-use App\Application\Query\SeckillProductQueryService;
+use App\Application\Commad\AppSeckillProductCommandService;
+use App\Application\Query\AppSeckillProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillProductRequest;
@@ -35,8 +35,8 @@ use Mine\Access\Attribute\Permission;
 final class SeckillProductController extends AbstractController
 {
     public function __construct(
-        private readonly SeckillProductQueryService $queryService,
-        private readonly SeckillProductCommandService $commandService
+        private readonly AppSeckillProductQueryService $queryService,
+        private readonly AppSeckillProductCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

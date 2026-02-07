@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Member;
 
-use App\Application\Commad\MemberLevelCommandService;
-use App\Application\Query\MemberLevelQueryService;
+use App\Application\Commad\AppMemberLevelCommandService;
+use App\Application\Query\AppMemberLevelQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberLevelRequest;
@@ -36,8 +36,8 @@ use Mine\Access\Attribute\Permission;
 final class MemberLevelController extends AbstractController
 {
     public function __construct(
-        private readonly MemberLevelQueryService $queryService,
-        private readonly MemberLevelCommandService $commandService,
+        private readonly AppMemberLevelQueryService $queryService,
+        private readonly AppMemberLevelCommandService $commandService,
         private readonly CurrentUser $currentUser
     ) {}
 

@@ -29,6 +29,7 @@ class CreateMallBrandsTable extends Migration
             $table->unsignedInteger('sort')->default(0)->comment('排序');
             $table->enum('status', ['active', 'inactive'])->default('active')->comment('状态');
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index(['status', 'sort']);
             $table->comment('商品品牌表');

@@ -25,9 +25,9 @@ final class CouponDto implements CouponInput
 
     public ?string $type = null;
 
-    public ?float $value = null;
+    public ?int $value = null;
 
-    public ?float $minAmount = null;
+    public ?int $minAmount = null;
 
     public ?int $totalQuantity = null;
 
@@ -56,12 +56,12 @@ final class CouponDto implements CouponInput
         return $this->type;
     }
 
-    public function getValue(): ?float
+    public function getValue(): ?int
     {
         return $this->value;
     }
 
-    public function getMinAmount(): ?float
+    public function getMinAmount(): ?int
     {
         return $this->minAmount;
     }

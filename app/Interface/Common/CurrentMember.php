@@ -32,19 +32,23 @@ class CurrentMember
             return $this->cachedId;
         }
 
-        $token = $this->requireToken();
-        $identifier = (string) $token->claims()->get(RegisteredClaims::ID);
+        try {
+            $token = $this->requireToken();
+            $identifier = (string) $token->claims()->get(RegisteredClaims::ID);
 
-        if (! str_starts_with($identifier, 'member:')) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
+            if (! str_starts_with($identifier, 'member:')) {
+                throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
+            }
+
+            $parts = explode(':', $identifier, 2);
+            if (\count($parts) !== 2 || ! is_numeric($parts[1])) {
+                throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
+            }
+
+            return $this->cachedId = (int) $parts[1];
+        } catch (BusinessException $e) {
+            return 0;
         }
-
-        $parts = explode(':', $identifier, 2);
-        if (\count($parts) !== 2 || ! is_numeric($parts[1])) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
-        }
-
-        return $this->cachedId = (int) $parts[1];
     }
 
     private function requireToken(): UnencryptedToken

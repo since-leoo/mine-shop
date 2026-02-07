@@ -13,14 +13,12 @@ class CreateMallProductAttributesTable extends Migration
         Schema::create('product_attributes', static function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('product_id')->comment('商品ID');
-            $table->unsignedBigInteger('attribute_id')->comment('属性ID');
-            $table->unsignedBigInteger('attribute_value_id')->nullable()->comment('属性值ID');
-            $table->string('value', 255)->nullable()->comment('自定义属性值');
+            $table->string('attribute_name', 100)->comment('属性名称');
+            $table->string('value', 500)->comment('属性值');
             $table->timestamps();
 
             $table->index('product_id');
-            $table->index('attribute_id');
-            $table->index(['product_id', 'attribute_id']);
+            $table->index(['product_id', 'attribute_name']);
 
             $table->comment('商品属性关联表');
         });

@@ -228,7 +228,7 @@ final class MemberWalletEntity
         if ($after < 0) {
             throw new BusinessException(
                 ResultCode::FAIL,
-                \sprintf('余额不足，当前余额：%d，变动金额：%d', $this->balance, $this->changeBalance)
+                \sprintf('余额不足，当前余额：%d', $this->balance)
             );
         }
 

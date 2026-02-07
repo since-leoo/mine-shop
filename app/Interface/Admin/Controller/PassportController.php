@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller;
 
-use App\Application\Commad\AuthCommandService;
+use App\Application\Commad\AppAuthCommandService;
 use App\Interface\Admin\Request\PassportLoginRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentUser;
@@ -32,7 +32,7 @@ final class PassportController extends AbstractController
     use RequestScopedTokenTrait;
 
     public function __construct(
-        private readonly AuthCommandService $authCommandService,
+        private readonly AppAuthCommandService $authCommandService,
         private readonly CurrentUser $currentUser
     ) {}
 

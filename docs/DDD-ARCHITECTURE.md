@@ -23,13 +23,42 @@
                             ↓
 ┌─────────────────────────────────────────────────────────┐
 │                   Application 层                         │
-│  CommandService (业务编排、事务管理、领域事件发布)        │
+│  App*Service (后台) / AppApi*Service (小程序)            │
+│  业务编排、事务管理、领域事件发布                         │
 └─────────────────────────────────────────────────────────┘
                             ↓
 ┌─────────────────────────────────────────────────────────┐
 │                     Domain 层                            │
-│  Service → Mapper → Entity → Repository                 │
+│  Domain*Service → Mapper → Entity → Repository          │
+│  DomainApi*Service (小程序专属领域逻辑)                  │
 └─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 命名规范
+
+### Service 文件命名前缀
+
+| 层级 | 目录 | 前缀 | 示例 |
+|------|------|------|------|
+| Application 后台 Command | `Application/Commad/` | `App` | `AppOrderCommandService` |
+| Application 后台 Query | `Application/Query/` | `App` | `AppOrderQueryService` |
+| Application 小程序 | `Application/Api/` | `AppApi` | `AppApiOrderCommandService` |
+| Domain Service | `Domain/*/Service/` | `Domain` | `DomainOrderService` |
+| Domain Api Command | `Domain/*/Api/Command/` | `DomainApi` | `DomainApiOrderCommandService` |
+| Domain Api Query | `Domain/*/Api/Query/` | `DomainApi` | `DomainApiOrderQueryService` |
+
+### 调用链
+
+**后台管理端：**
+```
+Controller → AppOrderCommandService → DomainOrderService → Repository
+```
+
+**小程序端：**
+```
+Controller → AppApiOrderCommandService → DomainApiOrderCommandService → Repository
 ```
 
 ---
@@ -182,7 +211,7 @@ class UserRequest extends BaseRequest
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\UserCommandService;
+use App\Application\Commad\AppUserCommandService;
 use App\Interface\Admin\Request\Permission\UserRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Result;
@@ -292,15 +321,15 @@ interface UserInput
 namespace App\Application\Commad;
 
 use App\Domain\Permission\Contract\User\UserInput;
-use App\Domain\Permission\Service\UserService;
+use App\Domain\Permission\Service\DomainUserService;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\DbConnection\Db;
 use Psr\SimpleCache\CacheInterface;
 
-final class UserCommandService
+final class AppUserCommandService
 {
     public function __construct(
-        private readonly UserService $userService,
+        private readonly DomainUserService $userService,
         private readonly CacheInterface $cache
     ) {}
 
@@ -363,7 +392,7 @@ use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Model\Permission\User;
 
-final class UserService
+final class DomainUserService
 {
     public function __construct(
         private readonly UserRepository $repository
@@ -683,7 +712,7 @@ use App\Domain\Permission\Contract\Department\DepartmentCreateInput;
 use App\Domain\Permission\Repository\DepartmentRepository;
 use App\Infrastructure\Model\Permission\Department;
 
-final class DepartmentService
+final class DomainDepartmentService
 {
     public function __construct(
         private readonly DepartmentRepository $repository
@@ -1008,7 +1037,7 @@ public function create(UserRequest $request): Result
 #### 3. CommandService
 
 ```php
-// app/Application/Commad/UserCommandService.php
+// app/Application/Commad/AppUserCommandService.php
 public function create(UserInput $input): User
 {
     $user = Db::transaction(fn () => $this->userService->create($input));
@@ -1020,7 +1049,7 @@ public function create(UserInput $input): User
 #### 4. Domain Service
 
 ```php
-// app/Domain/Permission/Service/UserService.php
+// app/Domain/Permission/Service/DomainUserService.php
 public function create(UserInput $dto): User
 {
     $entity = UserMapper::getNewEntity();
@@ -1079,7 +1108,7 @@ public function toArray(): array
 #### 3. Domain Service
 
 ```php
-// app/Domain/Permission/Service/DepartmentService.php
+// app/Domain/Permission/Service/DomainDepartmentService.php
 public function create(DepartmentCreateInput $dto): Department
 {
     $department = $this->repository->create($dto->toArray());

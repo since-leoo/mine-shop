@@ -32,7 +32,6 @@ final class CartItemStoreRequest extends BaseRequest
         return [
             'sku_id' => ['required', 'integer', 'min:1'],
             'quantity' => ['required', 'integer', 'min:1', 'max:999'],
-            'is_selected' => ['nullable', 'boolean'],
         ];
     }
 
@@ -41,7 +40,6 @@ final class CartItemStoreRequest extends BaseRequest
         return [
             'sku_id' => 'SKU',
             'quantity' => '数量',
-            'is_selected' => '选择状态',
         ];
     }
 }

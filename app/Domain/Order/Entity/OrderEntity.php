@@ -462,6 +462,13 @@ final class OrderEntity
         }
     }
 
+    public function guardPreorderAllowed(bool $allowPreorder): void
+    {
+        if (! $allowPreorder && $this->orderType === 'preorder') {
+            throw new \DomainException('当前商品不支持预订单');
+        }
+    }
+
     public function toArray(): array
     {
         return [

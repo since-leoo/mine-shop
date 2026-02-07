@@ -16,6 +16,7 @@ use App\Domain\Coupon\Entity\CouponUserEntity;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
+use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
@@ -145,7 +146,7 @@ final class CouponUserRepository extends IRepository
             ->where('status', 'unused')
             ->where(static function ($q) {
                 $q->whereNull('expire_at')
-                    ->orWhere('expire_at', '>', now());
+                    ->orWhere('expire_at', '>', Carbon::now());
             })
             ->get()
             ->keyBy('coupon_id')

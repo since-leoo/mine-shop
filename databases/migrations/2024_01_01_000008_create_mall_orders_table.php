@@ -27,11 +27,11 @@ class CreateMallOrdersTable extends Migration
             $table->unsignedBigInteger('member_id')->comment('会员ID');
             $table->enum('order_type', ['normal', 'seckill', 'group_buy'])->default('normal')->comment('订单类型');
             $table->enum('status', ['pending', 'paid', 'shipped', 'partial_shipped', 'completed', 'cancelled', 'refunded'])->default('pending')->comment('订单状态');
-            $table->decimal('goods_amount', 10, 2)->comment('商品金额');
-            $table->decimal('shipping_fee', 10, 2)->default(0)->comment('运费');
-            $table->decimal('discount_amount', 10, 2)->default(0)->comment('优惠金额');
-            $table->decimal('total_amount', 10, 2)->comment('订单总金额');
-            $table->decimal('pay_amount', 10, 2)->nullable()->comment('实付金额');
+            $table->unsignedInteger('goods_amount')->comment('商品金额(分)');
+            $table->unsignedInteger('shipping_fee')->default(0)->comment('运费(分)');
+            $table->unsignedInteger('discount_amount')->default(0)->comment('优惠金额(分)');
+            $table->unsignedInteger('total_amount')->comment('订单总金额(分)');
+            $table->unsignedInteger('pay_amount')->nullable()->comment('实付金额(分)');
             $table->enum('pay_status', ['pending', 'paid', 'failed', 'cancelled', 'refunded'])->default('pending')->comment('支付状态');
             $table->timestamp('pay_time')->nullable()->comment('支付时间');
             $table->string('pay_no', 64)->nullable()->comment('支付流水号');

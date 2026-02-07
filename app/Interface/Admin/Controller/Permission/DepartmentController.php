@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\DepartmentCommandService;
-use App\Application\Query\DepartmentQueryService;
+use App\Application\Commad\AppDepartmentCommandService;
+use App\Application\Query\AppDepartmentQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -38,8 +38,8 @@ class DepartmentController extends AbstractController
 {
     public function __construct(
         protected readonly CurrentUser $currentUser,
-        protected readonly DepartmentQueryService $queryService,
-        protected readonly DepartmentCommandService $commandService
+        protected readonly AppDepartmentQueryService $queryService,
+        protected readonly AppDepartmentCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

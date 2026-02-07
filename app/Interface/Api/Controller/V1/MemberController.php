@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Member\MemberAuthApiService;
-use App\Application\Api\Member\MemberCenterQueryApiService;
+use App\Application\Api\Member\AppApiMemberAuthCommandService;
+use App\Application\Api\Member\AppApiMemberCenterQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\PhoneAuthorizeRequest;
 use App\Interface\Api\Request\V1\ProfileAuthorizeRequest;
+use App\Interface\Api\Transformer\MemberCenterTransformer;
+use App\Interface\Api\Transformer\MemberProfileTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
@@ -30,22 +32,33 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 final class MemberController extends AbstractController
 {
     public function __construct(
-        private readonly MemberCenterQueryApiService $memberCenterService,
+        private readonly AppApiMemberCenterQueryService $memberCenterService,
+        private readonly MemberProfileTransformer $profileTransformer,
+        private readonly MemberCenterTransformer $centerTransformer,
         private readonly CurrentMember $currentMember,
-        private readonly MemberAuthApiService $memberAuthService
+        private readonly AppApiMemberAuthCommandService $memberAuthService
     ) {}
 
     #[GetMapping(path: 'profile')]
     public function profile(): Result
     {
-        $profile = $this->memberCenterService->profile($this->currentMember->id());
-        return $this->success(['member' => $profile], '获取成功');
+        $member = $this->memberCenterService->profile($this->currentMember->id());
+        return $this->success(['member' => $this->profileTransformer->transform($member)], '获取成功');
     }
 
     #[GetMapping(path: 'center')]
     public function center(): Result
     {
-        $overview = $this->memberCenterService->overview($this->currentMember->id());
+        $data = $this->memberCenterService->overview($this->currentMember->id());
+        $profile = $this->profileTransformer->transform($data['member']);
+
+        $overview = $this->centerTransformer->transform(
+            $profile,
+            $data['orderCounts'],
+            $data['couponCount'],
+            $data['servicePhone']
+        );
+
         return $this->success($overview, '获取成功');
     }
 

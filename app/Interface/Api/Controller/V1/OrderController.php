@@ -12,16 +12,23 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Order\OrderCommandApiService;
-use App\Application\Api\Payment\OrderPaymentApiService;
+use App\Application\Api\Order\AppApiOrderCommandService;
+use App\Application\Api\Order\AppApiOrderQueryService;
+use App\Application\Api\Payment\AppApiOrderPaymentService;
 use App\Interface\Api\Middleware\TokenMiddleware;
+use App\Interface\Api\Request\V1\OrderCancelRequest;
 use App\Interface\Api\Request\V1\OrderCommitRequest;
+use App\Interface\Api\Request\V1\OrderConfirmReceiptRequest;
+use App\Interface\Api\Request\V1\OrderListRequest;
 use App\Interface\Api\Request\V1\OrderPaymentRequest;
 use App\Interface\Api\Request\V1\OrderPreviewRequest;
+use App\Interface\Api\Transformer\OrderCheckoutTransformer;
+use App\Interface\Api\Transformer\OrderTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\RateLimit\Annotation\RateLimit;
@@ -31,30 +38,117 @@ use Hyperf\RateLimit\Annotation\RateLimit;
 final class OrderController extends AbstractController
 {
     public function __construct(
-        private readonly OrderCommandApiService $checkoutService,
+        private readonly AppApiOrderCommandService $checkoutService,
         private readonly CurrentMember $currentMember,
-        private readonly OrderPaymentApiService $paymentApiService
+        private readonly AppApiOrderPaymentService $paymentApiService,
+        private readonly AppApiOrderQueryService $orderQueryService,
+        private readonly OrderTransformer $orderTransformer,
+        private readonly OrderCheckoutTransformer $checkoutTransformer
     ) {}
 
     #[PostMapping(path: 'preview')]
     #[RateLimit(create: 60, capacity: 20)]
     public function preview(OrderPreviewRequest $request): Result
     {
-        $data = $this->checkoutService->preview($request->toDto($this->currentMember->id()));
-        return $this->success($data, '订单预览');
+        $orderEntity = $this->checkoutService->preview($request->toDto($this->currentMember->id()));
+        return $this->success($this->checkoutTransformer->transform($orderEntity), '订单预览');
     }
 
     #[PostMapping(path: 'submit')]
     #[RateLimit(create: 30, capacity: 10)]
     public function submit(OrderCommitRequest $request): Result
     {
-        $data = $this->checkoutService->submit($request->toDto($this->currentMember->id()));
-        return $this->success($data, '下单成功');
+        $orderEntity = $this->checkoutService->submit($request->toDto($this->currentMember->id()));
+
+        return $this->success([
+            'is_success' => (bool) $orderEntity->getOrderNo(),
+            'trade_no' => $orderEntity->getOrderNo(),
+            'transaction_id' => $orderEntity->getOrderNo(),
+            'channel' => 'wechat',
+            'pay_info' => '{}',
+            'limit_goods_list' => null,
+            'pay_methods' => $this->checkoutService->resolvePaymentMethods(),
+        ], '下单成功');
     }
 
     #[PostMapping(path: 'payment')]
     public function payment(OrderPaymentRequest $request): Result
     {
         return $this->success($this->paymentApiService->payment($this->currentMember->id(), $request->validated()));
+    }
+
+    /**
+     * 获取订单列表.
+     */
+    #[GetMapping(path: 'list')]
+    public function list(OrderListRequest $request): Result
+    {
+        $validated = $request->validated();
+        $status = $validated['status'] ?? 'all';
+        $page = (int) ($validated['page'] ?? 1);
+        $pageSize = (int) ($validated['page_size'] ?? 10);
+
+        $orders = $this->orderQueryService->getMemberOrderList(
+            $this->currentMember->id(),
+            $status,
+            $page,
+            $pageSize
+        );
+
+        return $this->successWithPaginator($orders, fn ($order) => $this->orderTransformer->transform($order));
+    }
+
+    /**
+     * 获取订单详情.
+     */
+    #[GetMapping(path: 'detail/{orderNo}')]
+    public function detail(string $orderNo): Result
+    {
+        $order = $this->orderQueryService->getOrderDetail($this->currentMember->id(), $orderNo);
+
+        if (! $order) {
+            return $this->fail('订单不存在');
+        }
+
+        return $this->successWithTransform($order, fn ($order) => $this->orderTransformer->transformDetail($order));
+    }
+
+    /**
+     * 获取订单统计.
+     */
+    #[GetMapping(path: 'statistics')]
+    public function statistics(): Result
+    {
+        $statistics = $this->orderQueryService->getOrderStatistics($this->currentMember->id());
+
+        return $this->success($statistics);
+    }
+
+    /**
+     * 取消订单（仅待付款状态）.
+     */
+    #[PostMapping(path: 'cancel')]
+    public function cancel(OrderCancelRequest $request): Result
+    {
+        $this->checkoutService->cancel(
+            $this->currentMember->id(),
+            $request->validated()['order_no']
+        );
+
+        return $this->success([], '订单已取消');
+    }
+
+    /**
+     * 确认收货（仅已发货状态）.
+     */
+    #[PostMapping(path: 'confirm-receipt')]
+    public function confirmReceipt(OrderConfirmReceiptRequest $request): Result
+    {
+        $this->checkoutService->confirmReceipt(
+            $this->currentMember->id(),
+            $request->validated()['order_no']
+        );
+
+        return $this->success([], '已确认收货');
     }
 }

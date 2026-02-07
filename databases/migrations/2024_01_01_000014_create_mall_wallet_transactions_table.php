@@ -28,9 +28,9 @@ class CreateMallWalletTransactionsTable extends Migration
             $table->enum('wallet_type', ['balance', 'points'])->default('balance')->comment('钱包类型');
             $table->string('transaction_no', 32)->unique()->comment('交易号');
             $table->enum('type', ['recharge', 'consume', 'refund', 'withdraw', 'freeze', 'unfreeze', 'adjust_in', 'adjust_out'])->comment('交易类型');
-            $table->decimal('amount', 10, 2)->comment('交易金额，正值');
-            $table->decimal('balance_before', 10, 2)->comment('交易前余额');
-            $table->decimal('balance_after', 10, 2)->comment('交易后余额');
+            $table->unsignedBigInteger('amount')->comment('交易金额(分)，正值');
+            $table->unsignedBigInteger('balance_before')->comment('交易前余额(分)');
+            $table->unsignedBigInteger('balance_after')->comment('交易后余额(分)');
             $table->string('source', 50)->nullable()->comment('来源');
             $table->string('related_type', 50)->nullable()->comment('关联类型');
             $table->unsignedBigInteger('related_id')->nullable()->comment('关联ID');

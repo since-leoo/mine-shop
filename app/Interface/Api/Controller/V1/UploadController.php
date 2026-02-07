@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Commad\AttachmentCommandService;
+use App\Application\Commad\AppAttachmentCommandService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
@@ -20,6 +20,7 @@ use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
+use Hyperf\HttpServer\Contract\RequestInterface;
 use Symfony\Component\Finder\SplFileInfo;
 
 #[Controller(prefix: '/api/v1/upload')]
@@ -27,7 +28,7 @@ use Symfony\Component\Finder\SplFileInfo;
 final class UploadController extends AbstractController
 {
     public function __construct(
-        private readonly AttachmentCommandService $attachmentService,
+        private readonly AppAttachmentCommandService $attachmentService,
         private readonly CurrentMember $currentMember,
     ) {}
 
@@ -35,9 +36,9 @@ final class UploadController extends AbstractController
      * 小程序文件上传.
      */
     #[PostMapping(path: 'image')]
-    public function image(): Result
+    public function image(RequestInterface $request): Result
     {
-        $uploadFile = $this->request->file('file');
+        $uploadFile = $request->file('file');
         if (! $uploadFile || ! $uploadFile->isValid()) {
             throw new \InvalidArgumentException('请选择要上传的文件');
         }

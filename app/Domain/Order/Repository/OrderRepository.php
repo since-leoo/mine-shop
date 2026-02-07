@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Domain\Order\Repository;
 
 use App\Domain\Order\Entity\OrderEntity;
+use App\Domain\Order\Enum\OrderStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Collection\Collection;
+use Hyperf\Contract\LengthAwarePaginatorInterface;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -109,6 +111,21 @@ final class OrderRepository extends IRepository
         $order->cancel($entity);
     }
 
+    /**
+     * 确认收货（完成订单）.
+     */
+    public function complete(OrderEntity $entity): void
+    {
+        /** @var null|Order $order */
+        $order = $this->findByIdForLock($entity->getId());
+
+        if (! $order) {
+            throw new \RuntimeException('订单不存在');
+        }
+
+        $order->complete($entity);
+    }
+
     public function paid(OrderEntity $entity): void
     {
         /** @var null|Order $order */
@@ -146,6 +163,38 @@ final class OrderRepository extends IRepository
     }
 
     /**
+     * 会员订单分页列表.
+     */
+    public function paginateByMember(
+        int $memberId,
+        string $status = 'all',
+        int $page = 1,
+        int $pageSize = 10
+    ): LengthAwarePaginatorInterface {
+        $query = $this->getQuery()
+            ->where('member_id', $memberId)
+            ->with(['items', 'address']);
+
+        $query = $this->applyStatusScope($query, $status);
+
+        return $query
+            ->orderByDesc('created_at')
+            ->paginate($pageSize, ['*'], 'page', $page);
+    }
+
+    /**
+     * 会员订单详情（按订单号）.
+     */
+    public function findMemberOrderDetail(int $memberId, string $orderNo): ?Order
+    {
+        return $this->getQuery()
+            ->where('member_id', $memberId)
+            ->where('order_no', $orderNo)
+            ->with(['items', 'address', 'packages', 'logs'])
+            ->first();
+    }
+
+    /**
      * 统计指定会员在特定状态集合下的订单数量.
      */
     public function countByMemberAndStatuses(int $memberId): array
@@ -178,5 +227,20 @@ final class OrderRepository extends IRepository
             ->when(! empty($params['start_date']), static fn (Builder $q) => $q->whereDate('created_at', '>=', $params['start_date']))
             ->when(! empty($params['end_date']), static fn (Builder $q) => $q->whereDate('created_at', '<=', $params['end_date']))
             ->orderByDesc('id');
+    }
+
+    /**
+     * 根据状态字符串应用对应的 scope.
+     */
+    private function applyStatusScope(Builder $query, string $status): Builder
+    {
+        return match ($status) {
+            'pending' => $query->where('status', OrderStatus::PENDING->value),
+            'paid' => $query->where('status', OrderStatus::PAID->value),
+            'shipped' => $query->whereIn('status', [OrderStatus::PARTIAL_SHIPPED->value, OrderStatus::SHIPPED->value]),
+            'completed' => $query->where('status', OrderStatus::COMPLETED->value),
+            'after_sale' => $query->whereIn('status', [OrderStatus::REFUNDED->value, OrderStatus::CANCELLED->value]),
+            default => $query,
+        };
     }
 }

@@ -23,9 +23,9 @@ interface CouponInput
 
     public function getType(): ?string;
 
-    public function getValue(): ?float;
+    public function getValue(): ?int;
 
-    public function getMinAmount(): ?float;
+    public function getMinAmount(): ?int;
 
     public function getTotalQuantity(): ?int;
 

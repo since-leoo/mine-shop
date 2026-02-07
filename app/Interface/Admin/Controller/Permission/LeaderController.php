@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\LeaderCommandService;
-use App\Application\Query\LeaderQueryService;
+use App\Application\Commad\AppLeaderCommandService;
+use App\Application\Query\AppLeaderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\LeaderDeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -37,8 +37,8 @@ class LeaderController extends AbstractController
 {
     public function __construct(
         protected readonly CurrentUser $currentUser,
-        protected readonly LeaderQueryService $queryService,
-        protected readonly LeaderCommandService $commandService
+        protected readonly AppLeaderQueryService $queryService,
+        protected readonly AppLeaderCommandService $commandService
     ) {}
 
     #[GetMapping(path: 'list')]

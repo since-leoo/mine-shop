@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Api;
 
-use App\Domain\Auth\Service\TokenService;
 use HyperfTests\HttpTestCase;
 
 abstract class ApiControllerCase extends HttpTestCase

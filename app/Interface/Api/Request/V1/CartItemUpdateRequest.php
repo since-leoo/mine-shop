@@ -31,8 +31,7 @@ final class CartItemUpdateRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'quantity' => ['nullable', 'integer', 'min:1', 'max:999'],
-            'is_selected' => ['nullable', 'boolean'],
+            'quantity' => ['required', 'integer', 'min:1', 'max:999'],
         ];
     }
 
@@ -40,16 +39,8 @@ final class CartItemUpdateRequest extends BaseRequest
     {
         return [
             'quantity' => '数量',
-            'is_selected' => '选择状态',
         ];
     }
 
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function (Validator $validator): void {
-            if (! $this->filled('quantity') && ! $this->has('is_selected')) {
-                $validator->errors()->add('quantity', '请至少提供数量或选择状态');
-            }
-        });
-    }
+    public function withValidator(Validator $validator): void {}
 }

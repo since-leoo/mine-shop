@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Permission;
 
-use App\Application\Commad\MenuCommandService;
-use App\Application\Query\MenuQueryService;
+use App\Application\Commad\AppMenuCommandService;
+use App\Application\Query\AppMenuQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -38,8 +38,8 @@ use Mine\Access\Attribute\Permission;
 final class MenuController extends AbstractController
 {
     public function __construct(
-        private readonly MenuQueryService $queryService,
-        private readonly MenuCommandService $commandService,
+        private readonly AppMenuQueryService $queryService,
+        private readonly AppMenuCommandService $commandService,
         private readonly CurrentUser $user
     ) {}
 

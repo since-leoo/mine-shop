@@ -36,26 +36,28 @@ final class RecordMemberBalanceLogListener implements ListenerInterface
             return;
         }
 
-        $type = $event->changeAmount >= 0 ? 'adjust_in' : 'adjust_out';
-        $amount = abs($event->changeAmount);
+        \Hyperf\Coroutine\co(function () use ($event) {
+            $type = $event->changeAmount >= 0 ? 'adjust_in' : 'adjust_out';
+            $amount = abs($event->changeAmount);
 
-        $this->transactionRepository->create([
-            'wallet_id' => $event->walletId,
-            'member_id' => $event->memberId,
-            'wallet_type' => $event->walletType,
-            'transaction_no' => Str::upper(Str::random(24)),
-            'type' => $type,
-            'amount' => $amount,
-            'balance_before' => $event->beforeBalance,
-            'balance_after' => $event->afterBalance,
-            'source' => $event->source,
-            'related_type' => $event->relatedType,
-            'related_id' => $event->relatedId,
-            'description' => $event->remark ?: '后台调整',
-            'remark' => $event->remark,
-            'operator_type' => (string) ($event->operator['type'] ?? 'admin'),
-            'operator_id' => $event->operator['id'] ?? null,
-            'operator_name' => $event->operator['name'] ?? null,
-        ]);
+            $this->transactionRepository->create([
+                'wallet_id' => $event->walletId,
+                'member_id' => $event->memberId,
+                'wallet_type' => $event->walletType,
+                'transaction_no' => Str::upper(Str::random(24)),
+                'type' => $type,
+                'amount' => $amount,
+                'balance_before' => $event->beforeBalance,
+                'balance_after' => $event->afterBalance,
+                'source' => $event->source,
+                'related_type' => $event->relatedType,
+                'related_id' => $event->relatedId,
+                'description' => $event->remark ?: '后台调整',
+                'remark' => $event->remark,
+                'operator_type' => (string) ($event->operator['type'] ?? 'admin'),
+                'operator_id' => $event->operator['id'] ?? null,
+                'operator_name' => $event->operator['name'] ?? null,
+            ]);
+        });
     }
 }

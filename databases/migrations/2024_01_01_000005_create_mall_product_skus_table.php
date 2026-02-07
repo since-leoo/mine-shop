@@ -27,9 +27,9 @@ class CreateMallProductSkusTable extends Migration
             $table->string('sku_name', 200)->comment('SKU名称');
             $table->json('spec_values')->nullable()->comment('规格值');
             $table->string('image', 255)->nullable()->comment('SKU图片');
-            $table->decimal('cost_price', 10, 2)->default(0)->comment('成本价');
-            $table->decimal('market_price', 10, 2)->default(0)->comment('市场价');
-            $table->decimal('sale_price', 10, 2)->comment('销售价');
+            $table->unsignedInteger('cost_price')->default(0)->comment('成本价(分)');
+            $table->unsignedInteger('market_price')->default(0)->comment('市场价(分)');
+            $table->unsignedInteger('sale_price')->comment('销售价(分)');
             $table->unsignedInteger('stock')->default(0)->comment('库存');
             $table->unsignedInteger('warning_stock')->default(10)->comment('预警库存');
             $table->decimal('weight', 8, 3)->default(0)->comment('重量(kg)');

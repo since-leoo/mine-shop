@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Common\Controller;
 
-use App\Application\Query\GeoQueryService;
+use App\Application\Query\AppGeoQueryService;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
@@ -21,7 +21,7 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 #[Controller(prefix: '/common/geo')]
 final class GeoController extends AbstractController
 {
-    public function __construct(private readonly GeoQueryService $service) {}
+    public function __construct(private readonly AppGeoQueryService $service) {}
 
     #[GetMapping(path: 'pcas')]
     public function pcas(): Result

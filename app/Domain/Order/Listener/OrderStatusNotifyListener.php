@@ -14,13 +14,13 @@ namespace App\Domain\Order\Listener;
 
 use App\Domain\Order\Event\OrderCancelledEvent;
 use App\Domain\Order\Event\OrderShippedEvent;
-use App\Domain\SystemSetting\Service\MallSettingService;
+use App\Domain\SystemSetting\Service\DomainMallSettingService;
 use Hyperf\Event\Contract\ListenerInterface;
 use Plugin\Since\SystemMessage\Facade\SystemMessage;
 
 final class OrderStatusNotifyListener implements ListenerInterface
 {
-    public function __construct(private readonly MallSettingService $mallSettingService) {}
+    public function __construct(private readonly DomainMallSettingService $mallSettingService) {}
 
     public function listen(): array
     {

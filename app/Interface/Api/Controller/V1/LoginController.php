@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
-use App\Application\Api\Member\MemberAuthApiService;
+use App\Application\Api\Member\AppApiMemberAuthCommandService;
 use App\Interface\Api\Request\V1\LoginRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
@@ -21,7 +21,7 @@ use Hyperf\HttpServer\Annotation\AutoController;
 #[AutoController(prefix: '/api/v1/login')]
 final class LoginController extends AbstractController
 {
-    public function __construct(private readonly MemberAuthApiService $commandService) {}
+    public function __construct(private readonly AppApiMemberAuthCommandService $commandService) {}
 
     /**
      * 小程序登录.

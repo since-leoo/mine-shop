@@ -27,8 +27,8 @@ class CreateMallGroupBuysTable extends Migration
             $table->text('description')->nullable()->comment('活动描述');
             $table->unsignedBigInteger('product_id')->comment('商品ID');
             $table->unsignedBigInteger('sku_id')->comment('SKU ID');
-            $table->decimal('original_price', 10, 2)->comment('原价');
-            $table->decimal('group_price', 10, 2)->comment('团购价');
+            $table->unsignedInteger('original_price')->comment('原价(分)');
+            $table->unsignedInteger('group_price')->comment('团购价(分)');
             $table->unsignedInteger('min_people')->default(2)->comment('最少成团人数');
             $table->unsignedInteger('max_people')->default(100)->comment('最多成团人数');
             $table->timestamp('start_time')->comment('开始时间');
