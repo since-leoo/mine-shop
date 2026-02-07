@@ -19,7 +19,7 @@ export function fetchCartGroupData(params) {
 }
 
 /** 添加商品到购物车 */
-export function addCartItem({ skuId, quantity, isSelected }) {
+export function addCartItem({ skuId, quantity }) {
   if (config.useMock) {
     const { delay } = require('../_utils/delay');
     return delay(200).then(() => ({ data: {} }));
@@ -27,25 +27,22 @@ export function addCartItem({ skuId, quantity, isSelected }) {
   return request({
     url: '/api/v1/cart/items',
     method: 'POST',
-    data: { sku_id: skuId, quantity, is_selected: isSelected },
+    data: { sku_id: skuId, quantity },
     needAuth: true,
   }).then((data = {}) => ({ data: transformCartResponse(data) }));
 }
 
-/** 更新购物车商品（数量/选中状态） */
-export function updateCartItem(skuId, { quantity, isSelected }) {
+/** 更新购物车商品数量 */
+export function updateCartItem(skuId, { quantity }) {
   if (config.useMock) {
     const { delay } = require('../_utils/delay');
     return delay(100).then(() => ({ data: {} }));
   }
-  const body = {};
-  if (quantity !== undefined) body.quantity = quantity;
-  if (isSelected !== undefined) body.is_selected = isSelected;
 
   return request({
     url: `/api/v1/cart/items/${skuId}`,
     method: 'PUT',
-    data: body,
+    data: { quantity },
     needAuth: true,
   }).then((data = {}) => ({ data: transformCartResponse(data) }));
 }
@@ -145,7 +142,7 @@ function transformGoods(goods) {
     storeName: goods?.store_name || '',
     spuId: goods?.spu_id || '',
     skuId: goods?.sku_id || '',
-    isSelected: goods?.is_selected ? 1 : 0,
+    isSelected: 1,
     thumb: goods?.thumb || goods?.primary_image || '',
     title: goods?.title || '',
     primaryImage: goods?.primary_image || goods?.thumb || '',

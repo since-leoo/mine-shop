@@ -16,19 +16,25 @@ Page({
   },
 
   getGoodsList(promotionID) {
-    fetchPromotion(promotionID).then(({ list, banner, time, showBannerDesc, statusTag }) => {
-      const goods = list.map((item) => ({
-        ...item,
-        tags: item.tags.map((v) => v.title),
-      }));
-      this.setData({
-        list: goods,
-        banner,
-        time,
-        showBannerDesc,
-        statusTag,
+    fetchPromotion(promotionID)
+      .then((res) => {
+        if (!res || typeof res !== 'object') return;
+        const { list, banner, time, showBannerDesc, statusTag } = res;
+        const goods = (Array.isArray(list) ? list : []).map((item) => ({
+          ...item,
+          tags: Array.isArray(item.tags) ? item.tags.map((v) => v.title) : [],
+        }));
+        this.setData({
+          list: goods,
+          banner: banner || '',
+          time: time || 0,
+          showBannerDesc: !!showBannerDesc,
+          statusTag: statusTag || '',
+        });
+      })
+      .catch((err) => {
+        console.error('fetchPromotion error:', err);
       });
-    });
   },
 
   goodClickHandle(e) {

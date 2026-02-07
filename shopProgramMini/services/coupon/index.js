@@ -70,8 +70,10 @@ export function fetchCouponDetail(id, status = 'default') {
     url: `/api/v1/coupons/${id}`,
     method: 'GET',
   }).then((data = {}) => {
+    // API 已经返回了完整的 detail 对象，直接使用
+    const detail = data.detail || data;
     return {
-      detail: transformCouponDetail(data),
+      detail: detail,
       storeInfoList: [],
     };
   });
@@ -128,6 +130,18 @@ export function fetchAvailableCoupons(params = {}) {
     url: '/api/v1/coupons/available',
     method: 'GET',
     data,
+    needAuth: true,
+  });
+}
+
+// ========== 领取优惠券 ==========
+
+export function receiveCoupon(couponId) {
+  return request({
+    url: '/api/v1/member/coupons/receive',
+    method: 'POST',
+    data: { coupon_id: couponId },
+    needAuth: true,
   });
 }
 
@@ -145,7 +159,7 @@ function transformCouponUser(item = {}) {
   const type = mapCouponType(coupon.type);
   const value = parseCouponValue(coupon.type, coupon.value);
   const minAmount = Number(coupon.min_amount || 0);
-  const tag = type === 'discount' ? '折扣' : '满减';
+  const tag = type === 2 ? '折扣' : '满减';
   const desc = buildCouponDesc(type, coupon.value, minAmount);
   const timeLimit = formatTimeRange(coupon.start_time, coupon.end_time);
 
@@ -169,7 +183,7 @@ function transformCouponDetail(data = {}) {
   const type = mapCouponType(data.type);
   const value = parseCouponValue(data.type, data.value);
   const minAmount = Number(data.min_amount || 0);
-  const tag = type === 'discount' ? '折扣' : '满减';
+  const tag = type === 2 ? '折扣' : '满减';
   const desc = buildCouponDesc(type, data.value, minAmount);
   const timeLimit = formatTimeRange(data.start_time, data.end_time);
 
@@ -210,10 +224,10 @@ function mapCouponStatus(status) {
   }
 }
 
-/** 后端 type -> 前端 type */
+/** 后端 type -> 前端 type (数字，匹配 ui-coupon-card 的 CouponType) */
 function mapCouponType(type) {
-  if (type === 'percent' || type === 'discount') return 'discount';
-  return 'price';
+  if (type === 'percent' || type === 'discount') return 2; // ZK_COUPON
+  return 1; // MJ_COUPON
 }
 
 /** 解析优惠券面值 */
@@ -229,7 +243,7 @@ function parseCouponValue(type, value) {
 /** 构建描述文案 */
 function buildCouponDesc(type, value, minAmount) {
   const num = Number(value || 0);
-  if (type === 'discount') {
+  if (type === 'discount' || type === 2) {
     let desc = `${num}折`;
     if (minAmount > 0) desc += `，满${formatPrice(minAmount)}元可用`;
     return desc;

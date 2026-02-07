@@ -1,6 +1,7 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import Dialog from 'tdesign-miniprogram/dialog/index';
 import { OrderButtonTypes } from '../../config';
+import { cancelOrder, confirmReceipt } from '../../../../services/order/orderList';
 
 Component({
   options: {
@@ -22,33 +23,31 @@ Component({
           return;
         }
         // 订单的button bar 不显示申请售后按钮
-        const buttonsRight = (order.buttons || [])
-          // .filter((b) => b.type !== OrderButtonTypes.APPLY_REFUND)
-          .map((button) => {
-            //邀请好友拼团按钮
-            if (button.type === OrderButtonTypes.INVITE_GROUPON && order.groupInfoVo) {
-              const {
-                groupInfoVo: { groupId, promotionId, remainMember, groupPrice },
-                goodsList,
-              } = order;
-              const goodsImg = goodsList[0] && goodsList[0].imgUrl;
-              const goodsName = goodsList[0] && goodsList[0].name;
-              return {
-                ...button,
-                openType: 'share',
-                dataShare: {
-                  goodsImg,
-                  goodsName,
-                  groupId,
-                  promotionId,
-                  remainMember,
-                  groupPrice,
-                  storeId: order.storeId,
-                },
-              };
-            }
-            return button;
-          });
+        const buttonsRight = (order.buttons || []).map((button) => {
+          //邀请好友拼团按钮
+          if (button.type === OrderButtonTypes.INVITE_GROUPON && order.groupInfoVo) {
+            const {
+              groupInfoVo: { groupId, promotionId, remainMember, groupPrice },
+              goodsList,
+            } = order;
+            const goodsImg = goodsList[0] && goodsList[0].imgUrl;
+            const goodsName = goodsList[0] && goodsList[0].name;
+            return {
+              ...button,
+              openType: 'share',
+              dataShare: {
+                goodsImg,
+                goodsName,
+                groupId,
+                promotionId,
+                remainMember,
+                groupPrice,
+                storeId: order.storeId,
+              },
+            };
+          }
+          return button;
+        });
         // 删除订单按钮单独挪到左侧
         const deleteBtnIndex = buttonsRight.findIndex((b) => b.type === OrderButtonTypes.DELETE);
         let buttonsLeft = [];
@@ -74,7 +73,6 @@ Component({
   },
 
   data: {
-    order: {},
     buttons: {
       left: [],
       right: [],
@@ -107,24 +105,49 @@ Component({
         case OrderButtonTypes.COMMENT:
           this.onAddComment(this.data.order);
           break;
+        case OrderButtonTypes.DELIVERY:
+          this.onDelivery(this.data.order);
+          break;
         case OrderButtonTypes.INVITE_GROUPON:
           //分享邀请好友拼团
           break;
         case OrderButtonTypes.REBUY:
           this.onBuyAgain(this.data.order);
+          break;
       }
     },
 
-    onCancel() {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '你点击了取消订单',
-        icon: 'check-circle',
-      });
+    onCancel(order) {
+      Dialog.confirm({
+        title: '确认取消订单？',
+        content: '取消后订单将无法恢复',
+        confirmBtn: '确认取消',
+        cancelBtn: '再想想',
+      })
+        .then(() => {
+          cancelOrder(order.orderNo)
+            .then(() => {
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: '订单已取消',
+                icon: 'check-circle',
+              });
+              this.triggerEvent('refresh');
+            })
+            .catch((err) => {
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: err.msg || '取消失败',
+                icon: 'close-circle',
+              });
+            });
+        })
+        .catch(() => {});
     },
 
-    onConfirm() {
+    onConfirm(order) {
       Dialog.confirm({
         title: '确认是否已经收到货？',
         content: '',
@@ -132,29 +155,31 @@ Component({
         cancelBtn: '取消',
       })
         .then(() => {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '你确认了确认收货',
-            icon: 'check-circle',
-          });
+          confirmReceipt(order.orderNo)
+            .then(() => {
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: '已确认收货',
+                icon: 'check-circle',
+              });
+              this.triggerEvent('refresh');
+            })
+            .catch((err) => {
+              Toast({
+                context: this,
+                selector: '#t-toast',
+                message: err.msg || '操作失败',
+                icon: 'close-circle',
+              });
+            });
         })
-        .catch(() => {
-          Toast({
-            context: this,
-            selector: '#t-toast',
-            message: '你取消了确认收货',
-            icon: 'check-circle',
-          });
-        });
+        .catch(() => {});
     },
 
-    onPay() {
-      Toast({
-        context: this,
-        selector: '#t-toast',
-        message: '你点击了去支付',
-        icon: 'check-circle',
+    onPay(order) {
+      wx.navigateTo({
+        url: `/pages/order/order-confirm/index?orderNo=${order.orderNo}`,
       });
     },
 
@@ -167,16 +192,25 @@ Component({
       });
     },
 
+    onDelivery(order) {
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '你点击了查看物流',
+        icon: 'check-circle',
+      });
+    },
+
     onApplyRefund(order) {
       const goods = order.goodsList[this.properties.goodsIndex];
       const params = {
         orderNo: order.orderNo,
-        skuId: goods?.skuId ?? '19384938948343',
-        spuId: goods?.spuId ?? '28373847384343',
+        skuId: goods?.skuId ?? '',
+        spuId: goods?.spuId ?? '',
         orderStatus: order.status,
         logisticsNo: order.logisticsNo,
-        price: goods?.price ?? 89,
-        num: goods?.num ?? 89,
+        price: goods?.price ?? 0,
+        num: goods?.num ?? 0,
         createTime: order.createTime,
         orderAmt: order.totalAmount,
         payAmt: order.amount,

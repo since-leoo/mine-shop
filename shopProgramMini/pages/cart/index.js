@@ -32,15 +32,47 @@ Page({
     });
   },
 
-  /** 从服务端返回数据重新渲染 */
+  /** 从服务端返回数据重新渲染，保留本地选中状态 */
   applyServerData(res) {
     if (res && res.data && res.data.storeGoods) {
       const cartGroupData = res.data;
+
+      // 保留本地选中状态
+      const selectionMap = this._buildSelectionMap();
+      this._applySelectionMap(cartGroupData, selectionMap);
+
       this.processCartData(cartGroupData);
       this.setData({ cartGroupData });
     } else {
       this.refreshData();
     }
+  },
+
+  /** 构建 skuId -> isSelected 映射 */
+  _buildSelectionMap() {
+    const map = {};
+    if (!this.data.cartGroupData) return map;
+    this.data.cartGroupData.storeGoods.forEach((store) => {
+      store.promotionGoodsList.forEach((activity) => {
+        activity.goodsPromotionList.forEach((goods) => {
+          map[goods.skuId] = goods.isSelected;
+        });
+      });
+    });
+    return map;
+  },
+
+  /** 将选中状态应用到新的购物车数据 */
+  _applySelectionMap(cartGroupData, selectionMap) {
+    cartGroupData.storeGoods.forEach((store) => {
+      store.promotionGoodsList.forEach((activity) => {
+        activity.goodsPromotionList.forEach((goods) => {
+          if (goods.skuId in selectionMap) {
+            goods.isSelected = selectionMap[goods.skuId];
+          }
+        });
+      });
+    });
   },
 
   processCartData(cartGroupData) {
@@ -110,11 +142,8 @@ Page({
     const { currentGoods } = this.findGoods(spuId, skuId);
     if (!currentGoods) return;
 
-    updateCartItem(skuId, { isSelected: !!isSelected }).then((res) => {
-      this.applyServerData(res);
-    }).catch(() => {
-      Toast({ context: this, selector: '#t-toast', message: '操作失败', theme: 'error' });
-    });
+    currentGoods.isSelected = isSelected ? 1 : 0;
+    this.recalcCart();
   },
 
   // 全选门店
@@ -126,19 +155,13 @@ Page({
     const currentStore = this.data.cartGroupData.storeGoods.find((s) => s.storeId === storeId);
     if (!currentStore) return;
 
-    // 批量更新该门店下所有商品的选中状态
-    const promises = [];
     currentStore.promotionGoodsList.forEach((activity) => {
       activity.goodsPromotionList.forEach((goods) => {
-        promises.push(updateCartItem(goods.skuId, { isSelected: !!isSelected }));
+        goods.isSelected = isSelected ? 1 : 0;
       });
     });
 
-    Promise.all(promises).then(() => {
-      this.refreshData();
-    }).catch(() => {
-      Toast({ context: this, selector: '#t-toast', message: '操作失败', theme: 'error' });
-    });
+    this.recalcCart();
   },
 
   // 加购数量变更
@@ -208,22 +231,44 @@ Page({
   // 全选
   onSelectAll(event) {
     const { isAllSelected } = event?.detail ?? {};
-    const targetSelected = !isAllSelected;
+    const targetSelected = isAllSelected ? 0 : 1;
 
-    const promises = [];
     this.data.cartGroupData.storeGoods.forEach((store) => {
       store.promotionGoodsList.forEach((activity) => {
         activity.goodsPromotionList.forEach((goods) => {
-          promises.push(updateCartItem(goods.skuId, { isSelected: targetSelected }));
+          goods.isSelected = targetSelected;
         });
       });
     });
 
-    Promise.all(promises).then(() => {
-      this.refreshData();
-    }).catch(() => {
-      Toast({ context: this, selector: '#t-toast', message: '操作失败', theme: 'error' });
-    });
+    this.recalcCart();
+  },
+
+  /** 重新计算选中状态和汇总数据，刷新视图 */
+  recalcCart() {
+    const cartGroupData = this.data.cartGroupData;
+    const allGoods = [];
+
+    for (const store of cartGroupData.storeGoods) {
+      store.isSelected = true;
+      for (const activity of store.promotionGoodsList) {
+        for (const goods of activity.goodsPromotionList) {
+          allGoods.push(goods);
+          if (!goods.isSelected) {
+            store.isSelected = false;
+          }
+        }
+      }
+    }
+
+    const selectedGoods = allGoods.filter((g) => g.isSelected);
+    cartGroupData.selectedGoodsCount = selectedGoods.reduce((sum, g) => sum + (g.quantity || 0), 0);
+    cartGroupData.totalAmount = String(
+      selectedGoods.reduce((sum, g) => sum + (parseInt(g.price || '0', 10) || 0) * (g.quantity || 0), 0),
+    );
+    cartGroupData.isAllSelected = allGoods.length > 0 && selectedGoods.length === allGoods.length;
+
+    this.setData({ cartGroupData });
   },
 
   goCollect() {

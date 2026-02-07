@@ -28,6 +28,14 @@ Component({
       });
     },
 
+    receiveCoupon(e) {
+      const { couponId, index } = e.currentTarget.dataset;
+      this.triggerEvent('receiveCoupon', {
+        couponId,
+        index,
+      });
+    },
+
     closePromotionPopup() {
       this.triggerEvent('closePromotionPopup', {
         show: false,

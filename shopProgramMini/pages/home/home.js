@@ -123,12 +123,37 @@ Page({
     });
   },
 
-  goodListAddCartHandle() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '点击加入购物车',
-    });
+  goodListAddCartHandle(e) {
+    const { goods } = e.detail;
+    if (!goods) return;
+
+    // 多 SKU 商品跳转详情页选规格
+    if (!goods.defaultSkuId) {
+      wx.navigateTo({
+        url: `/pages/goods/details/index?spuId=${goods.spuId}`,
+      });
+      return;
+    }
+
+    // 单 SKU 商品直接加购
+    const { addCartItem } = require('../../services/cart/cart');
+    addCartItem({ skuId: Number(goods.defaultSkuId), quantity: 1 })
+      .then(() => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '已加入购物车',
+          icon: 'check-circle',
+        });
+      })
+      .catch((err) => {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: err.msg || '加入购物车失败',
+          icon: 'close-circle',
+        });
+      });
   },
 
   navToSearchPage() {

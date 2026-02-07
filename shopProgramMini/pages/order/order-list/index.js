@@ -1,6 +1,5 @@
 import { OrderStatus } from '../config';
 import { fetchOrders, fetchOrdersCount } from '../../../services/order/orderList';
-import { cosThumb } from '../../../utils/util';
 
 Page({
   page: {
@@ -62,9 +61,7 @@ Page({
 
   init(status) {
     status = status !== undefined ? status : this.data.curTab;
-    this.setData({
-      status,
-    });
+    this.setData({ status });
     this.refreshList(status);
   },
 
@@ -80,38 +77,8 @@ Page({
     return fetchOrders(params)
       .then((res) => {
         this.page.num++;
-        let orderList = [];
-        if (res && res.data && res.data.orders) {
-          orderList = (res.data.orders || []).map((order) => {
-            return {
-              id: order.orderId,
-              orderNo: order.orderNo,
-              parentOrderNo: order.parentOrderNo,
-              storeId: order.storeId,
-              storeName: order.storeName,
-              status: order.orderStatus,
-              statusDesc: order.orderStatusName,
-              amount: order.paymentAmount,
-              totalAmount: order.totalAmount,
-              logisticsNo: order.logisticsVO.logisticsNo,
-              createTime: order.createTime,
-              goodsList: (order.orderItemVOs || []).map((goods) => ({
-                id: goods.id,
-                thumb: cosThumb(goods.goodsPictureUrl, 70),
-                title: goods.goodsName,
-                skuId: goods.skuId,
-                spuId: goods.spuId,
-                specs: (goods.specifications || []).map((spec) => spec.specValue),
-                price: goods.tagPrice ? goods.tagPrice : goods.actualPrice,
-                num: goods.buyQuantity,
-                titlePrefixTags: goods.tagText ? [{ text: goods.tagText }] : [],
-              })),
-              buttons: order.buttonVOs || [],
-              groupInfoVo: order.groupInfoVo,
-              freightFee: order.freightFee,
-            };
-          });
-        }
+        // service 层已完成数据转换，直接使用 orders
+        const orderList = (res.data && res.data.orders) || [];
         return new Promise((resolve) => {
           if (reset) {
             this.setData({ orderList: [] }, () => resolve());
@@ -135,9 +102,7 @@ Page({
 
   onTabChange(e) {
     const { value } = e.detail;
-    this.setData({
-      status: value,
-    });
+    this.setData({ status: value });
     this.refreshList(value);
   },
 

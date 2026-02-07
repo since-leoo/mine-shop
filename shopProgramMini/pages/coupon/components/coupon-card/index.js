@@ -25,10 +25,10 @@ Component({
 
   observers: {
     couponDTO: function (couponDTO) {
-      if (!couponDTO) {
+      if (!couponDTO || !couponDTO.status) {
         return;
       }
-      const statusInfo = statusMap[couponDTO.status];
+      const statusInfo = statusMap[couponDTO.status] || statusMap['default'];
 
       this.setData({
         btnText: statusInfo.text,

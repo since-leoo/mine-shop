@@ -454,7 +454,7 @@ Page({
           return;
         }
 
-        if (channel === 'balance' && resp.isPaid) {
+        if (channel === 'balance' && resp.isPaid === true) {
           this.setData({ showPaySheet: false });
           paySuccess(this, {
             ...currentPayOrder,

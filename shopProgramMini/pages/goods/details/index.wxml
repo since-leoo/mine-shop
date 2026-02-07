@@ -42,7 +42,7 @@
         </view>
       </view>
       <view class="goods-title">
-        <view class="goods-name">{{product.name}}</view>
+        <view class="goods-name">{{product.title}}</view>
         <view class="goods-tag">
           <t-button open-type="share" t-class="shareBtn" variant="text">
             <view class="btn-icon">
@@ -118,7 +118,7 @@
   <goods-specs-popup
     id="goodsSpecsPopup"
     show="{{isSpuSelectPopupShow}}"
-    title="{{product.name || ''}}"
+    title="{{product.title || ''}}"
     src="{{specImg ? specImg : primaryImage}}"
     specList="{{specList || []}}"
     skuList="{{skuArray}}"
@@ -154,6 +154,7 @@
     bind:closePromotionPopup="closePromotionPopup"
     show="{{isShowPromotionPop}}"
     bind:promotionChange="promotionChange"
+    bind:receiveCoupon="receiveCoupon"
   />
 </view>
 <t-toast id="t-toast" />

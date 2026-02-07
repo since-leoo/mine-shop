@@ -1,7 +1,7 @@
 import Toast from 'tdesign-miniprogram/toast/index';
 import { fetchGood } from '../../../services/good/fetchGood';
 import { fetchActivityList } from '../../../services/activity/fetchActivityList';
-import { fetchAvailableCoupons } from '../../../services/coupon/index';
+import { fetchAvailableCoupons, receiveCoupon } from '../../../services/coupon/index';
 import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
@@ -21,159 +21,6 @@ const obj2Params = (obj = {}, encode = false) => {
 
   return result.join('&');
 };
-
-const hashString = (input = '') => {
-  let hash = 0;
-  for (let i = 0; i < input.length; i++) {
-    hash = (hash << 5) - hash + input.charCodeAt(i);
-    hash |= 0;
-  }
-  return `00000000${(hash >>> 0).toString(16)}`.slice(-8);
-};
-
-const normalizeGalleryImages = (product = {}) => {
-  let images = [];
-  if (Array.isArray(product.gallery_images) && product.gallery_images.length > 0) {
-    images = product.gallery_images.slice();
-  } else if (Array.isArray(product.gallery)) {
-    images = product.gallery
-      .map((item) => item && (item.image_url || item.url || item.imageUrl))
-      .filter((url) => typeof url === 'string' && url);
-  }
-
-  const primary = product.main_image || '';
-  if (primary && !images.includes(primary)) {
-    images.unshift(primary);
-  }
-
-  return images.filter((url) => typeof url === 'string' && url);
-};
-
-const extractImagesFromDetail = (detailContent) => {
-  if (!detailContent || typeof detailContent !== 'string') return [];
-  const regex = /<img[^>]+src=["']([^"']+)["']/gi;
-  const urls = [];
-  let match;
-  while ((match = regex.exec(detailContent)) !== null) {
-    if (match[1]) urls.push(match[1]);
-  }
-  return Array.from(new Set(urls));
-};
-
-const normalizeDescriptionImages = (product = {}) => {
-  if (Array.isArray(product.gallery_images) && product.gallery_images.length > 0) {
-    return product.gallery_images.slice();
-  }
-  const fromDetail = extractImagesFromDetail(product.detail_content);
-  if (fromDetail.length > 0) return fromDetail;
-  if (Array.isArray(product.gallery)) {
-    return product.gallery
-      .map((item) => item && (item.image_url || item.url || item.imageUrl))
-      .filter((url) => typeof url === 'string' && url);
-  }
-  return [];
-};
-
-const normalizeSpecValues = (values) => {
-  let list = values;
-  if (!Array.isArray(list)) {
-    if (typeof list === 'string' && list) {
-      list = [list];
-    } else {
-      return [];
-    }
-  }
-
-  return list.map((item, index) => {
-    let title = `Spec ${index + 1}`;
-    let realValue = item;
-    let image = null;
-
-    if (item && typeof item === 'object') {
-      title = item.name || item.title || item.spec_title || title;
-      realValue = item.value || item.spec_value || item.value_name || item.specValue || '';
-      image = item.image || item.img || null;
-    } else if (typeof item === 'string') {
-      const parts = item.split(/[:：]/, 2);
-      if (parts.length === 2) {
-        title = parts[0].trim() || title;
-        realValue = parts[1].trim();
-      }
-    }
-
-    realValue = realValue == null ? '' : String(realValue);
-    const specId = `spec_${index + 1}`;
-    const valueId = `${specId}_${hashString(realValue)}`;
-
-    return {
-      specId,
-      title: title || `Spec ${index + 1}`,
-      valueId,
-      value: realValue,
-      image,
-    };
-  });
-};
-
-const buildSpecList = (skus = []) => {
-  const specMap = {};
-  skus.forEach((sku) => {
-    const values = normalizeSpecValues(sku && sku.spec_values);
-    values.forEach((value) => {
-      const specId = value.specId;
-      if (!specMap[specId]) {
-        specMap[specId] = {
-          specId,
-          title: value.title,
-          specValueList: {},
-        };
-      }
-      specMap[specId].specValueList[value.valueId] = {
-        specId,
-        specTitle: specMap[specId].title,
-        specValueId: value.valueId,
-        specValue: value.value,
-        image: value.image || null,
-      };
-    });
-  });
-
-  return Object.values(specMap).map((spec) => ({
-    ...spec,
-    specValueList: Object.values(spec.specValueList),
-  }));
-};
-
-const buildSkuList = (skus = []) =>
-  skus.map((sku) => {
-    const values = normalizeSpecValues(sku && sku.spec_values);
-    return {
-      skuId: String((sku && (sku.id ?? sku.sku_id)) || ''),
-      skuImage: sku && sku.image ? sku.image : null,
-      specInfo: values.map((spec) => ({
-        specId: spec.specId,
-        specTitle: spec.title,
-        specValueId: spec.valueId,
-        specValue: spec.value,
-      })),
-      priceInfo: [
-        { priceType: 1, price: Number((sku && sku.sale_price) || 0) },
-        { priceType: 2, price: Number((sku && sku.market_price) || (sku && sku.sale_price) || 0) },
-      ],
-      stockInfo: {
-        stockQuantity: Number((sku && sku.stock) || 0),
-        safeStockQuantity: Number((sku && sku.warning_stock) || 0),
-        soldQuantity: Number((sku && sku.sold_quantity) || 0),
-      },
-      weight: {
-        value: Number((sku && sku.weight) || 0),
-        unit: 'KG',
-      },
-    };
-  });
-
-const sumSkuStock = (skus = []) =>
-  skus.reduce((sum, sku) => sum + Number((sku && sku.stock) || 0), 0);
 
 const buildActivityPromotions = (activities = []) =>
   activities.map((item = {}) => ({
@@ -408,7 +255,7 @@ Page({
       });
       return;
     }
-    addCartItem({ skuId, quantity, isSelected: true })
+    addCartItem({ skuId, quantity })
       .then(() => {
         Toast({
           context: this,
@@ -468,9 +315,9 @@ Page({
             specValue: item.specValue,
           }))
         : [];
-    const resolvedStoreId = Number(product.store_id || product.storeId || 0);
+    const resolvedStoreId = Number(product.storeId || 0);
     const quantity = Number(buyNum || 0);
-    const resolvedSpuId = Number(spuId || product.id || product.spu_id || 0);
+    const resolvedSpuId = Number(spuId || product.spuId || 0);
     if (quantity <= 0) {
       Toast({
         context: this,
@@ -484,16 +331,16 @@ Page({
     const query = {
       quantity,
       storeId: resolvedStoreId || 0,
-      storeName: product.store_name || product.storeName || '',
+      storeName: product.storeName || '',
       spuId: resolvedSpuId || 0,
-      goodsName: product.name || '',
+      goodsName: product.title || '',
       skuId: resolvedSkuId,
       available,
       price: selectItem.price || minSalePrice,
       specInfo: specInfoPayload,
       primaryImage: coverImage,
       thumb: coverImage,
-      title: product.name || '',
+      title: product.title || '',
     };
     let urlQueryStr = obj2Params(
       {
@@ -561,6 +408,56 @@ Page({
     });
   },
 
+  async receiveCoupon(e) {
+    const { couponId, index } = e.detail;
+    
+    try {
+      // 检查登录状态
+      const loginReady = await this.ensureOrderAuth();
+      if (!loginReady) {
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '请先完成登录',
+          duration: 1500,
+          icon: 'help-circle',
+        });
+        return;
+      }
+
+      // 调用领取优惠券 API
+      await receiveCoupon(couponId);
+      
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: '领取成功',
+        icon: 'check-circle',
+        duration: 1500,
+      });
+
+      // 领取成功后更新列表状态
+      const { list, activityList } = this.data;
+      if (list[index]) {
+        list[index].is_receivable = false;
+        this.setData({ list });
+      }
+      if (activityList[index]) {
+        activityList[index].is_receivable = false;
+        this.setData({ activityList });
+      }
+    } catch (error) {
+      console.error('领取优惠券失败:', error);
+      Toast({
+        context: this,
+        selector: '#t-toast',
+        message: error?.message || error?.msg || '领取失败',
+        theme: 'error',
+        duration: 1500,
+      });
+    }
+  },
+
   async getDetail(spuId) {
     if (!spuId) {
       wx.showToast({
@@ -578,15 +475,17 @@ Page({
       ]);
 
       const product = detailsResponse || {};
-      const skus = Array.isArray(product.skus) ? product.skus : [];
-      const skuList = buildSkuList(skus);
-      const specList = buildSpecList(skus);
-      const images = normalizeGalleryImages(product);
-      const desc = normalizeDescriptionImages(product);
-      const limitInfo = [];
-      const coverImage = product.main_image || images[0] || '';
-      const stockQuantity = sumSkuStock(skus);
-      const available = product.status === 'active' && stockQuantity > 0 ? 1 : 0;
+      
+      // 适配新的 API 返回格式（camelCase）
+      const skuList = Array.isArray(product.skuList) ? product.skuList : [];
+      const specList = Array.isArray(product.specList) ? product.specList : [];
+      const images = Array.isArray(product.images) ? product.images : [];
+      const desc = Array.isArray(product.desc) ? product.desc : [];
+      const limitInfo = Array.isArray(product.limitInfo) ? product.limitInfo : [];
+      const coverImage = product.primaryImage || images[0] || '';
+      const stockQuantity = Number(product.spuStockQuantity || 0);
+      const available = Number(product.available || 0);
+      
       const couponList =
         couponResponse && Array.isArray(couponResponse.list) ? couponResponse.list : [];
       const couponTotal =
@@ -613,9 +512,9 @@ Page({
         limitInfo,
         activityList: promotionArray,
         isStock: stockQuantity > 0,
-        maxSalePrice: Number(product.max_price || 0),
-        maxLinePrice: Number(product.max_price || 0),
-        minSalePrice: Number(product.min_price || 0),
+        maxSalePrice: Number(product.maxSalePrice || 0),
+        maxLinePrice: Number(product.maxLinePrice || 0),
+        minSalePrice: Number(product.minSalePrice || 0),
         list: promotionArray,
         couponList,
         couponTotal,
@@ -628,8 +527,8 @@ Page({
         selectedAttrStr: '',
         isAllSelectedSku: false,
         buyNum: 1,
-        soldout: product.status !== 'active',
-        soldNum: Number(product.real_sales || 0) + Number(product.virtual_sales || 0),
+        soldout: !available,
+        soldNum: Number(product.soldNum || 0),
         available,
       });
     } catch (error) {
@@ -647,8 +546,9 @@ Page({
       const data = await getGoodsDetailsCommentList();
       const { homePageComments } = data;
       if (code.toUpperCase() === 'SUCCESS') {
+        const comments = Array.isArray(homePageComments) ? homePageComments : [];
         const nextState = {
-          commentsList: homePageComments.map((item) => {
+          commentsList: comments.map((item) => {
             return {
               goodsSpu: item.spuId,
               userName: item.userName || '',
@@ -675,7 +575,7 @@ Page({
     }
     const customInfo = {
       imageUrl: this.data.primaryImage,
-      title: (product.name || '') + shareSubTitle,
+      title: (product.title || '') + shareSubTitle,
       path: `/pages/goods/details/index?spuId=${this.data.spuId}`,
     };
     return customInfo;

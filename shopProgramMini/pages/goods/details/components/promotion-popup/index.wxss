@@ -59,10 +59,32 @@
   .list-item {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   padding: 10rpx 0 28rpx;
   position: relative;
   font-size: 24rpx;
   color: #222427;
+}
+
+.promotion-popup-container
+  .promotion-popup-content
+  .promotion-detail-list
+  .list-item
+  .item-left {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.promotion-popup-container
+  .promotion-popup-content
+  .promotion-detail-list
+  .list-item
+  .item-right {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-left: 20rpx;
 }
 
 .promotion-popup-container
