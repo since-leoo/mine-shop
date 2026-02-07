@@ -21,7 +21,7 @@ use App\Infrastructure\Model\Permission\Department;
 final class DepartmentService extends IService
 {
     public function __construct(
-        private readonly DepartmentRepository $repository
+        protected readonly DepartmentRepository $repository
     ) {}
 
     /**

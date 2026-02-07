@@ -10,16 +10,16 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Application\Mapper;
+namespace App\Domain\SystemSetting\Contract;
 
-final class PositionAssembler
+/**
+ * 系统设置输入契约接口.
+ */
+interface SystemSettingInput
 {
-    /**
-     * @param array<string, mixed> $payload
-     * @return array<string, mixed>
-     */
-    public static function fromArray(array $payload): array
-    {
-        return $payload;
-    }
+    public function getKey(): string;
+
+    public function getValue(): mixed;
+
+    public function getType(): string;
 }

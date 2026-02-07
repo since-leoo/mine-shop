@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\PositionCommandService;
-use App\Application\Mapper\PositionAssembler;
 use App\Application\Query\PositionQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\Dto\Permission\DeleteDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Permission\BatchGrantDataPermissionForPositionRequest;
 use App\Interface\Admin\Request\Permission\PositionRequest;
@@ -65,10 +65,8 @@ class PositionController extends AbstractController
     #[Permission(code: 'permission:position:save')]
     public function create(PositionRequest $request): Result
     {
-        $payload = PositionAssembler::fromArray(array_merge($request->validated(), [
-            'created_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->create($payload);
+        $dto = $request->toDto(null, $this->currentUser->id());
+        $this->commandService->create($dto);
         return $this->success();
     }
 
@@ -76,10 +74,8 @@ class PositionController extends AbstractController
     #[Permission(code: 'permission:position:update')]
     public function save(int $id, PositionRequest $request): Result
     {
-        $payload = PositionAssembler::fromArray(array_merge($request->validated(), [
-            'updated_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->update($id, $payload);
+        $dto = $request->toDto($id, $this->currentUser->id());
+        $this->commandService->update($id, $dto);
         return $this->success();
     }
 

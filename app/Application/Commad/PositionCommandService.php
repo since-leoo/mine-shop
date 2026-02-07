@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Commad;
 
 use App\Domain\Permission\Contract\Common\DeleteInput;
+use App\Domain\Permission\Contract\Position\PositionInput;
 use App\Domain\Permission\Contract\Position\PositionSetDataPermissionInput;
 use App\Domain\Permission\Service\PositionService;
 use App\Infrastructure\Model\Permission\Position;
@@ -21,20 +22,14 @@ final class PositionCommandService
 {
     public function __construct(private readonly PositionService $positionService) {}
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function create(array $payload): Position
+    public function create(PositionInput $input): Position
     {
-        return $this->positionService->create($payload);
+        return $this->positionService->create($input);
     }
 
-    /**
-     * @param array<string, mixed> $payload
-     */
-    public function update(int $id, array $payload): bool
+    public function update(int $id, PositionInput $input): bool
     {
-        return $this->positionService->update($id, $payload);
+        return $this->positionService->update($id, $input);
     }
 
     public function delete(DeleteInput $input): int

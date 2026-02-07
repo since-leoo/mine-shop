@@ -18,7 +18,7 @@ final class DepartmentQueryService
 {
     public function __construct(private readonly DepartmentService $departmentService) {}
 
-    public function list(array $filters): array
+    public function getList(array $filters): array
     {
         return $this->departmentService->getList($filters)->toArray();
     }

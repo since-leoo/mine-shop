@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\Service;
 
+use App\Domain\Permission\Contract\Position\PositionInput;
 use App\Domain\Permission\Repository\PositionRepository;
 use App\Infrastructure\Abstract\IService;
 
@@ -26,21 +27,27 @@ final class PositionService extends IService
 
     /**
      * 创建职位.
-     *
-     * @param array<string, mixed> $payload
      */
-    public function create(array $payload): mixed
+    public function create(PositionInput $input): mixed
     {
+        $payload = [
+            'name' => $input->getName(),
+            'dept_id' => $input->getDeptId(),
+            'created_by' => $input->getCreatedBy(),
+        ];
         return $this->repository->create($payload);
     }
 
     /**
      * 更新职位.
-     *
-     * @param array<string, mixed> $payload
      */
-    public function update(int $id, array $payload): bool
+    public function update(int $id, PositionInput $input): bool
     {
+        $payload = [
+            'name' => $input->getName(),
+            'dept_id' => $input->getDeptId(),
+            'updated_by' => $input->getUpdatedBy(),
+        ];
         return $this->repository->updateById($id, $payload);
     }
 

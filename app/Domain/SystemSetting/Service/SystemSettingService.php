@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\SystemSetting\Service;
 
+use App\Domain\SystemSetting\Contract\SystemSettingInput;
 use App\Domain\SystemSetting\Entity\SystemSettingEntity;
 use App\Domain\SystemSetting\Repository\SystemSettingRepository;
 use App\Infrastructure\Abstract\ICache;
@@ -140,22 +141,22 @@ final class SystemSettingService extends IService
     /**
      * 更新系统配置.
      *
-     * @param SystemSettingEntity $command 配置实体
+     * @param SystemSettingInput $input 配置输入
      * @return array 更新后的配置响应数据
      */
-    public function update(SystemSettingEntity $command): array
+    public function update(SystemSettingInput $input): array
     {
-        $entity = $this->repository->findEntityByKey($command->getKey());
+        $entity = $this->repository->findEntityByKey($input->getKey());
         if (! $entity) {
-            [$group, $definition] = $this->definitionByKey($command->getKey());
+            [$group, $definition] = $this->definitionByKey($input->getKey());
             if (! $definition) {
-                throw new \RuntimeException(\sprintf('系统配置 %s 不存在', $command->getKey()));
+                throw new \RuntimeException(\sprintf('系统配置 %s 不存在', $input->getKey()));
             }
 
-            $entity = SystemSettingEntity::fromDefinition($group, $command->getKey(), $definition);
+            $entity = SystemSettingEntity::fromDefinition($group, $input->getKey(), $definition);
         }
 
-        $saved = $this->repository->saveEntity($entity->withValue($command->getValue()));
+        $saved = $this->repository->saveEntity($entity->withValue($input->getValue()));
 
         $this->flushCache($saved->getGroup(), $saved->getKey());
 

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Service;
 
 use App\Domain\Permission\Contract\Role\RoleGrantPermissionsInput;
-use App\Domain\Permission\Entity\RoleEntity;
+use App\Domain\Permission\Contract\Role\RoleInput;
 use App\Domain\Permission\Mapper\RoleMapper;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Domain\Permission\Repository\RoleRepository;
@@ -23,22 +23,34 @@ use App\Infrastructure\Model\Permission\Role;
 final class RoleService extends IService
 {
     public function __construct(
-        private readonly RoleRepository $roleRepository,
-        private readonly MenuRepository $menuRepository
+        protected readonly RoleRepository $repository,
+        protected readonly MenuRepository $menuRepository
     ) {}
 
-    public function create(RoleEntity $entity): Role
+    public function create(RoleInput $input): Role
     {
-        return $this->roleRepository->create($entity->toArray());
+        $payload = [
+            'name' => $input->getName(),
+            'code' => $input->getCode(),
+            'status' => $input->getStatus(),
+            'sort' => $input->getSort(),
+            'remark' => $input->getRemark(),
+            'created_by' => $input->getCreatedBy(),
+        ];
+        return $this->repository->create($payload);
     }
 
-    public function update(int $id, RoleEntity $entity): bool
+    public function update(int $id, RoleInput $input): bool
     {
-        $payload = $entity->toArray();
-        if ($payload === []) {
-            return true;
-        }
-        return $this->roleRepository->updateById($id, $payload);
+        $payload = [
+            'name' => $input->getName(),
+            'code' => $input->getCode(),
+            'status' => $input->getStatus(),
+            'sort' => $input->getSort(),
+            'remark' => $input->getRemark(),
+            'updated_by' => $input->getUpdatedBy(),
+        ];
+        return $this->repository->updateById($id, $payload);
     }
 
     /**
@@ -46,7 +58,7 @@ final class RoleService extends IService
      */
     public function delete(array $ids): int
     {
-        return $this->roleRepository->deleteByIds($ids);
+        return $this->repository->deleteByIds($ids);
     }
 
     public function grantPermissions(RoleGrantPermissionsInput $input): void
@@ -56,7 +68,7 @@ final class RoleService extends IService
 
         // 步骤2: 通过 Repository 获取 Model
         /** @var null|Role $roleModel */
-        $roleModel = $this->roleRepository->findById($roleId);
+        $roleModel = $this->repository->findById($roleId);
         if (! $roleModel) {
             throw new \RuntimeException("角色不存在: ID={$roleId}");
         }

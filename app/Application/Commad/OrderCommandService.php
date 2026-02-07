@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
+use App\Domain\Order\Contract\OrderCancelInput;
+use App\Domain\Order\Contract\OrderShipInput;
 use App\Domain\Order\Entity\OrderCancelEntity;
 use App\Domain\Order\Entity\OrderShipEntity;
 use App\Domain\Order\Event\OrderCancelledEvent;
@@ -27,9 +29,16 @@ final class OrderCommandService
      * @return array<string, mixed>
      */
     #[Transactional]
-    public function ship(OrderShipEntity $orderShipEntity): array
+    public function ship(OrderShipInput $input): array
     {
-        $orderEntity = $this->orderService->getEntity($orderShipEntity->getOrderId());
+        $orderEntity = $this->orderService->getEntity($input->getOrderId());
+
+        // 将 DTO 转换为 Entity
+        $orderShipEntity = new OrderShipEntity();
+        $orderShipEntity->setOrderId($input->getOrderId());
+        $orderShipEntity->setOperatorId($input->getOperatorId());
+        $orderShipEntity->setOperatorName($input->getOperatorName());
+        $orderShipEntity->setPackages($input->getPackages());
 
         $orderEntity->setShipEntity($orderShipEntity);
         $orderEntity->ship();
@@ -45,9 +54,16 @@ final class OrderCommandService
      * @return array<string, mixed>
      */
     #[Transactional]
-    public function cancel(OrderCancelEntity $orderCancelEntity): array
+    public function cancel(OrderCancelInput $input): array
     {
-        $orderEntity = $this->orderService->getEntity($orderCancelEntity->getOrderId());
+        $orderEntity = $this->orderService->getEntity($input->getOrderId());
+
+        // 将 DTO 转换为 Entity
+        $orderCancelEntity = new OrderCancelEntity();
+        $orderCancelEntity->setOrderId($input->getOrderId());
+        $orderCancelEntity->setReason($input->getReason());
+        $orderCancelEntity->setOperatorId($input->getOperatorId());
+        $orderCancelEntity->setOperatorName($input->getOperatorName());
 
         $orderEntity->cancel();
 

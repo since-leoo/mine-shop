@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Order;
 
 use App\Application\Commad\OrderCommandService;
-use App\Application\Mapper\OrderAssembler;
 use App\Application\Query\OrderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -77,13 +76,12 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:update')]
     public function ship(int $id, OrderRequest $request): Result
     {
-        $payload = $request->validated();
-        $operator = [
-            'id' => $this->currentUser->id(),
-            'name' => $this->currentUser->user()?->username ?? '管理员',
-        ];
-        $entity = OrderAssembler::toShipEntity($id, $payload, $operator);
-        $order = $this->commandService->ship($entity);
+        $dto = $request->toShipDto(
+            $id,
+            $this->currentUser->id(),
+            $this->currentUser->user()?->username ?? '管理员'
+        );
+        $order = $this->commandService->ship($dto);
         return $this->success($order, '发货成功');
     }
 
@@ -92,13 +90,12 @@ final class OrderController extends AbstractController
     public function cancel(int $id, OrderRequest $request): Result
     {
         try {
-            $payload = $request->validated();
-            $operator = [
-                'id' => $this->currentUser->id(),
-                'name' => $this->currentUser->user()?->username ?? '管理员',
-            ];
-            $entity = OrderAssembler::toCancelEntity($id, $payload, $operator);
-            $order = $this->commandService->cancel($entity);
+            $dto = $request->toCancelDto(
+                $id,
+                $this->currentUser->id(),
+                $this->currentUser->user()?->username ?? '管理员'
+            );
+            $order = $this->commandService->cancel($dto);
             return $this->success($order, '订单已取消');
         } catch (\Exception $e) {
             return $this->error('取消订单失败');

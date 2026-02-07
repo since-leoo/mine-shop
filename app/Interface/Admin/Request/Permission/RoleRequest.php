@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Domain\Auth\Enum\Status;
+use App\Interface\Admin\Dto\Permission\RoleDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class RoleRequest extends BaseRequest
 {
@@ -62,5 +65,15 @@ class RoleRequest extends BaseRequest
             'sort' => trans('role.sort'),
             'remark' => trans('role.remark'),
         ];
+    }
+
+    public function toDto(?int $id, int $operatorId): RoleDto
+    {
+        $params = $this->validated();
+        $params['id'] = $id ?? 0;
+        $params['status'] = isset($params['status']) && $params['status'] === 1 ? Status::Normal : Status::DISABLE;
+        $params['created_by'] = $operatorId;
+        $params['updated_by'] = $operatorId;
+        return Mapper::map($params, new RoleDto());
     }
 }

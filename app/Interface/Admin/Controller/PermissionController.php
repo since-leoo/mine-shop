@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller;
 
 use App\Application\Commad\UserCommandService;
-use App\Application\Mapper\UserAssembler;
 use App\Application\Query\MenuQueryService;
 use App\Application\Query\RoleQueryService;
 use App\Domain\Auth\Enum\Status;
@@ -76,8 +75,8 @@ final class PermissionController extends AbstractController
             }
             $data['password'] = $data['new_password'];
         }
-        $entity = UserAssembler::toUpdateEntity($user->id, $data);
-        $this->userCommandService->update($entity);
+        $dto = $request->toDto($user->id);
+        $this->userCommandService->update($dto);
         return $this->success();
     }
 }

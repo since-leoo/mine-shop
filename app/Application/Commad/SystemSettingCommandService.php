@@ -12,14 +12,13 @@ declare(strict_types=1);
 
 namespace App\Application\Commad;
 
-use App\Application\Mapper\SystemSettingAssembler;
 use App\Domain\SystemSetting\Service\SystemSettingService;
+use App\Interface\Admin\Dto\SystemSetting\SystemSettingDto;
 
 final class SystemSettingCommandService
 {
     public function __construct(
-        private readonly SystemSettingService $service,
-        private readonly SystemSettingAssembler $assembler
+        private readonly SystemSettingService $service
     ) {}
 
     /**
@@ -27,7 +26,23 @@ final class SystemSettingCommandService
      */
     public function update(string $key, mixed $value): array
     {
-        $entity = $this->assembler->fromRequest($key, $value);
-        return $this->service->update($entity);
+        $dto = new SystemSettingDto();
+        $dto->key = $key;
+        $dto->value = $value;
+        $dto->type = $this->resolveType($key, $value);
+
+        return $this->service->update($dto);
+    }
+
+    private function resolveType(string $key, mixed $value): string
+    {
+        foreach (config('mall.groups', []) as $group) {
+            $settings = $group['settings'] ?? [];
+            if (isset($settings[$key])) {
+                return (string) ($settings[$key]['type'] ?? '');
+            }
+        }
+
+        return \is_array($value) ? json_encode($value) : '';
     }
 }

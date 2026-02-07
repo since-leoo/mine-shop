@@ -14,6 +14,8 @@ namespace App\Interface\Admin\Request\Order;
 
 use App\Domain\Order\Enum\OrderStatus;
 use App\Domain\Order\Enum\PaymentStatus;
+use App\Interface\Admin\Dto\Order\OrderCancelDto;
+use App\Interface\Admin\Dto\Order\OrderShipDto;
 use App\Interface\Common\Request\BaseRequest;
 use Hyperf\Validation\Rule;
 
@@ -53,6 +55,36 @@ final class OrderRequest extends BaseRequest
     public function exportRules(): array
     {
         return $this->filters();
+    }
+
+    public function toShipDto(int $orderId, int $operatorId, string $operatorName): OrderShipDto
+    {
+        $params = $this->validated();
+        $dto = new OrderShipDto();
+        $dto->order_id = $orderId;
+        $dto->operator_id = $operatorId;
+        $dto->operator_name = $operatorName;
+        $dto->packages = [
+            [
+                'shipping_company' => (string) ($params['shipping_company'] ?? ''),
+                'shipping_no' => (string) ($params['shipping_no'] ?? ''),
+                'remark' => (string) ($params['remark'] ?? ''),
+                'quantity' => (int) ($params['quantity'] ?? 0),
+                'weight' => (float) ($params['weight'] ?? 0),
+            ],
+        ];
+        return $dto;
+    }
+
+    public function toCancelDto(int $orderId, int $operatorId, string $operatorName): OrderCancelDto
+    {
+        $params = $this->validated();
+        $dto = new OrderCancelDto();
+        $dto->order_id = $orderId;
+        $dto->reason = (string) ($params['reason'] ?? '');
+        $dto->operator_id = $operatorId;
+        $dto->operator_name = $operatorName;
+        return $dto;
     }
 
     /**

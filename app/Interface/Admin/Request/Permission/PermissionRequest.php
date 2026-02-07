@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Domain\Auth\Enum\Status;
+use App\Interface\Admin\Dto\Permission\UserDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class PermissionRequest extends BaseRequest
 {
@@ -43,5 +46,16 @@ class PermissionRequest extends BaseRequest
             'signed' => trans('user.signed'),
             'backend_setting' => trans('user.backend_setting'),
         ];
+    }
+
+    public function toDto(int $userId): UserDto
+    {
+        $params = $this->validated();
+        $params['id'] = $userId;
+        $params['updated_by'] = $userId;
+        if (! isset($params['status'])) {
+            $params['status'] = Status::Normal;
+        }
+        return Mapper::map($params, new UserDto());
     }
 }

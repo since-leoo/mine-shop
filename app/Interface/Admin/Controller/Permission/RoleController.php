@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Permission;
 
 use App\Application\Commad\RoleCommandService;
-use App\Application\Mapper\RoleAssembler;
 use App\Application\Query\RoleQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\Menu;
@@ -61,10 +60,8 @@ final class RoleController extends AbstractController
     #[Permission(code: 'permission:role:save')]
     public function create(RoleRequest $request): Result
     {
-        $entity = RoleAssembler::toCreateEntity(array_merge($request->validated(), [
-            'created_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->create($entity);
+        $dto = $request->toDto(null, $this->currentUser->id());
+        $this->commandService->create($dto);
         return $this->success();
     }
 
@@ -72,10 +69,8 @@ final class RoleController extends AbstractController
     #[Permission(code: 'permission:role:update')]
     public function save(int $id, RoleRequest $request): Result
     {
-        $entity = RoleAssembler::toUpdateEntity($id, array_merge($request->validated(), [
-            'updated_by' => $this->currentUser->id(),
-        ]));
-        $this->commandService->update($id, $entity);
+        $dto = $request->toDto($id, $this->currentUser->id());
+        $this->commandService->update($id, $dto);
         return $this->success();
     }
 

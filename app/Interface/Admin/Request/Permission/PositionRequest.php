@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Permission;
 
+use App\Interface\Admin\Dto\Permission\PositionDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
+use Hyperf\DTO\Mapper;
 
 class PositionRequest extends BaseRequest
 {
@@ -41,5 +43,14 @@ class PositionRequest extends BaseRequest
             'name' => '岗位名称',
             'dept_id' => '部门ID',
         ];
+    }
+
+    public function toDto(?int $id, int $operatorId): PositionDto
+    {
+        $params = $this->validated();
+        $params['id'] = $id ?? 0;
+        $params['created_by'] = $operatorId;
+        $params['updated_by'] = $operatorId;
+        return Mapper::map($params, new PositionDto());
     }
 }
