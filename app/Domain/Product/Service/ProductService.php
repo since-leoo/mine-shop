@@ -22,6 +22,7 @@ use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
+use Hyperf\DbConnection\Annotation\Transactional;
 
 /**
  * 商品领域服务：封装商品相关的核心业务逻辑.
@@ -36,6 +37,7 @@ final class ProductService extends IService
     /**
      * 创建商品.
      */
+    #[Transactional]
     public function create(ProductInput $input): ProductEntity
     {
         // 1. 获取新实体
@@ -60,6 +62,7 @@ final class ProductService extends IService
     /**
      * 更新商品.
      */
+    #[Transactional]
     public function update(ProductInput $input): ProductChangeVo
     {
         // 1. 获取实体

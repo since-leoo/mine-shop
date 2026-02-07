@@ -41,12 +41,9 @@ final class ProductCommandService
      */
     public function create(ProductInput $input): Product
     {
-        // 1. 事务管理
-        $entity = Db::transaction(fn () => $this->productService->create($input));
-
-        // 2. 查询完整的 Model（包含关联关系）
+        $entity = $this->productService->create($input);
         $model = $this->queryService->find($entity->getId());
-        if (! $model) {
+        if (! $entity->getId()) {
             throw new BusinessException(ResultCode::FAIL, '创建商品失败');
         }
 
@@ -65,16 +62,7 @@ final class ProductCommandService
      */
     public function update(ProductInput $input): bool
     {
-        // 1. 事务管理 + 获取变更信息
-        $changes = Db::transaction(fn () => $this->productService->update($input));
-
-        // 2. 查询完整的 Model
-        $model = $this->queryService->find($input->getId());
-        if (! $model) {
-            throw new BusinessException(ResultCode::FAIL, '商品不存在');
-        }
-
-        // 3. 获取实体（用于提取库存数据）
+        $changes = $this->productService->update($input);
         $entity = $this->productService->getEntity($input->getId());
 
         // 4. 发布领域事件
