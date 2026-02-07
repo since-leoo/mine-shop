@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Service;
 
 use App\Domain\Permission\Contract\User\UserGrantRolesInput;
+use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Contract\User\UserResetPasswordInput;
 use App\Domain\Permission\Entity\UserEntity;
 use App\Domain\Permission\Mapper\UserMapper;
@@ -43,16 +44,9 @@ final class UserService extends IService
      */
     public function create(UserInput $dto): User
     {
-        // 1. 通过 Mapper 获取新实体
         $entity = UserMapper::getNewEntity();
-
-        // 2. 调用实体的 create 行为方法（内部组装设置值）
         $entity->create($dto);
-
-        // 3. 外部逻辑判断后调用仓储
         $user = $this->repository->create($entity->toArray());
-
-        // 4. 同步关联关系
         $this->syncRelations($user, $entity);
 
         return $user;
@@ -66,23 +60,14 @@ final class UserService extends IService
      */
     public function update(UserInput $dto): ?User
     {
-        // 1. 通过仓储获取 Model
         /** @var null|User $user */
         $user = $this->repository->findById($dto->getId());
         if (! $user) {
             return null;
         }
-
-        // 2. 通过 Mapper 将 Model 转换为 Entity
         $entity = UserMapper::fromModel($user);
-
-        // 3. 调用实体的 update 行为方法
         $entity->update($dto);
-
-        // 4. 持久化修改
         $this->repository->updateById($dto->getId(), $entity->toArray());
-
-        // 5. 同步关联关系
         $this->syncRelations($user, $entity);
 
         return $user;
