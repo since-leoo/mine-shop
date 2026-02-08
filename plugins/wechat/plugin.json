@@ -1,0 +1,15 @@
+{
+    "name": "since/wechat",
+    "version": "1.0.0",
+    "description": "微信组件",
+    "author": "feat",
+    "namespace": "Plugin\\Wechat",
+    "priority": 10,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {
+        "w7corp/easywechat": "^6.5"
+    },
+    "rollback_on_uninstall": false,
+    "configProvider": "Plugin\\Wechat\\ConfigProvider"
+}

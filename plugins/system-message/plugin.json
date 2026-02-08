@@ -1,0 +1,13 @@
+{
+    "name": "since/system-message",
+    "version": "1.0.0",
+    "description": "系统消息插件 - 提供完整的消息通知和管理功能",
+    "author": "Since",
+    "namespace": "Plugin\\Since\\SystemMessage",
+    "priority": 0,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": false,
+    "configProvider": "Plugin\\Since\\SystemMessage\\ConfigProvider"
+}

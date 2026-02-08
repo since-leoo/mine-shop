@@ -77,8 +77,8 @@ php bin/hyperf.php migrate
 php bin/hyperf.php db:seed
 
 # 3. 安装系统消息和微信插件
-php bin/hyperf.php mine-extension:install since/wechat --yes
-php bin/hyperf.php mine-extension:install since/system-message --yes
+php bin/hyperf.php plugin:install since/wechat
+php bin/hyperf.php plugin:install since/system-message
 
 # 4. 同步地区库
 php bin/hyperf.php mall:sync-regions

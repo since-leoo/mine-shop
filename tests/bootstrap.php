@@ -12,8 +12,6 @@ declare(strict_types=1);
 use DG\BypassFinals;
 use Hyperf\Contract\ApplicationInterface;
 use Hyperf\Di\ClassLoader;
-use Mine\AppStore\Plugin;
-
 /*
  * This file is part of MineAdmin.
  *
@@ -40,7 +38,39 @@ if (class_exists(BypassFinals::class)) {
     BypassFinals::enable();
 }
 
-Plugin::init();
+// 在 ClassLoader::init() 之前注册插件的 PSR-4 自动加载
+(function () {
+    $pluginsPath = BASE_PATH . '/plugins';
+    if (! is_dir($pluginsPath)) {
+        return;
+    }
+    $loader = require BASE_PATH . '/vendor/autoload.php';
+    foreach (scandir($pluginsPath) as $item) {
+        if ($item === '.' || $item === '..') {
+            continue;
+        }
+        $pluginPath = $pluginsPath . '/' . $item;
+        $jsonFile = $pluginPath . '/plugin.json';
+        if (! is_file($jsonFile)) {
+            continue;
+        }
+        $config = json_decode(file_get_contents($jsonFile), true);
+        if (empty($config['namespace']) || empty($config['enabled']) || ! file_exists($pluginPath . '/install.lock')) {
+            continue;
+        }
+        $namespace = rtrim($config['namespace'], '\\') . '\\';
+        $srcPath = $pluginPath . '/src/';
+        if (is_dir($srcPath)) {
+            $loader->addPsr4($namespace, $srcPath);
+        }
+        // 加载插件的 helper 文件
+        $helperFile = $pluginPath . '/src/Helper/helper.php';
+        if (is_file($helperFile)) {
+            require_once $helperFile;
+        }
+    }
+})();
+
 ClassLoader::init();
 
 $container = require BASE_PATH . '/config/container.php';
