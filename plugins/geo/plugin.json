@@ -1,0 +1,13 @@
+{
+    "name": "since/geo",
+    "version": "1.0.0",
+    "description": "四级行政区划地址库 - 支持省市区街联动与定时同步",
+    "author": "Since",
+    "namespace": "Plugin\\Since\\Geo",
+    "priority": 0,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": true,
+    "configProvider": "Plugin\\Since\\Geo\\ConfigProvider"
+}

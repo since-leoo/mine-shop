@@ -1,22 +1,14 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
-namespace App\Infrastructure\Service\Geo;
+namespace Plugin\Since\Geo\Service;
 
-use App\Infrastructure\Model\Geo\GeoRegion;
-use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Carbon\Carbon;
 use Hyperf\DbConnection\Db;
 use Hyperf\Guzzle\ClientFactory;
+use Plugin\Since\Geo\Model\GeoRegion;
+use Plugin\Since\Geo\Model\GeoRegionVersion;
 
 use function Hyperf\Coroutine\parallel;
 

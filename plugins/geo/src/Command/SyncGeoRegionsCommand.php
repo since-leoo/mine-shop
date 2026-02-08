@@ -1,20 +1,12 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
-namespace App\Infrastructure\Command\Geo;
+namespace Plugin\Since\Geo\Command;
 
-use App\Infrastructure\Service\Geo\GeoRegionSyncService;
 use Hyperf\Command\Annotation\Command;
 use Hyperf\Command\Command as HyperfCommand;
+use Plugin\Since\Geo\Service\GeoRegionSyncService;
 use Psr\Container\ContainerInterface;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -63,7 +55,6 @@ class SyncGeoRegionsCommand extends HyperfCommand
         $this->setDescription('同步四级行政区划数据到 geo_regions 地址库');
         $this->addOption('source', null, InputOption::VALUE_OPTIONAL, '数据来源标识', 'modood');
         $this->addOption('url', null, InputOption::VALUE_OPTIONAL, '自定义数据源地址');
-        //        $this->addOption('version', null, InputOption::VALUE_OPTIONAL, '指定版本号，默认当天');
         $this->addOption('released-at', null, InputOption::VALUE_OPTIONAL, '上游发布时间，YYYY-MM-DD');
         $this->addOption('force', 'f', InputOption::VALUE_NONE, '存在相同版本时覆盖');
         $this->addOption('dry-run', null, InputOption::VALUE_NONE, '仅解析不写入数据库');

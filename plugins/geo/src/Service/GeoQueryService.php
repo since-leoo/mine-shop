@@ -1,27 +1,19 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
-namespace App\Application\Admin\Infrastructure;
+namespace Plugin\Since\Geo\Service;
 
-use App\Infrastructure\Model\Geo\GeoRegion;
-use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Hyperf\DbConnection\Db;
+use Plugin\Since\Geo\Model\GeoRegion;
+use Plugin\Since\Geo\Model\GeoRegionVersion;
 use Psr\SimpleCache\CacheInterface;
 
-class AppGeoQueryService
+class GeoQueryService
 {
     private const CACHE_KEY = 'geo:pcas:%d';
 
-    private const CACHE_TTL = 86400; // 1 day
+    private const CACHE_TTL = 86400;
 
     public function __construct(private readonly CacheInterface $cache) {}
 

@@ -15,10 +15,8 @@ namespace App\Interface\Common;
 use Hyperf\Constants\Annotation\Constants;
 use Hyperf\Constants\Annotation\Message;
 use Hyperf\Constants\ConstantsTrait;
-use Hyperf\Swagger\Annotation as OA;
 
 #[Constants]
-#[OA\Schema(title: 'ResultCode', type: 'integer', default: 200)]
 enum ResultCode: int
 {
     use ConstantsTrait;

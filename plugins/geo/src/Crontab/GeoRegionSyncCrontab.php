@@ -1,19 +1,11 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
-namespace App\Infrastructure\Crontab;
+namespace Plugin\Since\Geo\Crontab;
 
-use App\Infrastructure\Service\Geo\GeoRegionSyncService;
 use Hyperf\Crontab\Annotation\Crontab;
+use Plugin\Since\Geo\Service\GeoRegionSyncService;
 use Psr\Log\LoggerInterface;
 
 #[Crontab(
@@ -35,7 +27,7 @@ class GeoRegionSyncCrontab
         try {
             $summary = $this->syncService->sync();
             $this->logger->info(\sprintf(
-                '[mall:region-sync] version=%s records=%d source=%s',
+                '[geo-region-sync] version=%s records=%d source=%s',
                 $summary['version'] ?? 'unknown',
                 $summary['records'] ?? 0,
                 $summary['source'] ?? 'modood'

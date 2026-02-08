@@ -1,27 +1,20 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
-namespace App\Interface\Common\Controller;
+namespace Plugin\Since\Geo\Controller;
 
-use App\Application\Admin\Infrastructure\AppGeoQueryService;
+use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use Plugin\Since\Geo\Service\GeoQueryService;
 
 #[Controller(prefix: '/common/geo')]
 final class GeoController extends AbstractController
 {
-    public function __construct(private readonly AppGeoQueryService $service) {}
+    public function __construct(private readonly GeoQueryService $service) {}
 
     #[GetMapping(path: 'pcas')]
     public function pcas(): Result

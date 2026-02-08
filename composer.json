@@ -64,7 +64,6 @@
     "mineadmin/core": "~3.0",
     "mineadmin/jwt": "~3.0",
     "mineadmin/support": "~3.0",
-    "mineadmin/swagger": "~3.0",
     "mineadmin/upload": "~3.0",
     "overtrue/flysystem-qiniu": "^3.2",
     "since-leoo/hyperf-plugin": "^1.0",
