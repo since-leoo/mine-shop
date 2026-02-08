@@ -47,7 +47,7 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
     /**
      * 验证订单.
      */
-    public function validate(OrderEntity $orderEntity): void
+    public function validate(OrderEntity $orderEntity): OrderEntity
     {
         $sessionId = (int) $orderEntity->getExtra('session_id');
         if ($sessionId <= 0) {
@@ -63,11 +63,29 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
         }
 
         $seckillProduct = $this->loadSeckillProduct($orderEntity, $item->getSkuId(), $item->getQuantity());
-        $purchased = $this->orderRepository->getMemberPurchasedQuantity($sessionId, $orderEntity->getMemberId(), $seckillProduct->getId());
+
+        // 检测限购
+        $purchased = $this->orderRepository->getMemberPurchasedQuantity(
+            $sessionId,
+            $orderEntity->getMemberId(),
+            $seckillProduct->getId()
+        );
+
+        // 检测限购
         if (! $seckillProduct->canUserPurchase($item->getQuantity(), $purchased)) {
             throw new \RuntimeException(\sprintf('超出限购数量，每人限购 %d 件', $seckillProduct->getMaxQuantityPerUser()));
         }
         $orderEntity->setExtra('seckill_product_entity', $seckillProduct);
+
+        // 获取商品快照
+        $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
+        $snapshot = $snapshots[$item->getSkuId()] ?? null;
+        if (! $snapshot) {
+            throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
+        }
+        $item->attachSnapshot($snapshot);
+
+        return $orderEntity;
     }
 
     /**
@@ -78,14 +96,6 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
         $item = $orderEntity->getItems()[0];
         /** @var SeckillProductEntity $seckillProduct */
         $seckillProduct = $orderEntity->getExtra('seckill_product_entity');
-
-        // 获取商品快照
-        $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
-        $snapshot = $snapshots[$item->getSkuId()] ?? null;
-        if (! $snapshot) {
-            throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
-        }
-        $item->attachSnapshot($snapshot);
 
         // 设置商品价格
         $seckillPrice = $seckillProduct->getPrice()->getSeckillPrice();

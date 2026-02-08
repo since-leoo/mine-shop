@@ -28,7 +28,8 @@ export default defineConfig({
         items: [
           { text: 'DDD 架构', link: '/architecture/ddd' },
           { text: '分层设计', link: '/architecture/layers' },
-          { text: '设计模式', link: '/architecture/patterns' }
+          { text: '设计模式', link: '/architecture/patterns' },
+          { text: '插件系统', link: '/architecture/plugin-system' }
         ]
       },
       {

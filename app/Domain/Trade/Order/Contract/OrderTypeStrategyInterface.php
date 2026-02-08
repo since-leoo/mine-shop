@@ -25,7 +25,7 @@ interface OrderTypeStrategyInterface
     /**
      * 订单创建前的验证（各策略自行决定验证逻辑）.
      */
-    public function validate(OrderEntity $orderEntity): void;
+    public function validate(OrderEntity $orderEntity): OrderEntity;
 
     /**
      * 创建订单草稿（各策略自行决定草稿逻辑）.

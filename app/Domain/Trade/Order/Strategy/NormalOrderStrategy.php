@@ -39,7 +39,7 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
     /**
      * 验证订单.
      */
-    public function validate(OrderEntity $orderEntity): void
+    public function validate(OrderEntity $orderEntity): OrderEntity
     {
         if ($orderEntity->getMemberId() <= 0) {
             throw new \RuntimeException('请先登录后再下单');
@@ -47,23 +47,14 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         if (empty($orderEntity->getItems())) {
             throw new \RuntimeException('至少选择一件商品');
         }
-    }
 
-    /**
-     * 构建订单.
-     */
-    public function buildDraft(OrderEntity $orderEntity): OrderEntity
-    {
-        $itemPayloads = $orderEntity->getItems();
-        $skuIds = array_map(static fn (OrderItemEntity $item) => $item->getSkuId(), $itemPayloads);
-        $skuIds = array_filter(array_unique($skuIds));
-        if ($skuIds === []) {
-            throw new \RuntimeException('商品信息不完整');
-        }
+        $skuIds = array_map(
+            static fn (OrderItemEntity $item) => $item->getSkuId(), $orderEntity->getItems()
+        );
 
         $snapshots = $this->snapshotService->getSkuSnapshots($skuIds);
 
-        foreach ($itemPayloads as $item) {
+        foreach ($orderEntity->getItems() as $item) {
             $snapshot = $snapshots[$item->getSkuId()] ?? null;
             if (! $snapshot) {
                 throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
@@ -83,6 +74,14 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
             $item->attachSnapshot($snapshot);
         }
 
+        return $orderEntity;
+    }
+
+    /**
+     * 构建订单.
+     */
+    public function buildDraft(OrderEntity $orderEntity): OrderEntity
+    {
         $orderEntity->syncPriceDetailFromItems();
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setDiscountAmount(0);

@@ -141,7 +141,7 @@ final class DomainApiOrderCommandService extends IService
     {
         $entity = $this->buildEntityFromInput($input);
         $strategy = $this->strategyFactory->make($entity->getOrderType());
-        $strategy->validate($entity);
+        $entity = $strategy->validate($entity);
         $strategy->buildDraft($entity);
         $strategy->applyFreight($entity);
         $strategy->applyCoupon($entity, $input->getCouponId());

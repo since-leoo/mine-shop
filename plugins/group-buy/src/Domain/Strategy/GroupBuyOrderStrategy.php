@@ -33,7 +33,7 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
         return 'group_buy';
     }
 
-    public function validate(OrderEntity $orderEntity): void
+    public function validate(OrderEntity $orderEntity): OrderEntity
     {
         if ($orderEntity->getMemberId() <= 0) {
             throw new \RuntimeException('请先登录后再下单');
@@ -54,6 +54,15 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
             $orderEntity->getExtra('group_no'),
         );
         $orderEntity->setExtra('group_buy_entity', $entity);
+
+        $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
+        $snapshot = $snapshots[$item->getSkuId()] ?? null;
+        if (! $snapshot) {
+            throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
+        }
+        $item->attachSnapshot($snapshot);
+
+        return $orderEntity;
     }
 
     public function buildDraft(OrderEntity $orderEntity): OrderEntity
@@ -61,12 +70,7 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
         $item = $orderEntity->getItems()[0];
         /** @var GroupBuyEntity $groupBuyEntity */
         $groupBuyEntity = $orderEntity->getExtra('group_buy_entity');
-        $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
-        $snapshot = $snapshots[$item->getSkuId()] ?? null;
-        if (! $snapshot) {
-            throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
-        }
-        $item->attachSnapshot($snapshot);
+
         $groupPrice = $groupBuyEntity->getGroupPrice();
         $item->setUnitPrice($groupPrice);
         $item->setTotalPrice($groupPrice * $item->getQuantity());
