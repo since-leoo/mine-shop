@@ -62,16 +62,7 @@ final class DomainApiOrderCommandService extends IService
      */
     public function preview(OrderPreviewInput $input): OrderEntity
     {
-        $entity = $this->buildEntityFromInput($input);
-        $entity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
-        $strategy = $this->strategyFactory->make($entity->getOrderType());
-        $strategy->validate($entity);
-        $strategy->buildDraft($entity);
-        $this->applyFreight($entity);
-        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
-        $strategy->adjustPrice($entity);
-
-        return $entity;
+        return $this->buildOrder($input);
     }
 
     /**
@@ -81,31 +72,16 @@ final class DomainApiOrderCommandService extends IService
      */
     public function submit(OrderSubmitInput $input): OrderEntity
     {
-        // 构建订单
-        $entity = $this->buildEntityFromInput($input);
-        // 预订单检查
-        $entity->guardPreorderAllowed($this->mallSettingService->product()->allowPreorder());
-        // 订单过期时间设置为系统默认
+        $entity = $this->buildOrder($input);
         $entity->applySubmissionPolicy($this->mallSettingService->order());
-        // 订单类型策略
-        $strategy = $this->strategyFactory->make($entity->getOrderType());
-        // 订单数据验证/构建验证商品/计算运费
-        $strategy->validate($entity);
-        $strategy->buildDraft($entity);
-        $this->applyFreight($entity);
-        // 优惠券使用
-        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
-        // 订单价格调整
-        $strategy->adjustPrice($entity);
-        // 订单价格验证是否变化
         $entity->verifyPrice($input->getTotalAmount());
-        // 获取商品
+
+        $strategy = $this->strategyFactory->make($entity->getOrderType());
         $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
-        // 根据订单类型决定库存 Hash Key
         $stockHashKey = $entity->getOrderType() === 'seckill'
             ? DomainOrderStockService::seckillStockKey((int) $entity->getExtra('session_id'))
             : 'product:stock';
-        // 获取商品锁
+
         $locks = $this->stockService->acquireLocks($items, $stockHashKey);
         try {
             $this->stockService->reserve($items, $stockHashKey);
@@ -141,6 +117,21 @@ final class DomainApiOrderCommandService extends IService
     {
         $entity->complete();
         $this->repository->complete($entity);
+
+        return $entity;
+    }
+
+    /**
+     * 公共订单构建流程：构建实体 → 策略校验 → 构建草稿 → 运费 → 优惠券.
+     */
+    private function buildOrder(OrderPreviewInput $input): OrderEntity
+    {
+        $entity = $this->buildEntityFromInput($input);
+        $strategy = $this->strategyFactory->make($entity->getOrderType());
+        $strategy->validate($entity);
+        $strategy->buildDraft($entity);
+        $this->applyFreight($entity);
+        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
 
         return $entity;
     }
