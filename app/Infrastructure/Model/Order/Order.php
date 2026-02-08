@@ -216,8 +216,6 @@ class Order extends Model
     public function cancel(OrderEntity $entity): void
     {
         $this->status = $entity->getStatus();
-        $this->shipping_status = $entity->getShippingStatus();
-        $this->package_count = $entity->getPackageCount();
         $this->save();
     }
 

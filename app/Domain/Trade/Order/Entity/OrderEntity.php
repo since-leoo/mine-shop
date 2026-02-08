@@ -370,6 +370,14 @@ final class OrderEntity
         return $this->extras[$key] ?? $default;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
+    public function getExtras(): array
+    {
+        return $this->extras;
+    }
+
     public function syncPriceDetailFromItems(): void
     {
         $sum = 0;
@@ -435,7 +443,7 @@ final class OrderEntity
         $this->setShippingStatus(ShippingStatus::PENDING->value);
         $this->setPayStatus(
             $this->getPayStatus() === PaymentStatus::PAID->value
-                ? PaymentStatus::REFUNDED->value
+                ? PaymentStatus::PAID->value
                 : PaymentStatus::CANCELLED->value
         );
     }

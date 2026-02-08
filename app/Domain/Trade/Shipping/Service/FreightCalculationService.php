@@ -24,6 +24,7 @@ final class FreightCalculationService
     public function __construct(
         private readonly DomainMallSettingService $mallSettingService,
         private readonly ShippingTemplateRepository $templateRepository,
+        private readonly \App\Domain\Catalog\Product\Contract\ProductSnapshotInterface $snapshotService,
     ) {}
 
     /**
@@ -74,6 +75,41 @@ final class FreightCalculationService
         }
 
         return $freight;
+    }
+
+    /**
+     * 计算一组订单商品的总运费.
+     *
+     * @param \App\Domain\Trade\Order\Entity\OrderItemEntity[] $items
+     */
+    public function calculateForItems(array $items, string $province): int
+    {
+        $totalFreight = 0;
+        $configCache = [];
+
+        foreach ($items as $item) {
+            $productId = $item->getProductId();
+            if ($productId <= 0) {
+                continue;
+            }
+
+            if (! isset($configCache[$productId])) {
+                $product = $this->snapshotService->getProduct($productId);
+                $configCache[$productId] = $product;
+            }
+
+            $p = $configCache[$productId];
+            $totalFreight += $this->calculate(
+                (string) ($p['freight_type'] ?? 'default'),
+                (int) ($p['flat_freight_amount'] ?? 0),
+                isset($p['shipping_template_id']) ? (int) $p['shipping_template_id'] : null,
+                $province,
+                $item->getQuantity(),
+                (int) $item->getWeight(),
+            );
+        }
+
+        return $totalFreight;
     }
 
     private function calculateByTemplate(?int $templateId, string $province, int $quantity, int $weight, int $volume): int

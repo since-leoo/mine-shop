@@ -68,9 +68,10 @@
     "mineadmin/swagger": "~3.0",
     "mineadmin/upload": "~3.0",
     "overtrue/flysystem-qiniu": "^3.2",
+    "since-leoo/hyperf-plugin": "^1.0",
+    "tangwei/dto": "*",
     "w7corp/easywechat": "^6.5",
-    "yansongda/pay": "^3.6",
-    "tangwei/dto": "*"
+    "yansongda/pay": "^3.6"
   },
   "require-dev": {
     "dg/bypass-finals": "^1.9",

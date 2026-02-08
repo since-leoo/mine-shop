@@ -128,4 +128,9 @@ class ICache implements InterfaceCache
     {
         return $this->redis->hIncrBy($key, $field, $value);
     }
+
+    public function expire(string $key, int $int): bool|\Redis
+    {
+        return $this->redis->expire($this->prefix . ':' . $key, $int);
+    }
 }

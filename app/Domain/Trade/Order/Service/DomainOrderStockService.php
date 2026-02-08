@@ -19,12 +19,17 @@ use Hyperf\Stringable\Str;
 
 final class DomainOrderStockService
 {
-    private const STOCK_HASH_KEY = 'product:stock';
+    public const STOCK_HASH_KEY = 'product:stock';
 
     /**
      * 秒杀库存 Hash Key 前缀，完整 key 为 seckill:stock:{sessionId}.
      */
-    private const SECKILL_STOCK_PREFIX = 'seckill:stock';
+    public const SECKILL_STOCK_PREFIX = 'seckill:stock';
+
+    /**
+     * 团购库存 Hash Key 前缀，完整 key 为 groupbuy:stock:{groupBuyId}.
+     */
+    public const GROUP_BUY_STOCK_PREFIX = 'groupbuy:stock';
 
     private const DEDUCT_SCRIPT = <<<'LUA'
         local stockKey = KEYS[1]
@@ -138,11 +143,19 @@ final class DomainOrderStockService
     }
 
     /**
-     * 获取秒杀场次的库存 Hash Key.
+     * 根据订单类型和活动 ID 解析库存 Hash Key.
+     *
+     * normal    → product:stock
+     * seckill   → seckill:stock:{activityId}（activityId = sessionId）
+     * group_buy → groupbuy:stock:{activityId}（activityId = groupBuyId）
      */
-    public static function seckillStockKey(int $sessionId): string
+    public static function resolveStockKey(string $orderType, int $activityId = 0): string
     {
-        return \sprintf('%s:%d', self::SECKILL_STOCK_PREFIX, $sessionId);
+        return match ($orderType) {
+            'seckill' => \sprintf('%s:%d', self::SECKILL_STOCK_PREFIX, $activityId),
+            'group_buy' => \sprintf('%s:%d', self::GROUP_BUY_STOCK_PREFIX, $activityId),
+            default => self::STOCK_HASH_KEY,
+        };
     }
 
     /**

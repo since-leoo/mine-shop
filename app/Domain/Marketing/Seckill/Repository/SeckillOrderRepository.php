@@ -53,4 +53,13 @@ final class SeckillOrderRepository extends IRepository
             ->whereNotIn('status', ['cancelled'])
             ->sum('quantity');
     }
+    /**
+     * 根据主订单 ID 查找秒杀订单记录.
+     */
+    public function findByOrderId(int $orderId): ?SeckillOrder
+    {
+        return SeckillOrder::where('order_id', $orderId)->first();
+    }
+
+
 }

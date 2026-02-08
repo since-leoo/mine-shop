@@ -16,6 +16,7 @@ use App\Domain\Marketing\GroupBuy\Enum\GroupBuyStatus;
 use App\Domain\Marketing\GroupBuy\Job\GroupBuyStartJob;
 use App\Domain\Marketing\GroupBuy\Repository\GroupBuyRepository;
 use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
+use App\Domain\Marketing\GroupBuy\Service\GroupBuyCacheService;
 use Carbon\Carbon;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Crontab\Annotation\Crontab;
@@ -33,6 +34,7 @@ class GroupBuyActivityStatusCrontab
     public function __construct(
         private readonly GroupBuyRepository $repository,
         private readonly DomainGroupBuyService $groupBuyService,
+        private readonly GroupBuyCacheService $groupBuyCacheService,
         private readonly DriverFactory $driverFactory,
         private readonly LoggerInterface $logger
     ) {}
@@ -71,6 +73,7 @@ class GroupBuyActivityStatusCrontab
                     // 兜底：已过开始时间，直接激活
                     $oldStatus = $activity->status;
                     $this->groupBuyService->start($activity->id);
+                    $this->groupBuyCacheService->warmStock($activity->id);
 
                     $this->logger->info('[GroupBuyActivityStatus] 活动兜底激活', [
                         'type' => 'group_buy',
@@ -118,6 +121,7 @@ class GroupBuyActivityStatusCrontab
 
                 $oldStatus = $activity->status;
                 $this->groupBuyService->end($activity->id);
+                $this->groupBuyCacheService->evictStock($activity->id);
 
                 $this->logger->info('[GroupBuyActivityStatus] 活动已结束', [
                     'type' => 'group_buy',

@@ -12,28 +12,30 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Api\Command;
 
-use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Marketing\Coupon\Service\DomainCouponUserService;
 use App\Domain\Member\Service\DomainMemberAddressService;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
+use App\Domain\Trade\Order\Job\OrderCreateJob;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
+use App\Domain\Trade\Order\Service\OrderPendingCacheService;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use App\Domain\Trade\Shipping\Service\FreightCalculationService;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Model\Order\Order;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
 
 /**
  * 面向 API 场景的订单写领域服务.
  *
- * 包含小程序端专属的订单操作逻辑（预览、提交、取消、确认收货）.
- * 公共方法（如 getEntity、update）仍调用 OrderService.
+ * 预览：同步构建 + 算价。
+ * 提交：同步校验 + Lua 扣库存 + 投递队列，异步入库。
+ * 取消/确认收货：同步操作。
  */
 final class DomainApiOrderCommandService extends IService
 {
@@ -42,11 +44,10 @@ final class DomainApiOrderCommandService extends IService
         private readonly DomainOrderService $orderService,
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly DomainOrderStockService $stockService,
-        private readonly DomainMallSettingService $mallSettingService,
         private readonly DomainMemberAddressService $addressService,
-        private readonly DomainCouponUserService $couponUserService,
         private readonly FreightCalculationService $freightCalculationService,
-        private readonly ProductSnapshotInterface $snapshotService,
+        private readonly OrderPendingCacheService $pendingCacheService,
+        private readonly DriverFactory $driverFactory,
     ) {}
 
     /**
@@ -66,36 +67,42 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 提交订单.
+     * 提交订单（异步）.
      *
-     * @throws \Throwable
+     * 同步阶段：校验 + 算价 + Lua 原子扣库存 + 投递队列。
+     * 返回带 tradeNo 的 Entity（status=processing），前端轮询结果。
      */
     public function submit(OrderSubmitInput $input): OrderEntity
     {
+        // 1. 构建 + 校验 + 算价
         $entity = $this->buildOrder($input);
-        $entity->applySubmissionPolicy($this->mallSettingService->order());
         $entity->verifyPrice($input->getTotalAmount());
+        $activeId = (int) ($entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id'));
 
-        $strategy = $this->strategyFactory->make($entity->getOrderType());
+        // 2. Lua 原子扣库存（无需分布式锁）
         $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
-        $stockHashKey = $entity->getOrderType() === 'seckill'
-            ? DomainOrderStockService::seckillStockKey((int) $entity->getExtra('session_id'))
-            : 'product:stock';
+        $stockHashKey = DomainOrderStockService::resolveStockKey($entity->getOrderType(),$activeId);
+        $this->stockService->reserve($items, $stockHashKey);
 
-        $locks = $this->stockService->acquireLocks($items, $stockHashKey);
-        try {
-            $this->stockService->reserve($items, $stockHashKey);
-            try {
-                $entity = $this->repository->save($entity);
-                $this->markCouponsUsed($entity);
-                $strategy->postCreate($entity);
-            } catch (\Throwable $e) {
-                $this->stockService->rollback($items, $stockHashKey);
-                throw $e;
-            }
-        } finally {
-            $this->stockService->releaseLocks($locks);
-        }
+        // 3. 生成 tradeNo，构建快照，写入 Redis pending 状态
+        $tradeNo = Order::generateOrderNo();
+        $entity->setOrderNo($tradeNo);
+        $entitySnapshot = $this->buildSnapshot($entity);
+        $addressPayload = $entity->getAddress()?->toArray() ?? [];
+
+        // 缓存 pending 状态
+        $this->pendingCacheService->markProcessing($tradeNo, $entitySnapshot);
+
+        // 4. 投递异步 Job
+        $this->driverFactory->get('default')->push(new OrderCreateJob(
+            tradeNo: $tradeNo,
+            entitySnapshot: $entitySnapshot,
+            itemsPayload: $items,
+            addressPayload: $addressPayload,
+            couponUserIds: $entity->getAppliedCouponUserIds(),
+            orderType: $entity->getOrderType(),
+            stockHashKey: $stockHashKey,
+        ));
 
         return $entity;
     }
@@ -119,6 +126,16 @@ final class DomainApiOrderCommandService extends IService
         $this->repository->complete($entity);
 
         return $entity;
+    }
+
+    /**
+     * 查询异步下单结果.
+     *
+     * @return array{status: string, error: string}
+     */
+    public function getSubmitResult(string $tradeNo): array
+    {
+        return $this->pendingCacheService->getStatus($tradeNo);
     }
 
     /**
@@ -153,44 +170,11 @@ final class DomainApiOrderCommandService extends IService
 
     /**
      * 计算并设置订单运费.
-     *
-     * 遍历订单商品，按商品维度调用 FreightCalculationService 计算运费，
-     * 将总运费写入 OrderPriceValue。
      */
     private function applyFreight(OrderEntity $entity): void
     {
-        $address = $entity->getAddress();
-        $province = $address?->getProvince() ?? '';
-
-        $totalFreight = 0;
-        $productFreightCache = [];
-
-        foreach ($entity->getItems() as $item) {
-            $productId = $item->getProductId();
-            if ($productId <= 0) {
-                continue;
-            }
-
-            // 同一商品只查询一次运费配置
-            if (! isset($productFreightCache[$productId])) {
-                $product = $this->snapshotService->getProduct($productId);
-                $productFreightCache[$productId] = [
-                    'freight_type' => (string) ($product['freight_type'] ?? 'default'),
-                    'flat_freight_amount' => (int) ($product['flat_freight_amount'] ?? 0),
-                    'shipping_template_id' => isset($product['shipping_template_id']) ? (int) $product['shipping_template_id'] : null,
-                ];
-            }
-
-            $freightConfig = $productFreightCache[$productId];
-            $totalFreight += $this->freightCalculationService->calculate(
-                $freightConfig['freight_type'],
-                $freightConfig['flat_freight_amount'],
-                $freightConfig['shipping_template_id'],
-                $province,
-                $item->getQuantity(),
-                (int) $item->getWeight(),
-            );
-        }
+        $province = $entity->getAddress()?->getProvince() ?? '';
+        $totalFreight = $this->freightCalculationService->calculateForItems($entity->getItems(), $province);
 
         $priceDetail = $entity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setShippingFee($totalFreight);
@@ -214,18 +198,17 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 标记订单关联的优惠券为已使用.
+     * 构建 Entity 快照（供异步 Job 重建上下文）.
      */
-    private function markCouponsUsed(OrderEntity $entity): void
+    private function buildSnapshot(OrderEntity $entity): array
     {
-        $couponUserIds = $entity->getAppliedCouponUserIds();
-        if (empty($couponUserIds)) {
-            return;
-        }
+        $snapshot = $entity->toArray();
+        $snapshot['coupon_amount'] = $entity->getCouponAmount();
+        $snapshot['extras'] = array_filter(
+            $entity->getExtras(),
+            static fn ($v) => is_scalar($v) || $v === null,
+        );
 
-        foreach ($couponUserIds as $couponUserId) {
-            $couponUserEntity = $this->couponUserService->getEntity($couponUserId);
-            $this->couponUserService->markUsed($couponUserEntity, $entity->getId());
-        }
+        return $snapshot;
     }
 }

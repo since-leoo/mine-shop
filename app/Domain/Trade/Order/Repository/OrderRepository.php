@@ -16,6 +16,7 @@ use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\Order;
+use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 use Hyperf\Database\Model\Builder;
@@ -208,6 +209,22 @@ final class OrderRepository extends IRepository
 
         return [$pending, $paid, $shipped, $completed, $afterSale];
     }
+    /**
+     * 查询已超时的待付款订单（expire_time <= now）.
+     *
+     * @return \Hyperf\Database\Model\Collection<int, Order>
+     */
+    public function findExpiredPendingOrders(int $limit = 200): \Hyperf\Database\Model\Collection
+    {
+        return $this->getQuery()
+            ->where('status', OrderStatus::PENDING->value)
+            ->where('expire_time', '<=', Carbon::now())
+            ->with('items')
+            ->limit($limit)
+            ->get();
+    }
+
+
 
     public function handleSearch(Builder $query, array $params): Builder
     {

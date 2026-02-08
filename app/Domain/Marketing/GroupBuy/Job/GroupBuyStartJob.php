@@ -14,6 +14,7 @@ namespace App\Domain\Marketing\GroupBuy\Job;
 
 use App\Domain\Marketing\GroupBuy\Enum\GroupBuyStatus;
 use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
+use App\Domain\Marketing\GroupBuy\Service\GroupBuyCacheService;
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
 use Psr\Log\LoggerInterface;
@@ -61,6 +62,9 @@ class GroupBuyStartJob extends Job
 
             // 2. 调用领域服务启动活动
             $groupBuyService->start($this->groupBuyId);
+
+            // 3. 预热库存到 Redis（供 Lua 原子扣减）
+            $container->get(GroupBuyCacheService::class)->warmStock($this->groupBuyId);
 
             $logger->info('GroupBuyStartJob: 活动已激活', [
                 'group_buy_id' => $this->groupBuyId,

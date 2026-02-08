@@ -14,6 +14,7 @@ namespace App\Infrastructure\Model\Order;
 
 use App\Infrastructure\Model\Concerns\LoadsRelations;
 use Carbon\Carbon;
+use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
@@ -62,6 +63,13 @@ class OrderPackage extends Model
         'shipping_company',
         'shipping_no',
     ];
+
+    public function creating(Creating $event)
+    {
+        if (empty($this->package_no)) {
+            $this->package_no = uniqid();
+        }
+    }
 
     public function order(): BelongsTo
     {

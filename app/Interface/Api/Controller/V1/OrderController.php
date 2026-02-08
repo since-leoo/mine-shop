@@ -58,17 +58,20 @@ final class OrderController extends AbstractController
     #[RateLimit(create: 30, capacity: 10)]
     public function submit(OrderCommitRequest $request): Result
     {
-        $orderEntity = $this->checkoutService->submit($request->toDto($this->currentMember->id()));
+        $result = $this->checkoutService->submit($request->toDto($this->currentMember->id()));
 
-        return $this->success([
-            'is_success' => (bool) $orderEntity->getOrderNo(),
-            'trade_no' => $orderEntity->getOrderNo(),
-            'transaction_id' => $orderEntity->getOrderNo(),
-            'channel' => 'wechat',
-            'pay_info' => '{}',
-            'limit_goods_list' => null,
-            'pay_methods' => $this->checkoutService->resolvePaymentMethods(),
-        ], '下单成功');
+        return $this->success($result, '订单提交中');
+    }
+
+    /**
+     * 轮询异步下单结果.
+     */
+    #[GetMapping(path: 'submit-result/{tradeNo}')]
+    public function submitResult(string $tradeNo): Result
+    {
+        $result = $this->checkoutService->getSubmitResult($tradeNo);
+
+        return $this->success($result);
     }
 
     #[PostMapping(path: 'payment')]

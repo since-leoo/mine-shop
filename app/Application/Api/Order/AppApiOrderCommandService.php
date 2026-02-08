@@ -17,7 +17,6 @@ use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Domain\Trade\Order\Event\OrderCreatedEvent;
 use Hyperf\DbConnection\Db;
 
 final class AppApiOrderCommandService
@@ -36,16 +35,34 @@ final class AppApiOrderCommandService
     }
 
     /**
-     * 提交订单，返回 OrderEntity.
-     *
-     * @throws \Throwable
+     * 提交订单（异步），返回 tradeNo + processing 状态.
      */
-    public function submit(OrderSubmitInput $input): OrderEntity
+    public function submit(OrderSubmitInput $input): array
     {
-        $orderEntity = Db::transaction(fn () => $this->orderCommandService->submit($input));
-        event(new OrderCreatedEvent($orderEntity));
+        $entity = $this->orderCommandService->submit($input);
 
-        return $orderEntity;
+        return [
+            'trade_no' => $entity->getOrderNo(),
+            'status' => 'processing',
+            'pay_methods' => $this->resolvePaymentMethods(),
+        ];
+    }
+
+    /**
+     * 查询异步下单结果.
+     *
+     * @return array{status: string, trade_no: string, error: string, pay_methods: array}
+     */
+    public function getSubmitResult(string $tradeNo): array
+    {
+        $result = $this->orderCommandService->getSubmitResult($tradeNo);
+
+        return [
+            'trade_no' => $tradeNo,
+            'status' => $result['status'] ?: 'not_found',
+            'error' => $result['error'],
+            'pay_methods' => $result['status'] === 'created' ? $this->resolvePaymentMethods() : [],
+        ];
     }
 
     /**
