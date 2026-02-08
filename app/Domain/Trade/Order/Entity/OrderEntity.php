@@ -290,7 +290,6 @@ final class OrderEntity
 
     public function addItem(OrderItemEntity $item): void
     {
-        $item->ensureQuantityPositive();
         $this->items[] = $item;
     }
 

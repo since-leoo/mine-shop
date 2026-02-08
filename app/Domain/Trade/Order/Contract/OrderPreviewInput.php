@@ -34,9 +34,9 @@ interface OrderPreviewInput
     public function getUserAddress(): ?array;
 
     /**
-     * @return ?array<int, array{coupon_id: int}>
+     * 优惠券 ID（一次只能用一张，不传则不使用优惠券）.
      */
-    public function getCouponList(): ?array;
+    public function getCouponId(): ?int;
 
     public function getBuyerRemark(): string;
 

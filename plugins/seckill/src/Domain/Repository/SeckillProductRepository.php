@@ -1,16 +1,24 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
-use Plugin\Since\Seckill\Domain\Entity\SeckillProductEntity;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillProduct;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
+use Plugin\Since\Seckill\Domain\Entity\SeckillProductEntity;
+use Plugin\Since\Seckill\Infrastructure\Model\SeckillProduct;
 
 /**
  * @extends IRepository<SeckillProduct>
@@ -79,7 +87,9 @@ final class SeckillProductRepository extends IRepository
     public function batchCreate(array $entities): array
     {
         $products = [];
-        foreach ($entities as $entity) { $products[] = $this->createFromEntity($entity); }
+        foreach ($entities as $entity) {
+            $products[] = $this->createFromEntity($entity);
+        }
         return $products;
     }
 

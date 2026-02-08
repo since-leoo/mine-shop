@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Domain\Order;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Marketing\Coupon\Repository\CouponUserRepository;
+use App\Domain\Trade\Order\Contract\CouponServiceInterface;
+use App\Domain\Trade\Order\Contract\FreightServiceInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
@@ -24,7 +25,6 @@ use PHPUnit\Framework\TestCase;
 /**
  * Property 8: NormalOrderStrategy 钩子方法行为验证.
  *
- * - adjustPrice() 不改变价格
  * - applyCoupon() 空列表不改变价格
  * - applyCoupon() 非空列表但优惠券不存在时抛异常
  *
@@ -43,28 +43,7 @@ final class NormalOrderStrategyHookPropertyTest extends TestCase
     }
 
     /**
-     * Property 8a: adjustPrice() does not change priceDetail.
-     */
-    public function testAdjustPriceDoesNotChangePriceDetail(): void
-    {
-        $strategy = $this->createStrategy();
-
-        for ($i = 0; $i < self::ITERATIONS; ++$i) {
-            $entity = $this->createEntityWithRandomPriceDetail();
-            $before = $entity->getPriceDetail()->toArray();
-
-            $strategy->adjustPrice($entity);
-
-            self::assertSame(
-                $before,
-                $entity->getPriceDetail()->toArray(),
-                "Iteration {$i}: adjustPrice() should not change priceDetail"
-            );
-        }
-    }
-
-    /**
-     * Property 8b: applyCoupon() with empty list sets couponAmount to 0 and does not change priceDetail.
+     * Property 8a: applyCoupon() with empty list sets couponAmount to 0 and does not change priceDetail.
      */
     public function testApplyCouponEmptyListDoesNotChangePriceDetail(): void
     {
@@ -74,7 +53,7 @@ final class NormalOrderStrategyHookPropertyTest extends TestCase
             $entity = $this->createEntityWithRandomPriceDetail();
             $before = $entity->getPriceDetail()->toArray();
 
-            $strategy->applyCoupon($entity, []);
+            $strategy->applyCoupon($entity, null);
 
             self::assertSame(
                 $before,
@@ -94,12 +73,13 @@ final class NormalOrderStrategyHookPropertyTest extends TestCase
      */
     public function testApplyCouponWithInvalidCouponThrows(): void
     {
-        $couponUserRepo = \Mockery::mock(CouponUserRepository::class);
-        $couponUserRepo->shouldReceive('findUnusedByMemberAndCouponIds')->andReturn([]);
+        $couponService = \Mockery::mock(CouponServiceInterface::class);
+        $couponService->shouldReceive('findUsableCoupon')->andReturn(null);
 
         $strategy = new NormalOrderStrategy(
             \Mockery::mock(ProductSnapshotInterface::class),
-            $couponUserRepo,
+            $couponService,
+            \Mockery::mock(FreightServiceInterface::class),
         );
 
         $entity = $this->createEntityWithRandomPriceDetail();
@@ -107,14 +87,15 @@ final class NormalOrderStrategyHookPropertyTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessageMatches('/不可用或已使用/');
-        $strategy->applyCoupon($entity, [['coupon_id' => $couponId]]);
+        $strategy->applyCoupon($entity, $couponId);
     }
 
     private function createStrategy(): NormalOrderStrategy
     {
         return new NormalOrderStrategy(
             \Mockery::mock(ProductSnapshotInterface::class),
-            \Mockery::mock(CouponUserRepository::class),
+            \Mockery::mock(CouponServiceInterface::class),
+            \Mockery::mock(FreightServiceInterface::class),
         );
     }
 

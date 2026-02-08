@@ -1,12 +1,20 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillOrder;
 use Hyperf\Database\Model\Builder;
+use Plugin\Since\Seckill\Infrastructure\Model\SeckillOrder;
 
 /**
  * @extends IRepository<SeckillOrder>

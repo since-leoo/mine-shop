@@ -38,7 +38,7 @@ final class OrderCommitRequest extends OrderPreviewRequest
         $dto->goods_request_list = $params['goods_request_list'];
         $dto->address_id = $params['address_id'] ?? null;
         $dto->user_address = $params['user_address'] ?? null;
-        $dto->coupon_list = $params['coupon_list'] ?? null;
+        $dto->coupon_id = isset($params['coupon_id']) ? (int) $params['coupon_id'] : null;
         $dto->store_info_list = $params['store_info_list'] ?? null;
         $dto->total_amount = $params['total_amount'];
         $dto->user_name = $params['user_name'] ?? null;

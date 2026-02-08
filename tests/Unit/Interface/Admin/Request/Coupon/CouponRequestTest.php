@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Interface\Admin\Request\Coupon;
 
-use App\Domain\Marketing\Coupon\Contract\CouponInput;
-use App\Interface\Admin\Dto\Coupon\CouponDto;
 use Hyperf\DTO\Mapper;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\Coupon\Domain\Contract\CouponInput;
+use Plugin\Since\Coupon\Interface\Dto\Admin\CouponDto;
 
 /**
  * CouponRequest toDto() 映射测试.

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Order\Service;
 
@@ -16,15 +24,15 @@ use App\Infrastructure\Abstract\ICache;
  */
 final class OrderPendingCacheService
 {
-    private const PREFIX = 'order:pending';
-
-    private const TTL = 600; // 10 分钟
-
     public const STATUS_PROCESSING = 'processing';
 
     public const STATUS_CREATED = 'created';
 
     public const STATUS_FAILED = 'failed';
+
+    private const PREFIX = 'order:pending';
+
+    private const TTL = 600; // 10 分钟
 
     public function __construct(private readonly ICache $cache) {}
 
@@ -36,7 +44,7 @@ final class OrderPendingCacheService
         $key = $tradeNo;
         $this->redis()->hMset($key, [
             'status' => self::STATUS_PROCESSING,
-            'snapshot' => json_encode($snapshot, JSON_UNESCAPED_UNICODE),
+            'snapshot' => json_encode($snapshot, \JSON_UNESCAPED_UNICODE),
             'created_at' => time(),
         ]);
         $this->redis()->expire($key, self::TTL);

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Service;
 
@@ -13,9 +21,9 @@ use Plugin\Since\Seckill\Domain\Event\SeckillActivityEnabledEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityStatusChangedEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityUpdatedEvent;
 use Plugin\Since\Seckill\Domain\Mapper\SeckillActivityMapper;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillActivity;
 use Plugin\Since\Seckill\Domain\Repository\SeckillActivityRepository;
 use Plugin\Since\Seckill\Domain\Repository\SeckillSessionRepository;
+use Plugin\Since\Seckill\Infrastructure\Model\SeckillActivity;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class DomainSeckillActivityService extends IService
@@ -39,9 +47,13 @@ final class DomainSeckillActivityService extends IService
     public function update(SeckillActivityInput $dto): bool
     {
         $activity = $this->repository->findById($dto->getId());
-        if (!$activity) { throw new \RuntimeException('活动不存在'); }
+        if (! $activity) {
+            throw new \RuntimeException('活动不存在');
+        }
         $entity = SeckillActivityMapper::fromModel($activity);
-        if (!$entity->canBeEdited()) { throw new \DomainException('当前活动状态不允许编辑'); }
+        if (! $entity->canBeEdited()) {
+            throw new \DomainException('当前活动状态不允许编辑');
+        }
         $oldStatus = $entity->getStatus();
         $entity->update($dto);
         $result = $this->repository->updateFromEntity($entity);
@@ -57,29 +69,43 @@ final class DomainSeckillActivityService extends IService
     public function delete(int $id): bool
     {
         $activity = $this->repository->findById($id);
-        if (!$activity) { throw new \RuntimeException('活动不存在'); }
+        if (! $activity) {
+            throw new \RuntimeException('活动不存在');
+        }
         $entity = SeckillActivityMapper::fromModel($activity);
-        if (!$entity->canBeDeleted()) { throw new \DomainException('当前活动状态不允许删除'); }
-        if ($this->sessionRepository->countByActivityId($id) > 0) { throw new \DomainException('该活动下还有场次，无法删除'); }
+        if (! $entity->canBeDeleted()) {
+            throw new \DomainException('当前活动状态不允许删除');
+        }
+        if ($this->sessionRepository->countByActivityId($id) > 0) {
+            throw new \DomainException('该活动下还有场次，无法删除');
+        }
         $result = $this->repository->deleteById($id) > 0;
-        if ($result) { $this->eventDispatcher->dispatch(new SeckillActivityDeletedEvent($id)); }
+        if ($result) {
+            $this->eventDispatcher->dispatch(new SeckillActivityDeletedEvent($id));
+        }
         return $result;
     }
 
     public function getEntity(int $id): SeckillActivityEntity
     {
         $model = $this->repository->findById($id);
-        if (!$model) { throw new \RuntimeException("活动不存在: ID={$id}"); }
+        if (! $model) {
+            throw new \RuntimeException("活动不存在: ID={$id}");
+        }
         return SeckillActivityMapper::fromModel($model);
     }
 
     public function toggleEnabled(int $id): bool
     {
         $entity = $this->getEntity($id);
-        if (!$entity->isEnabled() && !$entity->canBeEnabled()) { throw new \DomainException('当前活动状态不允许启用'); }
+        if (! $entity->isEnabled() && ! $entity->canBeEnabled()) {
+            throw new \DomainException('当前活动状态不允许启用');
+        }
         $entity->toggleEnabled();
         $result = $this->repository->updateFromEntity($entity);
-        if ($result) { $this->eventDispatcher->dispatch(new SeckillActivityEnabledEvent($id, $entity->isEnabled())); }
+        if ($result) {
+            $this->eventDispatcher->dispatch(new SeckillActivityEnabledEvent($id, $entity->isEnabled()));
+        }
         return $result;
     }
 
@@ -102,7 +128,9 @@ final class DomainSeckillActivityService extends IService
         $oldStatus = $entity->getStatus();
         $entity->start();
         $result = $this->repository->updateFromEntity($entity);
-        if ($result) { $this->eventDispatcher->dispatch(new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus())); }
+        if ($result) {
+            $this->eventDispatcher->dispatch(new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus()));
+        }
         return $result;
     }
 
@@ -112,9 +140,14 @@ final class DomainSeckillActivityService extends IService
         $oldStatus = $entity->getStatus();
         $entity->end();
         $result = $this->repository->updateFromEntity($entity);
-        if ($result) { $this->eventDispatcher->dispatch(new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus())); }
+        if ($result) {
+            $this->eventDispatcher->dispatch(new SeckillActivityStatusChangedEvent($id, $oldStatus, $entity->getStatus()));
+        }
         return $result;
     }
 
-    public function getStatistics(): array { return $this->repository->getStatistics(); }
+    public function getStatistics(): array
+    {
+        return $this->repository->getStatistics();
+    }
 }

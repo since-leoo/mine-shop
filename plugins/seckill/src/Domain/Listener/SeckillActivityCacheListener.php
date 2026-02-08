@@ -1,17 +1,25 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Listener;
 
+use Hyperf\Event\Annotation\Listener;
+use Hyperf\Event\Contract\ListenerInterface;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityCreatedEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityDeletedEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityEnabledEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityStatusChangedEvent;
 use Plugin\Since\Seckill\Domain\Event\SeckillActivityUpdatedEvent;
 use Plugin\Since\Seckill\Domain\Service\SeckillCacheService;
-use Hyperf\Event\Annotation\Listener;
-use Hyperf\Event\Contract\ListenerInterface;
 
 #[Listener]
 final class SeckillActivityCacheListener implements ListenerInterface

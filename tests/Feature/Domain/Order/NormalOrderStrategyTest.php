@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Domain\Order;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Marketing\Coupon\Repository\CouponUserRepository;
+use App\Domain\Trade\Order\Contract\CouponServiceInterface;
+use App\Domain\Trade\Order\Contract\FreightServiceInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
@@ -89,23 +90,23 @@ final class NormalOrderStrategyTest extends TestCase
         $strategy->buildDraft($entity);
     }
 
-    public function testApplyCouponEmptyList(): void
+    public function testApplyCouponNullId(): void
     {
         $strategy = $this->makeStrategy([]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
-        $strategy->applyCoupon($entity, []);
+        $strategy->applyCoupon($entity, null);
 
         self::assertSame(0, $entity->getCouponAmount());
     }
 
     public function testApplyCouponFixedDiscount(): void
     {
-        $couponUser = $this->makeCouponUser(1, 'fixed', 1000, 5000);
-        $strategy = $this->makeStrategy([], [1 => $couponUser]);
+        $couponData = $this->makeCouponData(1, 'fixed', 1000, 5000);
+        $strategy = $this->makeStrategy([], [1 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
-        $strategy->applyCoupon($entity, [['coupon_id' => 1]]);
+        $strategy->applyCoupon($entity, 1);
 
         // fixed: value=1000 分 (¥10), 直接减
         self::assertSame(1000, $entity->getCouponAmount());
@@ -116,11 +117,11 @@ final class NormalOrderStrategyTest extends TestCase
     {
         // value=850 表示 8.5 折, goodsAmount=10000 分
         // discount = 10000 - (int) round(10000 * 850 / 1000) = 10000 - 8500 = 1500
-        $couponUser = $this->makeCouponUser(2, 'percent', 850, 0);
-        $strategy = $this->makeStrategy([], [2 => $couponUser]);
+        $couponData = $this->makeCouponData(2, 'percent', 850, 0);
+        $strategy = $this->makeStrategy([], [2 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
-        $strategy->applyCoupon($entity, [['coupon_id' => 2]]);
+        $strategy->applyCoupon($entity, 2);
 
         self::assertSame(1500, $entity->getCouponAmount());
     }
@@ -130,11 +131,11 @@ final class NormalOrderStrategyTest extends TestCase
         // 'discount' type 与 'percent' 相同逻辑
         // value=900 表示 9 折, goodsAmount=20000 分
         // discount = 20000 - (int) round(20000 * 900 / 1000) = 20000 - 18000 = 2000
-        $couponUser = $this->makeCouponUser(3, 'discount', 900, 0);
-        $strategy = $this->makeStrategy([], [3 => $couponUser]);
+        $couponData = $this->makeCouponData(3, 'discount', 900, 0);
+        $strategy = $this->makeStrategy([], [3 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(20000);
 
-        $strategy->applyCoupon($entity, [['coupon_id' => 3]]);
+        $strategy->applyCoupon($entity, 3);
 
         self::assertSame(2000, $entity->getCouponAmount());
     }
@@ -142,23 +143,23 @@ final class NormalOrderStrategyTest extends TestCase
     public function testApplyCouponMinAmountThreshold(): void
     {
         // min_amount=15000 分 (¥150), goodsAmount=10000 分 (¥100) → 不满足门槛
-        $couponUser = $this->makeCouponUser(1, 'fixed', 1000, 15000);
-        $strategy = $this->makeStrategy([], [1 => $couponUser]);
+        $couponData = $this->makeCouponData(1, 'fixed', 1000, 15000);
+        $strategy = $this->makeStrategy([], [1 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('需满');
-        $strategy->applyCoupon($entity, [['coupon_id' => 1]]);
+        $strategy->applyCoupon($entity, 1);
     }
 
     public function testApplyCouponDiscountCappedAtGoodsAmount(): void
     {
         // fixed value=20000 分 but goodsAmount=10000 分 → capped at 10000
-        $couponUser = $this->makeCouponUser(1, 'fixed', 20000, 0);
-        $strategy = $this->makeStrategy([], [1 => $couponUser]);
+        $couponData = $this->makeCouponData(1, 'fixed', 20000, 0);
+        $strategy = $this->makeStrategy([], [1 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
-        $strategy->applyCoupon($entity, [['coupon_id' => 1]]);
+        $strategy->applyCoupon($entity, 1);
 
         self::assertSame(10000, $entity->getCouponAmount());
     }
@@ -170,18 +171,18 @@ final class NormalOrderStrategyTest extends TestCase
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('优惠券 99 不可用或已使用');
-        $strategy->applyCoupon($entity, [['coupon_id' => 99]]);
+        $strategy->applyCoupon($entity, 99);
     }
 
     public function testApplyCouponThrowsWhenCouponInactive(): void
     {
-        $couponUser = $this->makeCouponUser(1, 'fixed', 1000, 0, 'inactive');
-        $strategy = $this->makeStrategy([], [1 => $couponUser]);
+        $couponData = $this->makeCouponData(1, 'fixed', 1000, 0, 'inactive');
+        $strategy = $this->makeStrategy([], [1 => $couponData]);
         $entity = $this->makeOrderEntityWithPrice(10000);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('优惠券 1 已失效');
-        $strategy->applyCoupon($entity, [['coupon_id' => 1]]);
+        $strategy->applyCoupon($entity, 1);
     }
 
     private function makeOrderEntityWithPrice(int $goodsAmount): OrderEntity
@@ -198,23 +199,21 @@ final class NormalOrderStrategyTest extends TestCase
     }
 
     /**
-     * @return object{id: int, coupon_id: int, coupon: object}
+     * Build coupon data array matching CouponServiceInterface::findUsableCoupon return format.
+     *
+     * @return array{id: int, coupon_id: int, type: string, value: int, min_amount: int, name: string, status: string}
      */
-    private function makeCouponUser(int $couponId, string $type, int $value, int $minAmount, string $couponStatus = 'active'): object
+    private function makeCouponData(int $couponId, string $type, int $value, int $minAmount, string $couponStatus = 'active'): array
     {
-        $coupon = new \stdClass();
-        $coupon->name = '测试优惠券';
-        $coupon->type = $type;
-        $coupon->value = $value;
-        $coupon->min_amount = $minAmount;
-        $coupon->status = $couponStatus;
-
-        $couponUser = new \stdClass();
-        $couponUser->id = $couponId * 10;
-        $couponUser->coupon_id = $couponId;
-        $couponUser->coupon = $coupon;
-
-        return $couponUser;
+        return [
+            'id' => $couponId * 10,
+            'coupon_id' => $couponId,
+            'type' => $type,
+            'value' => $value,
+            'min_amount' => $minAmount,
+            'name' => '测试优惠券',
+            'status' => $couponStatus,
+        ];
     }
 
     private function makeOrderEntity(array $overrides = []): OrderEntity
@@ -296,9 +295,9 @@ final class NormalOrderStrategyTest extends TestCase
 
     /**
      * @param array<int, array<string, mixed>> $snapshots
-     * @param array<int, object> $couponUserMap coupon_id => couponUser mock object
+     * @param array<int, array> $couponDataMap coupon_id => coupon data array
      */
-    private function makeStrategy(array $snapshots, array $couponUserMap = []): NormalOrderStrategy
+    private function makeStrategy(array $snapshots, array $couponDataMap = []): NormalOrderStrategy
     {
         $snapshotService = \Mockery::mock(ProductSnapshotInterface::class);
         $snapshotService->shouldReceive('getSkuSnapshots')
@@ -312,18 +311,15 @@ final class NormalOrderStrategyTest extends TestCase
                 return $result;
             });
 
-        $couponUserRepo = \Mockery::mock(CouponUserRepository::class);
-        $couponUserRepo->shouldReceive('findUnusedByMemberAndCouponIds')
-            ->andReturnUsing(static function (int $memberId, array $couponIds) use ($couponUserMap): array {
-                $result = [];
-                foreach ($couponIds as $id) {
-                    if (isset($couponUserMap[$id])) {
-                        $result[$id] = $couponUserMap[$id];
-                    }
-                }
-                return $result;
+        $couponService = \Mockery::mock(CouponServiceInterface::class);
+        $couponService->shouldReceive('findUsableCoupon')
+            ->andReturnUsing(static function (int $memberId, int $couponId) use ($couponDataMap): ?array {
+                return $couponDataMap[$couponId] ?? null;
             });
 
-        return new NormalOrderStrategy($snapshotService, $couponUserRepo);
+        $freightService = \Mockery::mock(FreightServiceInterface::class);
+        $freightService->shouldReceive('calculateForItems')->andReturn(0);
+
+        return new NormalOrderStrategy($snapshotService, $couponService, $freightService);
     }
 }

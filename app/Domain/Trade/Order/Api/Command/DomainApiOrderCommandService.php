@@ -24,8 +24,6 @@ use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Domain\Trade\Order\Service\OrderPendingCacheService;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
-use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
-use App\Domain\Trade\Shipping\Service\FreightCalculationService;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
@@ -45,7 +43,6 @@ final class DomainApiOrderCommandService extends IService
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly DomainOrderStockService $stockService,
         private readonly DomainMemberAddressService $addressService,
-        private readonly FreightCalculationService $freightCalculationService,
         private readonly OrderPendingCacheService $pendingCacheService,
         private readonly DriverFactory $driverFactory,
     ) {}
@@ -76,12 +73,11 @@ final class DomainApiOrderCommandService extends IService
     {
         // 1. 构建 + 校验 + 算价
         $entity = $this->buildOrder($input);
-        $entity->verifyPrice($input->getTotalAmount());
-        $activeId = (int) ($entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id'));
+        $activeId = $entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id') ?: 0;
+        $stockHashKey = DomainOrderStockService::resolveStockKey($entity->getOrderType(), (int) $activeId);
 
         // 2. Lua 原子扣库存（无需分布式锁）
         $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
-        $stockHashKey = DomainOrderStockService::resolveStockKey($entity->getOrderType(),$activeId);
         $this->stockService->reserve($items, $stockHashKey);
 
         // 3. 生成 tradeNo，构建快照，写入 Redis pending 状态
@@ -90,7 +86,7 @@ final class DomainApiOrderCommandService extends IService
         $entitySnapshot = $this->buildSnapshot($entity);
         $addressPayload = $entity->getAddress()?->toArray() ?? [];
 
-        // 缓存 pending 状态
+        // 缓存下单状态为pending
         $this->pendingCacheService->markProcessing($tradeNo, $entitySnapshot);
 
         // 4. 投递异步 Job
@@ -141,15 +137,15 @@ final class DomainApiOrderCommandService extends IService
     /**
      * 公共订单构建流程：构建实体 → 策略校验 → 构建草稿 → 运费 → 优惠券.
      */
-    private function buildOrder(OrderPreviewInput $input): OrderEntity
+    private function buildOrder(OrderPreviewInput|OrderSubmitInput $input): OrderEntity
     {
         $entity = $this->buildEntityFromInput($input);
         $strategy = $this->strategyFactory->make($entity->getOrderType());
         $strategy->validate($entity);
         $strategy->buildDraft($entity);
-        $this->applyFreight($entity);
-        $strategy->applyCoupon($entity, $input->getCouponList() ?? []);
-
+        $strategy->applyFreight($entity);
+        $strategy->applyCoupon($entity, $input->getCouponId());
+        $input instanceof OrderSubmitInput && $entity->verifyPrice($input->getTotalAmount());
         return $entity;
     }
 
@@ -171,15 +167,6 @@ final class DomainApiOrderCommandService extends IService
     /**
      * 计算并设置订单运费.
      */
-    private function applyFreight(OrderEntity $entity): void
-    {
-        $province = $entity->getAddress()?->getProvince() ?? '';
-        $totalFreight = $this->freightCalculationService->calculateForItems($entity->getItems(), $province);
-
-        $priceDetail = $entity->getPriceDetail() ?? new OrderPriceValue();
-        $priceDetail->setShippingFee($totalFreight);
-        $entity->setPriceDetail($priceDetail);
-    }
 
     /**
      * 解析用户地址：优先使用直接传入的地址，其次按 ID 查询，最后使用默认地址.
@@ -206,7 +193,7 @@ final class DomainApiOrderCommandService extends IService
         $snapshot['coupon_amount'] = $entity->getCouponAmount();
         $snapshot['extras'] = array_filter(
             $entity->getExtras(),
-            static fn ($v) => is_scalar($v) || $v === null,
+            static fn ($v) => \is_scalar($v) || $v === null,
         );
 
         return $snapshot;

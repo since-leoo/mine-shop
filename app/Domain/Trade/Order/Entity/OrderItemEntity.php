@@ -161,7 +161,6 @@ final class OrderItemEntity
             $item->setUnitPrice((int) $payload['unit_price']);
         }
         $item->setQuantity((int) ($payload['quantity'] ?? 0));
-        $item->ensureQuantityPositive();
         $item->setWeight(isset($payload['weight']) ? (float) $payload['weight'] : 0.0);
         return $item;
     }
@@ -187,13 +186,6 @@ final class OrderItemEntity
         }
         if (isset($snapshot['weight'])) {
             $this->setWeight((float) $snapshot['weight']);
-        }
-    }
-
-    public function ensureQuantityPositive(): void
-    {
-        if ($this->quantity <= 0) {
-            throw new \DomainException('订单商品数量必须大于0');
         }
     }
 

@@ -16,6 +16,7 @@ use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 /**
  * Feature: order-checkout-refactor, Property 7: 策略工厂注册与查找.
@@ -184,9 +185,13 @@ final class StrategyFactoryPropertyTest extends TestCase
                 return $orderEntity;
             }
 
-            public function applyCoupon(OrderEntity $orderEntity, array $couponList): void {}
+            public function applyFreight(OrderEntity $orderEntity): void {}
 
-            public function adjustPrice(OrderEntity $orderEntity): void {}
+            public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void {}
+
+            public function rehydrate(OrderEntity $orderEntity, ContainerInterface $container): void {}
+
+            public function settleCoupons(OrderEntity $orderEntity, array $couponUserIds): void {}
 
             public function postCreate(OrderEntity $orderEntity): void {}
         };

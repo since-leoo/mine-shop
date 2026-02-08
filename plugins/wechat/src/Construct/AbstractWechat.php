@@ -17,7 +17,6 @@ use EasyWeChat\MiniApp\Application as MiniApplication;
 use EasyWeChat\OfficialAccount\Application as OfficialApplication;
 use EasyWeChat\OfficialAccount\Server;
 use EasyWeChat\OpenPlatform\Application as OpenPlatformApplication;
-use InvalidArgumentException;
 
 abstract class AbstractWechat
 {
@@ -31,7 +30,7 @@ abstract class AbstractWechat
      * 构造函数，用于初始化类实例.
      *
      * @param array $config 配置数组，用于设置应用的相关配置
-     * @throws InvalidArgumentException 如果配置信息不正确或缺失必要配置，将抛出此异常
+     * @throws \InvalidArgumentException 如果配置信息不正确或缺失必要配置，将抛出此异常
      */
     public function __construct(array $config)
     {
@@ -59,7 +58,7 @@ abstract class AbstractWechat
      * 获取服务器实例.
      *
      * @return \EasyWeChat\Kernel\Contracts\Server|\EasyWeChat\MiniApp\Server|\EasyWeChat\OpenPlatform\Server|Server 服务器实例
-     * @throws InvalidArgumentException 如果应用配置不正确，将抛出此异常
+     * @throws \InvalidArgumentException 如果应用配置不正确，将抛出此异常
      * @throws \ReflectionException 如果反射操作失败，将抛出此异常
      * @throws \Throwable 其他未知错误
      */
@@ -80,7 +79,7 @@ abstract class AbstractWechat
      * 初始化应用实例的具体实现
      * 该方法应在子类中实现，用于完成应用实例的初始化操作.
      *
-     * @throws InvalidArgumentException 如果应用配置不正确，将抛出此异常
+     * @throws \InvalidArgumentException 如果应用配置不正确，将抛出此异常
      */
     abstract protected function initInstance();
 }

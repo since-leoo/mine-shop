@@ -458,14 +458,9 @@ final class RequiredFieldValidationPropertyTest extends TestCase
             ];
         }
 
-        // Possibly include coupon_list
+        // Possibly include coupon_id
         if (random_int(0, 1) === 1) {
-            $count = random_int(1, 3);
-            $list = [];
-            for ($j = 0; $j < $count; ++$j) {
-                $list[] = ['coupon_id' => random_int(1, 99999)];
-            }
-            $payload['coupon_list'] = $list;
+            $payload['coupon_id'] = random_int(1, 99999);
         }
 
         // Possibly include store_info_list

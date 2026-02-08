@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Event;
 
@@ -9,6 +17,14 @@ use Plugin\Since\Seckill\Domain\Entity\SeckillActivityEntity;
 final class SeckillActivityCreatedEvent
 {
     public function __construct(private readonly SeckillActivityEntity $activity, private readonly int $activityId) {}
-    public function getActivity(): SeckillActivityEntity { return $this->activity; }
-    public function getActivityId(): int { return $this->activityId; }
+
+    public function getActivity(): SeckillActivityEntity
+    {
+        return $this->activity;
+    }
+
+    public function getActivityId(): int
+    {
+        return $this->activityId;
+    }
 }

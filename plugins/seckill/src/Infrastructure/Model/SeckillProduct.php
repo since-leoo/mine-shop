@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Infrastructure\Model;
 
@@ -45,8 +53,23 @@ class SeckillProduct extends Model
         'is_enabled' => 'boolean', 'created_at' => 'datetime', 'updated_at' => 'datetime',
     ];
 
-    public function activity(): BelongsTo { return $this->belongsTo(SeckillActivity::class, 'activity_id', 'id'); }
-    public function session(): BelongsTo { return $this->belongsTo(SeckillSession::class, 'session_id', 'id'); }
-    public function product(): BelongsTo { return $this->belongsTo(Product::class, 'product_id', 'id'); }
-    public function productSku(): BelongsTo { return $this->belongsTo(ProductSku::class, 'product_sku_id', 'id'); }
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(SeckillActivity::class, 'activity_id', 'id');
+    }
+
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(SeckillSession::class, 'session_id', 'id');
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'product_id', 'id');
+    }
+
+    public function productSku(): BelongsTo
+    {
+        return $this->belongsTo(ProductSku::class, 'product_sku_id', 'id');
+    }
 }

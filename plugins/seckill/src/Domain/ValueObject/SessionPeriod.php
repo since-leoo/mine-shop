@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\ValueObject;
 
@@ -19,23 +27,51 @@ final class SessionPeriod
         $this->validate();
     }
 
-    public function getStartTime(): Carbon { return $this->startTime; }
+    public function getStartTime(): Carbon
+    {
+        return $this->startTime;
+    }
 
-    public function getEndTime(): Carbon { return $this->endTime; }
+    public function getEndTime(): Carbon
+    {
+        return $this->endTime;
+    }
 
-    public function getDurationInHours(): float { return $this->startTime->diffInHours($this->endTime, true); }
+    public function getDurationInHours(): float
+    {
+        return $this->startTime->diffInHours($this->endTime, true);
+    }
 
-    public function getDurationInMinutes(): int { return $this->startTime->diffInMinutes($this->endTime); }
+    public function getDurationInMinutes(): int
+    {
+        return $this->startTime->diffInMinutes($this->endTime);
+    }
 
-    public function isActive(): bool { $now = Carbon::now(); return $now->gte($this->startTime) && $now->lte($this->endTime); }
+    public function isActive(): bool
+    {
+        $now = Carbon::now();
+        return $now->gte($this->startTime) && $now->lte($this->endTime);
+    }
 
-    public function isPending(): bool { return Carbon::now()->lt($this->startTime); }
+    public function isPending(): bool
+    {
+        return Carbon::now()->lt($this->startTime);
+    }
 
-    public function isEnded(): bool { return Carbon::now()->gt($this->endTime); }
+    public function isEnded(): bool
+    {
+        return Carbon::now()->gt($this->endTime);
+    }
 
-    public function overlaps(self $other): bool { return $this->startTime->lt($other->endTime) && $this->endTime->gt($other->startTime); }
+    public function overlaps(self $other): bool
+    {
+        return $this->startTime->lt($other->endTime) && $this->endTime->gt($other->startTime);
+    }
 
-    public function equals(self $other): bool { return $this->startTime->eq($other->startTime) && $this->endTime->eq($other->endTime); }
+    public function equals(self $other): bool
+    {
+        return $this->startTime->eq($other->startTime) && $this->endTime->eq($other->endTime);
+    }
 
     public function toArray(): array
     {

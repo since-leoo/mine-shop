@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\GroupBuy\Domain\Strategy;
 
@@ -10,6 +18,8 @@ use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
 use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
+use Psr\Container\ContainerInterface;
 
 final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
 {
@@ -68,15 +78,31 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
         return $orderEntity;
     }
 
-    public function applyCoupon(OrderEntity $orderEntity, array $couponList): void
+    public function applyFreight(OrderEntity $orderEntity): void
     {
-        if (! empty($couponList)) {
+        // 拼团订单免运费
+        $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
+        $priceDetail->setShippingFee(0);
+        $orderEntity->setPriceDetail($priceDetail);
+    }
+
+    public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void
+    {
+        if ($couponId !== null && $couponId > 0) {
             throw new \RuntimeException('拼团订单不支持使用优惠券');
         }
         $orderEntity->setCouponAmount(0);
     }
 
-    public function adjustPrice(OrderEntity $orderEntity): void {}
+    public function rehydrate(OrderEntity $orderEntity, ContainerInterface $container): void
+    {
+        $groupBuyId = (int) ($orderEntity->getExtra('group_buy_id') ?? 0);
+        if ($groupBuyId > 0) {
+            $groupBuyService = $container->get(DomainGroupBuyService::class);
+            $groupBuyEntity = $groupBuyService->getEntity($groupBuyId);
+            $orderEntity->setExtra('group_buy_entity', $groupBuyEntity);
+        }
+    }
 
     public function postCreate(OrderEntity $orderEntity): void
     {

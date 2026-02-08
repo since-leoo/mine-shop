@@ -35,8 +35,7 @@ class OrderPreviewRequest extends BaseRequest
             'user_address.city' => ['nullable', 'string', 'max:30'],
             'user_address.district' => ['nullable', 'string', 'max:30'],
             'user_address.detail' => ['nullable', 'string', 'max:200'],
-            'coupon_list' => ['nullable', 'array'],
-            'coupon_list.*.coupon_id' => ['required', 'integer', 'min:1'],
+            'coupon_id' => ['nullable', 'integer', 'min:1'],
             'store_info_list' => ['nullable', 'array'],
             'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
             'activity_id' => ['required_if:order_type,seckill', 'integer', 'min:1'],
@@ -63,7 +62,7 @@ class OrderPreviewRequest extends BaseRequest
         $dto->goods_request_list = $params['goods_request_list'];
         $dto->address_id = $params['address_id'] ?? null;
         $dto->user_address = $params['user_address'] ?? null;
-        $dto->coupon_list = $params['coupon_list'] ?? null;
+        $dto->coupon_id = isset($params['coupon_id']) ? (int) $params['coupon_id'] : null;
         $dto->store_info_list = $params['store_info_list'] ?? null;
         $dto->activity_id = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
         $dto->session_id = isset($params['session_id']) ? (int) $params['session_id'] : null;

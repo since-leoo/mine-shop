@@ -29,7 +29,7 @@ class OrderPreviewDto implements OrderPreviewInput
 
     public ?array $user_address = null;
 
-    public ?array $coupon_list = null;
+    public ?int $coupon_id = null;
 
     public ?array $store_info_list = null;
 
@@ -72,12 +72,9 @@ class OrderPreviewDto implements OrderPreviewInput
         return $this->user_address;
     }
 
-    /**
-     * @return ?array<int, array{coupon_id: int}>
-     */
-    public function getCouponList(): ?array
+    public function getCouponId(): ?int
     {
-        return $this->coupon_list;
+        return $this->coupon_id;
     }
 
     /**

@@ -13,19 +13,22 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Order\Strategy;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Marketing\Coupon\Repository\CouponUserRepository;
+use App\Domain\Trade\Order\Contract\CouponServiceInterface;
+use App\Domain\Trade\Order\Contract\FreightServiceInterface;
 use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
+use Psr\Container\ContainerInterface;
 
 final class NormalOrderStrategy implements OrderTypeStrategyInterface
 {
     public function __construct(
         private readonly ProductSnapshotInterface $snapshotService,
-        private readonly CouponUserRepository $couponUserRepository,
+        private readonly CouponServiceInterface $couponServiceInterface,
+        private readonly FreightServiceInterface $freightServiceInterface,
     ) {}
 
     public function type(): string
@@ -61,8 +64,6 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         $snapshots = $this->snapshotService->getSkuSnapshots($skuIds);
 
         foreach ($itemPayloads as $item) {
-            $item->ensureQuantityPositive();
-
             $snapshot = $snapshots[$item->getSkuId()] ?? null;
             if (! $snapshot) {
                 throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
@@ -83,7 +84,6 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         }
 
         $orderEntity->syncPriceDetailFromItems();
-
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setDiscountAmount(0);
         $priceDetail->setShippingFee(0);
@@ -94,105 +94,90 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
 
     /**
      * 应用优惠券：验证归属/状态/有效期/满减门槛，计算折扣写入 Entity.
-     *
-     * @param array<int, array{coupon_id: int}> $couponList
      */
-    public function applyCoupon(OrderEntity $orderEntity, array $couponList): void
+    public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void
     {
-        if (empty($couponList)) {
+        if ($couponId === null || $couponId <= 0) {
             $orderEntity->setCouponAmount(0);
             return;
         }
 
-        $couponIds = array_filter(array_map(
-            static fn (array $item) => (int) ($item['coupon_id'] ?? 0),
-            $couponList,
-        ));
-        $couponIds = array_unique($couponIds);
-
-        if (empty($couponIds)) {
-            $orderEntity->setCouponAmount(0);
-            return;
+        $couponData = $this->couponServiceInterface->findUsableCoupon($orderEntity->getMemberId(), $couponId);
+        if (! $couponData) {
+            throw new \RuntimeException(\sprintf('优惠券 %d 不可用或已使用', $couponId));
         }
 
-        // 查找该会员未使用且未过期的 coupon_user 记录
-        $couponUserMap = $this->couponUserRepository->findUnusedByMemberAndCouponIds(
-            $orderEntity->getMemberId(),
-            $couponIds,
-        );
+        if ($couponData['status'] !== 'active') {
+            throw new \RuntimeException(\sprintf('优惠券 %d 已失效', $couponId));
+        }
 
         $goodsAmount = $orderEntity->getPriceDetail()?->getGoodsAmount() ?? 0;
-        $totalDiscount = 0;
-        $appliedCouponUserIds = [];
 
-        foreach ($couponIds as $couponId) {
-            $couponUser = $couponUserMap[$couponId] ?? null;
-            if (! $couponUser) {
-                throw new \RuntimeException(\sprintf('优惠券 %d 不可用或已使用', $couponId));
-            }
-
-            $coupon = $couponUser->coupon;
-            if (! $coupon || $coupon->status !== 'active') {
-                throw new \RuntimeException(\sprintf('优惠券 %d 已失效', $couponId));
-            }
-
-            // 满减门槛检查（分）
-            $minAmount = (int) $coupon->min_amount;
-            if ($minAmount > 0 && $goodsAmount < $minAmount) {
-                throw new \RuntimeException(\sprintf(
-                    '优惠券 %s 需满 %d 分可用，当前商品金额 %d 分',
-                    $coupon->name,
-                    $minAmount,
-                    $goodsAmount,
-                ));
-            }
-
-            // 计算折扣金额（分）
-            $discount = $this->calculateCouponDiscount($coupon, $goodsAmount);
-            $totalDiscount += $discount;
-            $appliedCouponUserIds[] = (int) $couponUser->id;
+        // 满减门槛检查（分）
+        $minAmount = $couponData['min_amount'];
+        if ($minAmount > 0 && $goodsAmount < $minAmount) {
+            throw new \RuntimeException(\sprintf(
+                '优惠券 %s 需满 %d 分可用，当前商品金额 %d 分',
+                $couponData['name'],
+                $minAmount,
+                $goodsAmount,
+            ));
         }
+
+        // 计算折扣金额（分）
+        $discount = $this->calculateDiscount($couponData['type'], $couponData['value'], $goodsAmount);
 
         // 折扣不能超过商品总额
-        if ($totalDiscount > $goodsAmount) {
-            $totalDiscount = $goodsAmount;
+        if ($discount > $goodsAmount) {
+            $discount = $goodsAmount;
         }
 
-        $orderEntity->setCouponAmount($totalDiscount);
-        $orderEntity->setAppliedCouponUserIds($appliedCouponUserIds);
+        $orderEntity->setCouponAmount($discount);
+        $orderEntity->setAppliedCouponUserIds([$couponData['id']]);
 
         // 将优惠券金额写入 priceDetail 的 discountAmount
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $currentDiscount = $priceDetail->getDiscountAmount();
-        $priceDetail->setDiscountAmount($currentDiscount + $totalDiscount);
+        $priceDetail->setDiscountAmount($currentDiscount + $discount);
         $orderEntity->setPriceDetail($priceDetail);
     }
 
     /**
-     * 调整价格（普通订单默认不做额外价格调整，直通）.
+     * 计算并设置订单运费.
      */
-    public function adjustPrice(OrderEntity $orderEntity): void
+    public function applyFreight(OrderEntity $orderEntity): void
     {
-        // 普通订单不做额外价格调整
+        $province = $orderEntity->getAddress()?->getProvince() ?? '';
+        $totalFreight = $this->freightServiceInterface->calculateForItems($orderEntity->getItems(), $province);
+
+        $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
+        $priceDetail->setShippingFee($totalFreight);
+        $orderEntity->setPriceDetail($priceDetail);
     }
 
+    /**
+     * 从快照重建活动实体（普通订单无需恢复）.
+     */
+    public function rehydrate(OrderEntity $orderEntity, ContainerInterface $container): void {}
+
+    /**
+     * 订单创建后处理：核销优惠券.
+     */
     public function postCreate(OrderEntity $orderEntity): void
     {
-        // 普通订单暂不需要特殊后置逻辑
+        $couponUserIds = $orderEntity->getAppliedCouponUserIds();
+        foreach ($couponUserIds as $couponUserId) {
+            $this->couponServiceInterface->settleCoupon($couponUserId, $orderEntity->getId());
+        }
     }
 
     /**
      * 根据优惠券类型计算折扣金额（分）.
      */
-    private function calculateCouponDiscount(object $coupon, int $goodsAmount): int
+    private function calculateDiscount(string $type, int $value, int $goodsAmount): int
     {
-        $value = (int) ($coupon->value ?? 0);
-        $type = (string) ($coupon->type ?? 'fixed');
-
         return match ($type) {
-            // percent/discount: value=850 表示 8.5 折，折扣 = 商品金额 - 折后金额
             'percent', 'discount' => $goodsAmount - (int) round($goodsAmount * $value / 1000),
-            // fixed: 面值（分）直接减
             default => $value,
         };
     }

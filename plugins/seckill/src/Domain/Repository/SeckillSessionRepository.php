@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
+use Carbon\Carbon;
+use Hyperf\Database\Model\Builder;
 use Plugin\Since\Seckill\Domain\Entity\SeckillSessionEntity;
 use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
 use Plugin\Since\Seckill\Infrastructure\Model\SeckillSession;
-use Carbon\Carbon;
-use Hyperf\Database\Model\Builder;
 
 /**
  * @extends IRepository<SeckillSession>
@@ -54,7 +62,9 @@ final class SeckillSessionRepository extends IRepository
     public function updateQuantityStats(int $sessionId): void
     {
         $session = SeckillSession::find($sessionId);
-        if (!$session) { return; }
+        if (! $session) {
+            return;
+        }
         $products = $session->products()->where('is_enabled', true)->get();
         $session->update(['total_quantity' => $products->sum('quantity'), 'sold_quantity' => $products->sum('sold_quantity')]);
     }

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Interface\Transformer;
 
@@ -53,9 +61,15 @@ final class SeckillProductTransformer
 
     private function filterSpecList(array $specList, array $skuList): array
     {
-        if ($skuList === []) { return []; }
+        if ($skuList === []) {
+            return [];
+        }
         $usedValueIds = [];
-        foreach ($skuList as $sku) { foreach ($sku['specInfo'] ?? [] as $spec) { $usedValueIds[$spec['specValueId']] = true; } }
+        foreach ($skuList as $sku) {
+            foreach ($sku['specInfo'] ?? [] as $spec) {
+                $usedValueIds[$spec['specValueId']] = true;
+            }
+        }
         return array_values(array_filter(array_map(static function (array $spec) use ($usedValueIds) {
             $spec['specValueList'] = array_values(array_filter($spec['specValueList'], static fn (array $sv) => isset($usedValueIds[$sv['specValueId']])));
             return $spec['specValueList'] !== [] ? $spec : null;

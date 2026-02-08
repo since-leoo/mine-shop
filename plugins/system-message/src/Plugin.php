@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\SystemMessage;
 
@@ -8,7 +16,6 @@ use App\Infrastructure\Model\Permission\Menu;
 use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
-use Psr\Log\LoggerInterface;
 use SinceLeoo\Plugin\Contract\AbstractPlugin;
 
 class Plugin extends AbstractPlugin
@@ -49,7 +56,7 @@ class Plugin extends AbstractPlugin
 
     protected function overrideFrontendFiles(): void
     {
-        $pluginPath = dirname(__DIR__);
+        $pluginPath = \dirname(__DIR__);
         $basePath = BASE_PATH;
 
         foreach ($this->frontendOverrides as $source => $target) {
@@ -81,7 +88,7 @@ class Plugin extends AbstractPlugin
                 copy($backupFile, $targetFile);
                 unlink($backupFile);
             } else {
-                $pluginPath = dirname(__DIR__);
+                $pluginPath = \dirname(__DIR__);
                 $originalFile = $pluginPath . '/web/overrides/notification.original.tsx';
 
                 if (file_exists($originalFile) && file_exists($targetFile)) {
@@ -190,7 +197,7 @@ class Plugin extends AbstractPlugin
 
     protected function createDefaultConfig(): void
     {
-        $pluginConfigFile = dirname(__DIR__) . '/config/system_message.php';
+        $pluginConfigFile = \dirname(__DIR__) . '/config/system_message.php';
         $autoloadConfigFile = BASE_PATH . '/config/autoload/system_message.php';
 
         if (file_exists($autoloadConfigFile) || ! file_exists($pluginConfigFile)) {

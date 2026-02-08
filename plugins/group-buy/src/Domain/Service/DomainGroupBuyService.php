@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\GroupBuy\Domain\Service;
 
@@ -9,8 +17,8 @@ use Plugin\Since\GroupBuy\Domain\Contract\GroupBuyCreateInput;
 use Plugin\Since\GroupBuy\Domain\Contract\GroupBuyUpdateInput;
 use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
 use Plugin\Since\GroupBuy\Domain\Mapper\GroupBuyMapper;
-use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuy;
 use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyRepository;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuy;
 
 final class DomainGroupBuyService extends IService
 {

@@ -56,7 +56,7 @@ final class ToDtoMappingPropertyTest extends TestCase
             $dto->goods_request_list = $data['goods_request_list'];
             $dto->address_id = $data['address_id'] ?? null;
             $dto->user_address = $data['user_address'] ?? null;
-            $dto->coupon_list = $data['coupon_list'] ?? null;
+            $dto->coupon_id = $data['coupon_id'] ?? null;
             $dto->store_info_list = $data['store_info_list'] ?? null;
 
             self::assertInstanceOf(OrderPreviewInput::class, $dto);
@@ -65,7 +65,7 @@ final class ToDtoMappingPropertyTest extends TestCase
             self::assertSame($dto->goods_request_list, $dto->getGoodsRequestList(), "Iteration {$i}: getGoodsRequestList mismatch");
             self::assertSame($dto->address_id, $dto->getAddressId(), "Iteration {$i}: getAddressId mismatch");
             self::assertSame($dto->user_address, $dto->getUserAddress(), "Iteration {$i}: getUserAddress mismatch");
-            self::assertSame($dto->coupon_list, $dto->getCouponList(), "Iteration {$i}: getCouponList mismatch");
+            self::assertSame($dto->coupon_id, $dto->getCouponId(), "Iteration {$i}: getCouponId mismatch");
 
             // getBuyerRemark extracts from store_info_list
             $expectedRemark = '';
@@ -96,7 +96,7 @@ final class ToDtoMappingPropertyTest extends TestCase
             $dto->goods_request_list = $data['goods_request_list'];
             $dto->address_id = $data['address_id'] ?? null;
             $dto->user_address = $data['user_address'] ?? null;
-            $dto->coupon_list = $data['coupon_list'] ?? null;
+            $dto->coupon_id = $data['coupon_id'] ?? null;
             $dto->store_info_list = $data['store_info_list'] ?? null;
             $dto->total_amount = $data['total_amount'];
             $dto->user_name = $data['user_name'] ?? null;
@@ -108,7 +108,7 @@ final class ToDtoMappingPropertyTest extends TestCase
             self::assertSame($dto->goods_request_list, $dto->getGoodsRequestList(), "Iteration {$i}: getGoodsRequestList mismatch");
             self::assertSame($dto->address_id, $dto->getAddressId(), "Iteration {$i}: getAddressId mismatch");
             self::assertSame($dto->user_address, $dto->getUserAddress(), "Iteration {$i}: getUserAddress mismatch");
-            self::assertSame($dto->coupon_list, $dto->getCouponList(), "Iteration {$i}: getCouponList mismatch");
+            self::assertSame($dto->coupon_id, $dto->getCouponId(), "Iteration {$i}: getCouponId mismatch");
             self::assertSame($dto->total_amount, $dto->getTotalAmount(), "Iteration {$i}: getTotalAmount mismatch");
             self::assertSame($dto->user_name, $dto->getUserName(), "Iteration {$i}: getUserName mismatch");
 
@@ -162,12 +162,10 @@ final class ToDtoMappingPropertyTest extends TestCase
                 "Iteration {$i}: getUserAddress mismatch"
             );
             self::assertSame(
-                $validatedData['coupon_list'] ?? null,
-                $dto->getCouponList(),
-                "Iteration {$i}: getCouponList mismatch"
+                $validatedData['coupon_id'] ?? null,
+                $dto->getCouponId(),
+                "Iteration {$i}: getCouponId mismatch"
             );
-
-            // getBuyerRemark derives from store_info_list
             $storeInfoList = $validatedData['store_info_list'] ?? null;
             $expectedRemark = '';
             if (! empty($storeInfoList)) {
@@ -203,7 +201,7 @@ final class ToDtoMappingPropertyTest extends TestCase
             $dto->goods_request_list = $validatedData['goods_request_list'];
             $dto->address_id = $validatedData['address_id'] ?? null;
             $dto->user_address = $validatedData['user_address'] ?? null;
-            $dto->coupon_list = $validatedData['coupon_list'] ?? null;
+            $dto->coupon_id = isset($validatedData['coupon_id']) ? (int) $validatedData['coupon_id'] : null;
             $dto->store_info_list = $validatedData['store_info_list'] ?? null;
             $dto->total_amount = $validatedData['total_amount'];
             $dto->user_name = $validatedData['user_name'] ?? null;
@@ -231,9 +229,9 @@ final class ToDtoMappingPropertyTest extends TestCase
                 "Iteration {$i}: getUserAddress mismatch"
             );
             self::assertSame(
-                $validatedData['coupon_list'] ?? null,
-                $dto->getCouponList(),
-                "Iteration {$i}: getCouponList mismatch"
+                isset($validatedData['coupon_id']) ? (int) $validatedData['coupon_id'] : null,
+                $dto->getCouponId(),
+                "Iteration {$i}: getCouponId mismatch"
             );
             self::assertSame(
                 $validatedData['total_amount'],
@@ -280,9 +278,9 @@ final class ToDtoMappingPropertyTest extends TestCase
             $data['user_address'] = $this->randomUserAddress();
         }
 
-        // coupon_list: sometimes present
+        // coupon_id: sometimes present
         if (random_int(0, 1) === 1) {
-            $data['coupon_list'] = $this->randomCouponList();
+            $data['coupon_id'] = random_int(1, 99999);
         }
 
         // store_info_list: sometimes present, sometimes empty, sometimes with remark
@@ -335,16 +333,6 @@ final class ToDtoMappingPropertyTest extends TestCase
             'district' => $this->randomString(random_int(1, 30)),
             'detail' => $this->randomString(random_int(1, 200)),
         ];
-    }
-
-    private function randomCouponList(): array
-    {
-        $count = random_int(1, 3);
-        $list = [];
-        for ($j = 0; $j < $count; ++$j) {
-            $list[] = ['coupon_id' => random_int(1, 99999)];
-        }
-        return $list;
     }
 
     private function randomString(int $length): string

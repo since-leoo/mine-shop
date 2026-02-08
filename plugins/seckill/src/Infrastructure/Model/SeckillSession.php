@@ -1,14 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Infrastructure\Model;
 
-use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\DbConnection\Model\Model;
+use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
 
 /**
  * @property int $id
@@ -43,16 +51,31 @@ class SeckillSession extends Model
         'created_at' => 'datetime', 'updated_at' => 'datetime',
     ];
 
-    public function activity(): BelongsTo { return $this->belongsTo(SeckillActivity::class, 'activity_id', 'id'); }
-    public function products(): HasMany { return $this->hasMany(SeckillProduct::class, 'session_id', 'id'); }
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(SeckillActivity::class, 'activity_id', 'id');
+    }
+
+    public function products(): HasMany
+    {
+        return $this->hasMany(SeckillProduct::class, 'session_id', 'id');
+    }
 
     public function getDynamicStatus(): SeckillStatus
     {
         $now = Carbon::now();
-        if (!$this->is_enabled) { return SeckillStatus::CANCELLED; }
-        if ($this->sold_quantity >= $this->total_quantity && $this->total_quantity > 0) { return SeckillStatus::SOLD_OUT; }
-        if ($now->lt($this->start_time)) { return SeckillStatus::PENDING; }
-        if ($now->gt($this->end_time)) { return SeckillStatus::ENDED; }
+        if (! $this->is_enabled) {
+            return SeckillStatus::CANCELLED;
+        }
+        if ($this->sold_quantity >= $this->total_quantity && $this->total_quantity > 0) {
+            return SeckillStatus::SOLD_OUT;
+        }
+        if ($now->lt($this->start_time)) {
+            return SeckillStatus::PENDING;
+        }
+        if ($now->gt($this->end_time)) {
+            return SeckillStatus::ENDED;
+        }
         return SeckillStatus::ACTIVE;
     }
 }

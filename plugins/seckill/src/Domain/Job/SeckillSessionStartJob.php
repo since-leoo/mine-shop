@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\Job;
 
+use Hyperf\AsyncQueue\Job;
+use Hyperf\Context\ApplicationContext;
 use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
 use Plugin\Since\Seckill\Domain\Service\DomainSeckillActivityService;
 use Plugin\Since\Seckill\Domain\Service\DomainSeckillSessionService;
 use Plugin\Since\Seckill\Domain\Service\SeckillCacheService;
-use Hyperf\AsyncQueue\Job;
-use Hyperf\Context\ApplicationContext;
 use Psr\Log\LoggerInterface;
 
 class SeckillSessionStartJob extends Job
@@ -28,8 +36,14 @@ class SeckillSessionStartJob extends Job
 
         try {
             $session = $sessionService->repository->findById($this->sessionId);
-            if (!$session) { $logger->warning('SeckillSessionStartJob: 场次不存在，跳过', ['session_id' => $this->sessionId]); return; }
-            if ($session->status !== SeckillStatus::PENDING->value) { $logger->info('SeckillSessionStartJob: 场次状态非 pending，跳过', ['session_id' => $this->sessionId, 'current_status' => $session->status]); return; }
+            if (! $session) {
+                $logger->warning('SeckillSessionStartJob: 场次不存在，跳过', ['session_id' => $this->sessionId]);
+                return;
+            }
+            if ($session->status !== SeckillStatus::PENDING->value) {
+                $logger->info('SeckillSessionStartJob: 场次状态非 pending，跳过', ['session_id' => $this->sessionId, 'current_status' => $session->status]);
+                return;
+            }
 
             $sessionService->start($this->sessionId);
             $cacheService->warmSession($this->sessionId);

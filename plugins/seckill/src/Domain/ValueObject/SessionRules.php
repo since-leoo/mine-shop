@@ -1,14 +1,25 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\ValueObject;
 
 final class SessionRules
 {
     private readonly int $maxQuantityPerUser;
+
     private readonly int $totalQuantity;
+
     private readonly bool $allowOverSell;
+
     private readonly array $extraRules;
 
     public function __construct(array $rules)
@@ -19,10 +30,25 @@ final class SessionRules
         $this->extraRules = $rules['extra'] ?? [];
     }
 
-    public function getMaxQuantityPerUser(): int { return $this->maxQuantityPerUser; }
-    public function getTotalQuantity(): int { return $this->totalQuantity; }
-    public function isAllowOverSell(): bool { return $this->allowOverSell; }
-    public function getExtraRules(): array { return $this->extraRules; }
+    public function getMaxQuantityPerUser(): int
+    {
+        return $this->maxQuantityPerUser;
+    }
+
+    public function getTotalQuantity(): int
+    {
+        return $this->totalQuantity;
+    }
+
+    public function isAllowOverSell(): bool
+    {
+        return $this->allowOverSell;
+    }
+
+    public function getExtraRules(): array
+    {
+        return $this->extraRules;
+    }
 
     public function canPurchase(int $quantity, int $userPurchasedQuantity): bool
     {

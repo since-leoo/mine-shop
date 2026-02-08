@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\ValueObject;
 
@@ -14,11 +22,30 @@ final class ActivityStatistics
         private readonly int $totalSales
     ) {}
 
-    public function getTotalSessions(): int { return $this->totalSessions; }
-    public function getActiveSessions(): int { return $this->activeSessions; }
-    public function getTotalProducts(): int { return $this->totalProducts; }
-    public function getTotalOrders(): int { return $this->totalOrders; }
-    public function getTotalSales(): int { return $this->totalSales; }
+    public function getTotalSessions(): int
+    {
+        return $this->totalSessions;
+    }
+
+    public function getActiveSessions(): int
+    {
+        return $this->activeSessions;
+    }
+
+    public function getTotalProducts(): int
+    {
+        return $this->totalProducts;
+    }
+
+    public function getTotalOrders(): int
+    {
+        return $this->totalOrders;
+    }
+
+    public function getTotalSales(): int
+    {
+        return $this->totalSales;
+    }
 
     public function getAverageOrderValue(): float
     {

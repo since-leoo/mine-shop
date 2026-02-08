@@ -12,6 +12,8 @@ declare(strict_types=1);
 use DG\BypassFinals;
 use Hyperf\Contract\ApplicationInterface;
 use Hyperf\Di\ClassLoader;
+use SinceLeoo\Plugin\PluginBootstrap;
+
 /*
  * This file is part of MineAdmin.
  *
@@ -39,7 +41,7 @@ if (class_exists(BypassFinals::class)) {
 }
 
 // 插件引导
-\SinceLeoo\Plugin\PluginBootstrap::init();
+PluginBootstrap::init();
 
 ClassLoader::init();
 

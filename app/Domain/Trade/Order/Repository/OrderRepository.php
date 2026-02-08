@@ -209,6 +209,7 @@ final class OrderRepository extends IRepository
 
         return [$pending, $paid, $shipped, $completed, $afterSale];
     }
+
     /**
      * 查询已超时的待付款订单（expire_time <= now）.
      *
@@ -223,8 +224,6 @@ final class OrderRepository extends IRepository
             ->limit($limit)
             ->get();
     }
-
-
 
     public function handleSearch(Builder $query, array $params): Builder
     {

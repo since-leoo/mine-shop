@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\Coupon;
 
-use App\Infrastructure\Model\Coupon\Coupon;
-use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
+use Plugin\Since\Coupon\Infrastructure\Model\Coupon;
+use Plugin\Since\Coupon\Infrastructure\Model\CouponUser;
 
 /**
  * @internal

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Coupon\Entity;
 
-use App\Domain\Marketing\Coupon\Entity\CouponUserEntity;
-use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\Coupon\Domain\Entity\CouponUserEntity;
+use Plugin\Since\Coupon\Interface\Dto\Admin\CouponUserDto;
 
 /**
  * CouponUserEntity create() method test.

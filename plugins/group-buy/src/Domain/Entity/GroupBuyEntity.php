@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\GroupBuy\Domain\Entity;
 
@@ -16,27 +24,49 @@ use Plugin\Since\GroupBuy\Domain\ValueObject\PriceVo;
 final class GroupBuyEntity
 {
     private int $id = 0;
+
     private string $title = '';
+
     private ?string $description = null;
+
     private int $productId = 0;
+
     private int $skuId = 0;
+
     private int $originalPrice = 0;
+
     private int $groupPrice = 0;
+
     private int $minPeople = 2;
+
     private int $maxPeople = 10;
+
     private string $startTime = '';
+
     private string $endTime = '';
+
     private int $groupTimeLimit = 24;
+
     private string $status = 'pending';
+
     private int $totalQuantity = 0;
+
     private int $soldQuantity = 0;
+
     private int $groupCount = 0;
+
     private int $successGroupCount = 0;
+
     private int $sortOrder = 0;
+
     private bool $isEnabled = true;
+
     private ?array $rules = null;
+
     private ?array $images = null;
+
     private ?string $remark = null;
+
     /** @var array<string, bool> */
     private array $dirty = [];
 
@@ -174,50 +204,271 @@ final class GroupBuyEntity
     }
 
     // Getters & Setters
-    public function getId(): int { return $this->id; }
-    public function setId(int $id): self { $this->id = $id; return $this; }
-    public function getTitle(): string { return $this->title; }
-    public function setTitle(string $title): self { $title = trim($title); if ($title === '') { throw new \DomainException('活动标题不能为空'); } $this->title = $title; $this->markDirty('title'); return $this; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): self { $this->description = $description; $this->markDirty('description'); return $this; }
-    public function getProductId(): int { return $this->productId; }
-    public function setProductId(int $productId): self { $this->productId = $productId; $this->markDirty('product_id'); return $this; }
-    public function getSkuId(): int { return $this->skuId; }
-    public function setSkuId(int $skuId): self { $this->skuId = $skuId; $this->markDirty('sku_id'); return $this; }
-    public function getOriginalPrice(): int { return $this->originalPrice; }
-    public function setOriginalPrice(int $originalPrice): self { $this->originalPrice = $originalPrice; $this->markDirty('original_price'); return $this; }
-    public function getGroupPrice(): int { return $this->groupPrice; }
-    public function setGroupPrice(int $groupPrice): self { $this->groupPrice = $groupPrice; $this->markDirty('group_price'); return $this; }
-    public function getMinPeople(): int { return $this->minPeople; }
-    public function setMinPeople(int $minPeople): self { $this->minPeople = $minPeople; $this->markDirty('min_people'); return $this; }
-    public function getMaxPeople(): int { return $this->maxPeople; }
-    public function setMaxPeople(int $maxPeople): self { $this->maxPeople = $maxPeople; $this->markDirty('max_people'); return $this; }
-    public function getStartTime(): string { return $this->startTime; }
-    public function setStartTime(string $startTime): self { $this->startTime = $startTime; $this->markDirty('start_time'); return $this; }
-    public function getEndTime(): string { return $this->endTime; }
-    public function setEndTime(string $endTime): self { $this->endTime = $endTime; $this->markDirty('end_time'); return $this; }
-    public function getGroupTimeLimit(): int { return $this->groupTimeLimit; }
-    public function setGroupTimeLimit(int $groupTimeLimit): self { $this->groupTimeLimit = $groupTimeLimit; $this->markDirty('group_time_limit'); return $this; }
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; $this->markDirty('status'); return $this; }
-    public function getTotalQuantity(): int { return $this->totalQuantity; }
-    public function setTotalQuantity(int $totalQuantity): self { $this->totalQuantity = $totalQuantity; $this->markDirty('total_quantity'); return $this; }
-    public function getSoldQuantity(): int { return $this->soldQuantity; }
-    public function setSoldQuantity(int $soldQuantity): self { $this->soldQuantity = $soldQuantity; $this->markDirty('sold_quantity'); return $this; }
-    public function getGroupCount(): int { return $this->groupCount; }
-    public function setGroupCount(int $groupCount): self { $this->groupCount = $groupCount; $this->markDirty('group_count'); return $this; }
-    public function getSuccessGroupCount(): int { return $this->successGroupCount; }
-    public function setSuccessGroupCount(int $successGroupCount): self { $this->successGroupCount = $successGroupCount; $this->markDirty('success_group_count'); return $this; }
-    public function getSortOrder(): int { return $this->sortOrder; }
-    public function setSortOrder(int $sortOrder): self { $this->sortOrder = $sortOrder; $this->markDirty('sort_order'); return $this; }
-    public function getIsEnabled(): bool { return $this->isEnabled; }
-    public function setIsEnabled(bool $isEnabled): self { $this->isEnabled = $isEnabled; $this->markDirty('is_enabled'); return $this; }
-    public function getRules(): ?array { return $this->rules; }
-    public function setRules(?array $rules): self { $this->rules = $rules; $this->markDirty('rules'); return $this; }
-    public function getImages(): ?array { return $this->images; }
-    public function setImages(?array $images): self { $this->images = $images; $this->markDirty('images'); return $this; }
-    public function getRemark(): ?string { return $this->remark; }
-    public function setRemark(?string $remark): self { $this->remark = $remark; $this->markDirty('remark'); return $this; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function setTitle(string $title): self
+    {
+        $title = trim($title);
+        if ($title === '') {
+            throw new \DomainException('活动标题不能为空');
+        } $this->title = $title;
+        $this->markDirty('title');
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        $this->markDirty('description');
+        return $this;
+    }
+
+    public function getProductId(): int
+    {
+        return $this->productId;
+    }
+
+    public function setProductId(int $productId): self
+    {
+        $this->productId = $productId;
+        $this->markDirty('product_id');
+        return $this;
+    }
+
+    public function getSkuId(): int
+    {
+        return $this->skuId;
+    }
+
+    public function setSkuId(int $skuId): self
+    {
+        $this->skuId = $skuId;
+        $this->markDirty('sku_id');
+        return $this;
+    }
+
+    public function getOriginalPrice(): int
+    {
+        return $this->originalPrice;
+    }
+
+    public function setOriginalPrice(int $originalPrice): self
+    {
+        $this->originalPrice = $originalPrice;
+        $this->markDirty('original_price');
+        return $this;
+    }
+
+    public function getGroupPrice(): int
+    {
+        return $this->groupPrice;
+    }
+
+    public function setGroupPrice(int $groupPrice): self
+    {
+        $this->groupPrice = $groupPrice;
+        $this->markDirty('group_price');
+        return $this;
+    }
+
+    public function getMinPeople(): int
+    {
+        return $this->minPeople;
+    }
+
+    public function setMinPeople(int $minPeople): self
+    {
+        $this->minPeople = $minPeople;
+        $this->markDirty('min_people');
+        return $this;
+    }
+
+    public function getMaxPeople(): int
+    {
+        return $this->maxPeople;
+    }
+
+    public function setMaxPeople(int $maxPeople): self
+    {
+        $this->maxPeople = $maxPeople;
+        $this->markDirty('max_people');
+        return $this;
+    }
+
+    public function getStartTime(): string
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(string $startTime): self
+    {
+        $this->startTime = $startTime;
+        $this->markDirty('start_time');
+        return $this;
+    }
+
+    public function getEndTime(): string
+    {
+        return $this->endTime;
+    }
+
+    public function setEndTime(string $endTime): self
+    {
+        $this->endTime = $endTime;
+        $this->markDirty('end_time');
+        return $this;
+    }
+
+    public function getGroupTimeLimit(): int
+    {
+        return $this->groupTimeLimit;
+    }
+
+    public function setGroupTimeLimit(int $groupTimeLimit): self
+    {
+        $this->groupTimeLimit = $groupTimeLimit;
+        $this->markDirty('group_time_limit');
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        $this->markDirty('status');
+        return $this;
+    }
+
+    public function getTotalQuantity(): int
+    {
+        return $this->totalQuantity;
+    }
+
+    public function setTotalQuantity(int $totalQuantity): self
+    {
+        $this->totalQuantity = $totalQuantity;
+        $this->markDirty('total_quantity');
+        return $this;
+    }
+
+    public function getSoldQuantity(): int
+    {
+        return $this->soldQuantity;
+    }
+
+    public function setSoldQuantity(int $soldQuantity): self
+    {
+        $this->soldQuantity = $soldQuantity;
+        $this->markDirty('sold_quantity');
+        return $this;
+    }
+
+    public function getGroupCount(): int
+    {
+        return $this->groupCount;
+    }
+
+    public function setGroupCount(int $groupCount): self
+    {
+        $this->groupCount = $groupCount;
+        $this->markDirty('group_count');
+        return $this;
+    }
+
+    public function getSuccessGroupCount(): int
+    {
+        return $this->successGroupCount;
+    }
+
+    public function setSuccessGroupCount(int $successGroupCount): self
+    {
+        $this->successGroupCount = $successGroupCount;
+        $this->markDirty('success_group_count');
+        return $this;
+    }
+
+    public function getSortOrder(): int
+    {
+        return $this->sortOrder;
+    }
+
+    public function setSortOrder(int $sortOrder): self
+    {
+        $this->sortOrder = $sortOrder;
+        $this->markDirty('sort_order');
+        return $this;
+    }
+
+    public function getIsEnabled(): bool
+    {
+        return $this->isEnabled;
+    }
+
+    public function setIsEnabled(bool $isEnabled): self
+    {
+        $this->isEnabled = $isEnabled;
+        $this->markDirty('is_enabled');
+        return $this;
+    }
+
+    public function getRules(): ?array
+    {
+        return $this->rules;
+    }
+
+    public function setRules(?array $rules): self
+    {
+        $this->rules = $rules;
+        $this->markDirty('rules');
+        return $this;
+    }
+
+    public function getImages(): ?array
+    {
+        return $this->images;
+    }
+
+    public function setImages(?array $images): self
+    {
+        $this->images = $images;
+        $this->markDirty('images');
+        return $this;
+    }
+
+    public function getRemark(): ?string
+    {
+        return $this->remark;
+    }
+
+    public function setRemark(?string $remark): self
+    {
+        $this->remark = $remark;
+        $this->markDirty('remark');
+        return $this;
+    }
 
     /** @return array<string, mixed> */
     public function toArray(): array

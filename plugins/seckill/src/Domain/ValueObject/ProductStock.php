@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Domain\ValueObject;
 
@@ -17,23 +25,43 @@ final class ProductStock
         $this->validate();
     }
 
-    public function getQuantity(): int { return $this->quantity; }
+    public function getQuantity(): int
+    {
+        return $this->quantity;
+    }
 
-    public function getSoldQuantity(): int { return $this->soldQuantity; }
+    public function getSoldQuantity(): int
+    {
+        return $this->soldQuantity;
+    }
 
-    public function getAvailableQuantity(): int { return $this->quantity - $this->soldQuantity; }
+    public function getAvailableQuantity(): int
+    {
+        return $this->quantity - $this->soldQuantity;
+    }
 
-    public function isSoldOut(): bool { return $this->soldQuantity >= $this->quantity; }
+    public function isSoldOut(): bool
+    {
+        return $this->soldQuantity >= $this->quantity;
+    }
 
     public function getStockPercentage(): float
     {
-        if ($this->quantity === 0) { return 0; }
+        if ($this->quantity === 0) {
+            return 0;
+        }
         return round(($this->quantity - $this->soldQuantity) / $this->quantity * 100, 2);
     }
 
-    public function isLowStock(int $threshold = 20): bool { return $this->getStockPercentage() <= $threshold; }
+    public function isLowStock(int $threshold = 20): bool
+    {
+        return $this->getStockPercentage() <= $threshold;
+    }
 
-    public function canSell(int $requestQuantity): bool { return $this->getAvailableQuantity() >= $requestQuantity; }
+    public function canSell(int $requestQuantity): bool
+    {
+        return $this->getAvailableQuantity() >= $requestQuantity;
+    }
 
     public function sell(int $quantity): self
     {

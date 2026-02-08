@@ -1,9 +1,20 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Since\Seckill\Infrastructure\Crontab;
 
+use Carbon\Carbon;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\Crontab\Annotation\Crontab;
 use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
 use Plugin\Since\Seckill\Domain\Job\SeckillSessionStartJob;
 use Plugin\Since\Seckill\Domain\Repository\SeckillActivityRepository;
@@ -11,9 +22,6 @@ use Plugin\Since\Seckill\Domain\Repository\SeckillSessionRepository;
 use Plugin\Since\Seckill\Domain\Service\DomainSeckillActivityService;
 use Plugin\Since\Seckill\Domain\Service\DomainSeckillSessionService;
 use Plugin\Since\Seckill\Domain\Service\SeckillCacheService;
-use Carbon\Carbon;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
 #[Crontab(name: 'seckill-activity-status', rule: '* *\/10 * * * *', callback: 'execute', memo: '秒杀活动状态自动推进', enable: true)]
@@ -43,7 +51,9 @@ class SeckillActivityStatusCrontab
         $now = Carbon::now();
         foreach ($sessions as $session) {
             try {
-                if (\in_array($session->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) { continue; }
+                if (\in_array($session->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) {
+                    continue;
+                }
                 $startTime = Carbon::parse($session->start_time);
                 if ($startTime->lte($now)) {
                     $this->sessionService->start($session->id);
@@ -64,7 +74,9 @@ class SeckillActivityStatusCrontab
     {
         foreach ($this->sessionRepository->findActiveExpiredSessions() as $session) {
             try {
-                if (\in_array($session->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) { continue; }
+                if (\in_array($session->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) {
+                    continue;
+                }
                 $this->sessionService->end($session->id);
                 $this->logger->info('[SeckillActivityStatus] 场次已结束', ['id' => $session->id]);
             } catch (\Throwable $e) {
@@ -77,10 +89,15 @@ class SeckillActivityStatusCrontab
     {
         foreach ($this->activityRepository->findPendingEnabledActivities() as $activity) {
             try {
-                if (\in_array($activity->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) { continue; }
+                if (\in_array($activity->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) {
+                    continue;
+                }
                 $hasActive = false;
                 foreach ($this->sessionRepository->findByActivityId($activity->id) as $session) {
-                    if ($session->status === SeckillStatus::ACTIVE->value) { $hasActive = true; break; }
+                    if ($session->status === SeckillStatus::ACTIVE->value) {
+                        $hasActive = true;
+                        break;
+                    }
                 }
                 if ($hasActive) {
                     $this->activityService->start($activity->id);
@@ -96,12 +113,19 @@ class SeckillActivityStatusCrontab
     {
         foreach ($this->activityRepository->findActiveActivities() as $activity) {
             try {
-                if (\in_array($activity->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) { continue; }
+                if (\in_array($activity->status, [SeckillStatus::CANCELLED->value, SeckillStatus::SOLD_OUT->value], true)) {
+                    continue;
+                }
                 $sessions = $this->sessionRepository->findByActivityId($activity->id);
-                if (empty($sessions)) { continue; }
+                if (empty($sessions)) {
+                    continue;
+                }
                 $allFinished = true;
                 foreach ($sessions as $session) {
-                    if (!\in_array($session->status, [SeckillStatus::ENDED->value, SeckillStatus::CANCELLED->value], true)) { $allFinished = false; break; }
+                    if (! \in_array($session->status, [SeckillStatus::ENDED->value, SeckillStatus::CANCELLED->value], true)) {
+                        $allFinished = false;
+                        break;
+                    }
                 }
                 if ($allFinished) {
                     $this->activityService->end($activity->id);

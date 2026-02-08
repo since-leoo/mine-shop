@@ -12,11 +12,6 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
-use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
-use App\Domain\Infrastructure\SystemSetting\ValueObject\ProductSetting;
-use App\Domain\Marketing\Coupon\Service\DomainCouponUserService;
 use App\Domain\Member\Service\DomainMemberAddressService;
 use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
@@ -26,10 +21,13 @@ use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
-use App\Domain\Trade\Shipping\Service\FreightCalculationService;
+use App\Domain\Trade\Order\Service\OrderPendingCacheService;
 use DG\BypassFinals;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\AsyncQueue\Driver\DriverInterface;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Psr\Container\ContainerInterface;
 
 /**
  * Feature: order-checkout-refactor, Property 2: 商品下架时提交不扣库存.
@@ -81,13 +79,6 @@ final class SubmitOrderPropertyTest extends TestCase
             $stockService->shouldNotReceive('reserve');
             $stockService->shouldNotReceive('acquireLocks');
 
-            // Mock MallSettingService
-            $mallSettingService = \Mockery::mock(DomainMallSettingService::class);
-            $productSetting = new ProductSetting(false, 9, 20, true, []);
-            $orderSetting = new OrderSetting(30, 7, 15, true, 'system', '400-888-1000');
-            $mallSettingService->shouldReceive('product')->andReturn($productSetting);
-            $mallSettingService->shouldReceive('order')->andReturn($orderSetting);
-
             // Mock repository (should not be called)
             $repository = \Mockery::mock(OrderRepository::class);
             $repository->shouldNotReceive('save');
@@ -103,24 +94,14 @@ final class SubmitOrderPropertyTest extends TestCase
                 'detail' => '体育西路',
             ]);
 
-            // Mock FreightCalculationService (should not be called since buildDraft throws)
-            $freightService = \Mockery::mock(FreightCalculationService::class);
-            $freightService->shouldNotReceive('calculate');
-
-            // Mock ProductSnapshotInterface (should not be called since buildDraft throws)
-            $snapshotService = \Mockery::mock(ProductSnapshotInterface::class);
-            $snapshotService->shouldNotReceive('getProduct');
-
             $orderService = new DomainApiOrderCommandService(
                 $repository,
                 \Mockery::mock(DomainOrderService::class),
                 $strategyFactory,
                 $stockService,
-                $mallSettingService,
                 $addressService,
-                \Mockery::mock(DomainCouponUserService::class),
-                $freightService,
-                $snapshotService,
+                \Mockery::mock(OrderPendingCacheService::class),
+                \Mockery::mock(DriverFactory::class),
             );
 
             // Act & Assert: submit should throw, reserve should NOT be called
@@ -170,39 +151,15 @@ final class SubmitOrderPropertyTest extends TestCase
             $strategy = $this->createTrackingStrategy($callOrder, $unitPrice);
             $strategyFactory = new OrderTypeStrategyFactory([$strategy]);
 
-            // Mock StockService that tracks call order
+            // Mock StockService that tracks call order (Lua atomic reserve, no locks)
             $stockService = \Mockery::mock(DomainOrderStockService::class);
-            $stockService->shouldReceive('acquireLocks')
-                ->once()
-                ->andReturnUsing(static function () use (&$callOrder) {
-                    $callOrder[] = 'acquireLocks';
-                    return ['lock1' => 'token1'];
-                });
             $stockService->shouldReceive('reserve')
                 ->once()
                 ->andReturnUsing(static function () use (&$callOrder) {
                     $callOrder[] = 'reserve';
                 });
-            $stockService->shouldReceive('releaseLocks')
-                ->once()
-                ->andReturnUsing(static function () use (&$callOrder) {
-                    $callOrder[] = 'releaseLocks';
-                });
-
-            $mallSettingService = \Mockery::mock(DomainMallSettingService::class);
-            $productSetting = new ProductSetting(false, 9, 20, true, []);
-            $orderSetting = new OrderSetting(30, 7, 15, true, 'system', '400-888-1000');
-            $mallSettingService->shouldReceive('product')->andReturn($productSetting);
-            $mallSettingService->shouldReceive('order')->andReturn($orderSetting);
 
             $repository = \Mockery::mock(OrderRepository::class);
-            $repository->shouldReceive('save')
-                ->once()
-                ->andReturnUsing(static function (OrderEntity $entity) use (&$callOrder) {
-                    $callOrder[] = 'save';
-                    $entity->setOrderNo('TEST' . random_int(100000, 999999));
-                    return $entity;
-                });
 
             $addressService = \Mockery::mock(DomainMemberAddressService::class);
             $addressService->shouldReceive('default')->andReturn([
@@ -214,28 +171,22 @@ final class SubmitOrderPropertyTest extends TestCase
                 'detail' => '体育西路',
             ]);
 
-            // Mock FreightCalculationService — returns 0 for simplicity
-            $freightService = \Mockery::mock(FreightCalculationService::class);
-            $freightService->shouldReceive('calculate')->andReturn(0);
+            $pendingCache = \Mockery::mock(OrderPendingCacheService::class);
+            $pendingCache->shouldReceive('markProcessing')->once();
 
-            // Mock ProductSnapshotInterface — returns product with default freight
-            $snapshotService = \Mockery::mock(ProductSnapshotInterface::class);
-            $snapshotService->shouldReceive('getProduct')->andReturn([
-                'freight_type' => 'free',
-                'flat_freight_amount' => 0,
-                'shipping_template_id' => null,
-            ]);
+            $mockDriver = \Mockery::mock(DriverInterface::class);
+            $mockDriver->shouldReceive('push')->once();
+            $driverFactory = \Mockery::mock(DriverFactory::class);
+            $driverFactory->shouldReceive('get')->with('default')->andReturn($mockDriver);
 
             $orderService = new DomainApiOrderCommandService(
                 $repository,
                 \Mockery::mock(DomainOrderService::class),
                 $strategyFactory,
                 $stockService,
-                $mallSettingService,
                 $addressService,
-                \Mockery::mock(DomainCouponUserService::class),
-                $freightService,
-                $snapshotService,
+                $pendingCache,
+                $driverFactory,
             );
 
             $orderService->submit($input);
@@ -306,7 +257,7 @@ final class SubmitOrderPropertyTest extends TestCase
                 return null;
             }
 
-            public function getCouponList(): ?array
+            public function getCouponId(): ?int
             {
                 return null;
             }
@@ -348,9 +299,11 @@ final class SubmitOrderPropertyTest extends TestCase
                 throw new \RuntimeException($this->message);
             }
 
-            public function applyCoupon(OrderEntity $orderEntity, array $couponList): void {}
+            public function applyFreight(OrderEntity $orderEntity): void {}
 
-            public function adjustPrice(OrderEntity $orderEntity): void {}
+            public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void {}
+
+            public function rehydrate(OrderEntity $orderEntity, ContainerInterface $container): void {}
 
             public function postCreate(OrderEntity $orderEntity): void {}
         };
@@ -394,14 +347,19 @@ final class SubmitOrderPropertyTest extends TestCase
                 return $orderEntity;
             }
 
-            public function applyCoupon(OrderEntity $orderEntity, array $couponList): void
+            public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void
             {
                 $this->callOrder[] = 'applyCoupon';
             }
 
-            public function adjustPrice(OrderEntity $orderEntity): void
+            public function applyFreight(OrderEntity $orderEntity): void
             {
-                $this->callOrder[] = 'adjustPrice';
+                $this->callOrder[] = 'applyFreight';
+            }
+
+            public function rehydrate(OrderEntity $orderEntity, ContainerInterface $container): void
+            {
+                $this->callOrder[] = 'rehydrate';
             }
 
             public function postCreate(OrderEntity $orderEntity): void
