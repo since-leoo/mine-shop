@@ -1,0 +1,13 @@
+{
+    "name": "since/seckill",
+    "version": "1.0.0",
+    "description": "秒杀活动模块 - 支持活动/场次/商品管理、限时抢购、库存扣减",
+    "author": "Since",
+    "namespace": "Plugin\\Since\\Seckill",
+    "priority": 10,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": true,
+    "configProvider": "Plugin\\Since\\Seckill\\ConfigProvider"
+}
