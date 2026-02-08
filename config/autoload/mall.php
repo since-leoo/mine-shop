@@ -75,12 +75,7 @@ return [
                             ],
                         ],
                     ],
-                    'default' => [
-                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner1.png', 'link' => ''],
-                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner2.png', 'link' => ''],
-                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner3.png', 'link' => ''],
-                        ['image' => 'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner4.png', 'link' => ''],
-                    ],
+                    'default' => [],
                     'sort' => 70,
                 ],
                 'mall.home.activity_banner' => [
@@ -92,7 +87,7 @@ return [
                         'display_span' => ['compact'],
                         'preview_size' => 120,
                     ],
-                    'default' => 'https://we-retail-static-1300977798.cos.ap-guangzhou.myqcloud.com/retail-mp/activity/banner.png',
+                    'default' => '',
                     'sort' => 80,
                 ],
             ],
