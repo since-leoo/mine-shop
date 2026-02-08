@@ -64,7 +64,6 @@ class SendMessageJob extends Job
                 'user_id' => $this->userId,
                 'channel' => $this->channel,
                 'error' => $e->getMessage(),
-                'attempts' => $this->attempts(),
             ]);
 
             // 重新抛出异常以触发重试机制

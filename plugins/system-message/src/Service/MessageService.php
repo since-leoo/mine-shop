@@ -96,23 +96,21 @@ class MessageService
                 throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
             }
 
-            // 标记为发送中
-            $message->markAsSending();
-
             // 获取收件人
             $recipients = $message->getRecipients();
             if ($recipients->isEmpty()) {
                 throw new \InvalidArgumentException("No recipients found for message: {$messageId}");
             }
 
-            // 创建用户消息关联
-            $this->createUserMessages($message, $recipients);
+            // 事务：标记发送中 + 创建用户消息 + 标记已发送
+            Db::transaction(function () use ($message, $recipients) {
+                $message->markAsSending();
+                $this->createUserMessages($message, $recipients);
+                $message->markAsSent();
+            });
 
-            // 异步发送通知
+            // 异步发送通知（事务外，失败不影响消息状态）
             $this->queueNotifications($message, $recipients);
-
-            // 标记为已发送
-            $message->markAsSent();
 
             // 触发发送后事件
             $this->getEventDispatcher()->dispatch(new MessageSent($message));
@@ -125,8 +123,10 @@ class MessageService
             return true;
         } catch (\Throwable $e) {
             // 标记为发送失败
-            if (isset($message)) {
+            if (isset($message) && $message->isSending()) {
                 $message->markAsFailed();
+            }
+            if (isset($message)) {
                 $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage()));
             }
 
@@ -255,43 +255,8 @@ class MessageService
      */
     public function searchUserMessages(int $userId, string $keyword, array $filters = [], int $page = 1, int $pageSize = 20): array
     {
-        $query = UserMessage::where('user_id', $userId)
-            ->where('is_deleted', false)
-            ->whereHas('message', static function ($q) use ($keyword) {
-                $q->where('title', 'like', "%{$keyword}%")
-                    ->orWhere('content', 'like', "%{$keyword}%");
-            })
-            ->with('message');
-
-        // 应用过滤条件
-        if (isset($filters['is_read']) && $filters['is_read'] !== null) {
-            $query->where('is_read', (bool) $filters['is_read']);
-        }
-
-        if (! empty($filters['type'])) {
-            $query->whereHas('message', static function ($q) use ($filters) {
-                $q->where('type', $filters['type']);
-            });
-        }
-
-        if (! empty($filters['priority'])) {
-            $query->whereHas('message', static function ($q) use ($filters) {
-                $q->where('priority', '>=', $filters['priority']);
-            });
-        }
-
-        $total = $query->count();
-        $data = $query->orderBy('created_at', 'desc')
-            ->offset(($page - 1) * $pageSize)
-            ->limit($pageSize)
-            ->get();
-
-        return [
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
-            'page_size' => $pageSize,
-        ];
+        $filters['keyword'] = $keyword;
+        return $this->repository->getUserMessages($userId, $filters, $page, $pageSize);
     }
 
     /**
@@ -411,16 +376,25 @@ class MessageService
     }
 
     /**
-     * 清理过期消息.
+     * 清理过期消息（硬删除）.
      */
     public function cleanupExpiredMessages(): int
     {
         $retentionDays = config('system_message.message.retention_days', 90);
         $expiredDate = Carbon::now()->subDays($retentionDays);
 
-        return Message::where('created_at', '<', $expiredDate)
-            ->whereNull('deleted_at')
-            ->delete();
+        // 先删除关联的 user_messages
+        $expiredMessageIds = Message::where('created_at', '<', $expiredDate)
+            ->pluck('id')
+            ->toArray();
+
+        if (empty($expiredMessageIds)) {
+            return 0;
+        }
+
+        UserMessage::whereIn('message_id', $expiredMessageIds)->delete();
+
+        return Message::where('created_at', '<', $expiredDate)->forceDelete();
     }
 
     /**

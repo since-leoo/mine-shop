@@ -35,8 +35,8 @@ class UpdateTemplateRequest extends FormRequest
 
         return [
             'name' => ['sometimes', 'string', "max:{$maxNameLength}", "unique:message_templates,name,{$templateId}"],
-            'title_template' => ['sometimes', 'string', 'max:500'],
-            'content_template' => ['sometimes', 'string', 'max:10000'],
+            'title' => ['sometimes', 'string', 'max:255'],
+            'content' => ['sometimes', 'string', 'max:10000'],
             'type' => ['sometimes', 'string', 'in:' . implode(',', array_keys(MessageTemplate::getTypes()))],
             'category' => ['sometimes', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:500'],
@@ -54,8 +54,8 @@ class UpdateTemplateRequest extends FormRequest
         return [
             'name.max' => '模板名称长度不能超过 :max 个字符',
             'name.unique' => '模板名称已存在',
-            'title_template.max' => '标题模板长度不能超过 :max 个字符',
-            'content_template.max' => '内容模板长度不能超过 :max 个字符',
+            'title.max' => '标题模板长度不能超过 :max 个字符',
+            'content.max' => '内容模板长度不能超过 :max 个字符',
             'type.in' => '无效的模板类型',
             'category.max' => '模板分类长度不能超过 :max 个字符',
             'description.max' => '模板描述长度不能超过 :max 个字符',
@@ -73,8 +73,8 @@ class UpdateTemplateRequest extends FormRequest
     {
         return [
             'name' => '模板名称',
-            'title_template' => '标题模板',
-            'content_template' => '内容模板',
+            'title' => '标题模板',
+            'content' => '内容模板',
             'type' => '模板类型',
             'category' => '模板分类',
             'description' => '模板描述',
@@ -93,31 +93,31 @@ class UpdateTemplateRequest extends FormRequest
             $data = $validator->getData();
 
             // 只有在更新模板内容时才验证语法
-            if (isset($data['title_template'])) {
-                $this->validateTemplateSyntax($validator, $data['title_template'], 'title_template');
+            if (isset($data['title'])) {
+                $this->validateTemplateSyntax($validator, $data['title'], 'title');
             }
 
-            if (isset($data['content_template'])) {
-                $this->validateTemplateSyntax($validator, $data['content_template'], 'content_template');
+            if (isset($data['content'])) {
+                $this->validateTemplateSyntax($validator, $data['content'], 'content');
             }
 
             // 如果同时更新了模板内容和变量，验证它们的一致性
-            if ((isset($data['title_template']) || isset($data['content_template'])) && isset($data['variables'])) {
-                $titleTemplate = $data['title_template'] ?? '';
-                $contentTemplate = $data['content_template'] ?? '';
+            if ((isset($data['title']) || isset($data['content'])) && isset($data['variables'])) {
+                $title = $data['title'] ?? '';
+                $content = $data['content'] ?? '';
 
                 // 如果只更新了其中一个模板，需要获取另一个模板的内容
-                if (! isset($data['title_template']) || ! isset($data['content_template'])) {
+                if (! isset($data['title']) || ! isset($data['content'])) {
                     $templateId = $this->route('id');
                     $existingTemplate = MessageTemplate::find($templateId);
                     if ($existingTemplate) {
-                        $titleTemplate = $data['title_template'] ?? $existingTemplate->title_template;
-                        $contentTemplate = $data['content_template'] ?? $existingTemplate->content_template;
+                        $title = $data['title'] ?? $existingTemplate->title;
+                        $content = $data['content'] ?? $existingTemplate->content;
                     }
                 }
 
-                $titleVariables = $this->extractVariables($titleTemplate);
-                $contentVariables = $this->extractVariables($contentTemplate);
+                $titleVariables = $this->extractVariables($title);
+                $contentVariables = $this->extractVariables($content);
                 $allVariables = array_unique(array_merge($titleVariables, $contentVariables));
 
                 $providedVariables = $data['variables'];

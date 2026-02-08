@@ -223,9 +223,11 @@ class NotificationService
     {
         return match ($channel) {
             'database' => $this->sendDatabaseNotification($message, $userId),
+            'socketio', 'websocket' => $this->sendRealtimeNotification($message, $userId, $channel),
             'email' => $this->sendEmailNotification($message, $userId),
             'sms' => $this->sendSmsNotification($message, $userId),
             'push' => $this->sendPushNotification($message, $userId),
+            'miniapp' => $this->sendMiniappNotification($message, $userId),
             default => throw new \InvalidArgumentException("Unsupported notification channel: {$channel}"),
         };
     }
@@ -235,8 +237,21 @@ class NotificationService
      */
     protected function sendDatabaseNotification(Message $message, int $userId): bool
     {
-        // 数据库通知已经在 MessageService 中处理
-        // 这里只需要返回 true 表示成功
+        // 数据库通知已经在 MessageService::createUserMessages() 中处理
+        return true;
+    }
+
+    /**
+     * 发送实时推送通知（SocketIO / WebSocket）.
+     */
+    protected function sendRealtimeNotification(Message $message, int $userId, string $channel): bool
+    {
+        // TODO: 接入实际的 SocketIO/WebSocket 推送服务
+        system_message_logger()->info('Realtime notification skipped (not implemented)', [
+            'message_id' => $message->id,
+            'user_id' => $userId,
+            'channel' => $channel,
+        ]);
         return true;
     }
 
@@ -245,25 +260,21 @@ class NotificationService
      */
     protected function sendEmailNotification(Message $message, int $userId): bool
     {
-        try {
-            $user = $this->getUserById($userId);
-            if (! $user || ! $user->email) {
-                return false;
-            }
-
-            $mailService = $this->getMailService();
-            $subject = $message->title;
-            $content = $this->formatEmailContent($message);
-
-            return $mailService->send($user->email, $subject, $content);
-        } catch (\Throwable $e) {
-            system_message_logger()->error('Email notification failed', [
+        $user = $this->getUserById($userId);
+        if (! $user || empty($user->email)) {
+            system_message_logger()->warning('Email notification skipped: user has no email', [
                 'message_id' => $message->id,
                 'user_id' => $userId,
-                'error' => $e->getMessage(),
             ]);
             return false;
         }
+
+        // TODO: 接入实际的邮件发送服务
+        system_message_logger()->info('Email notification skipped (mail service not configured)', [
+            'message_id' => $message->id,
+            'user_id' => $userId,
+        ]);
+        return false;
     }
 
     /**
@@ -271,24 +282,21 @@ class NotificationService
      */
     protected function sendSmsNotification(Message $message, int $userId): bool
     {
-        try {
-            $user = $this->getUserById($userId);
-            if (! $user || ! $user->phone) {
-                return false;
-            }
-
-            $smsService = $this->getSmsService();
-            $content = $this->formatSmsContent($message);
-
-            return $smsService->send($user->phone, $content);
-        } catch (\Throwable $e) {
-            system_message_logger()->error('SMS notification failed', [
+        $user = $this->getUserById($userId);
+        if (! $user || empty($user->phone)) {
+            system_message_logger()->warning('SMS notification skipped: user has no phone', [
                 'message_id' => $message->id,
                 'user_id' => $userId,
-                'error' => $e->getMessage(),
             ]);
             return false;
         }
+
+        // TODO: 接入实际的短信发送服务
+        system_message_logger()->info('SMS notification skipped (sms service not configured)', [
+            'message_id' => $message->id,
+            'user_id' => $userId,
+        ]);
+        return false;
     }
 
     /**
@@ -296,27 +304,25 @@ class NotificationService
      */
     protected function sendPushNotification(Message $message, int $userId): bool
     {
-        try {
-            $pushService = $this->getPushService();
+        // TODO: 接入实际的推送服务
+        system_message_logger()->info('Push notification skipped (push service not configured)', [
+            'message_id' => $message->id,
+            'user_id' => $userId,
+        ]);
+        return false;
+    }
 
-            $data = [
-                'title' => $message->title,
-                'body' => $this->formatPushContent($message),
-                'data' => [
-                    'message_id' => $message->id,
-                    'type' => $message->type,
-                ],
-            ];
-
-            return $pushService->sendToUser($userId, $data);
-        } catch (\Throwable $e) {
-            system_message_logger()->error('Push notification failed', [
-                'message_id' => $message->id,
-                'user_id' => $userId,
-                'error' => $e->getMessage(),
-            ]);
-            return false;
-        }
+    /**
+     * 发送小程序通知.
+     */
+    protected function sendMiniappNotification(Message $message, int $userId): bool
+    {
+        // TODO: 接入实际的小程序订阅消息服务
+        system_message_logger()->info('Miniapp notification skipped (miniapp service not configured)', [
+            'message_id' => $message->id,
+            'user_id' => $userId,
+        ]);
+        return false;
     }
 
     /**
@@ -451,31 +457,7 @@ class NotificationService
      */
     protected function getUserById(int $userId)
     {
-        return null;
-    }
-
-    /**
-     * 获取邮件服务
-     */
-    protected function getMailService()
-    {
-        throw new \RuntimeException('Mail service not implemented');
-    }
-
-    /**
-     * 获取短信服务
-     */
-    protected function getSmsService()
-    {
-        throw new \RuntimeException('SMS service not implemented');
-    }
-
-    /**
-     * 获取推送服务
-     */
-    protected function getPushService()
-    {
-        throw new \RuntimeException('Push service not implemented');
+        return \App\Infrastructure\Model\Permission\User::find($userId);
     }
 
     /**

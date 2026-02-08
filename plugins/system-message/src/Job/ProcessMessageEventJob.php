@@ -57,7 +57,6 @@ class ProcessMessageEventJob extends Job
             system_message_logger()->error('ProcessMessageEventJob failed', [
                 'data' => $this->messageData,
                 'error' => $e->getMessage(),
-                'attempt' => $this->getAttempts(),
             ]);
 
             throw $e;

@@ -68,9 +68,9 @@ class TemplateRepository
         // 搜索关键词
         $query->where(static function ($q) use ($keyword) {
             $q->where('name', 'like', "%{$keyword}%")
-                ->orWhere('title_template', 'like', "%{$keyword}%")
-                ->orWhere('content_template', 'like', "%{$keyword}%")
-                ->orWhere('description', 'like', "%{$keyword}%");
+                ->orWhere('title', 'like', "%{$keyword}%")
+                ->orWhere('content', 'like', "%{$keyword}%")
+                ->orWhere('remark', 'like', "%{$keyword}%");
         });
 
         $this->applyFilters($query, $filters);

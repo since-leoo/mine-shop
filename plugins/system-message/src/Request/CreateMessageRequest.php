@@ -42,7 +42,7 @@ class CreateMessageRequest extends FormRequest
             'recipient_ids' => ['array'],
             'recipient_ids.*' => ['integer', 'min:1'],
             'channels' => ['array'],
-            'channels.*' => ['string', 'in:socketio,websocket,email,sms,push'],
+            'channels.*' => ['string', 'in:database,socketio,websocket,email,sms,push,miniapp'],
             'scheduled_at' => ['nullable', 'date', 'after:now'],
             'template_id' => ['nullable', 'integer', 'exists:message_templates,id'],
             'template_variables' => ['nullable', 'array'],
@@ -123,7 +123,7 @@ class CreateMessageRequest extends FormRequest
 
             // 验证渠道设置
             if (empty($data['channels'])) {
-                $data['channels'] = ['socketio', 'websocket']; // 默认使用Socket.IO和WebSocket
+                $data['channels'] = ['database']; // 默认使用站内信
                 $validator->setData($data);
             }
         });

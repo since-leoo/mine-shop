@@ -34,8 +34,8 @@ class CreateTemplateRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', "max:{$maxNameLength}", 'unique:message_templates,name'],
-            'title_template' => ['required', 'string', 'max:500'],
-            'content_template' => ['required', 'string', 'max:10000'],
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string', 'max:10000'],
             'type' => ['required', 'string', 'in:' . implode(',', array_keys(MessageTemplate::getTypes()))],
             'category' => ['required', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:500'],
@@ -54,10 +54,10 @@ class CreateTemplateRequest extends FormRequest
             'name.required' => '模板名称不能为空',
             'name.max' => '模板名称长度不能超过 :max 个字符',
             'name.unique' => '模板名称已存在',
-            'title_template.required' => '标题模板不能为空',
-            'title_template.max' => '标题模板长度不能超过 :max 个字符',
-            'content_template.required' => '内容模板不能为空',
-            'content_template.max' => '内容模板长度不能超过 :max 个字符',
+            'title.required' => '标题模板不能为空',
+            'title.max' => '标题模板长度不能超过 :max 个字符',
+            'content.required' => '内容模板不能为空',
+            'content.max' => '内容模板长度不能超过 :max 个字符',
             'type.required' => '模板类型不能为空',
             'type.in' => '无效的模板类型',
             'category.required' => '模板分类不能为空',
@@ -77,8 +77,8 @@ class CreateTemplateRequest extends FormRequest
     {
         return [
             'name' => '模板名称',
-            'title_template' => '标题模板',
-            'content_template' => '内容模板',
+            'title' => '标题模板',
+            'content' => '内容模板',
             'type' => '模板类型',
             'category' => '模板分类',
             'description' => '模板描述',
@@ -97,12 +97,12 @@ class CreateTemplateRequest extends FormRequest
             $data = $validator->getData();
 
             // 验证模板语法
-            $this->validateTemplateSyntax($validator, $data['title_template'] ?? '', 'title_template');
-            $this->validateTemplateSyntax($validator, $data['content_template'] ?? '', 'content_template');
+            $this->validateTemplateSyntax($validator, $data['title'] ?? '', 'title');
+            $this->validateTemplateSyntax($validator, $data['content'] ?? '', 'content');
 
             // 提取并验证变量
-            $titleVariables = $this->extractVariables($data['title_template'] ?? '');
-            $contentVariables = $this->extractVariables($data['content_template'] ?? '');
+            $titleVariables = $this->extractVariables($data['title'] ?? '');
+            $contentVariables = $this->extractVariables($data['content'] ?? '');
             $allVariables = array_unique(array_merge($titleVariables, $contentVariables));
 
             // 如果没有提供变量列表，自动提取

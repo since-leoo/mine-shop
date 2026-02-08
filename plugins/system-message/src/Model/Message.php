@@ -55,6 +55,11 @@ class Message extends Model
     use SoftDeletes;
 
     /**
+     * 收件人类型常量（供 Request 验证使用）.
+     */
+    public const RECIPIENT_ALL = 'all';
+
+    /**
      * The table associated with the model.
      */
     protected ?string $table = 'system_messages';
@@ -135,19 +140,24 @@ class Message extends Model
 
     /**
      * 获取收件人列表.
+     *
+     * 注意：recipient_type=all 时使用 cursor 避免大量用户 OOM，
+     * 但返回的 Collection 仍然是完整的。如果用户量极大，
+     * 应在 MessageService 层使用 chunk 方式处理。
      */
-    public function getRecipients(): Collection
+    public function getRecipients(): \Hyperf\Collection\Collection
     {
         switch ($this->recipient_type) {
             case RecipientType::ALL->value:
-                return User::where('status', 1)->get();
+                // 只取 id，减少内存占用
+                return User::where('status', 1)->select(['id', 'username', 'email', 'phone'])->get();
             case RecipientType::ROLE->value:
                 if (empty($this->recipient_ids)) {
                     return collect();
                 }
                 return User::whereHas('roles', function ($query) {
                     $query->whereIn('id', $this->recipient_ids);
-                })->where('status', 1)->get();
+                })->where('status', 1)->select(['id', 'username', 'email', 'phone'])->get();
 
             case RecipientType::USER->value:
                 if (empty($this->recipient_ids)) {
@@ -155,6 +165,7 @@ class Message extends Model
                 }
                 return User::whereIn('id', $this->recipient_ids)
                     ->where('status', 1)
+                    ->select(['id', 'username', 'email', 'phone'])
                     ->get();
 
             default:

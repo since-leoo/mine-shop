@@ -24,14 +24,12 @@ class TemplateService
 {
     protected TemplateRepository $repository;
 
-    protected EventDispatcherInterface $eventDispatcher;
+    private ?EventDispatcherInterface $eventDispatcher = null;
 
     public function __construct(
         TemplateRepository $repository,
-        EventDispatcherInterface $eventDispatcher
     ) {
         $this->repository = $repository;
-        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -50,7 +48,7 @@ class TemplateService
             $template = $this->repository->create($data);
 
             // 触发事件
-            $this->eventDispatcher->dispatch(new TemplateCreated($template));
+            $this->getEventDispatcher()->dispatch(new TemplateCreated($template));
 
             system_message_logger()->info('Template created', [
                 'template_id' => $template->id,
@@ -98,7 +96,7 @@ class TemplateService
 
             // 触发事件
             if (! empty($changes)) {
-                $this->eventDispatcher->dispatch(new TemplateUpdated($template, $changes));
+                $this->getEventDispatcher()->dispatch(new TemplateUpdated($template, $changes));
             }
 
             system_message_logger()->info('Template updated', [
@@ -137,7 +135,7 @@ class TemplateService
             $result = $template->delete();
 
             // 触发事件
-            $this->eventDispatcher->dispatch(new TemplateDeleted($template));
+            $this->getEventDispatcher()->dispatch(new TemplateDeleted($template));
 
             system_message_logger()->info('Template deleted', [
                 'template_id' => $template->id,
@@ -359,7 +357,7 @@ class TemplateService
      */
     protected function validateTemplateData(array $data, ?MessageTemplate $template = null): void
     {
-        $required = ['name', 'title_template', 'content_template'];
+        $required = ['name', 'title', 'content'];
         foreach ($required as $field) {
             if (empty($data[$field])) {
                 throw new \InvalidArgumentException("Field {$field} is required");
@@ -387,8 +385,8 @@ class TemplateService
         }
 
         // 验证模板语法
-        $this->validateTemplateSyntax($data['title_template'], 'title');
-        $this->validateTemplateSyntax($data['content_template'], 'content');
+        $this->validateTemplateSyntax($data['title'], 'title');
+        $this->validateTemplateSyntax($data['content'], 'content');
     }
 
     /**
@@ -446,5 +444,17 @@ class TemplateService
             </div>
         </div>
         ";
+    }
+
+    /**
+     * 懒加载获取 EventDispatcher
+     * 避免在 Listener 注册阶段产生循环依赖.
+     */
+    private function getEventDispatcher(): EventDispatcherInterface
+    {
+        if ($this->eventDispatcher === null) {
+            $this->eventDispatcher = \Hyperf\Context\ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
+        }
+        return $this->eventDispatcher;
     }
 }

@@ -42,7 +42,7 @@ class UpdateMessageRequest extends FormRequest
             'recipient_ids' => ['sometimes', 'array'],
             'recipient_ids.*' => ['integer', 'min:1'],
             'channels' => ['sometimes', 'array'],
-            'channels.*' => ['string', 'in:database,email,sms,push,miniapp'],
+            'channels.*' => ['string', 'in:database,socketio,websocket,email,sms,push,miniapp'],
             'scheduled_at' => ['nullable', 'date', 'after:now'],
             'template_id' => ['nullable', 'integer', 'exists:message_templates,id'],
             'template_variables' => ['nullable', 'array'],

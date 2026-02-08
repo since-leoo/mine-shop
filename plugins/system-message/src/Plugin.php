@@ -68,8 +68,14 @@ class Plugin extends AbstractPlugin
                 continue;
             }
 
+            // 只在第一次安装时备份，避免重复安装覆盖原始备份
             if (file_exists($targetFile) && ! file_exists($backupFile)) {
                 copy($targetFile, $backupFile);
+            } elseif (file_exists($backupFile)) {
+                // 备份已存在说明之前安装过，跳过备份但仍然覆盖文件
+                system_message_logger()->info('Backup already exists, skipping backup', [
+                    'target' => $targetFile,
+                ]);
             }
 
             copy($sourceFile, $targetFile);

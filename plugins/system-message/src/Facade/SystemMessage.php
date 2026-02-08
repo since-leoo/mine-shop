@@ -245,26 +245,15 @@ class SystemMessage
         string $title,
         string $content,
         array|int|null $userIds = null,
-        array $channels = ['websocket']
+        array $channels = ['database']
     ): Message {
-        $data = [
-            'title' => $title,
-            'content' => $content,
-            'type' => MessageType::SYSTEM->value,
-            'channels' => $channels,
-        ];
+        $options = ['channels' => $channels];
 
         if ($userIds !== null) {
-            $userIds = \is_array($userIds) ? $userIds : [$userIds];
-            $data['recipient_type'] = RecipientType::USER->value;
-            $data['recipient_ids'] = $userIds;
-        } else {
-            $data['recipient_type'] = RecipientType::ALL->value;
+            return static::sendToUser($userIds, $title, $content, MessageType::SYSTEM, $options);
         }
 
-        return static::sendToAll($title, $content, MessageType::SYSTEM, [
-            'channels' => $channels,
-        ]);
+        return static::sendToAll($title, $content, MessageType::SYSTEM, $options);
     }
 
     /**

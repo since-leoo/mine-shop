@@ -18,6 +18,8 @@ namespace Plugin\Since\SystemMessage\Enum;
 enum MessageChannel: string
 {
     case DATABASE = 'database';     // 数据库存储（默认）
+    case SOCKETIO = 'socketio';     // Socket.IO 实时推送
+    case WEBSOCKET = 'websocket';   // WebSocket 实时推送
     case EMAIL = 'email';           // 邮件
     case SMS = 'sms';               // 短信
     case PUSH = 'push';             // 推送通知
@@ -30,6 +32,8 @@ enum MessageChannel: string
     {
         return match ($this) {
             self::DATABASE => '站内信',
+            self::SOCKETIO => 'Socket.IO',
+            self::WEBSOCKET => 'WebSocket',
             self::EMAIL => '邮件',
             self::SMS => '短信',
             self::PUSH => '推送通知',

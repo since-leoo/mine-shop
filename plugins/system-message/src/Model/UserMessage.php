@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Since\SystemMessage\Model;
 
-use App\Infrastructure\Permission\Model\User;
+use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
