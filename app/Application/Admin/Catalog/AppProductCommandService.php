@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Catalog;
 
-use App\Application\Admin\Catalog\AppProductQueryService;
 use App\Domain\Catalog\Product\Contract\ProductInput;
 use App\Domain\Catalog\Product\Event\ProductCreated;
 use App\Domain\Catalog\Product\Event\ProductDeleted;

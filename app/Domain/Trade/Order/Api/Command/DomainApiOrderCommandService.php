@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Api\Command;
 
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Marketing\Coupon\Service\DomainCouponUserService;
 use App\Domain\Member\Service\DomainMemberAddressService;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
@@ -24,9 +26,7 @@ use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
-use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Trade\Shipping\Service\FreightCalculationService;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\IService;
 
 /**
@@ -101,16 +101,20 @@ final class DomainApiOrderCommandService extends IService
         $entity->verifyPrice($input->getTotalAmount());
         // 获取商品
         $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
+        // 根据订单类型决定库存 Hash Key
+        $stockHashKey = $entity->getOrderType() === 'seckill'
+            ? DomainOrderStockService::seckillStockKey((int) $entity->getExtra('session_id'))
+            : 'product:stock';
         // 获取商品锁
-        $locks = $this->stockService->acquireLocks($items);
+        $locks = $this->stockService->acquireLocks($items, $stockHashKey);
         try {
-            $this->stockService->reserve($items);
+            $this->stockService->reserve($items, $stockHashKey);
             try {
                 $entity = $this->repository->save($entity);
                 $this->markCouponsUsed($entity);
                 $strategy->postCreate($entity);
             } catch (\Throwable $e) {
-                $this->stockService->rollback($items);
+                $this->stockService->rollback($items, $stockHashKey);
                 throw $e;
             }
         } finally {

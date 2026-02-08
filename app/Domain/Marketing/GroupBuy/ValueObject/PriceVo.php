@@ -18,8 +18,8 @@ namespace App\Domain\Marketing\GroupBuy\ValueObject;
 final class PriceVo
 {
     public function __construct(
-        private readonly float $originalPrice,
-        private readonly float $groupPrice
+        private readonly int $originalPrice,
+        private readonly int $groupPrice
     ) {
         $this->validate();
     }
@@ -27,7 +27,7 @@ final class PriceVo
     /**
      * 获取原价.
      */
-    public function getOriginalPrice(): float
+    public function getOriginalPrice(): int
     {
         return $this->originalPrice;
     }
@@ -35,7 +35,7 @@ final class PriceVo
     /**
      * 获取团购价.
      */
-    public function getGroupPrice(): float
+    public function getGroupPrice(): int
     {
         return $this->groupPrice;
     }
@@ -51,9 +51,9 @@ final class PriceVo
     /**
      * 计算优惠金额.
      */
-    public function getDiscountAmount(): float
+    public function getDiscountAmount(): int
     {
-        return round($this->originalPrice - $this->groupPrice, 2);
+        return $this->originalPrice - $this->groupPrice;
     }
 
     /**

@@ -176,6 +176,34 @@ final class GroupBuyEntity
     }
 
     /**
+     * 开始活动.
+     */
+    public function start(): self
+    {
+        if ($this->status !== 'pending') {
+            throw new \DomainException('只有待开始的活动才能启动');
+        }
+
+        $this->setStatus('active');
+
+        return $this;
+    }
+
+    /**
+     * 结束活动.
+     */
+    public function end(): self
+    {
+        if ($this->status === 'ended') {
+            throw new \DomainException('活动已经结束');
+        }
+
+        $this->setStatus('ended');
+
+        return $this;
+    }
+
+    /**
      * 增加销量.
      */
     public function increaseSoldQuantity(int $quantity): self

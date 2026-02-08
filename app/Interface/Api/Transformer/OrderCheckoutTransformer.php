@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Transformer;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 
 final class OrderCheckoutTransformer
 {

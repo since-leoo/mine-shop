@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Organization;
 
-use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Domain\Organization\Contract\Department\DepartmentCreateInput;
 use App\Domain\Organization\Contract\Department\DepartmentUpdateInput;
 use App\Domain\Organization\Service\DomainDepartmentService;
+use App\Domain\Permission\Contract\Common\DeleteInput;
 use App\Infrastructure\Model\Permission\Department;
 use Hyperf\DbConnection\Db;
 

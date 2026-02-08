@@ -125,6 +125,30 @@ final class OrderController extends AbstractController
     }
 
     /**
+     * 获取待支付订单的支付信息（用于重新支付场景）.
+     */
+    #[GetMapping(path: 'pay-info/{orderNo}')]
+    public function payInfo(string $orderNo): Result
+    {
+        $order = $this->orderQueryService->getOrderDetail($this->currentMember->id(), $orderNo);
+
+        if (! $order) {
+            return $this->fail('订单不存在');
+        }
+
+        if ($order->status !== 'pending') {
+            return $this->fail('订单状态不支持支付');
+        }
+
+        return $this->success([
+            'trade_no' => $order->order_no,
+            'pay_amount' => (int) $order->pay_amount,
+            'total_amount' => (int) $order->total_amount,
+            'pay_methods' => $this->checkoutService->resolvePaymentMethods(),
+        ]);
+    }
+
+    /**
      * 取消订单（仅待付款状态）.
      */
     #[PostMapping(path: 'cancel')]

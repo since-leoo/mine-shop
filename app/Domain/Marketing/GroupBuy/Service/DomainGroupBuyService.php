@@ -90,6 +90,40 @@ final class DomainGroupBuyService extends IService
     }
 
     /**
+     * 启动团购活动.
+     *
+     * 将活动状态从 pending 变更为 active.
+     *
+     * @param int $id 团购活动ID
+     * @return bool 是否更新成功
+     * @throws \RuntimeException 当团购活动不存在时
+     * @throws \DomainException 当活动状态不允许启动时
+     */
+    public function start(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+        $entity->start();
+        return $this->repository->updateById($id, $entity->toArray());
+    }
+
+    /**
+     * 结束团购活动.
+     *
+     * 将活动状态变更为 ended.
+     *
+     * @param int $id 团购活动ID
+     * @return bool 是否更新成功
+     * @throws \RuntimeException 当团购活动不存在时
+     * @throws \DomainException 当活动状态不允许结束时
+     */
+    public function end(int $id): bool
+    {
+        $entity = $this->getEntity($id);
+        $entity->end();
+        return $this->repository->updateById($id, $entity->toArray());
+    }
+
+    /**
      * 获取团购活动实体.
      *
      * 通过 ID 获取 Model，然后通过 Mapper 转换为 Entity.

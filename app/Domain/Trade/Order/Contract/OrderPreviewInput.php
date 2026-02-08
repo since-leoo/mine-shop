@@ -39,4 +39,24 @@ interface OrderPreviewInput
     public function getCouponList(): ?array;
 
     public function getBuyerRemark(): string;
+
+    /**
+     * 秒杀活动 ID（order_type=seckill 时必传）.
+     */
+    public function getActivityId(): ?int;
+
+    /**
+     * 秒杀场次 ID（order_type=seckill 时必传）.
+     */
+    public function getSessionId(): ?int;
+
+    /**
+     * 拼团活动 ID（order_type=group_buy 时必传）.
+     */
+    public function getGroupBuyId(): ?int;
+
+    /**
+     * 团号（参团时必传，开团时为空）.
+     */
+    public function getGroupNo(): ?string;
 }

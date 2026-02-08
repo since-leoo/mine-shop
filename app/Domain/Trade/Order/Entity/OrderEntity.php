@@ -80,6 +80,9 @@ final class OrderEntity
     /** @var array<int, int> 已应用的 coupon_user IDs（用于 submit 后标记已使用） */
     private array $appliedCouponUserIds = [];
 
+    /** @var array<string, mixed> 运行时元数据（不持久化），供策略读取上下文 */
+    private array $extras = [];
+
     public function getId(): int
     {
         return $this->id;
@@ -357,6 +360,16 @@ final class OrderEntity
         $this->appliedCouponUserIds = $ids;
     }
 
+    public function setExtra(string $key, mixed $value): void
+    {
+        $this->extras[$key] = $value;
+    }
+
+    public function getExtra(string $key, mixed $default = null): mixed
+    {
+        return $this->extras[$key] ?? $default;
+    }
+
     public function syncPriceDetailFromItems(): void
     {
         $sum = 0;
@@ -447,6 +460,22 @@ final class OrderEntity
         $this->setOrderType($input->getOrderType());
         $this->replaceItemsFromPayload($input->getGoodsRequestList());
         $this->setBuyerRemark($input->getBuyerRemark());
+
+        // 秒杀上下文元数据（不持久化，供策略使用）
+        if ($input->getActivityId() !== null) {
+            $this->setExtra('activity_id', $input->getActivityId());
+        }
+        if ($input->getSessionId() !== null) {
+            $this->setExtra('session_id', $input->getSessionId());
+        }
+
+        // 拼团上下文元数据（不持久化，供策略使用）
+        if ($input->getGroupBuyId() !== null) {
+            $this->setExtra('group_buy_id', $input->getGroupBuyId());
+        }
+        if ($input->getGroupNo() !== null) {
+            $this->setExtra('group_no', $input->getGroupNo());
+        }
     }
 
     /**

@@ -9,8 +9,10 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+use Hyperf\AsyncQueue\Process\ConsumerProcess;
 use Hyperf\Crontab\Process\CrontabDispatcherProcess;
 
 return [
+    ConsumerProcess::class,
     CrontabDispatcherProcess::class,
 ];

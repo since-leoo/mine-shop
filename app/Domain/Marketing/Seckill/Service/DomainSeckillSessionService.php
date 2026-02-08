@@ -37,6 +37,10 @@ final class DomainSeckillSessionService extends IService
     {
         return $this->repository->findByActivityId($activityId);
     }
+    /**
+     * 查询指定活动下最近的 active/pending 且已启用的场次.
+     */
+
 
     /**
      * 创建场次.
@@ -116,5 +120,37 @@ final class DomainSeckillSessionService extends IService
     public function updateQuantityStats(int $sessionId): void
     {
         $this->repository->updateQuantityStats($sessionId);
+    }
+
+    /**
+     * 启动场次（状态从 pending → active）.
+     */
+    public function start(int $id): bool
+    {
+        $session = $this->repository->findById($id);
+        if (! $session) {
+            throw new \RuntimeException("场次不存在: ID={$id}");
+        }
+
+        $entity = SeckillSessionMapper::fromModel($session);
+        $entity->start();
+
+        return $this->repository->updateFromEntity($entity);
+    }
+
+    /**
+     * 结束场次（状态从 active → ended）.
+     */
+    public function end(int $id): bool
+    {
+        $session = $this->repository->findById($id);
+        if (! $session) {
+            throw new \RuntimeException("场次不存在: ID={$id}");
+        }
+
+        $entity = SeckillSessionMapper::fromModel($session);
+        $entity->end();
+
+        return $this->repository->updateFromEntity($entity);
     }
 }

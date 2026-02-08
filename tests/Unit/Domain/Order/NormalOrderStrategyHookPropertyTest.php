@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Marketing\Coupon\Repository\CouponUserRepository;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
-use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use DG\BypassFinals;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;

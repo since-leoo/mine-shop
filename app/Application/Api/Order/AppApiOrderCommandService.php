@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Order;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Event\OrderCreatedEvent;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use Hyperf\DbConnection\Db;
 
 final class AppApiOrderCommandService

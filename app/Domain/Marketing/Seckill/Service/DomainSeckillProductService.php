@@ -36,6 +36,12 @@ final class DomainSeckillProductService extends IService
     {
         return $this->repository->findBySessionId($sessionId);
     }
+    /**
+     * 获取指定场次下已启用的商品列表（带商品主表关联）.
+     *
+     * @return SeckillProduct[]
+     */
+
 
     /**
      * 添加商品到场次.

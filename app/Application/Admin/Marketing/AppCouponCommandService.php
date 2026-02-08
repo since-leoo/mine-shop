@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Marketing;
 
-use App\Application\Admin\Marketing\AppCouponQueryService;
 use App\Domain\Marketing\Coupon\Contract\CouponInput;
 use App\Domain\Marketing\Coupon\Service\DomainCouponService;
 use App\Infrastructure\Abstract\IService;

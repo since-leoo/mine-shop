@@ -120,4 +120,30 @@ final class SeckillProductRepository extends IRepository
         }
         return $products;
     }
+
+    /**
+     * 获取指定场次下已启用的商品列表（带商品主表关联）.
+     *
+     * @return SeckillProduct[]
+     */
+    public function findEnabledBySessionIdWithProduct(int $sessionId, int $limit = 6): array
+    {
+        return SeckillProduct::where('session_id', $sessionId)
+            ->where('is_enabled', true)
+            ->with('product:id,name,main_image')
+            ->orderBy('sort_order')
+            ->limit($limit)
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 增加秒杀商品已售数量.
+     */
+    public function incrementSoldQuantity(int $skuId, int $sessionId, int $quantity): void
+    {
+        SeckillProduct::where('session_id', $sessionId)
+            ->where('product_sku_id', $skuId)
+            ->increment('sold_quantity', $quantity);
+    }
 }

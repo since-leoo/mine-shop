@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Event;
 
-use App\Domain\Trade\Order\Entity\OrderCancelEntity;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 
 final class OrderCancelledEvent
 {
     public function __construct(
         public readonly OrderEntity $order,
-        public readonly OrderCancelEntity $command
+        public readonly string $reason = '',
+        public readonly int $operatorId = 0,
+        public readonly string $operatorName = '',
     ) {}
 }

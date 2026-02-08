@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Payment;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Member\Api\Command\DomainApiMemberCommandService;
 use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Trade\Payment\DomainPayService;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use Yansongda\Artful\Exception\ContainerException;
 
 final class AppApiOrderPaymentService

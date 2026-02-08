@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Marketing\Seckill\Repository;
 
 use App\Domain\Marketing\Seckill\Entity\SeckillSessionEntity;
+use App\Domain\Marketing\Seckill\Enum\SeckillStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Seckill\SeckillSession;
+use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -93,4 +95,46 @@ final class SeckillSessionRepository extends IRepository
             'sold_quantity' => $soldQuantity,
         ]);
     }
+
+    /**
+     * 查询待激活的场次（status=pending, is_enabled=1, start_time 在 now+N分钟内）.
+     *
+     * @return SeckillSession[]
+     */
+    public function findPendingSessionsWithinMinutes(int $minutes): array
+    {
+        $deadline = Carbon::now()->addMinutes($minutes);
+
+        return SeckillSession::where('status', SeckillStatus::PENDING->value)
+            ->where('is_enabled', true)
+            ->where('start_time', '<=', $deadline)
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 查询已过期的进行中场次（status=active, end_time < now）.
+     *
+     * @return SeckillSession[]
+     */
+    public function findActiveExpiredSessions(): array
+    {
+        return SeckillSession::where('status', SeckillStatus::ACTIVE->value)
+            ->where('end_time', '<', Carbon::now())
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 查询指定活动下最近的 active 或 pending 且已启用的场次.
+     */
+    public function findNearestEnabledActiveOrPending(int $activityId): ?SeckillSession
+    {
+        return SeckillSession::where('activity_id', $activityId)
+            ->where('is_enabled', true)
+            ->whereIn('status', [SeckillStatus::ACTIVE->value, SeckillStatus::PENDING->value])
+            ->orderBy('start_time')
+            ->first();
+    }
+
 }

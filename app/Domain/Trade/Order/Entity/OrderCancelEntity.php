@@ -16,13 +16,7 @@ final class OrderCancelEntity
 {
     private int $orderId = 0;
 
-    private int $userId = 0;
-
     private string $reason = '';
-
-    private int $operatorId = 0;
-
-    private string $operatorName = '';
 
     public function setOrderId(int $orderId): void
     {
@@ -42,36 +36,6 @@ final class OrderCancelEntity
     public function getReason(): string
     {
         return $this->reason;
-    }
-
-    public function setUserId(int $userId)
-    {
-        $this->userId = $userId;
-    }
-
-    public function getUserId(): int
-    {
-        return $this->userId;
-    }
-
-    public function setOperatorId(int $param)
-    {
-        $this->operatorId = $param;
-    }
-
-    public function setOperatorName(string $param)
-    {
-        $this->operatorName = $param;
-    }
-
-    public function getOperatorId(): int
-    {
-        return $this->operatorId;
-    }
-
-    public function getOperatorName(): string
-    {
-        return $this->operatorName;
     }
 
     public function toArray(): array

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Shipping\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Shipping\Mapper\ShippingTemplateMapper;
 use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 
 /**
  * 运费计算领域服务：根据商品运费配置和系统配置计算订单运费.

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Marketing\Seckill\Repository;
 
 use App\Domain\Marketing\Seckill\Entity\SeckillActivityEntity;
+use App\Domain\Marketing\Seckill\Enum\SeckillStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 use Hyperf\Database\Model\Builder;
@@ -83,4 +84,41 @@ final class SeckillActivityRepository extends IRepository
             'cancelled' => SeckillActivity::where('status', 'cancelled')->count(),
         ];
     }
+
+    /**
+     * 查询待激活的活动（status=pending AND is_enabled=1）.
+     *
+     * @return SeckillActivity[]
+     */
+    public function findPendingEnabledActivities(): array
+    {
+        return SeckillActivity::where('status', SeckillStatus::PENDING->value)
+            ->where('is_enabled', true)
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 查询进行中的活动（status=active）.
+     *
+     * @return SeckillActivity[]
+     */
+    public function findActiveActivities(): array
+    {
+        return SeckillActivity::where('status', SeckillStatus::ACTIVE->value)
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 查询最新一条 active 或 pending 且已启用的活动.
+     */
+    public function findLatestEnabledActiveOrPending(): ?SeckillActivity
+    {
+        return SeckillActivity::where('is_enabled', true)
+            ->whereIn('status', [SeckillStatus::ACTIVE->value, SeckillStatus::PENDING->value])
+            ->orderBy('id', 'desc')
+            ->first();
+    }
+
 }

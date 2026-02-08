@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Trait;
 
-use App\Domain\Trade\Order\Entity\OrderShipEntity;
-use App\Domain\Trade\Order\ValueObject\OrderPackageValue;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
+use App\Domain\Trade\Order\Entity\OrderShipEntity;
+use App\Domain\Trade\Order\ValueObject\OrderPackageValue;
 use Carbon\Carbon;
 
 /**

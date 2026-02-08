@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Marketing\GroupBuy\Repository;
 
+use App\Domain\Marketing\GroupBuy\Enum\GroupBuyStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
+use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -49,5 +51,34 @@ final class GroupBuyRepository extends IRepository
             'disabled' => GroupBuy::where('is_enabled', false)->count(),
             'active' => GroupBuy::where('status', 'active')->count(),
         ];
+    }
+
+    /**
+     * 查询待激活的拼团活动（status=pending, is_enabled=1, start_time 在 now+N分钟内）.
+     *
+     * @return GroupBuy[]
+     */
+    public function findPendingActivitiesWithinMinutes(int $minutes): array
+    {
+        $deadline = Carbon::now()->addMinutes($minutes);
+
+        return GroupBuy::where('status', GroupBuyStatus::PENDING->value)
+            ->where('is_enabled', true)
+            ->where('start_time', '<=', $deadline)
+            ->get()
+            ->all();
+    }
+
+    /**
+     * 查询已过期的进行中拼团活动（status=active, end_time < now）.
+     *
+     * @return GroupBuy[]
+     */
+    public function findActiveExpiredActivities(): array
+    {
+        return GroupBuy::where('status', GroupBuyStatus::ACTIVE->value)
+            ->where('end_time', '<', Carbon::now())
+            ->get()
+            ->all();
     }
 }

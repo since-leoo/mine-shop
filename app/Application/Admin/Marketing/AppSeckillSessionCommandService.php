@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Marketing;
 
-use App\Application\Admin\Marketing\AppSeckillSessionQueryService;
 use App\Domain\Marketing\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Marketing\Seckill\Service\DomainSeckillSessionService;
 use App\Infrastructure\Model\Seckill\SeckillSession;

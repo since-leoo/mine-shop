@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Marketing;
 
-use App\Application\Admin\Marketing\AppGroupBuyQueryService;
 use App\Domain\Marketing\GroupBuy\Contract\GroupBuyCreateInput;
 use App\Domain\Marketing\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;

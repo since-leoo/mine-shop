@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Order;
 
+use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\ProductSetting;
 use App\Domain\Marketing\Coupon\Service\DomainCouponUserService;
 use App\Domain\Member\Service\DomainMemberAddressService;
 use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
@@ -22,11 +26,7 @@ use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
-use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Trade\Shipping\Service\FreightCalculationService;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
-use App\Domain\Infrastructure\SystemSetting\ValueObject\ProductSetting;
 use DG\BypassFinals;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;

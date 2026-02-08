@@ -12,14 +12,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Order\Order;
-use App\Interface\Common\ResultCode;
 
 /**
  * 订单领域服务（后台管理端）.
@@ -43,20 +41,14 @@ final class DomainOrderService extends IService
     }
 
     /**
-     * 获取订单实体（公共方法，API 端和后台均使用）.
+     * 获取订单实体（后台管理端，不校验会员归属）.
      */
     public function getEntity(int $id = 0, string $orderNo = ''): OrderEntity
     {
         /** @var null|Order $order */
         $order = $id ? $this->repository->findById($id) : $this->repository->findByOrderNo($orderNo);
 
-        $orderEntity = OrderMapper::fromModel($order);
-
-        if ($orderEntity->getMemberId() !== memberId()) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '订单不存在');
-        }
-
-        return $orderEntity;
+        return OrderMapper::fromModel($order);
     }
 
     /**

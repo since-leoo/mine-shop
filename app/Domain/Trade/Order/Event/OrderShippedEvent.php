@@ -19,6 +19,8 @@ final class OrderShippedEvent
 {
     public function __construct(
         public readonly OrderEntity $order,
-        public readonly OrderShipEntity $command
+        public readonly OrderShipEntity $shipment,
+        public readonly int $operatorId = 0,
+        public readonly string $operatorName = '',
     ) {}
 }

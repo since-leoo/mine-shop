@@ -255,4 +255,8 @@ final class DomainSeckillActivityService extends IService
     {
         return $this->repository->getStatistics();
     }
+    /**
+     * 查询最新一条 active/pending 且已启用的活动.
+     */
+
 }

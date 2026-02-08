@@ -33,6 +33,14 @@ class OrderPreviewDto implements OrderPreviewInput
 
     public ?array $store_info_list = null;
 
+    public ?int $activity_id = null;
+
+    public ?int $session_id = null;
+
+    public ?int $group_buy_id = null;
+
+    public ?string $group_no = null;
+
     public function getMemberId(): int
     {
         return $this->member_id;
@@ -84,5 +92,25 @@ class OrderPreviewDto implements OrderPreviewInput
         }
 
         return (string) ($this->store_info_list[0]['remark'] ?? '');
+    }
+
+    public function getActivityId(): ?int
+    {
+        return $this->activity_id;
+    }
+
+    public function getSessionId(): ?int
+    {
+        return $this->session_id;
+    }
+
+    public function getGroupBuyId(): ?int
+    {
+        return $this->group_buy_id;
+    }
+
+    public function getGroupNo(): ?string
+    {
+        return $this->group_no;
     }
 }

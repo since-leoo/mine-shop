@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Auth\Entity;
 
+use App\Domain\Auth\Contract\LoginInput;
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Auth\ValueObject\ClientInfo;
-use App\Domain\Auth\Contract\LoginInput;
 
 /**
  * 登录实体，聚合基础认证参数.

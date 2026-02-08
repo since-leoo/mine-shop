@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Coupon;
 
 use App\Application\Admin\Marketing\AppCouponCommandService;
-use App\Application\Admin\Marketing\AppCouponUserCommandService;
 use App\Application\Admin\Marketing\AppCouponQueryService;
+use App\Application\Admin\Marketing\AppCouponUserCommandService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Coupon\CouponIssueRequest;

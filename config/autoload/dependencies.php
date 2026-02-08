@@ -10,10 +10,12 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 use App\Application\Admin\Infrastructure\JwtTokenChecker;
-use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
-use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Catalog\Product\Service\DomainProductSnapshotService;
+use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
+use App\Domain\Trade\Order\Strategy\GroupBuyOrderStrategy;
+use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
+use App\Domain\Trade\Order\Strategy\SeckillOrderStrategy;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 use Mine\Upload\Factory;
 use Mine\Upload\UploadInterface;
@@ -26,7 +28,8 @@ return [
     OrderTypeStrategyFactory::class => static function (ContainerInterface $container) {
         return new OrderTypeStrategyFactory([
             $container->get(NormalOrderStrategy::class),
-            // 新增策略只需在此追加
+            $container->get(SeckillOrderStrategy::class),
+            $container->get(GroupBuyOrderStrategy::class),
         ]);
     },
 ];

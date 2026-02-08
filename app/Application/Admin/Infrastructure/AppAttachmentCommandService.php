@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Infrastructure;
 
-use App\Application\Admin\Infrastructure\AppAttachmentQueryService;
 use App\Domain\Infrastructure\Attachment\Entity\AttachmentEntity;
 use App\Domain\Infrastructure\Attachment\Repository\AttachmentRepository;
 use App\Infrastructure\Abstract\IService;

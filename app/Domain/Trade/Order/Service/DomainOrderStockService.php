@@ -21,6 +21,11 @@ final class DomainOrderStockService
 {
     private const STOCK_HASH_KEY = 'product:stock';
 
+    /**
+     * 秒杀库存 Hash Key 前缀，完整 key 为 seckill:stock:{sessionId}.
+     */
+    private const SECKILL_STOCK_PREFIX = 'seckill:stock';
+
     private const DEDUCT_SCRIPT = <<<'LUA'
         local stockKey = KEYS[1]
         for i = 1, #ARGV, 2 do
@@ -49,11 +54,11 @@ final class DomainOrderStockService
      * @param array<int, array<string, mixed>> $items
      * @return array<string, string>
      */
-    public function acquireLocks(array $items): array
+    public function acquireLocks(array $items, string $stockHashKey = self::STOCK_HASH_KEY): array
     {
         $locks = [];
         foreach (array_keys($this->normalizeItems($items)) as $skuId) {
-            $lockKey = \sprintf('mall:stock:lock:%d', $skuId);
+            $lockKey = \sprintf('mall:stock:lock:%s:%d', $stockHashKey, $skuId);
             $token = Str::uuid()->toString();
             $acquired = false;
             for ($i = 0; $i < $this->lockRetry; ++$i) {
@@ -97,7 +102,7 @@ final class DomainOrderStockService
     /**
      * @param array<int, array<string, mixed>> $items
      */
-    public function reserve(array $items): void
+    public function reserve(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
         $normalized = $this->normalizeItems($items);
         if ($normalized === []) {
@@ -110,7 +115,7 @@ final class DomainOrderStockService
             $args[] = (string) $quantity;
         }
 
-        $prefix = $this->redis()->setPrefix(self::STOCK_HASH_KEY)->getPrefix();
+        $prefix = $this->redis()->setPrefix($stockHashKey)->getPrefix();
         $payload = array_merge([$prefix], $args);
 
         $result = $this->redis()->eval(self::DEDUCT_SCRIPT, $payload, 1);
@@ -118,18 +123,26 @@ final class DomainOrderStockService
             throw new \RuntimeException('库存不足或商品已下架');
         }
 
-        $this->triggerStockWarnings($normalized);
+        $this->triggerStockWarnings($normalized, $stockHashKey);
     }
 
     /**
      * @param array<int, array<string, mixed>> $items
      */
-    public function rollback(array $items): void
+    public function rollback(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
         $normalized = $this->normalizeItems($items);
         foreach ($normalized as $skuId => $quantity) {
-            $this->redis()->hIncrBy(self::STOCK_HASH_KEY, (string) $skuId, $quantity);
+            $this->redis()->hIncrBy($stockHashKey, (string) $skuId, $quantity);
         }
+    }
+
+    /**
+     * 获取秒杀场次的库存 Hash Key.
+     */
+    public static function seckillStockKey(int $sessionId): string
+    {
+        return \sprintf('%s:%d', self::SECKILL_STOCK_PREFIX, $sessionId);
     }
 
     /**
@@ -158,15 +171,20 @@ final class DomainOrderStockService
     /**
      * @param array<int, int> $deducted
      */
-    private function triggerStockWarnings(array $deducted): void
+    private function triggerStockWarnings(array $deducted, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
+        // 仅普通商品库存触发预警
+        if ($stockHashKey !== self::STOCK_HASH_KEY) {
+            return;
+        }
+
         $threshold = $this->mallSettingService->product()->stockWarning();
         if ($threshold <= 0) {
             return;
         }
 
         foreach (array_keys($deducted) as $skuId) {
-            $remaining = (int) $this->redis()->hGet(self::STOCK_HASH_KEY, (string) $skuId);
+            $remaining = (int) $this->redis()->hGet($stockHashKey, (string) $skuId);
             if ($remaining <= $threshold) {
                 event(new ProductStockWarningEvent($skuId, $remaining, $threshold));
             }

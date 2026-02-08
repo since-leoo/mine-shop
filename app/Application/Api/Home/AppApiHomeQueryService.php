@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Home;
 
+use App\Application\Api\Product\AppApiCategoryQueryService;
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
+use App\Domain\Marketing\Seckill\Api\Query\DomainApiSeckillQueryService;
 
 /**
  * 首页数据聚合应用服务.
@@ -23,8 +25,10 @@ final class AppApiHomeQueryService
 {
     public function __construct(
         private readonly AppApiProductQueryService $productQueryService,
+        private readonly AppApiCategoryQueryService $categoryQueryService,
         private readonly DomainMallSettingService $mallSettingService,
-        private readonly DomainSystemSettingService $systemSettingService
+        private readonly DomainSystemSettingService $systemSettingService,
+        private readonly DomainApiSeckillQueryService $seckillQueryService
     ) {}
 
     /**
@@ -36,9 +40,11 @@ final class AppApiHomeQueryService
         $hot = $this->productQueryService->page(['is_hot' => true, 'status' => 'active'], 1, 10)['list'];
         $new = $this->productQueryService->page(['is_new' => true, 'status' => 'active'], 1, 10)['list'];
 
+        $seckill = $this->resolveSeckill();
+
         return [
             'swiper' => $this->resolveBanners(),
-            'tabList' => $this->buildTabs(),
+            'tabList' => [],
             'activityImg' => $this->resolveActivityImage(),
             'sections' => [
                 'featured' => $featured,
@@ -46,18 +52,13 @@ final class AppApiHomeQueryService
                 'new' => $new,
             ],
             'headline' => $this->mallSettingService->basic()->mallName(),
-        ];
-    }
-
-    /**
-     * @return array<int, array{text:string,key:string}>
-     */
-    private function buildTabs(): array
-    {
-        return [
-            ['text' => '精选推荐', 'key' => 'featured'],
-            ['text' => '热销榜单', 'key' => 'hot'],
-            ['text' => '新品速递', 'key' => 'new'],
+            'categoryList' => $this->resolveTopCategories(),
+            'seckillList' => $seckill['list'],
+            'seckillEndTime' => $seckill['endTime'],
+            'seckillTitle' => $seckill['title'],
+            'seckillActivityId' => $seckill['activityId'],
+            'seckillSessionId' => $seckill['sessionId'],
+            'groupBuyList' => [],
         ];
     }
 
@@ -95,5 +96,26 @@ final class AppApiHomeQueryService
             return $custom;
         }
         return $this->mallSettingService->basic()->logo() ?: null;
+    }
+
+    /**
+     * 获取顶级分类列表（金刚区）.
+     *
+     * @return array<int, array{id: int, name: string, icon: string|null}>
+     */
+    private function resolveTopCategories(): array
+    {
+        $categories = $this->categoryQueryService->tree(0);
+
+        return $categories->take(10)->map(static fn ($cat) => [
+            'id' => $cat->id,
+            'name' => $cat->name,
+            'icon' => $cat->icon ?: null,
+        ])->values()->toArray();
+    }
+
+    private function resolveSeckill(): array
+    {
+        return $this->seckillQueryService->getHomeSeckill(6);
     }
 }

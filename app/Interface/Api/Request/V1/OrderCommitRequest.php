@@ -22,7 +22,7 @@ final class OrderCommitRequest extends OrderPreviewRequest
         $base = parent::rules();
 
         return array_merge($base, [
-            'order_type' => ['required', 'string', 'in:normal'],
+            'order_type' => ['required', 'string', 'in:normal,seckill,group_buy'],
             'total_amount' => ['required', 'integer', 'min:0'],
             'user_name' => ['nullable', 'string', 'max:60'],
             'invoice_request' => ['nullable', 'array'],
@@ -42,6 +42,10 @@ final class OrderCommitRequest extends OrderPreviewRequest
         $dto->store_info_list = $params['store_info_list'] ?? null;
         $dto->total_amount = $params['total_amount'];
         $dto->user_name = $params['user_name'] ?? null;
+        $dto->activity_id = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
+        $dto->session_id = isset($params['session_id']) ? (int) $params['session_id'] : null;
+        $dto->group_buy_id = isset($params['group_buy_id']) ? (int) $params['group_buy_id'] : null;
+        $dto->group_no = $params['group_no'] ?? null;
         return $dto;
     }
 }

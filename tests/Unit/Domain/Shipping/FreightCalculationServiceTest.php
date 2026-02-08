@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Shipping;
 
-use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
-use App\Domain\Trade\Shipping\Service\FreightCalculationService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
+use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
+use App\Domain\Trade\Shipping\Service\FreightCalculationService;
 use App\Infrastructure\Model\Shipping\ShippingTemplate;
 use DG\BypassFinals;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;

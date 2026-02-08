@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Marketing;
 
-use App\Application\Admin\Marketing\AppSeckillActivityQueryService;
 use App\Domain\Marketing\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Marketing\Seckill\Service\DomainSeckillActivityService;
 use App\Infrastructure\Model\Seckill\SeckillActivity;

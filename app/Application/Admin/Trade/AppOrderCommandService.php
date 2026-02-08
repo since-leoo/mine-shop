@@ -14,7 +14,6 @@ namespace App\Application\Admin\Trade;
 
 use App\Domain\Trade\Order\Contract\OrderCancelInput;
 use App\Domain\Trade\Order\Contract\OrderShipInput;
-use App\Domain\Trade\Order\Entity\OrderCancelEntity;
 use App\Domain\Trade\Order\Entity\OrderShipEntity;
 use App\Domain\Trade\Order\Event\OrderCancelledEvent;
 use App\Domain\Trade\Order\Event\OrderShippedEvent;
@@ -33,19 +32,21 @@ final class AppOrderCommandService
     {
         $orderEntity = $this->orderService->getEntity($input->getOrderId());
 
-        // 将 DTO 转换为 Entity
-        $orderShipEntity = new OrderShipEntity();
-        $orderShipEntity->setOrderId($input->getOrderId());
-        $orderShipEntity->setOperatorId($input->getOperatorId());
-        $orderShipEntity->setOperatorName($input->getOperatorName());
-        $orderShipEntity->setPackages($input->getPackages());
+        $shipEntity = new OrderShipEntity();
+        $shipEntity->setOrderId($input->getOrderId());
+        $shipEntity->setPackages($input->getPackages());
 
-        $orderEntity->setShipEntity($orderShipEntity);
+        $orderEntity->setShipEntity($shipEntity);
         $orderEntity->ship();
 
         $this->orderService->ship($orderEntity);
 
-        event(new OrderShippedEvent($orderEntity, $orderShipEntity));
+        event(new OrderShippedEvent(
+            $orderEntity,
+            $shipEntity,
+            $input->getOperatorId(),
+            $input->getOperatorName(),
+        ));
 
         return $this->orderService->findDetail($orderEntity->getId()) ?? [];
     }
@@ -58,18 +59,16 @@ final class AppOrderCommandService
     {
         $orderEntity = $this->orderService->getEntity($input->getOrderId());
 
-        // 将 DTO 转换为 Entity
-        $orderCancelEntity = new OrderCancelEntity();
-        $orderCancelEntity->setOrderId($input->getOrderId());
-        $orderCancelEntity->setReason($input->getReason());
-        $orderCancelEntity->setOperatorId($input->getOperatorId());
-        $orderCancelEntity->setOperatorName($input->getOperatorName());
-
         $orderEntity->cancel();
 
         $this->orderService->cancel($orderEntity);
 
-        event(new OrderCancelledEvent($orderEntity, $orderCancelEntity));
+        event(new OrderCancelledEvent(
+            $orderEntity,
+            $input->getReason(),
+            $input->getOperatorId(),
+            $input->getOperatorName(),
+        ));
 
         return $this->orderService->findDetail($orderEntity->getId()) ?? [];
     }

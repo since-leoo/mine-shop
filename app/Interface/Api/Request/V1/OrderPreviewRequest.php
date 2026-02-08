@@ -24,7 +24,9 @@ class OrderPreviewRequest extends BaseRequest
             'goods_request_list' => ['required', 'array', 'min:1'],
             'goods_request_list.*.sku_id' => ['required', 'integer', 'min:1'],
             'goods_request_list.*.quantity' => ['required', 'integer', 'min:1', 'max:999'],
-            'order_type' => ['nullable', 'string', 'in:normal'],
+            'order_type' => ['nullable', 'string', 'in:normal,seckill,group_buy'],
+            'group_buy_id' => ['required_if:order_type,group_buy', 'integer', 'min:1'],
+            'group_no' => ['nullable', 'string', 'max:32'],
             'address_id' => ['nullable', 'integer', 'min:1'],
             'user_address' => ['nullable', 'array'],
             'user_address.name' => ['nullable', 'string', 'max:60'],
@@ -37,6 +39,8 @@ class OrderPreviewRequest extends BaseRequest
             'coupon_list.*.coupon_id' => ['required', 'integer', 'min:1'],
             'store_info_list' => ['nullable', 'array'],
             'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
+            'activity_id' => ['required_if:order_type,seckill', 'integer', 'min:1'],
+            'session_id' => ['required_if:order_type,seckill', 'integer', 'min:1'],
         ];
     }
 
@@ -61,6 +65,10 @@ class OrderPreviewRequest extends BaseRequest
         $dto->user_address = $params['user_address'] ?? null;
         $dto->coupon_list = $params['coupon_list'] ?? null;
         $dto->store_info_list = $params['store_info_list'] ?? null;
+        $dto->activity_id = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
+        $dto->session_id = isset($params['session_id']) ? (int) $params['session_id'] : null;
+        $dto->group_buy_id = isset($params['group_buy_id']) ? (int) $params['group_buy_id'] : null;
+        $dto->group_no = $params['group_no'] ?? null;
         return $dto;
     }
 }
