@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Marketing\GroupBuy;
 
-use App\Domain\Marketing\GroupBuy\Entity\GroupBuyEntity;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyOrderService;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
-use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 use Carbon\Carbon;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuyOrder;
 
 /**
  * Feature: group-buy-order, Properties 3-6, 10-11: DomainGroupBuyOrderService 属性测试.
@@ -62,7 +62,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
      *
      * **Validates: Requirements 4.4**
      *
-     * @dataProvider provideProperty3_CannotJoinActivityIsRejectedCases
+     * @dataProvider provideProperty3CannotJoinActivityIsRejectedCases
      */
     public function testProperty3CannotJoinActivityIsRejected(GroupBuyEntity $entity): void
     {
@@ -82,7 +82,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
     /**
      * @return iterable<string, array{GroupBuyEntity}>
      */
-    public static function provideProperty3_CannotJoinActivityIsRejectedCases(): iterable
+    public static function provideProperty3CannotJoinActivityIsRejectedCases(): iterable
     {
         $iterations = 25; // 25 × 4 scenarios = 100
 
@@ -132,7 +132,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
      *
      * **Validates: Requirements 4.5**
      *
-     * @dataProvider provideProperty4_SkuMismatchIsRejectedCases
+     * @dataProvider provideProperty4SkuMismatchIsRejectedCases
      */
     public function testProperty4SkuMismatchIsRejected(int $entitySkuId, int $orderSkuId): void
     {
@@ -155,7 +155,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
     /**
      * @return iterable<string, array{int, int}>
      */
-    public static function provideProperty4_SkuMismatchIsRejectedCases(): iterable
+    public static function provideProperty4SkuMismatchIsRejectedCases(): iterable
     {
         for ($i = 0; $i < 100; ++$i) {
             $entitySkuId = random_int(1, 999_999);
@@ -177,7 +177,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
      *
      * **Validates: Requirements 4.6**
      *
-     * @dataProvider provideProperty5_InsufficientStockIsRejectedCases
+     * @dataProvider provideProperty5InsufficientStockIsRejectedCases
      */
     public function testProperty5InsufficientStockIsRejected(int $totalQuantity, int $soldQuantity, int $requestQuantity): void
     {
@@ -201,7 +201,7 @@ final class DomainGroupBuyOrderServiceTest extends TestCase
     /**
      * @return iterable<string, array{int, int, int}>
      */
-    public static function provideProperty5_InsufficientStockIsRejectedCases(): iterable
+    public static function provideProperty5InsufficientStockIsRejectedCases(): iterable
     {
         for ($i = 0; $i < 100; ++$i) {
             $totalQuantity = random_int(10, 1000);

@@ -12,19 +12,19 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Infrastructure\Crontab;
 
-use App\Domain\Marketing\Seckill\Enum\SeckillStatus;
-use App\Domain\Marketing\Seckill\Job\SeckillSessionStartJob;
-use App\Domain\Marketing\Seckill\Repository\SeckillActivityRepository;
-use App\Domain\Marketing\Seckill\Repository\SeckillSessionRepository;
-use App\Domain\Marketing\Seckill\Service\DomainSeckillActivityService;
-use App\Domain\Marketing\Seckill\Service\DomainSeckillSessionService;
-use App\Infrastructure\Crontab\SeckillActivityStatusCrontab;
 use Carbon\Carbon;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Driver\DriverInterface;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
+use Plugin\Since\Seckill\Domain\Job\SeckillSessionStartJob;
+use Plugin\Since\Seckill\Domain\Repository\SeckillActivityRepository;
+use Plugin\Since\Seckill\Domain\Repository\SeckillSessionRepository;
+use Plugin\Since\Seckill\Domain\Service\DomainSeckillActivityService;
+use Plugin\Since\Seckill\Domain\Service\DomainSeckillSessionService;
+use Plugin\Since\Seckill\Infrastructure\Crontab\SeckillActivityStatusCrontab;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -59,7 +59,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty1_DelaySecondsCalculationCases
+     * @dataProvider provideProperty1DelaySecondsCalculationCases
      */
     public function testProperty1DelaySecondsCalculation(int $futureSeconds): void
     {
@@ -139,7 +139,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty1_DelaySecondsCalculationCases(): iterable
+    public static function provideProperty1DelaySecondsCalculationCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $futureSeconds = random_int(1, 1800);
@@ -158,7 +158,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty3_FallbackActivationCases
+     * @dataProvider provideProperty3FallbackActivationCases
      */
     public function testProperty3FallbackActivation(int $pastSeconds): void
     {
@@ -228,7 +228,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty3_FallbackActivationCases(): iterable
+    public static function provideProperty3FallbackActivationCases(): iterable
     {
         // Include boundary: exactly now (0 seconds past)
         yield 'exactly now #0' => [0];
@@ -250,7 +250,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty4_SessionAutoEndCases
+     * @dataProvider provideProperty4SessionAutoEndCases
      */
     public function testProperty4SessionAutoEnd(int $pastEndSeconds): void
     {
@@ -317,7 +317,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty4_SessionAutoEndCases(): iterable
+    public static function provideProperty4SessionAutoEndCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $pastEndSeconds = random_int(1, 7200);
@@ -336,7 +336,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty5_ActivityLinkedActivationCases
+     * @dataProvider provideProperty5ActivityLinkedActivationCases
      */
     public function testProperty5ActivityLinkedActivation(int $activeSessionCount, int $otherSessionCount): void
     {
@@ -421,7 +421,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int, int}>
      */
-    public static function provideProperty5_ActivityLinkedActivationCases(): iterable
+    public static function provideProperty5ActivityLinkedActivationCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $activeCount = random_int(1, 5);
@@ -441,7 +441,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty6_ActivityLinkedEndCases
+     * @dataProvider provideProperty6ActivityLinkedEndCases
      */
     public function testProperty6ActivityLinkedEnd(int $endedCount, int $cancelledCount): void
     {
@@ -525,7 +525,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int, int}>
      */
-    public static function provideProperty6_ActivityLinkedEndCases(): iterable
+    public static function provideProperty6ActivityLinkedEndCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $endedCount = random_int(0, 5);
@@ -549,7 +549,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty11_SessionStatusProtectionCases
+     * @dataProvider provideProperty11SessionStatusProtectionCases
      */
     public function testProperty11SessionStatusProtection(string $status, bool $isEnabled): void
     {
@@ -637,7 +637,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{string, bool}>
      */
-    public static function provideProperty11_SessionStatusProtectionCases(): iterable
+    public static function provideProperty11SessionStatusProtectionCases(): iterable
     {
         $protectedCases = [
             [SeckillStatus::CANCELLED->value, true],
@@ -658,7 +658,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     }
 
     /**
-     * @dataProvider provideProperty11_ActivityStatusProtectionCases
+     * @dataProvider provideProperty11ActivityStatusProtectionCases
      */
     public function testProperty11ActivityStatusProtection(string $status, bool $isEnabled): void
     {
@@ -733,7 +733,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{string, bool}>
      */
-    public static function provideProperty11_ActivityStatusProtectionCases(): iterable
+    public static function provideProperty11ActivityStatusProtectionCases(): iterable
     {
         $protectedCases = [
             [SeckillStatus::CANCELLED->value, true],
@@ -762,7 +762,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty13_ErrorIsolationCases
+     * @dataProvider provideProperty13ErrorIsolationCases
      */
     public function testProperty13ErrorIsolation(int $failIndex, int $totalSessions): void
     {
@@ -848,7 +848,7 @@ final class SeckillActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int, int}>
      */
-    public static function provideProperty13_ErrorIsolationCases(): iterable
+    public static function provideProperty13ErrorIsolationCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $totalSessions = random_int(2, 8);

@@ -24,11 +24,19 @@ final class OrderTypeStrategyFactory
     /**
      * @param OrderTypeStrategyInterface[] $strategies
      */
-    public function __construct(array $strategies)
+    public function __construct(array $strategies = [])
     {
         foreach ($strategies as $strategy) {
             $this->strategies[$strategy->type()] = $strategy;
         }
+    }
+
+    /**
+     * 动态注册策略（供插件在 boot() 中调用）.
+     */
+    public function register(OrderTypeStrategyInterface $strategy): void
+    {
+        $this->strategies[$strategy->type()] = $strategy;
     }
 
     public function make(string $type): OrderTypeStrategyInterface

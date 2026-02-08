@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\Seckill;
 
-use App\Infrastructure\Model\Seckill\SeckillActivity;
 use App\Interface\Common\ResultCode;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
+use Plugin\Since\Seckill\Infrastructure\Model\SeckillActivity;
 
 /**
  * @internal

@@ -13,11 +13,11 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Domain\Order;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyOrderService;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
-use App\Domain\Trade\Order\Strategy\GroupBuyOrderStrategy;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
+use Plugin\Since\GroupBuy\Domain\Strategy\GroupBuyOrderStrategy;
 
 /**
  * 策略注册集成测试.

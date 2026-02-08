@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Admin\GroupBuy;
 
-use App\Infrastructure\Model\GroupBuy\GroupBuy;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuy;
 
 /**
  * @internal

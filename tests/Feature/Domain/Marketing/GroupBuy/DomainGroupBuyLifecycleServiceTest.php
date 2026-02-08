@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Domain\Marketing\GroupBuy;
 
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyLifecycleService;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
-use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Collection as ModelCollection;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyLifecycleService;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuyOrder;
 
 /**
  * Feature: group-buy-order, Properties 12-13: DomainGroupBuyLifecycleService 属性测试.

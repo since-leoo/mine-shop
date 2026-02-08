@@ -12,17 +12,17 @@ declare(strict_types=1);
 
 namespace HyperfTests\Feature\Infrastructure\Crontab;
 
-use App\Domain\Marketing\GroupBuy\Enum\GroupBuyStatus;
-use App\Domain\Marketing\GroupBuy\Job\GroupBuyStartJob;
-use App\Domain\Marketing\GroupBuy\Repository\GroupBuyRepository;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
-use App\Infrastructure\Crontab\GroupBuyActivityStatusCrontab;
 use Carbon\Carbon;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\AsyncQueue\Driver\DriverInterface;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Enum\GroupBuyStatus;
+use Plugin\Since\GroupBuy\Domain\Job\GroupBuyStartJob;
+use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyRepository;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
+use Plugin\Since\GroupBuy\Infrastructure\Crontab\GroupBuyActivityStatusCrontab;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -57,7 +57,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty1_DelaySecondsCalculationCases
+     * @dataProvider provideProperty1DelaySecondsCalculationCases
      */
     public function testProperty1DelaySecondsCalculation(int $futureSeconds): void
     {
@@ -121,7 +121,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty1_DelaySecondsCalculationCases(): iterable
+    public static function provideProperty1DelaySecondsCalculationCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $futureSeconds = random_int(1, 1800);
@@ -140,7 +140,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty7_FallbackActivationCases
+     * @dataProvider provideProperty7FallbackActivationCases
      */
     public function testProperty7FallbackActivation(int $pastSeconds): void
     {
@@ -194,7 +194,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty7_FallbackActivationCases(): iterable
+    public static function provideProperty7FallbackActivationCases(): iterable
     {
         // Include boundary: exactly now (0 seconds past)
         yield 'exactly now #0' => [0];
@@ -216,7 +216,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty8_ActivityAutoEndCases
+     * @dataProvider provideProperty8ActivityAutoEndCases
      */
     public function testProperty8ActivityAutoEnd(int $pastEndSeconds): void
     {
@@ -267,7 +267,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{int}>
      */
-    public static function provideProperty8_ActivityAutoEndCases(): iterable
+    public static function provideProperty8ActivityAutoEndCases(): iterable
     {
         for ($i = 0; $i < self::ITERATIONS; ++$i) {
             $pastEndSeconds = random_int(1, 7200);
@@ -286,7 +286,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
     // ========================================================================
 
     /**
-     * @dataProvider provideProperty12_ActivityStatusProtectionCases
+     * @dataProvider provideProperty12ActivityStatusProtectionCases
      */
     public function testProperty12ActivityStatusProtection(string $status, bool $isEnabled): void
     {
@@ -356,7 +356,7 @@ final class GroupBuyActivityStatusCrontabTest extends TestCase
      *
      * @return \Generator<string, array{string, bool}>
      */
-    public static function provideProperty12_ActivityStatusProtectionCases(): iterable
+    public static function provideProperty12ActivityStatusProtectionCases(): iterable
     {
         $protectedCases = [
             [GroupBuyStatus::CANCELLED->value, true],

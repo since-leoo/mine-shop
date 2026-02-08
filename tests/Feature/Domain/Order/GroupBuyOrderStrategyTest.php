@@ -13,24 +13,22 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Domain\Order;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Marketing\GroupBuy\Entity\GroupBuyEntity;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyOrderService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
-use App\Domain\Trade\Order\Strategy\GroupBuyOrderStrategy;
-use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
+use Plugin\Since\GroupBuy\Domain\Strategy\GroupBuyOrderStrategy;
 
 /**
- * Feature: group-buy-order, Properties 2, 7, 8, 9: GroupBuyOrderStrategy 属性测试.
+ * Feature: group-buy-order, Properties 2, 7, 8: GroupBuyOrderStrategy 属性测试.
  *
  * - Property 2: 基本输入验证拒绝
  * - Property 7: 团购价格计算正确性
  * - Property 8: 拼团订单拒绝优惠券
- * - Property 9: adjustPrice 幂等性
  *
- * Validates: Requirements 4.1, 4.2, 5.2, 5.3, 5.4, 5.5, 6.1, 6.2
+ * Validates: Requirements 4.1, 4.2, 5.2, 5.3, 5.4, 5.5, 6.1
  *
  * @internal
  * @coversNothing
@@ -59,7 +57,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
      *
      * **Validates: Requirements 4.1**
      *
-     * @dataProvider provideProperty2_MemberIdLessThanOrEqualZeroIsRejectedCases
+     * @dataProvider provideProperty2MemberIdLessThanOrEqualZeroIsRejectedCases
      */
     public function testProperty2MemberIdLessThanOrEqualZeroIsRejected(int $memberId): void
     {
@@ -77,7 +75,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
     /**
      * @return iterable<string, array{int}>
      */
-    public static function provideProperty2_MemberIdLessThanOrEqualZeroIsRejectedCases(): iterable
+    public static function provideProperty2MemberIdLessThanOrEqualZeroIsRejectedCases(): iterable
     {
         // 50 iterations with memberId = 0
         for ($i = 0; $i < 50; ++$i) {
@@ -123,7 +121,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
      *
      * **Validates: Requirements 4.2**
      *
-     * @dataProvider provideProperty2_MultipleSkuIsRejectedCases
+     * @dataProvider provideProperty2MultipleSkuIsRejectedCases
      */
     public function testProperty2MultipleSkuIsRejected(int $itemCount): void
     {
@@ -148,7 +146,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
     /**
      * @return iterable<string, array{int}>
      */
-    public static function provideProperty2_MultipleSkuIsRejectedCases(): iterable
+    public static function provideProperty2MultipleSkuIsRejectedCases(): iterable
     {
         for ($i = 0; $i < 100; ++$i) {
             $itemCount = random_int(2, 10);
@@ -174,7 +172,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
      *
      * **Validates: Requirements 5.2, 5.3, 5.4, 5.5**
      *
-     * @dataProvider provideProperty7_GroupBuyPriceCalculationCorrectnessCases
+     * @dataProvider provideProperty7GroupBuyPriceCalculationCorrectnessCases
      */
     public function testProperty7GroupBuyPriceCalculationCorrectness(int $groupPrice, int $quantity, int $skuId): void
     {
@@ -236,7 +234,7 @@ final class GroupBuyOrderStrategyTest extends TestCase
     /**
      * @return iterable<string, array{int, int, int}>
      */
-    public static function provideProperty7_GroupBuyPriceCalculationCorrectnessCases(): iterable
+    public static function provideProperty7GroupBuyPriceCalculationCorrectnessCases(): iterable
     {
         for ($i = 0; $i < 100; ++$i) {
             $groupPrice = random_int(1, 99999);
@@ -254,106 +252,31 @@ final class GroupBuyOrderStrategyTest extends TestCase
     /**
      * Property 8: 拼团订单拒绝优惠券.
      *
-     * For any non-empty coupon list, applyCoupon() should throw RuntimeException.
+     * For any non-null couponId, applyCoupon() should throw RuntimeException.
      *
      * **Validates: Requirements 6.1**
      *
-     * @dataProvider provideProperty8_GroupBuyOrderRejectsCouponsCases
+     * @dataProvider provideProperty8GroupBuyOrderRejectsCouponsCases
      */
-    public function testProperty8GroupBuyOrderRejectsCoupons(array $couponList): void
+    public function testProperty8GroupBuyOrderRejectsCoupons(int $couponId): void
     {
-        self::assertNotEmpty($couponList, 'Precondition: couponList should not be empty');
-
         $strategy = $this->makeStrategy();
         $orderEntity = new OrderEntity();
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('拼团订单不支持使用优惠券');
 
-        $strategy->applyCoupon($orderEntity, $couponList);
+        $strategy->applyCoupon($orderEntity, $couponId);
     }
 
     /**
-     * @return iterable<string, array{array<int, mixed>}>
+     * @return iterable<string, array{int}>
      */
-    public static function provideProperty8_GroupBuyOrderRejectsCouponsCases(): iterable
+    public static function provideProperty8GroupBuyOrderRejectsCouponsCases(): iterable
     {
         for ($i = 0; $i < 100; ++$i) {
-            $couponCount = random_int(1, 5);
-            $coupons = [];
-            for ($j = 0; $j < $couponCount; ++$j) {
-                $coupons[] = [
-                    'coupon_id' => random_int(1, 999_999),
-                    'coupon_user_id' => random_int(1, 999_999),
-                    'discount' => random_int(100, 5000),
-                ];
-            }
-            yield "iteration_{$i} (count={$couponCount})" => [$coupons];
-        }
-    }
-
-    // =========================================================================
-    // Property 9: adjustPrice 幂等性
-    // **Validates: Requirements 6.2**
-    // =========================================================================
-
-    /**
-     * Property 9: adjustPrice 幂等性.
-     *
-     * For any OrderEntity, calling adjustPrice() should not change any price fields
-     * (goodsAmount, shippingFee, discountAmount, totalAmount, payAmount).
-     *
-     * **Validates: Requirements 6.2**
-     *
-     * @dataProvider provideProperty9_AdjustPriceIdempotencyCases
-     */
-    public function testProperty9AdjustPriceIdempotency(
-        int $goodsAmount,
-        int $shippingFee,
-        int $discountAmount,
-    ): void {
-        $strategy = $this->makeStrategy();
-
-        $orderEntity = new OrderEntity();
-        $orderEntity->setMemberId(random_int(1, 999_999));
-
-        // Set up price detail
-        $priceDetail = new OrderPriceValue();
-        $priceDetail->setGoodsAmount($goodsAmount);
-        $priceDetail->setShippingFee($shippingFee);
-        $priceDetail->setDiscountAmount($discountAmount);
-        $orderEntity->setPriceDetail($priceDetail);
-
-        // Capture prices before adjustPrice
-        $beforeGoodsAmount = $orderEntity->getGoodsAmount();
-        $beforeShippingFee = $orderEntity->getShippingFee();
-        $beforeDiscountAmount = $orderEntity->getDiscountAmount();
-        $beforeTotalAmount = $orderEntity->getTotalAmount();
-        $beforePayAmount = $orderEntity->getPayAmount();
-
-        // Call adjustPrice
-        $strategy->adjustPrice($orderEntity);
-
-        // Verify all prices remain unchanged
-        self::assertSame($beforeGoodsAmount, $orderEntity->getGoodsAmount(), 'goodsAmount should not change');
-        self::assertSame($beforeShippingFee, $orderEntity->getShippingFee(), 'shippingFee should not change');
-        self::assertSame($beforeDiscountAmount, $orderEntity->getDiscountAmount(), 'discountAmount should not change');
-        self::assertSame($beforeTotalAmount, $orderEntity->getTotalAmount(), 'totalAmount should not change');
-        self::assertSame($beforePayAmount, $orderEntity->getPayAmount(), 'payAmount should not change');
-    }
-
-    /**
-     * @return iterable<string, array{int, int, int}>
-     */
-    public static function provideProperty9_AdjustPriceIdempotencyCases(): iterable
-    {
-        for ($i = 0; $i < 100; ++$i) {
-            $goodsAmount = random_int(100, 999_999);
-            $shippingFee = random_int(0, 5000);
-            $discountAmount = random_int(0, min($goodsAmount, 50000));
-            yield "iteration_{$i} (goods={$goodsAmount}, ship={$shippingFee}, disc={$discountAmount})" => [
-                $goodsAmount, $shippingFee, $discountAmount,
-            ];
+            $couponId = random_int(1, 999_999);
+            yield "iteration_{$i} (couponId={$couponId})" => [$couponId];
         }
     }
 

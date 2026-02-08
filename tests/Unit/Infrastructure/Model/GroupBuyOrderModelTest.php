@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Infrastructure\Model;
 
-use App\Infrastructure\Model\GroupBuy\GroupBuy;
-use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuy;
+use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuyOrder;
 
 /**
  * Unit tests for GroupBuyOrder Model structure.

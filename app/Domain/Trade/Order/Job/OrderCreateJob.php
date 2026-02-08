@@ -1,13 +1,18 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Order\Job;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Marketing\Coupon\Service\DomainCouponUserService;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
-use App\Domain\Marketing\Seckill\Service\SeckillCacheService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Event\OrderCreatedEvent;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
@@ -40,7 +45,6 @@ class OrderCreateJob extends Job
         $repository = $container->get(OrderRepository::class);
         $strategyFactory = $container->get(OrderTypeStrategyFactory::class);
         $mallSettingService = $container->get(DomainMallSettingService::class);
-        $couponUserService = $container->get(DomainCouponUserService::class);
         $pendingCache = $container->get(OrderPendingCacheService::class);
         $logger = $container->get(LoggerInterface::class);
 
@@ -50,15 +54,12 @@ class OrderCreateJob extends Job
 
         $strategy = $strategyFactory->make($this->orderType);
 
-        // DB 事务：入库 + 优惠券 + 后置逻辑
-        $entity = Db::transaction(function () use ($entity, $strategy, $couponUserService, $repository) {
+        // 策略自行恢复活动实体
+        $strategy->rehydrate($entity, $container);
+
+        // DB 事务：入库 + 后置逻辑（含优惠券核销）
+        $entity = Db::transaction(static function () use ($entity, $strategy, $repository) {
             $savedEntity = $repository->save($entity);
-
-            foreach ($this->couponUserIds as $couponUserId) {
-                $couponUserEntity = $couponUserService->getEntity($couponUserId);
-                $couponUserService->markUsed($couponUserEntity, $savedEntity->getId());
-            }
-
             $strategy->postCreate($savedEntity);
 
             return $savedEntity;
@@ -126,39 +127,6 @@ class OrderCreateJob extends Job
             $entity->setExtra($key, $value);
         }
 
-        // 重新加载活动实体对象，供 postCreate() 使用
-        $this->rehydrateActivityEntities($entity, $container);
-
         return $entity;
-    }
-
-    /**
-     * 根据订单类型重新加载活动实体（秒杀/拼团）.
-     *
-     * validate() 阶段将 SeckillProductEntity / GroupBuyEntity 存入 extras，
-     * 但这些对象无法序列化到 Job，所以在 Job 中根据标量 ID 重新加载。
-     */
-    private function rehydrateActivityEntities(OrderEntity $entity, ContainerInterface $container): void
-    {
-        if ($this->orderType === 'seckill') {
-            $sessionId = (int) ($this->entitySnapshot['extras']['session_id'] ?? 0);
-            $skuId = (int) ($this->itemsPayload[0]['sku_id'] ?? 0);
-            if ($sessionId > 0 && $skuId > 0) {
-                $cacheService = $container->get(SeckillCacheService::class);
-                $seckillProduct = $cacheService->getProductBySkuId($sessionId, $skuId);
-                if ($seckillProduct) {
-                    $entity->setExtra('seckill_product_entity', $seckillProduct);
-                }
-            }
-        }
-
-        if ($this->orderType === 'group_buy') {
-            $groupBuyId = (int) ($this->entitySnapshot['extras']['group_buy_id'] ?? 0);
-            if ($groupBuyId > 0) {
-                $groupBuyService = $container->get(DomainGroupBuyService::class);
-                $groupBuyEntity = $groupBuyService->getEntity($groupBuyId);
-                $entity->setExtra('group_buy_entity', $groupBuyEntity);
-            }
-        }
     }
 }

@@ -1,19 +1,25 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Infrastructure\Crontab;
 
-use App\Domain\Marketing\GroupBuy\Repository\GroupBuyOrderRepository;
-use App\Domain\Marketing\Seckill\Repository\SeckillOrderRepository;
-use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Crontab\Annotation\Crontab;
 use Hyperf\DbConnection\Db;
+use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyOrderRepository;
+use Plugin\Since\Seckill\Domain\Repository\SeckillOrderRepository;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -75,7 +81,7 @@ class OrderAutoCloseCrontab
         Db::transaction(fn () => $this->orderRepository->cancel($entity));
 
         // 回滚 Redis 库存
-        $items = $order->items->map(fn ($item) => [
+        $items = $order->items->map(static fn ($item) => [
             'sku_id' => $item->sku_id,
             'quantity' => $item->quantity,
         ])->toArray();

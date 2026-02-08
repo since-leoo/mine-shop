@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Marketing\GroupBuy;
 
-use App\Domain\Marketing\GroupBuy\Entity\GroupBuyEntity;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
 
 /**
  * Feature: marketing-activity-status, Property 9: GroupBuyEntity.start() 状态守卫

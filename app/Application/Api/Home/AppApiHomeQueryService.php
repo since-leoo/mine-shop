@@ -16,7 +16,7 @@ use App\Application\Api\Product\AppApiCategoryQueryService;
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
-use App\Domain\Marketing\Seckill\Api\Query\DomainApiSeckillQueryService;
+use Plugin\Since\Seckill\Domain\Api\Query\DomainApiSeckillQueryService;
 
 /**
  * 首页数据聚合应用服务.
@@ -101,7 +101,7 @@ final class AppApiHomeQueryService
     /**
      * 获取顶级分类列表（金刚区）.
      *
-     * @return array<int, array{id: int, name: string, icon: string|null}>
+     * @return array<int, array{id: int, name: string, icon: null|string}>
      */
     private function resolveTopCategories(): array
     {

@@ -12,18 +12,18 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Marketing\Job;
 
-use App\Domain\Marketing\GroupBuy\Enum\GroupBuyStatus;
-use App\Domain\Marketing\GroupBuy\Job\GroupBuyStartJob;
-use App\Domain\Marketing\GroupBuy\Repository\GroupBuyRepository;
-use App\Domain\Marketing\GroupBuy\Service\DomainGroupBuyService;
-use App\Domain\Marketing\Seckill\Enum\SeckillStatus;
-use App\Domain\Marketing\Seckill\Job\SeckillSessionStartJob;
-use App\Domain\Marketing\Seckill\Repository\SeckillSessionRepository;
-use App\Domain\Marketing\Seckill\Service\DomainSeckillActivityService;
-use App\Domain\Marketing\Seckill\Service\DomainSeckillSessionService;
 use Hyperf\Context\ApplicationContext;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
+use Plugin\Since\GroupBuy\Domain\Enum\GroupBuyStatus;
+use Plugin\Since\GroupBuy\Domain\Job\GroupBuyStartJob;
+use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyRepository;
+use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
+use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
+use Plugin\Since\Seckill\Domain\Job\SeckillSessionStartJob;
+use Plugin\Since\Seckill\Domain\Repository\SeckillSessionRepository;
+use Plugin\Since\Seckill\Domain\Service\DomainSeckillActivityService;
+use Plugin\Since\Seckill\Domain\Service\DomainSeckillSessionService;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
