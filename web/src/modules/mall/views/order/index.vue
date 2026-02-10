@@ -612,6 +612,8 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .order-page {
+  @apply p-3;
+
   .stat-card {
     @apply flex items-center gap-3;
 

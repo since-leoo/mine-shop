@@ -3,7 +3,7 @@
  * Please view the LICENSE file distributed with this source code.
 -->
 <template>
-  <div class="member-level-page">
+  <div class="member-level-page p-3">
     <el-card shadow="never" class="mb-4">
       <el-form :model="filters" label-width="90px" inline>
         <el-form-item label="关键字">
