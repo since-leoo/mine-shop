@@ -105,7 +105,7 @@ function goBack() {
 
 <template>
   <div class="mine-layout pt-3">
-    <div class="mb-3">
+    <div class="mb-3 mx-3">
       <el-button @click="goBack">
         <ma-svg-icon name="material-symbols:arrow-back" class="mr-1" />
         返回场次列表

@@ -38,9 +38,9 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
   return [
     { type: 'selection', showOverflowTooltip: false },
     { label: () => 'ID', prop: 'id', width: '80px' },
-    { label: () => '开始时间', prop: 'start_time', width: '170px' },
-    { label: () => '结束时间', prop: 'end_time', width: '170px' },
-    { label: () => '商品数', prop: 'products_count', width: '100px',
+    { label: () => '开始时间', prop: 'start_time', minWidth: '170px' },
+    { label: () => '结束时间', prop: 'end_time', minWidth: '170px' },
+    { label: () => '商品数', prop: 'products_count', minWidth: '100px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => (
         <el-button
           type="primary"
@@ -54,7 +54,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
         </el-button>
       ),
     },
-    { label: () => '库存/售出', prop: 'quantity', width: '180px',
+    { label: () => '库存/售出', prop: 'quantity', minWidth: '180px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => {
         const total = row.total_quantity || 0
         const sold = row.sold_quantity || 0
