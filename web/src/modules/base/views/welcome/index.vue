@@ -1,187 +1,191 @@
-<!--
- - MineAdmin is committed to providing solutions for quickly building web applications
- - Please view the LICENSE file that was distributed with this source code,
- - For the full copyright and license information.
- - Thank you very much for using MineAdmin.
- -
- - @Author X.Mo<root@imoi.cn>
- - @Link   https://github.com/mineadmin
--->
-<script setup lang="tsx">
-import type { MaTableExpose } from '@mineadmin/table'
-import useTable from '@/hooks/useTable.ts'
+<script setup lang="ts">
+import type { DashboardWelcome } from '~/base/api/dashboard.ts'
+import { dashboardApi } from '~/base/api/dashboard.ts'
+import { useEcharts } from '@/hooks/useEcharts.ts'
 
 defineOptions({ name: 'welcome' })
+
 const userinfo = useUserStore().getUserInfo()
+const loading = ref(true)
+const data = ref<DashboardWelcome | null>(null)
+const salesChartEl = ref<HTMLDivElement>()
+const salesChart = useEcharts(salesChartEl)
 
-useTable('table').then((table: MaTableExpose) => {
-  table.setColumns([
-    { label: '成员', prop: 'member', width: 150, align: 'center' },
-    { label: '动态', prop: 'dynamic', align: 'center' },
-    { label: '时间', prop: 'timer', width: 180, align: 'center',
-      cellRender: ({ row }) => {
-        return useDayjs(row.timer).fromNow()
-      },
-    },
-  ])
+const greetingText = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 9) return '早上好'
+  if (hour < 12) return '上午好'
+  if (hour < 14) return '中午好'
+  if (hour < 18) return '下午好'
+  return '晚上好'
+})
 
-  table.setData([
-    { member: 'IT界-风清扬', dynamic: '上班不摸鱼，与咸鱼有什么区别。', timer: '2024-09-25 17:10:20' },
-    { member: 'Anna', dynamic: '技术部那几位童鞋，再次警告，不要摸鱼，不要摸鱼，不要摸鱼啦！', timer: '2024-09-15 16:34:56' },
-    { member: '小李子', dynamic: '中午吃什么嘞，好烦呐！那个谁，来一段唱、跳、rap和篮球吧', timer: '2024-09-09 12:01:10' },
-    { member: '咩咩羊', dynamic: '向 MineAdmin 提交了一个bug，抽时间看看吧！', timer: '2024-09-05 14:20:07' },
-    { member: '李大', dynamic: '刚才把工作台页面随便写了一些，凑合能看了！', timer: '2024-09-03 10:43:36' },
-  ])
+function formatAmount(cents: number): string {
+  return (cents / 100).toFixed(2)
+}
+
+async function fetchData() {
+  loading.value = true
+  try {
+    const res = await dashboardApi.welcome()
+    data.value = res.data ?? res as any
+  }
+  catch {
+    data.value = null
+  }
+  finally {
+    loading.value = false
+  }
+}
+
+function renderSalesChart() {
+  const trend = data.value?.sales_trend ?? []
+  const labels = trend.map(d => d.date?.slice(5) || '')
+  const salesData = trend.map(d => Number(((d.paid_amount || 0) / 100).toFixed(2)))
+  const orderData = trend.map(d => d.paid_order_count || 0)
+
+  salesChart?.setOption({
+    tooltip: { trigger: 'axis' },
+    legend: { bottom: 0, data: ['销售额(元)', '订单数'] },
+    grid: { left: '3%', right: '4%', top: 20, bottom: 40, containLabel: true },
+    xAxis: { type: 'category', data: labels.length ? labels : ['暂无数据'], axisLabel: { color: '#86909C' } },
+    yAxis: [
+      { type: 'value', name: '销售额', axisLabel: { color: '#86909C' } },
+      { type: 'value', name: '订单数', axisLabel: { color: '#86909C' } },
+    ],
+    series: [
+      { name: '销售额(元)', type: 'line', smooth: true, data: salesData, itemStyle: { color: '#409EFF' }, areaStyle: { opacity: 0.1 } },
+      { name: '订单数', type: 'bar', yAxisIndex: 1, data: orderData, itemStyle: { color: '#67C23A' }, barWidth: 16 },
+    ],
+  })
+}
+
+onMounted(async () => {
+  await fetchData()
+  nextTick(() => renderSalesChart())
 })
 </script>
 
 <template>
-  <div class="mine-layout">
-    <div class="flex justify-between bg-white p-3 dark-bg-dark-8">
+  <div v-loading="loading" class="mine-layout">
+    <!-- 欢迎横幅 -->
+    <div class="mine-card flex justify-between p-4">
       <div class="flex gap-x-5">
-        <el-avatar :src="userinfo?.avatar" :size="80">
-          <span v-if="!userinfo?.avatar" class="text-5xl">{{ userinfo.username[0].toUpperCase() }}</span>
+        <el-avatar :src="userinfo?.avatar" :size="70">
+          <span v-if="!userinfo?.avatar" class="text-4xl">{{ userinfo?.username?.[0]?.toUpperCase() }}</span>
         </el-avatar>
-        <div class="flex flex-col justify-center gap-y-2">
-          <span class="text-xl">早安，天青色等烟雨，而我在等你！</span>
-          <span class="text-sm text-dark-1 dark-text-gray-3">某某公司 - 某某部门 - 技术总监</span>
+        <div class="flex flex-col justify-center gap-y-1">
+          <span class="text-xl">{{ greetingText }}，{{ userinfo?.nickname || userinfo?.username }}！欢迎回到商城管理后台</span>
+          <span class="text-sm text-gray-4">MineShop 商城管理系统 — 让运营更高效</span>
         </div>
       </div>
     </div>
 
-    <div class="justify-between lg:flex">
-      <div class="mine-card w-auto lg:w-8/12">
-        <div class="text-base">
-          <div>进行中的项目</div>
-        </div>
-        <div class="grid grid-cols-1 mt-3 lg:grid-cols-3">
-          <div class="run-list">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="skill-icons:php-light" :size="30" />
-              <div>
-                Hypertext Preprocessor
-              </div>
-            </div>
-            <div class="desc">
-              即“超文本预处理器”，是在服务器端执行的脚本语言，尤其适用于Web开发并可嵌入HTML中。
-            </div>
-          </div>
-          <div class="run-list">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="ion:logo-javascript" :size="30" />
-              <div>
-                Javascript
-              </div>
-            </div>
-            <div class="desc">
-              JavaScript基于原型编程、多范式的动态脚本语言，并且支持面向对象、命令式、声明式、函数式编程范式。
-            </div>
-          </div>
-          <div class="run-list !b-r-0">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="akar-icons:github-fill" :size="30" />
-              <div>
-                Github
-              </div>
-            </div>
-            <div class="desc">
-              GitHub是一个面向开源及私有软件项目的托管平台，因为只支持Git作为唯一的版本库格式进行托管，故名GitHub。
+    <!-- 今日实时数据 -->
+    <div v-if="data" class="grid grid-cols-2 gap-3 mt-3 mx-3 lg:grid-cols-4">
+      <div class="stat-card bg-blue-50 dark-bg-blue-900/20">
+        <div class="text-sm text-gray-5">今日订单</div>
+        <div class="text-2xl font-bold text-blue-6 mt-1">{{ data.today.orders }}</div>
+      </div>
+      <div class="stat-card bg-green-50 dark-bg-green-900/20">
+        <div class="text-sm text-gray-5">今日销售额</div>
+        <div class="text-2xl font-bold text-green-6 mt-1">¥{{ formatAmount(data.today.sales) }}</div>
+      </div>
+      <div class="stat-card bg-purple-50 dark-bg-purple-900/20">
+        <div class="text-sm text-gray-5">今日新用户</div>
+        <div class="text-2xl font-bold text-purple-6 mt-1">{{ data.today.new_members }}</div>
+      </div>
+      <div class="stat-card bg-orange-50 dark-bg-orange-900/20">
+        <div class="text-sm text-gray-5">今日活跃用户</div>
+        <div class="text-2xl font-bold text-orange-6 mt-1">{{ data.today.active_members }}</div>
+      </div>
+    </div>
+
+    <!-- 待处理事项 + 总览 -->
+    <div v-if="data" class="grid grid-cols-1 gap-3 mt-3 lg:grid-cols-2">
+      <div class="mine-card">
+        <div class="text-base font-medium mb-3">待处理事项</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex items-center gap-3 p-3 bg-red-50 dark-bg-red-900/10 rounded">
+            <ma-svg-icon name="heroicons:clock" :size="28" class="text-red-5" />
+            <div>
+              <div class="text-xs text-gray-5">待付款订单</div>
+              <div class="text-lg font-bold text-red-5">{{ data.pending.pending_payment }}</div>
             </div>
           </div>
-          <div class="run-list !lg:b-b-0">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="skill-icons:phpstorm-light" :size="30" />
-              <div>
-                PHP Storm
-              </div>
-            </div>
-            <div class="desc">
-              JetBrains 公司开发的一款商业的PHP集成开发工具，可深刻理解用户的编码，提供智能代码补全、即时错误检查。
+          <div class="flex items-center gap-3 p-3 bg-yellow-50 dark-bg-yellow-900/10 rounded">
+            <ma-svg-icon name="heroicons:truck" :size="28" class="text-yellow-6" />
+            <div>
+              <div class="text-xs text-gray-5">待发货订单</div>
+              <div class="text-lg font-bold text-yellow-6">{{ data.pending.pending_shipment }}</div>
             </div>
           </div>
-          <div class="run-list !lg:b-b-0">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="skill-icons:webstorm-light" :size="30" />
-              <div>
-                Web Storm
-              </div>
-            </div>
-            <div class="desc">
-              JetBrains 公司旗下一款 JavaScript 开发工具。已经被广大中国JS开发者誉为“Web前端开发神器”。
+          <div class="flex items-center gap-3 p-3 bg-orange-50 dark-bg-orange-900/10 rounded">
+            <ma-svg-icon name="heroicons:exclamation-triangle" :size="28" class="text-orange-5" />
+            <div>
+              <div class="text-xs text-gray-5">库存预警</div>
+              <div class="text-lg font-bold text-orange-5">{{ data.pending.low_stock }}</div>
             </div>
           </div>
-          <div class="run-list !b-r-0 !lg:b-b-0">
-            <div class="flex items-center gap-x-3">
-              <ma-svg-icon name="logos:chrome" :size="30" />
-              <div>
-                Google Chrome
-              </div>
-            </div>
-            <div class="desc">
-              该浏览器基于其他开源软件 WebKit 编写，目标是提升稳定、速度和安全性，并提供简单的使用者界面。
+          <div class="flex items-center gap-3 p-3 bg-gray-50 dark-bg-gray-900/10 rounded">
+            <ma-svg-icon name="heroicons:x-circle" :size="28" class="text-gray-5" />
+            <div>
+              <div class="text-xs text-gray-5">已售罄商品</div>
+              <div class="text-lg font-bold text-gray-6">{{ data.pending.out_of_stock }}</div>
             </div>
           </div>
         </div>
       </div>
-      <div class="mine-card w-auto !ml-3 lg:w-4/12 !lg:ml-0">
-        <div class="text-base">
-          <div>MineAdmin 入门及开发</div>
-        </div>
-        <div class="mt-3 p-2 text-sm leading-6">
-          感谢选择 MineAdmin 作为您的项目开发脚手架，我们为您提供了入门路径、二次开发项目指南以及现成的应用插件，
-          我们致力于：<el-text type="primary">
-            运用技术，为公司和品牌创造卓越的价值。
-          </el-text>
-        </div>
-        <div class="p-2 text-sm text-gray-5 dark-text-[#ccc]">
-          <ul class="ma-link">
-            <li>
-              官方网站：<el-link target="_blank" href="https://www.mineadmin.com">
-                https://www.mineadmin.com
-              </el-link>
-            </li>
-            <li>
-              开发文档：<el-link target="_blank" href="https://doc.mineadmin.com">
-                https://doc.mineadmin.com
-              </el-link>
-            </li>
-            <li>
-              应用市场：<el-link target="_blank" href="https://www.mineadmin.com/store">
-                https://www.mineadmin.com/store
-              </el-link>
-            </li>
-            <li>
-              QQ交流群：<el-link target="_blank" href="https://qm.qq.com/cgi-bin/qm/qr?k=Uq4VW1H9jtDhEKsUb3hfjHraiSG80FI4&jump_from=webapi&authKey=bpaCvnQ65RpLdyQx8m57iQNc9OtgJgyIjrcG3qDrJZhnL4QdqzDLLQS8fx5jkevE">
-                150105478，点击加入
-              </el-link>
-            </li>
-          </ul>
+
+      <div class="mine-card">
+        <div class="text-base font-medium mb-3">商城总览</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="text-center p-3">
+            <div class="text-2xl font-bold text-blue-6">{{ data.overview.total_members }}</div>
+            <div class="text-xs text-gray-5 mt-1">累计会员</div>
+          </div>
+          <div class="text-center p-3">
+            <div class="text-2xl font-bold text-green-6">{{ data.overview.total_products }}</div>
+            <div class="text-xs text-gray-5 mt-1">在售商品</div>
+          </div>
+          <div class="text-center p-3">
+            <div class="text-2xl font-bold text-purple-6">{{ data.overview.total_orders }}</div>
+            <div class="text-xs text-gray-5 mt-1">累计订单</div>
+          </div>
+          <div class="text-center p-3">
+            <div class="text-2xl font-bold text-orange-6">¥{{ formatAmount(data.overview.total_sales) }}</div>
+            <div class="text-xs text-gray-5 mt-1">累计销售额</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="mine-card">
-      <div class="text-base">
-        <div>部门动态</div>
-      </div>
-      <ma-table ref="table" class="mt-5" />
+    <!-- 近7天销售趋势 -->
+    <div class="mine-card mt-3">
+      <div class="text-base font-medium">近7天销售趋势</div>
+      <div ref="salesChartEl" class="mt-3 h-300px" />
+    </div>
+
+    <!-- 热销商品 Top5 -->
+    <div v-if="data" class="mine-card mt-3">
+      <div class="text-base font-medium mb-3">近7天热销商品 Top5</div>
+      <el-table :data="data.hot_products ?? []" stripe>
+        <template #empty><el-empty description="暂无数据" :image-size="60" /></template>
+        <el-table-column type="index" label="排名" width="70" align="center" />
+        <el-table-column prop="product_name" label="商品名称" />
+        <el-table-column prop="sales_count" label="销量" width="120" align="center" />
+        <el-table-column label="销售额" width="150" align="center">
+          <template #default="{ row }">
+            ¥{{ formatAmount(row.sales_amount) }}
+          </template>
+        </el-table-column>
+      </el-table>
     </div>
   </div>
 </template>
 
 <style lang="scss" scoped>
-.run-list {
-  @apply b-1 b-solid b-gray-1 dark-b-dark-3 p-3 b-l-0 b-t-0 b-r-0 lg:b-r-1
-  transition-all duration-300
-  hover-shadow dark-hover-shadow-dark-3
-  ;
-
-  .desc {
-    @apply mt-3 text-sm leading-6 dark-text-[#888] text-gray-5
-  }
-}
-
-.ma-link li {
-  @apply flex items-center py-1.5;
+.stat-card {
+  @apply p-4 rounded transition-all duration-300 hover-shadow;
 }
 </style>
