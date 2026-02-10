@@ -42,8 +42,8 @@ class CreateMallProductsTable extends Migration
             $table->unsignedBigInteger('shipping_template_id')->nullable()->comment('运费模板ID');
             $table->unsignedInteger('sort')->default(0)->comment('排序');
             $table->enum('status', ['draft', 'active', 'inactive', 'sold_out'])->default('draft')->comment('状态');
-            $table->enum('freight_type', ['default', 'free', 'flat', 'template'])->default('default')->after('shipping_template_id')->comment('运费类型');
-            $table->unsignedInteger('flat_freight_amount')->default(0)->after('freight_type')->comment('统一运费金额(分)');
+            $table->enum('freight_type', ['default', 'free', 'flat', 'template'])->default('default')->comment('运费类型');
+            $table->unsignedInteger('flat_freight_amount')->default(0)->comment('统一运费金额(分)');
             $table->timestamps();
             $table->softDeletes();
 

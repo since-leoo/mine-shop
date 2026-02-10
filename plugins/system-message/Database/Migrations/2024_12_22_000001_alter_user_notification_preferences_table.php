@@ -34,14 +34,11 @@ class AlterUserNotificationPreferencesTable extends Migration
             if (Schema::hasColumn('user_notification_preferences', 'custom_settings')) {
                 $table->dropColumn('custom_settings');
             }
-        });
-
-        Schema::table('user_notification_preferences', static function (Blueprint $table) {
             // 添加新字段
-            $table->json('channel_preferences')->nullable()->comment('渠道偏好设置')->after('user_id');
-            $table->json('type_preferences')->nullable()->comment('消息类型偏好设置')->after('channel_preferences');
-            $table->boolean('do_not_disturb_enabled')->default(false)->comment('是否启用免打扰')->after('type_preferences');
-            $table->tinyInteger('min_priority')->default(1)->comment('最小优先级(1-5)')->after('do_not_disturb_end');
+            $table->json('channel_preferences')->nullable()->comment('渠道偏好设置');
+            $table->json('type_preferences')->nullable()->comment('消息类型偏好设置');
+            $table->boolean('do_not_disturb_enabled')->default(false)->comment('是否启用免打扰');
+            $table->tinyInteger('min_priority')->default(1)->comment('最小优先级(1-5)');
         });
 
         // 删除旧的唯一索引
@@ -84,13 +81,6 @@ class AlterUserNotificationPreferencesTable extends Migration
             $table->json('channels')->nullable()->comment('启用的传递渠道')->after('message_type');
             $table->boolean('is_enabled')->default(true)->comment('是否启用')->after('channels');
             $table->json('custom_settings')->nullable()->comment('自定义设置')->after('do_not_disturb_end');
-
-            // 恢复索引
-            $table->dropUnique('uk_user_id');
-            $table->unique(['user_id', 'message_type'], 'uk_user_type');
-            $table->index('message_type', 'idx_message_type');
-            $table->index('is_enabled', 'idx_is_enabled');
-            $table->index(['user_id', 'is_enabled'], 'idx_user_enabled');
         });
     }
 }
