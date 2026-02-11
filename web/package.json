@@ -92,6 +92,7 @@
     "stylelint-config-standard-vue": "^1.0.0",
     "stylelint-scss": "^6.12.1",
     "svgo": "^3.3.2",
+    "terser": "^5.46.0",
     "typescript": "^5.9.3",
     "unocss": "^66.5.9",
     "unplugin-auto-import": "^19.3.0",
