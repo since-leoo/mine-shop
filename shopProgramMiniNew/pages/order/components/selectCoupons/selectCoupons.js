@@ -5,7 +5,10 @@ const emptyCouponImg = `https://tdesign.gtimg.com/miniprogram/template/retail/co
 
 Component({
   properties: {
-    storeId: String,
+    storeId: {
+      type: String,
+      value: '',
+    },
     promotionGoodsList: {
       type: Array,
       value: [],
@@ -63,8 +66,6 @@ Component({
     goodsList: [],
     selectedList: [],
     couponsList: [],
-    orderSureCouponList: [],
-    promotionGoodsList: [],
   },
   methods: {
     initData(data = {}) {

@@ -8,6 +8,45 @@ import {
 
 const DEFAULT_TIMEOUT = 15000;
 
+// ========== camelCase <-> snake_case 转换 ==========
+
+function camelToSnake(str) {
+  return str.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+}
+
+function snakeToCamel(str) {
+  return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
+function toSnakeCase(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toSnakeCase);
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    const result = {};
+    Object.keys(obj).forEach((key) => {
+      const val = obj[key];
+      if (val !== null && val !== undefined) {
+        result[camelToSnake(key)] = toSnakeCase(val);
+      }
+    });
+    return result;
+  }
+  return obj;
+}
+
+function toCamelCase(obj) {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) return obj.map(toCamelCase);
+  if (typeof obj === 'object' && obj.constructor === Object) {
+    const result = {};
+    Object.keys(obj).forEach((key) => {
+      result[snakeToCamel(key)] = toCamelCase(obj[key]);
+    });
+    return result;
+  }
+  return obj;
+}
+
 function buildHeaders(extraHeaders = {}, needAuth = false) {
   const headers = {
     'Content-Type': 'application/json',
@@ -67,25 +106,26 @@ export function request({ url, method = 'GET', data = {}, header = {}, needAuth 
   const baseUrl = getBaseUrl();
   const normalizedPath = typeof url === 'string' && url.startsWith('/') ? url : `/${url || ''}`;
   const finalUrl = baseUrl + normalizedPath;
+  const snakeData = toSnakeCase(data);
 
   const execRequest = () =>
     new Promise((resolve, reject) => {
       wx.request({
         url: finalUrl,
         method,
-        data,
+        data: snakeData,
         header: buildHeaders(header, needAuth),
         timeout: DEFAULT_TIMEOUT,
         success(res) {
           const { statusCode, data: body } = res;
           if (statusCode >= 200 && statusCode < 300 && body && body.code === 200) {
-            resolve(body.data);
+            resolve(toCamelCase(body.data));
             return;
           }
           reject({
             code: (body && body.code) || statusCode,
             msg: (body && body.message) || '接口请求失败',
-            data: body && body.data,
+            data: toCamelCase(body && body.data),
           });
         },
         fail(error) {

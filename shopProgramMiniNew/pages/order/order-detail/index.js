@@ -94,14 +94,14 @@ Page({
       }
 
       const addr = order.address || {};
-      const receiverAddress = [
-        addr.provinceName, addr.cityName, addr.districtName, addr.detailAddress,
+      const receiverAddress = addr.fullAddress || [
+        addr.province, addr.city, addr.district, addr.detail,
       ].filter(Boolean).join('');
 
       // 构造 logisticsVO 供 WXML 模板使用
       order.logisticsVO = {
-        receiverName: addr.receiverName || addr.name || '',
-        receiverPhone: addr.receiverPhone || addr.phone || '',
+        receiverName: addr.name || '',
+        receiverPhone: addr.phone || '',
         logisticsNo: '',
       };
 
@@ -212,7 +212,7 @@ Page({
   onPayOrder(e) {
     const { orderNo } = e.detail;
     wx.navigateTo({
-      url: `/pages/order/order-confirm/index?orderNo=${orderNo}&isPay=1`,
+      url: `/pages/order/cashier/index?tradeNo=${orderNo}&mode=repay`,
     });
   },
 

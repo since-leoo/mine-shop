@@ -59,7 +59,7 @@ export function genSettleDetail(params) {
       storeGoodsList: [
         {
           storeId: '1000',
-          storeName: '云Mall深圳旗舰店',
+          storeName: '官方旗舰店',
           remark: null,
           goodsCount: 1,
           deliveryFee: '0',

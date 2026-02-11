@@ -55,33 +55,42 @@ Page({
   loadHomePage() {
     wx.stopPullDownRefresh();
     this.setData({ pageLoading: true });
+    const that = this;
 
     fetchHome().then((homeData) => {
       const { swiper, seckillList, seckillEndTime, seckillTitle, seckillActivityId, seckillSessionId, categoryList } = homeData;
 
       const bannerList = (swiper && swiper.length > 0) ? swiper : [
-        'https://tdesign.gtimg.com/miniprogram/template/retail/home/swiper1.png',
-        'https://tdesign.gtimg.com/miniprogram/template/retail/home/swiper2.png',
+        'https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner2.png'
       ];
 
-      this.setData({
+      // 按 spuId 去重，避免同一商品出现多次
+      const seenSpuIds = new Set();
+      const uniqueSeckillList = (seckillList || []).filter((item) => {
+        if (seenSpuIds.has(item.spuId)) return false;
+        seenSpuIds.add(item.spuId);
+        return true;
+      });
+
+      that.setData({
         imgSrcs: bannerList,
-        seckillList: (seckillList || []).slice(0, 6),
+        seckillList: uniqueSeckillList.slice(0, 6),
         seckillTitle: seckillTitle || '限时秒杀',
         categoryList: (categoryList || []).slice(0, 10),
         pageLoading: false,
       });
 
-      this.privateData.seckillActivityId = seckillActivityId || null;
-      this.privateData.seckillSessionId = seckillSessionId || null;
+      if (!that.privateData) that.privateData = {};
+      that.privateData.seckillActivityId = seckillActivityId || null;
+      that.privateData.seckillSessionId = seckillSessionId || null;
 
       if (seckillEndTime) {
-        this.privateData.seckillEndTime = new Date(seckillEndTime).getTime();
-        this.startCountdown();
+        that.privateData.seckillEndTime = new Date(seckillEndTime).getTime();
+        that.startCountdown();
       }
 
-      this.loadHotGoods();
-      this.loadGoodsList(true);
+      that.loadHotGoods();
+      that.loadGoodsList(true);
     });
   },
 

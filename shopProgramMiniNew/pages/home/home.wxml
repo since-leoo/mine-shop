@@ -68,7 +68,7 @@
       <view
         class="seckill-product"
         wx:for="{{seckillList}}"
-        wx:key="spuId"
+        wx:key="index"
         data-spu-id="{{item.spuId}}"
         catchtap="navToSeckillGoodsDetail"
       >
@@ -94,7 +94,7 @@
       <view
         class="hot-product"
         wx:for="{{hotGoodsList}}"
-        wx:key="spuId"
+        wx:key="index"
         data-spu-id="{{item.spuId}}"
         catchtap="navToGoodsDetail"
       >

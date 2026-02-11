@@ -7,7 +7,7 @@ export function genCartGroupData() {
       storeGoods: [
         {
           storeId: '1000',
-          storeName: '云Mall深圳旗舰店',
+          storeName: '官方旗舰店',
           storeStatus: 1,
           totalDiscountSalePrice: '9990',
           promotionGoodsList: [

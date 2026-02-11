@@ -151,7 +151,7 @@ Page({
   onPayOrder(e) {
     const { orderNo } = e.detail;
     wx.navigateTo({
-      url: `/pages/order/order-confirm/index?orderNo=${orderNo}&isPay=1`,
+      url: `/pages/order/cashier/index?tradeNo=${orderNo}&mode=repay`,
     });
   },
 });

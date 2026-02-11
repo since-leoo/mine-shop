@@ -113,11 +113,16 @@ Page({
 
   fetUseriInfoHandle() {
     fetchUserCenter().then(({ userInfo, countsData, orderTagInfos: orderInfo, customerServiceInfo }) => {
-      // eslint-disable-next-line no-unused-expressions
+      // 将余额（分）转换为元，显示在"我的余额"菜单项
+      const balanceCents = userInfo?.balance || 0;
+      const balanceYuan = (balanceCents / 100).toFixed(2);
+
       menuData?.[0].forEach((v) => {
+        if (v.type === 'wallet') {
+          v.tit = `¥${balanceYuan}`;
+        }
         (countsData || []).forEach((counts) => {
           if (counts.type === v.type) {
-            // eslint-disable-next-line no-param-reassign
             v.tit = counts.num;
           }
         });

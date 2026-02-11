@@ -1,0 +1,55 @@
+<view class="cashier">
+  <!-- 创建中 loading -->
+  <view class="cashier-loading" wx:if="{{creating}}">
+    <t-loading theme="circular" size="80rpx" />
+    <text class="cashier-loading__text">订单创建中...</text>
+    <text class="cashier-loading__tip">请稍候，不要关闭页面</text>
+  </view>
+
+  <!-- 创建失败 -->
+  <view class="cashier-fail" wx:elif="{{failed}}">
+    <t-icon name="close-circle" size="80rpx" color="#E34D59" />
+    <text class="cashier-fail__text">{{failReason || '订单创建失败'}}</text>
+    <view class="cashier-fail__btn" bindtap="goOrderList">查看订单</view>
+  </view>
+
+  <!-- 创建成功，展示收银台 -->
+  <block wx:else>
+    <view class="cashier-amount">
+      <text class="cashier-amount__label">支付金额</text>
+      <price price="{{payAmount}}" wr-class="cashier-amount__price" fill decimalSmaller />
+    </view>
+
+    <view class="cashier-methods">
+      <view
+        wx:for="{{payMethods}}"
+        wx:key="channel"
+        class="cashier-method {{item.enabled ? '' : 'cashier-method--disabled'}} {{selectedMethod === item.channel ? 'cashier-method--active' : ''}}"
+        bindtap="onSelectMethod"
+        data-channel="{{item.channel}}"
+      >
+        <view class="cashier-method__left">
+          <t-icon name="{{item.channel === 'wechat' ? 'logo-wechat' : 'wallet'}}" size="44rpx" />
+          <text class="cashier-method__name">{{item.name}}</text>
+        </view>
+        <view class="cashier-method__right">
+          <text wx:if="{{!item.enabled}}" class="cashier-method__tip">暂不可用</text>
+          <t-icon
+            wx:else
+            name="{{selectedMethod === item.channel ? 'check-circle-filled' : 'circle'}}"
+            size="40rpx"
+            color="{{selectedMethod === item.channel ? '#FF5F15' : '#CCCCCC'}}"
+          />
+        </view>
+      </view>
+    </view>
+
+    <view class="cashier-footer">
+      <view class="cashier-btn {{paying ? 'cashier-btn--disabled' : ''}}" bindtap="onPay">
+        <t-loading wx:if="{{paying}}" theme="circular" size="36rpx" inherit-color />
+        <text wx:else>确认支付</text>
+      </view>
+    </view>
+  </block>
+</view>
+<t-toast id="t-toast" />

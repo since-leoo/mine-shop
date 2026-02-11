@@ -23,6 +23,7 @@
       "name": "order",
       "pages": [
         "order-confirm/index",
+        "cashier/index",
         "receipt/index",
         "pay-result/index",
         "order-list/index",
