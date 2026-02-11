@@ -1,0 +1,126 @@
+<view style="text-align: center; color: #b9b9b9" wx:if="{{pageLoading}}">
+  <t-loading theme="circular" size="40rpx" text="加载中..." inherit-color />
+</view>
+
+<!-- 顶部渐变区域 -->
+<view class="home-top-bg">
+  <view class="home-header">
+    <view class="home-header__row">
+      <view class="home-header__search" bind:tap="navToSearchPage">
+        <t-icon name="search" size="28rpx" color="#bbb" />
+        <text class="search-bar__text">搜索你需要的商品</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="home-body">
+    <!-- 轮播图 -->
+    <view class="swiper-wrap">
+      <t-swiper
+        wx:if="{{imgSrcs.length > 0}}"
+        current="{{current}}"
+        autoplay="{{autoplay}}"
+        duration="{{duration}}"
+        interval="{{interval}}"
+        navigation="{{navigation}}"
+        imageProps="{{swiperImageProps}}"
+        list="{{imgSrcs}}"
+        bind:click="navToActivityDetail"
+      />
+    </view>
+
+    <!-- 金刚区 -->
+    <view class="category-grid">
+      <view
+        class="category-grid__item"
+        wx:for="{{quickEntries}}"
+        wx:key="key"
+        data-key="{{item.key}}"
+        bind:tap="onQuickEntryTap"
+      >
+        <view class="category-grid__icon-wrap" style="background: {{item.bg}}">
+          <t-icon name="{{item.icon}}" size="44rpx" color="{{item.color}}" />
+        </view>
+        <text class="category-grid__text">{{item.name}}</text>
+      </view>
+    </view>
+  </view>
+</view>
+
+<view class="home-body">
+  <!-- 限时秒杀 -->
+  <view class="seckill-section" wx:if="{{seckillList.length > 0}}">
+    <view class="seckill-section__header" bind:tap="navToSeckill">
+      <view class="seckill-section__title-row">
+        <view class="seckill-section__title-bar"></view>
+        <text class="seckill-section__title">{{seckillTitle || '限时秒杀'}}</text>
+      </view>
+      <view class="seckill-section__countdown" wx:if="{{seckillCountdown}}">
+        <text class="cd-label" wx:if="{{seckillCountdown.days > 0}}">{{seckillCountdown.days}}天</text>
+        <text class="cd-block">{{seckillCountdown.hours}}</text>
+        <text class="cd-sep">:</text>
+        <text class="cd-block">{{seckillCountdown.minutes}}</text>
+        <text class="cd-sep">:</text>
+        <text class="cd-block">{{seckillCountdown.seconds}}</text>
+      </view>
+    </view>
+    <scroll-view class="seckill-section__scroll" scroll-x enable-flex>
+      <view
+        class="seckill-product"
+        wx:for="{{seckillList}}"
+        wx:key="spuId"
+        data-spu-id="{{item.spuId}}"
+        catchtap="navToSeckillGoodsDetail"
+      >
+        <view class="seckill-product__img-wrap">
+          <t-image t-class="seckill-product__img" src="{{item.thumb}}" mode="aspectFill" />
+        </view>
+        <text class="seckill-product__name">{{item.title || '新鲜好物'}}</text>
+        <view class="seckill-product__price-row">
+          <text class="seckill-product__price">¥{{item.price / 100}}</text>
+          <text class="seckill-product__origin-price" wx:if="{{item.originPrice}}">¥{{item.originPrice / 100}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 热门商品 -->
+  <view class="hot-section" wx:if="{{hotGoodsList.length > 0}}">
+    <view class="hot-section__header">
+      <view class="hot-section__title-bar"></view>
+      <text class="hot-section__title">热门商品</text>
+    </view>
+    <scroll-view class="hot-section__scroll" scroll-x enable-flex>
+      <view
+        class="hot-product"
+        wx:for="{{hotGoodsList}}"
+        wx:key="spuId"
+        data-spu-id="{{item.spuId}}"
+        catchtap="navToGoodsDetail"
+      >
+        <view class="hot-product__img-wrap">
+          <t-image t-class="hot-product__img" src="{{item.thumb}}" mode="aspectFill" />
+        </view>
+        <text class="hot-product__name">{{item.title}}</text>
+        <text class="hot-product__price">¥{{item.price / 100}}</text>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 人气推荐 -->
+  <view class="recommend-section">
+    <view class="recommend-section__header">
+      <view class="recommend-section__title-bar"></view>
+      <text class="recommend-section__title">人气推荐</text>
+    </view>
+  </view>
+
+  <goods-list
+    wr-class="goods-list-container"
+    goodsList="{{goodsList}}"
+    bind:click="goodListClickHandle"
+    bind:addcart="goodListAddCartHandle"
+  />
+  <load-more list-is-empty="{{!goodsList.length}}" status="{{goodsListLoadStatus}}" bind:retry="onReTry" />
+  <t-toast id="t-toast" />
+</view>
