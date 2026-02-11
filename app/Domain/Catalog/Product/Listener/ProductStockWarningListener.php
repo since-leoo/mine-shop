@@ -15,7 +15,7 @@ namespace App\Domain\Catalog\Product\Listener;
 use App\Domain\Catalog\Product\Event\ProductStockWarningEvent;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use Hyperf\Event\Contract\ListenerInterface;
-use Plugin\Since\SystemMessage\Facade\SystemMessage;
+use App\Domain\Infrastructure\SystemMessage\Facade\SystemMessage;
 use Psr\Log\LoggerInterface;
 
 final class ProductStockWarningListener implements ListenerInterface

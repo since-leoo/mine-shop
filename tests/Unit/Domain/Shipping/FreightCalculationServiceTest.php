@@ -17,9 +17,9 @@ use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
 use DG\BypassFinals;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\Shipping\Domain\Repository\ShippingTemplateRepository;
-use Plugin\Since\Shipping\Domain\Service\FreightCalculationService;
-use Plugin\Since\Shipping\Infrastructure\Model\ShippingTemplate;
+use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
+use App\Domain\Trade\Shipping\Service\FreightCalculationService;
+use App\Infrastructure\Model\Shipping\ShippingTemplate;
 
 /**
  * FreightCalculationService 属性测试.

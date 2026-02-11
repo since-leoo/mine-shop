@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Interface\Admin\Dto\Coupon;
 
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\Coupon\Domain\Contract\CouponUserInput;
-use Plugin\Since\Coupon\Interface\Dto\Admin\CouponUserDto;
+use App\Domain\Trade\Coupon\Contract\CouponUserInput;
+use App\Interface\Admin\Dto\Coupon\CouponUserDto;
 
 /**
  * 用户优惠券DTO测试.

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Feature\Domain\Marketing\GroupBuy;
 
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\ValueObject\PriceVo;
+use App\Domain\Trade\GroupBuy\ValueObject\PriceVo;
 
 /**
  * Feature: group-buy-order, Property 1: PriceVo 整数价格不变量.

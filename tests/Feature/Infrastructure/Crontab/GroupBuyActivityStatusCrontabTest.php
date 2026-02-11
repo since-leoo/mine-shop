@@ -18,11 +18,11 @@ use Hyperf\AsyncQueue\Driver\DriverInterface;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\Enum\GroupBuyStatus;
-use Plugin\Since\GroupBuy\Domain\Job\GroupBuyStartJob;
-use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyRepository;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
-use Plugin\Since\GroupBuy\Infrastructure\Crontab\GroupBuyActivityStatusCrontab;
+use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
+use App\Domain\Trade\GroupBuy\Job\GroupBuyStartJob;
+use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
+use App\Infrastructure\Crontab\GroupBuyActivityStatusCrontab;
 use Psr\Log\LoggerInterface;
 
 /**

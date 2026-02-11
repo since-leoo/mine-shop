@@ -16,7 +16,7 @@ use App\Application\Api\Product\AppApiCategoryQueryService;
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
-use Plugin\Since\Seckill\Domain\Api\Query\DomainApiSeckillQueryService;
+use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillQueryService;
 
 /**
  * 首页数据聚合应用服务.

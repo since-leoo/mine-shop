@@ -17,7 +17,7 @@ use App\Domain\Member\Api\Query\DomainApiMemberQueryService;
 use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
-use Plugin\Since\Coupon\Domain\Api\Query\DomainApiCouponUserQueryService;
+use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponUserQueryService;
 
 final class AppApiMemberCenterQueryService
 {

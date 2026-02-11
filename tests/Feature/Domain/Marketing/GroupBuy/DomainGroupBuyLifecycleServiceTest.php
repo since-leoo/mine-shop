@@ -17,9 +17,9 @@ use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Collection as ModelCollection;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyLifecycleService;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
-use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuyOrder;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyLifecycleService;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
+use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 
 /**
  * Feature: group-buy-order, Properties 12-13: DomainGroupBuyLifecycleService 属性测试.

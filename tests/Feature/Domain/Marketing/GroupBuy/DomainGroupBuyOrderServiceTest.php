@@ -17,10 +17,10 @@ use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use Carbon\Carbon;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyService;
-use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuyOrder;
+use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyOrderService;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
+use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 
 /**
  * Feature: group-buy-order, Properties 3-6, 10-11: DomainGroupBuyOrderService 属性测试.

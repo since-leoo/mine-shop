@@ -18,7 +18,7 @@ use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
-use Plugin\Since\GroupBuy\Infrastructure\Model\GroupBuy;
+use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
 /**
  * @internal

@@ -17,9 +17,9 @@ use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\Entity\GroupBuyEntity;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
-use Plugin\Since\GroupBuy\Domain\Strategy\GroupBuyOrderStrategy;
+use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyOrderService;
+use App\Domain\Trade\GroupBuy\Strategy\GroupBuyOrderStrategy;
 
 /**
  * Feature: group-buy-order, Properties 2, 7, 8: GroupBuyOrderStrategy 属性测试.

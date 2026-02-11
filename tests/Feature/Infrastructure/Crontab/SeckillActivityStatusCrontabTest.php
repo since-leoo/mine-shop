@@ -18,13 +18,13 @@ use Hyperf\AsyncQueue\Driver\DriverInterface;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\Seckill\Domain\Enum\SeckillStatus;
-use Plugin\Since\Seckill\Domain\Job\SeckillSessionStartJob;
-use Plugin\Since\Seckill\Domain\Repository\SeckillActivityRepository;
-use Plugin\Since\Seckill\Domain\Repository\SeckillSessionRepository;
-use Plugin\Since\Seckill\Domain\Service\DomainSeckillActivityService;
-use Plugin\Since\Seckill\Domain\Service\DomainSeckillSessionService;
-use Plugin\Since\Seckill\Infrastructure\Crontab\SeckillActivityStatusCrontab;
+use App\Domain\Trade\Seckill\Enum\SeckillStatus;
+use App\Domain\Trade\Seckill\Job\SeckillSessionStartJob;
+use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
+use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
+use App\Domain\Trade\Seckill\Service\DomainSeckillActivityService;
+use App\Domain\Trade\Seckill\Service\DomainSeckillSessionService;
+use App\Infrastructure\Crontab\SeckillActivityStatusCrontab;
 use Psr\Log\LoggerInterface;
 
 /**

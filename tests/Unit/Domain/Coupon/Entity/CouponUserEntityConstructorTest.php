@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Domain\Coupon\Entity;
 
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\Coupon\Domain\Entity\CouponUserEntity;
+use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
 
 /**
  * CouponUserEntity constructor test.

@@ -14,8 +14,8 @@ namespace HyperfTests\Unit\Interface\Admin\Request\Coupon;
 
 use Hyperf\DTO\Mapper;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\Coupon\Domain\Contract\CouponInput;
-use Plugin\Since\Coupon\Interface\Dto\Admin\CouponDto;
+use App\Domain\Trade\Coupon\Contract\CouponInput;
+use App\Interface\Admin\Dto\Coupon\CouponDto;
 
 /**
  * CouponRequest toDto() 映射测试.

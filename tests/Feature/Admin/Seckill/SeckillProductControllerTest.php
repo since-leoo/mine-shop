@@ -18,9 +18,9 @@ use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use HyperfTests\Feature\Admin\ControllerCase;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillActivity;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillProduct;
-use Plugin\Since\Seckill\Infrastructure\Model\SeckillSession;
+use App\Infrastructure\Model\Seckill\SeckillActivity;
+use App\Infrastructure\Model\Seckill\SeckillProduct;
+use App\Infrastructure\Model\Seckill\SeckillSession;
 
 /**
  * @internal

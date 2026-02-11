@@ -16,8 +16,8 @@ use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use PHPUnit\Framework\TestCase;
-use Plugin\Since\GroupBuy\Domain\Service\DomainGroupBuyOrderService;
-use Plugin\Since\GroupBuy\Domain\Strategy\GroupBuyOrderStrategy;
+use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyOrderService;
+use App\Domain\Trade\GroupBuy\Strategy\GroupBuyOrderStrategy;
 
 /**
  * 策略注册集成测试.

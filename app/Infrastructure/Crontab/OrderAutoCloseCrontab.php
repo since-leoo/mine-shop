@@ -18,8 +18,8 @@ use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Crontab\Annotation\Crontab;
 use Hyperf\DbConnection\Db;
-use Plugin\Since\GroupBuy\Domain\Repository\GroupBuyOrderRepository;
-use Plugin\Since\Seckill\Domain\Repository\SeckillOrderRepository;
+use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
+use App\Domain\Trade\Seckill\Repository\SeckillOrderRepository;
 use Psr\Log\LoggerInterface;
 
 /**

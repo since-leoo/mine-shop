@@ -2,7 +2,7 @@ export const config = {
   /** 是否使用mock代替api返回 */
   useMock: false,
   /** 后端接口基础地址，默认本地Hyperf端口 */
-  apiBaseUrl: 'http://127.0.0.1:9501',
+  apiBaseUrl: 'http://shop-api.mineadmin.com',
   /** 本地缓存token的key，wx.login完成后写入 */
   tokenStorageKey: 'accessToken',
 };
