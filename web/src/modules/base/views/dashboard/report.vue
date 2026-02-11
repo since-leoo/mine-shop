@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Ref } from 'vue'
 import type { DashboardReport } from '~/base/api/dashboard.ts'
 import { dashboardApi } from '~/base/api/dashboard.ts'
 import { useEcharts } from '@/hooks/useEcharts.ts'
@@ -9,14 +10,14 @@ const loading = ref(true)
 const data = ref<DashboardReport | null>(null)
 const dateRange = ref<[string, string]>(['', ''])
 
-const salesTrendEl = ref<HTMLDivElement>()
-const membersTrendEl = ref<HTMLDivElement>()
-const paymentPieEl = ref<HTMLDivElement>()
-const orderTypePieEl = ref<HTMLDivElement>()
-const regionBarEl = ref<HTMLDivElement>()
-const memberLevelPieEl = ref<HTMLDivElement>()
-const orderAmountDistEl = ref<HTMLDivElement>()
-const categoryBarEl = ref<HTMLDivElement>()
+const salesTrendEl = ref() as Ref<HTMLElement>
+const membersTrendEl = ref() as Ref<HTMLElement>
+const paymentPieEl = ref() as Ref<HTMLElement>
+const orderTypePieEl = ref() as Ref<HTMLElement>
+const regionBarEl = ref() as Ref<HTMLElement>
+const memberLevelPieEl = ref() as Ref<HTMLElement>
+const orderAmountDistEl = ref() as Ref<HTMLElement>
+const categoryBarEl = ref() as Ref<HTMLElement>
 
 const salesTrendChart = useEcharts(salesTrendEl)
 const membersTrendChart = useEcharts(membersTrendEl)

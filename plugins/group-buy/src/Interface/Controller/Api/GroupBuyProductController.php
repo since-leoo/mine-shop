@@ -18,6 +18,7 @@ use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Contract\RequestInterface;
 use Plugin\Since\GroupBuy\Application\Api\AppApiGroupBuyProductQueryService;
 use Plugin\Since\GroupBuy\Interface\Transformer\GroupBuyProductTransformer;
 
@@ -26,8 +27,21 @@ final class GroupBuyProductController extends AbstractController
 {
     public function __construct(
         private readonly AppApiGroupBuyProductQueryService $queryService,
-        private readonly GroupBuyProductTransformer $transformer
+        private readonly GroupBuyProductTransformer $transformer,
+        private readonly RequestInterface $request
     ) {}
+
+    /**
+     * 拼团商品列表（小程序促销页用）.
+     */
+    #[GetMapping(path: '')]
+    public function index(): Result
+    {
+        $limit = (int) ($this->request->query('limit', 20));
+        $data = $this->queryService->getPromotionList($limit);
+
+        return $this->success($data);
+    }
 
     #[GetMapping(path: '{activityId}/{spuId}')]
     public function show(int $activityId, int $spuId): Result

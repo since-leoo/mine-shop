@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { Ref } from 'vue'
 import type { DashboardWelcome } from '~/base/api/dashboard.ts'
 import { dashboardApi } from '~/base/api/dashboard.ts'
 import { useEcharts } from '@/hooks/useEcharts.ts'
@@ -8,7 +9,7 @@ defineOptions({ name: 'welcome' })
 const userinfo = useUserStore().getUserInfo()
 const loading = ref(true)
 const data = ref<DashboardWelcome | null>(null)
-const salesChartEl = ref<HTMLDivElement>()
+const salesChartEl = ref() as Ref<HTMLElement>
 const salesChart = useEcharts(salesChartEl)
 
 const greetingText = computed(() => {

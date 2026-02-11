@@ -54,7 +54,7 @@ final class CouponController extends AbstractController
         $result = $this->queryService->detail($id, null);
 
         return $this->success([
-            'detail' => $this->transformer->transformDetail($result['coupon'], $result['receivedQuantity']),
+            'detail' => $this->transformer->transformMiniDetail($result['coupon']),
         ]);
     }
 }

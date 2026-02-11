@@ -23,53 +23,53 @@ final class MemberCenterTransformer
         $orderTagInfos = [
             [
                 'title' => '待付款',
-                'icon_name' => 'wallet',
-                'order_num' => $pending,
-                'tab_type' => 5,
+                'iconName' => 'wallet',
+                'orderNum' => $pending,
+                'tabType' => 5,
                 'status' => 1,
             ],
             [
                 'title' => '待发货',
-                'icon_name' => 'deliver',
-                'order_num' => $paid,
-                'tab_type' => 10,
+                'iconName' => 'deliver',
+                'orderNum' => $paid,
+                'tabType' => 10,
                 'status' => 1,
             ],
             [
                 'title' => '待收货',
-                'icon_name' => 'package',
-                'order_num' => $shipped,
-                'tab_type' => 40,
+                'iconName' => 'package',
+                'orderNum' => $shipped,
+                'tabType' => 40,
                 'status' => 1,
             ],
             [
                 'title' => '待评价',
-                'icon_name' => 'comment',
-                'order_num' => $completed,
-                'tab_type' => 60,
+                'iconName' => 'comment',
+                'orderNum' => $completed,
+                'tabType' => 60,
                 'status' => 1,
             ],
             [
                 'title' => '退款/售后',
-                'icon_name' => 'exchang',
-                'order_num' => $afterSale,
-                'tab_type' => 0,
+                'iconName' => 'exchang',
+                'orderNum' => $afterSale,
+                'tabType' => 0,
                 'status' => 1,
             ],
         ];
 
         return [
-            'user_info' => [
-                'avatar' => $profile['avatar'],
-                'nickname' => $profile['nickname'],
-                'phone' => $profile['phone'],
+            'userInfo' => [
+                'avatarUrl' => $profile['avatar'],
+                'nickName' => $profile['nickname'],
+                'phoneNumber' => $profile['phone'],
                 'gender' => $profile['gender'],
-                'level_name' => $profile['level_name'],
-                'authorized_profile' => $profile['authorized_profile'],
+                'levelName' => $profile['level_name'],
+                'authorizedProfile' => $profile['authorized_profile'],
                 'balance' => $profile['balance'],
                 'points' => $profile['points'],
             ],
-            'counts_data' => [
+            'countsData' => [
                 [
                     'num' => $profile['points'],
                     'name' => '积分',
@@ -81,10 +81,10 @@ final class MemberCenterTransformer
                     'type' => 'coupon',
                 ],
             ],
-            'order_tag_infos' => $orderTagInfos,
-            'customer_service_info' => [
-                'service_phone' => $servicePhone,
-                'service_time_duration' => '每日 09:00-21:00',
+            'orderTagInfos' => $orderTagInfos,
+            'customerServiceInfo' => [
+                'servicePhone' => $servicePhone,
+                'serviceTimeDuration' => '每日 09:00-21:00',
             ],
         ];
     }
