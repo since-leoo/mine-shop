@@ -22,17 +22,22 @@ final class MemberAddressTransformer
     {
         return [
             'id' => (int) $address['id'],
+            'addressId' => (string) $address['id'],
             'name' => (string) ($address['name'] ?? ''),
             'phone' => (string) ($address['phone'] ?? ''),
-            'province' => (string) ($address['province'] ?? ''),
-            'province_code' => (string) ($address['province_code'] ?? ''),
-            'city' => (string) ($address['city'] ?? ''),
-            'city_code' => (string) ($address['city_code'] ?? ''),
-            'district' => (string) ($address['district'] ?? ''),
-            'district_code' => (string) ($address['district_code'] ?? ''),
-            'detail' => (string) ($address['detail'] ?? ''),
-            'full_address' => (string) ($address['full_address'] ?? ''),
-            'is_default' => ! empty($address['is_default']),
+            'phoneNumber' => (string) ($address['phone'] ?? ''),
+            'provinceName' => (string) ($address['province'] ?? ''),
+            'provinceCode' => (string) ($address['province_code'] ?? ''),
+            'cityName' => (string) ($address['city'] ?? ''),
+            'cityCode' => (string) ($address['city_code'] ?? ''),
+            'districtName' => (string) ($address['district'] ?? ''),
+            'districtCode' => (string) ($address['district_code'] ?? ''),
+            'detailAddress' => (string) ($address['detail'] ?? ''),
+            'address' => (string) ($address['full_address'] ?? ''),
+            'isDefault' => ! empty($address['is_default']) ? 1 : 0,
+            'addressTag' => (string) ($address['tag'] ?? ''),
+            'latitude' => (string) ($address['latitude'] ?? ''),
+            'longitude' => (string) ($address['longitude'] ?? ''),
         ];
     }
 }

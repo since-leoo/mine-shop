@@ -43,7 +43,7 @@ final class CartTransformer
             }
 
             $goods = $this->formatGoods($item, $product, $sku, $memberId);
-            $lastJoinTime ??= $goods['join_cart_time'];
+            $lastJoinTime ??= $goods['joinCartTime'];
 
             if ($this->isSaleable($product, $sku)) {
                 if ((int) ($sku['stock'] ?? 0) > 0) {
@@ -59,44 +59,44 @@ final class CartTransformer
 
         if ($goodsList !== [] || $shortageList !== []) {
             $store = $storeTemplate;
-            $store['promotion_goods_list'][0]['goods_list'] = $goodsList;
-            $store['promotion_goods_list'][0]['last_join_time'] = $lastJoinTime;
-            $store['shortage_goods_list'] = $shortageList;
-            $store['total_discount_sale_price'] = (string) $totalPrice;
+            $store['promotionGoodsList'][0]['goodsPromotionList'] = $goodsList;
+            $store['promotionGoodsList'][0]['lastJoinTime'] = $lastJoinTime;
+            $store['shortageGoodsList'] = $shortageList;
+            $store['totalDiscountSalePrice'] = (string) $totalPrice;
             $storeGoods[] = $store;
         }
 
         return [
-            'is_not_empty' => $storeGoods !== [] || $invalidGoods !== [],
-            'store_goods' => $storeGoods,
-            'invalid_items' => array_values($invalidGoods),
+            'isNotEmpty' => $storeGoods !== [] || $invalidGoods !== [],
+            'storeGoods' => $storeGoods,
+            'invalidGoodItems' => array_values($invalidGoods),
         ];
     }
 
     private function buildStoreTemplate(): array
     {
         return [
-            'store_id' => '1',
-            'store_name' => $this->mallSettingService->basic()->mallName(),
-            'store_status' => 1,
-            'total_discount_sale_price' => '0',
-            'promotion_goods_list' => [
+            'storeId' => '1',
+            'storeName' => $this->mallSettingService->basic()->mallName(),
+            'storeStatus' => 1,
+            'totalDiscountSalePrice' => '0',
+            'promotionGoodsList' => [
                 [
                     'title' => '默认优惠',
-                    'promotion_code' => 'DEFAULT',
-                    'promotion_sub_code' => 'NONE',
-                    'promotion_id' => null,
-                    'tag_text' => [],
-                    'promotion_status' => 1,
+                    'promotionCode' => 'DEFAULT',
+                    'promotionSubCode' => 'NONE',
+                    'promotionId' => null,
+                    'tagText' => [],
+                    'promotionStatus' => 1,
                     'tag' => '',
                     'description' => '',
-                    'door_sill_remain' => null,
-                    'is_need_add_on_shop' => 0,
-                    'goods_list' => [],
-                    'last_join_time' => null,
+                    'doorSillRemain' => null,
+                    'isNeedAddOnShop' => 0,
+                    'goodsPromotionList' => [],
+                    'lastJoinTime' => null,
                 ],
             ],
-            'shortage_goods_list' => [],
+            'shortageGoodsList' => [],
         ];
     }
 
@@ -107,28 +107,29 @@ final class CartTransformer
         $skuStock = (int) ($sku['stock'] ?? 0);
 
         return [
-            'cart_id' => (string) ($sku['id'] ?? ''),
+            'cartId' => (string) ($sku['id'] ?? ''),
             'uid' => (string) $memberId,
-            'saas_id' => 'mine-mall',
-            'store_id' => '1',
-            'store_name' => $this->mallSettingService->basic()->mallName(),
-            'spu_id' => (string) ($product['id'] ?? ''),
-            'sku_id' => (string) ($sku['id'] ?? ''),
+            'saasId' => 'mine-mall',
+            'storeId' => '1',
+            'storeName' => $this->mallSettingService->basic()->mallName(),
+            'spuId' => (string) ($product['id'] ?? ''),
+            'skuId' => (string) ($sku['id'] ?? ''),
+            'isSelected' => 1,
             'thumb' => $image,
             'title' => (string) ($product['name'] ?? ''),
-            'primary_image' => $image,
+            'primaryImage' => $image,
             'quantity' => (int) ($item['quantity'] ?? 0),
-            'stock_status' => $skuStock > 0,
-            'stock_quantity' => $skuStock,
+            'stockStatus' => $skuStock > 0,
+            'stockQuantity' => $skuStock,
             'price' => $this->toCentString($sku['sale_price'] ?? 0),
-            'origin_price' => $this->toCentString($sku['market_price'] ?? $sku['sale_price'] ?? 0),
-            'tag_price' => null,
-            'title_prefix_tags' => $tags,
-            'room_id' => null,
-            'spec_info' => $this->formatSpecInfo($sku['spec_values'] ?? []),
-            'join_cart_time' => $item['created_at'] ?? null,
+            'originPrice' => $this->toCentString($sku['market_price'] ?? $sku['sale_price'] ?? 0),
+            'tagPrice' => null,
+            'titlePrefixTags' => $tags,
+            'roomId' => null,
+            'specInfo' => $this->formatSpecInfo($sku['spec_values'] ?? []),
+            'joinCartTime' => $item['created_at'] ?? null,
             'available' => $this->isSaleable($product, $sku) ? 1 : 0,
-            'put_on_sale' => ((string) ($product['status'] ?? '')) === Product::STATUS_ACTIVE ? 1 : 0,
+            'putOnSale' => ((string) ($product['status'] ?? '')) === Product::STATUS_ACTIVE ? 1 : 0,
             'etitle' => null,
         ];
     }
@@ -136,22 +137,23 @@ final class CartTransformer
     private function formatInvalidGoods(array $item, int $memberId): array
     {
         return [
-            'cart_id' => (string) ($item['sku_id'] ?? ''),
-            'store_id' => '1',
-            'spu_id' => '',
-            'sku_id' => '',
+            'cartId' => (string) ($item['sku_id'] ?? ''),
+            'storeId' => '1',
+            'spuId' => '',
+            'skuId' => '',
+            'isSelected' => 1,
             'title' => '商品已失效',
             'quantity' => (int) ($item['quantity'] ?? 0),
             'price' => '0',
-            'origin_price' => '0',
-            'stock_status' => false,
-            'stock_quantity' => 0,
+            'originPrice' => '0',
+            'stockStatus' => false,
+            'stockQuantity' => 0,
             'available' => 0,
-            'put_on_sale' => 0,
-            'spec_info' => [],
+            'putOnSale' => 0,
+            'specInfo' => [],
             'thumb' => null,
-            'primary_image' => null,
-            'join_cart_time' => $item['created_at'] ?? null,
+            'primaryImage' => null,
+            'joinCartTime' => $item['created_at'] ?? null,
             'uid' => (string) $memberId,
         ];
     }

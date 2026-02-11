@@ -3,7 +3,7 @@
  * Please view the LICENSE file distributed with this source code.
 -->
 <template>
-  <div class="member-wallet-page">
+  <div class="member-wallet-page p-3">
     <el-card shadow="never" class="mb-4">
       <el-form :model="filters" label-width="90px" inline>
         <el-form-item label="会员ID">

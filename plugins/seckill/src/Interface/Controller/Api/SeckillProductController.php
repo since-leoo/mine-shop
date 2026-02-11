@@ -18,6 +18,7 @@ use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Contract\RequestInterface;
 use Plugin\Since\Seckill\Application\Api\AppApiSeckillProductQueryService;
 use Plugin\Since\Seckill\Interface\Transformer\SeckillProductTransformer;
 
@@ -26,8 +27,21 @@ final class SeckillProductController extends AbstractController
 {
     public function __construct(
         private readonly AppApiSeckillProductQueryService $queryService,
-        private readonly SeckillProductTransformer $transformer
+        private readonly SeckillProductTransformer $transformer,
+        private readonly RequestInterface $request
     ) {}
+
+    /**
+     * 秒杀商品列表（小程序促销页用）.
+     */
+    #[GetMapping(path: '')]
+    public function index(): Result
+    {
+        $limit = (int) ($this->request->query('limit', 20));
+        $data = $this->queryService->getPromotionList($limit);
+
+        return $this->success($data);
+    }
 
     #[GetMapping(path: '{sessionId}/{spuId}')]
     public function show(int $sessionId, int $spuId): Result

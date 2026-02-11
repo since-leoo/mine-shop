@@ -21,6 +21,90 @@ final class CouponTransformer
         return $this->basePayload($coupon, $receivedQuantity);
     }
 
+    /**
+     * 将 coupon_user 记录（含 coupon 关联）转换为 TDesign 小程序优惠券卡片格式.
+     */
+    public function transformMemberCouponItem(array $couponUser): array
+    {
+        $coupon = $couponUser['coupon'] ?? [];
+        $type = ($coupon['type'] ?? '') === 'percent' ? 'discount' : 'price';
+        $value = (int) ($coupon['value'] ?? 0);
+
+        return [
+            'key' => (string) ($couponUser['id'] ?? ''),
+            'status' => $this->mapMemberCouponStatus($couponUser['status'] ?? 'unused'),
+            'type' => $type,
+            'value' => $type === 'discount' ? $value : $value,
+            'tag' => $type === 'discount' ? '折扣' : '满减',
+            'desc' => $this->buildMemberCouponDesc($coupon),
+            'base' => (int) ($coupon['min_amount'] ?? 0),
+            'title' => (string) ($coupon['name'] ?? ''),
+            'timeLimit' => $this->buildMemberCouponTimeLimit($couponUser),
+            'currency' => '¥',
+        ];
+    }
+
+    /**
+     * 将 Coupon 模型转换为 TDesign 小程序优惠券详情格式.
+     */
+    public function transformMiniDetail(Coupon $coupon): array
+    {
+        $type = $this->normalizeType($coupon);
+        return [
+            'key' => (string) $coupon->id,
+            'status' => $this->resolveStatus($coupon),
+            'type' => $type,
+            'value' => $this->resolveValue($coupon),
+            'tag' => $this->buildTag($coupon),
+            'desc' => $this->buildLabel($coupon),
+            'base' => $this->toCent($coupon->min_amount),
+            'title' => (string) ($coupon->name ?? ''),
+            'timeLimit' => $this->formatTimeLimit($coupon),
+            'currency' => '¥',
+            'useNotes' => (string) ($coupon->description ?? ''),
+            'storeAdapt' => '商城通用',
+        ];
+    }
+
+    private function mapMemberCouponStatus(string $status): string
+    {
+        return match ($status) {
+            'unused' => 'default',
+            'used' => 'useless',
+            'expired' => 'disabled',
+            default => 'disabled',
+        };
+    }
+
+    private function buildMemberCouponDesc(array $coupon): string
+    {
+        $minAmount = (int) ($coupon['min_amount'] ?? 0);
+        $type = ($coupon['type'] ?? '') === 'percent' ? 'discount' : 'price';
+        $value = (int) ($coupon['value'] ?? 0);
+        $minYuan = $this->formatAmount($minAmount);
+
+        if ($type === 'discount') {
+            $discount = rtrim(rtrim(number_format($value / 100, 1, '.', ''), '0'), '.');
+            return $minYuan === '0' ? \sprintf('%s折', $discount) : \sprintf('满%s享%s折', $minYuan, $discount);
+        }
+
+        $discountYuan = $this->formatAmount($value);
+        return $minYuan === '0' ? \sprintf('立减%s', $discountYuan) : \sprintf('满%s减%s', $minYuan, $discountYuan);
+    }
+
+    private function buildMemberCouponTimeLimit(array $couponUser): string
+    {
+        $coupon = $couponUser['coupon'] ?? [];
+        $start = $coupon['start_time'] ?? null;
+        $end = $coupon['end_time'] ?? ($couponUser['expire_at'] ?? null);
+        if (! $start || ! $end) {
+            return '';
+        }
+        $startDate = \is_string($start) ? substr($start, 0, 10) : '';
+        $endDate = \is_string($end) ? substr($end, 0, 10) : '';
+        return str_replace('-', '.', $startDate) . '-' . str_replace('-', '.', $endDate);
+    }
+
     public function transformDetail(Coupon $coupon, int $receivedQuantity = 0): array
     {
         $payload = $this->basePayload($coupon, $receivedQuantity);

@@ -110,7 +110,7 @@ onMounted(() => {
 
 <template>
   <div class="mine-layout pt-3">
-    <el-row :gutter="12" class="mb-3">
+    <el-row :gutter="12" class="mb-3 px-3">
       <el-col :span="6">
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark-bg-dark-7">

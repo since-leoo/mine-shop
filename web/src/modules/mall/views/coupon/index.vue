@@ -113,7 +113,7 @@ onMounted(() => {
 
 <template>
   <div class="mine-layout pt-3">
-    <el-row :gutter="12" class="mb-3">
+    <el-row :gutter="12" class="mb-3 px-3">
       <el-col :span="8">
         <el-card shadow="never" class="border-0">
           <div class="stats-card slate">

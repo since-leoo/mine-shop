@@ -24,6 +24,7 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 use Plugin\Since\Coupon\Application\Api\Member\AppApiMemberCouponCommandService;
 use Plugin\Since\Coupon\Application\Api\Member\AppApiMemberCouponQueryService;
 use Plugin\Since\Coupon\Interface\Request\Api\CouponReceiveRequest;
+use Plugin\Since\Coupon\Interface\Transformer\CouponTransformer;
 
 #[Controller(prefix: '/api/v1/member/coupons')]
 #[Middleware(TokenMiddleware::class)]
@@ -32,6 +33,7 @@ final class MemberCouponController extends AbstractController
     public function __construct(
         private readonly AppApiMemberCouponQueryService $couponQueryService,
         private readonly AppApiMemberCouponCommandService $couponCommandService,
+        private readonly CouponTransformer $transformer,
         private readonly CurrentMember $currentMember,
         private readonly RequestInterface $request
     ) {}
@@ -39,10 +41,18 @@ final class MemberCouponController extends AbstractController
     #[GetMapping(path: '')]
     public function index(): Result
     {
-        $status = (string) $this->request->query('status', 'default');
-        $list = $this->couponQueryService->list($this->currentMember->id(), $status);
+        $statusParam = (string) $this->request->query('status', 'default');
+        // 小程序传 TDesign 状态码，映射到后端状态
+        $backendStatus = match ($statusParam) {
+            'default' => 'unused',
+            'useless' => 'used',
+            'disabled' => 'expired',
+            default => $statusParam, // 兼容直接传后端状态
+        };
+        $list = $this->couponQueryService->list($this->currentMember->id(), $backendStatus);
+        $transformed = array_map(fn (array $item) => $this->transformer->transformMemberCouponItem($item), $list);
 
-        return $this->success(['list' => $list]);
+        return $this->success(['list' => $transformed]);
     }
 
     #[PostMapping(path: 'receive')]
