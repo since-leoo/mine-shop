@@ -39,12 +39,12 @@
     {
       "root": "pages/coupon",
       "name": "coupon",
-      "pages": ["coupon-list/index", "coupon-detail/index", "coupon-activity-goods/index"]
+      "pages": ["coupon-list/index", "coupon-detail/index", "coupon-activity-goods/index", "coupon-center/index"]
     },
     {
       "root": "pages/promotion",
       "name": "promotion",
-      "pages": ["promotion-detail/index"]
+      "pages": ["promotion-detail/index", "group-buy/index"]
     }
   ],
   "tabBar": {

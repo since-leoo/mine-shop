@@ -23,18 +23,25 @@ final class DomainGroupBuyOrderService
         private readonly DomainGroupBuyService $groupBuyService,
     ) {}
 
-    public function validateActivity(int $groupBuyId, int $skuId, int $quantity, int $memberId, ?string $groupNo): GroupBuyEntity
+    public function validateActivity(int $groupBuyId, int $skuId, int $quantity, int $memberId, ?string $groupNo, bool $buyOriginal = false): GroupBuyEntity
     {
         try {
             $entity = $this->groupBuyService->getEntity($groupBuyId);
         } catch (\RuntimeException) {
             throw new \RuntimeException('拼团活动不存在');
         }
-        if (! $entity->canJoin()) {
-            throw new \RuntimeException('当前拼团活动不可参与');
-        }
+
         if ($entity->getSkuId() !== $skuId) {
             throw new \RuntimeException('该商品不在当前拼团活动中');
+        }
+
+        // 原价购买只需验证活动和 SKU 存在，不校验拼团资格/库存/参团限制
+        if ($buyOriginal) {
+            return $entity;
+        }
+
+        if (! $entity->canJoin()) {
+            throw new \RuntimeException('当前拼团活动不可参与');
         }
         $remainingStock = $entity->getTotalQuantity() - $entity->getSoldQuantity();
         if ($remainingStock < $quantity) {

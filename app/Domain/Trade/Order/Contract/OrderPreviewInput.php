@@ -59,4 +59,9 @@ interface OrderPreviewInput
      * 团号（参团时必传，开团时为空）.
      */
     public function getGroupNo(): ?string;
+
+    /**
+     * 是否以原价购买（拼团商品可选原价购买，不参与拼团）.
+     */
+    public function getBuyOriginalPrice(): bool;
 }

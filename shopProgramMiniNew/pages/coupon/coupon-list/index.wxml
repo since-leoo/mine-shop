@@ -1,7 +1,6 @@
 <t-tabs
   defaultValue="{{status}}"
   bind:change="tabChange"
-  tabList="{{list}}"
   t-class="tabs-external__inner"
   t-class-item="tabs-external__item"
   t-class-active="tabs-external__active"
@@ -27,6 +26,7 @@
     <view class="coupon-list-item" wx:for="{{couponList}}" wx:key="key">
       <coupon-card couponDTO="{{item}}" />
     </view>
+    <view wx:if="{{couponList.length === 0}}" class="empty-tip">暂无优惠券</view>
   </t-pull-down-refresh>
   <view class="center-entry">
     <view class="center-entry-btn" bind:tap="goCouponCenterHandle">

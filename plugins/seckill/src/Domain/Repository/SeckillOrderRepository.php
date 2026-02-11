@@ -26,6 +26,7 @@ final class SeckillOrderRepository extends IRepository
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
+            ->when(isset($params['activity_id']), static fn (Builder $q) => $q->where('activity_id', $params['activity_id']))
             ->when(isset($params['session_id']), static fn (Builder $q) => $q->where('session_id', $params['session_id']))
             ->when(isset($params['member_id']), static fn (Builder $q) => $q->where('member_id', $params['member_id']))
             ->when(isset($params['order_id']), static fn (Builder $q) => $q->where('order_id', $params['order_id']))

@@ -483,6 +483,9 @@ final class OrderEntity
         if ($input->getGroupNo() !== null) {
             $this->setExtra('group_no', $input->getGroupNo());
         }
+        if ($input->getBuyOriginalPrice()) {
+            $this->setExtra('buy_original_price', true);
+        }
     }
 
     /**

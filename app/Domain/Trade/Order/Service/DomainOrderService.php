@@ -48,6 +48,10 @@ final class DomainOrderService extends IService
         /** @var null|Order $order */
         $order = $id ? $this->repository->findById($id) : $this->repository->findByOrderNo($orderNo);
 
+        if (! $order) {
+            throw new \RuntimeException('订单不存在');
+        }
+
         return OrderMapper::fromModel($order);
     }
 

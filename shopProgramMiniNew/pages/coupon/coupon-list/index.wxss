@@ -76,3 +76,15 @@ page {
 .t-class-indicator {
   color: #b9b9b9 !important;
 }
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  font-size: 28rpx;
+  padding: 120rpx 0;
+}
+
+.coupon-btn-slot {
+  display: flex;
+  align-items: center;
+}

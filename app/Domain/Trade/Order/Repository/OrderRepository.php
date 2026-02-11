@@ -76,6 +76,7 @@ final class OrderRepository extends IRepository
 
         $model->refresh();
 
+        $entity->setId($model->id);
         $entity->setOrderNo($model->order_no);
 
         return $entity;

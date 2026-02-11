@@ -1,24 +1,17 @@
 import { fetchCouponList } from '../../../services/coupon/index';
 
+// ui-coupon-card 组件 CouponType 枚举: MJ_COUPON=1(满减/price), ZK_COUPON=2(折扣/discount)
+const CouponTypeMap = { price: 1, discount: 2 };
+
 Page({
   data: {
     pullDownRefreshing: false,
     status: 0,
     list: [
-      {
-        text: '可使用',
-        key: 0,
-      },
-      {
-        text: '已使用',
-        key: 1,
-      },
-      {
-        text: '已失效',
-        key: 2,
-      },
+      { text: '可使用', key: 0 },
+      { text: '已使用', key: 1 },
+      { text: '已失效', key: 2 },
     ],
-
     couponList: [],
   },
 
@@ -31,57 +24,31 @@ Page({
   },
 
   fetchList(status = this.data.status) {
-    let statusInFetch = '';
-    switch (Number(status)) {
-      case 0: {
-        statusInFetch = 'default';
-        break;
-      }
-      case 1: {
-        statusInFetch = 'useless';
-        break;
-      }
-      case 2: {
-        statusInFetch = 'disabled';
-        break;
-      }
-      default: {
-        throw new Error(`unknown fetchStatus: ${statusInFetch}`);
-      }
-    }
+    const statusMap = { 0: 'default', 1: 'useless', 2: 'disabled' };
+    const statusInFetch = statusMap[Number(status)] || 'default';
     return fetchCouponList(statusInFetch).then((couponList) => {
-      this.setData({ couponList });
+      const mapped = (couponList || []).map((item) => ({
+        ...item,
+        type: CouponTypeMap[item.type] || 1,
+      }));
+      this.setData({ couponList: mapped });
     });
   },
 
   tabChange(e) {
     const { value } = e.detail;
-
     this.setData({ status: value });
     this.fetchList(value);
   },
 
   goCouponCenterHandle() {
-    wx.showToast({ title: '去领券中心', icon: 'none' });
+    wx.navigateTo({ url: '/pages/coupon/coupon-center/index' });
   },
 
   onPullDownRefresh_() {
-    this.setData(
-      {
-        couponList: [],
-        pullDownRefreshing: true,
-      },
-      () => {
-        this.fetchList()
-          .then(() => {
-            this.setData({ pullDownRefreshing: false });
-          })
-          .catch(() => {
-            this.setData({
-              pullDownRefreshing: false,
-            });
-          });
-      },
-    );
+    this.setData({ couponList: [], pullDownRefreshing: true });
+    this.fetchList()
+      .then(() => this.setData({ pullDownRefreshing: false }))
+      .catch(() => this.setData({ pullDownRefreshing: false }));
   },
 });

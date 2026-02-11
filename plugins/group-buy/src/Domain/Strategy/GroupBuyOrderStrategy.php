@@ -46,13 +46,28 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
             throw new \RuntimeException('拼团订单仅支持单个商品');
         }
         $item = $items[0];
-        $entity = $this->groupBuyOrderService->validateActivity(
-            (int) $orderEntity->getExtra('group_buy_id'),
-            $item->getSkuId(),
-            $item->getQuantity(),
-            $orderEntity->getMemberId(),
-            $orderEntity->getExtra('group_no'),
-        );
+
+        $buyOriginal = (bool) $orderEntity->getExtra('buy_original_price');
+
+        if ($buyOriginal) {
+            // 原价购买：只需验证活动存在且 SKU 匹配，不校验拼团资格/库存
+            $entity = $this->groupBuyOrderService->validateActivity(
+                (int) $orderEntity->getExtra('group_buy_id'),
+                $item->getSkuId(),
+                $item->getQuantity(),
+                $orderEntity->getMemberId(),
+                null,
+                true,
+            );
+        } else {
+            $entity = $this->groupBuyOrderService->validateActivity(
+                (int) $orderEntity->getExtra('group_buy_id'),
+                $item->getSkuId(),
+                $item->getQuantity(),
+                $orderEntity->getMemberId(),
+                $orderEntity->getExtra('group_no'),
+            );
+        }
         $orderEntity->setExtra('group_buy_entity', $entity);
 
         $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
@@ -71,9 +86,12 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
         /** @var GroupBuyEntity $groupBuyEntity */
         $groupBuyEntity = $orderEntity->getExtra('group_buy_entity');
 
-        $groupPrice = $groupBuyEntity->getGroupPrice();
-        $item->setUnitPrice($groupPrice);
-        $item->setTotalPrice($groupPrice * $item->getQuantity());
+        // 原价购买：用户选择不参与拼团，按原价下单
+        $buyOriginal = (bool) $orderEntity->getExtra('buy_original_price');
+        $unitPrice = $buyOriginal ? $groupBuyEntity->getOriginalPrice() : $groupBuyEntity->getGroupPrice();
+
+        $item->setUnitPrice($unitPrice);
+        $item->setTotalPrice($unitPrice * $item->getQuantity());
         $orderEntity->syncPriceDetailFromItems();
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setDiscountAmount(0);
@@ -92,6 +110,7 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
 
     public function applyCoupon(OrderEntity $orderEntity, ?int $couponId): void
     {
+        // 拼团订单（含原价购买）均不允许使用优惠券
         if ($couponId !== null && $couponId > 0) {
             throw new \RuntimeException('拼团订单不支持使用优惠券');
         }
@@ -110,6 +129,11 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
 
     public function postCreate(OrderEntity $orderEntity): void
     {
+        // 原价购买不创建拼团订单记录
+        if ((bool) $orderEntity->getExtra('buy_original_price')) {
+            return;
+        }
+
         /** @var GroupBuyEntity $groupBuyEntity */
         $groupBuyEntity = $orderEntity->getExtra('group_buy_entity');
         $this->groupBuyOrderService->createGroupBuyOrder($orderEntity, $groupBuyEntity);

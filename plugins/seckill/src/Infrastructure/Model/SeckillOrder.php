@@ -12,7 +12,10 @@ declare(strict_types=1);
 
 namespace Plugin\Since\Seckill\Infrastructure\Model;
 
+use App\Infrastructure\Model\Member\Member;
+use App\Infrastructure\Model\Order\Order;
 use Carbon\Carbon;
+use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
 /**
@@ -55,4 +58,24 @@ class SeckillOrder extends Model
         'seckill_time' => 'datetime', 'pay_time' => 'datetime',
         'cancel_time' => 'datetime', 'created_at' => 'datetime', 'updated_at' => 'datetime',
     ];
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    public function member(): BelongsTo
+    {
+        return $this->belongsTo(Member::class, 'member_id');
+    }
+
+    public function activity(): BelongsTo
+    {
+        return $this->belongsTo(SeckillActivity::class, 'activity_id');
+    }
+
+    public function session(): BelongsTo
+    {
+        return $this->belongsTo(SeckillSession::class, 'session_id');
+    }
 }

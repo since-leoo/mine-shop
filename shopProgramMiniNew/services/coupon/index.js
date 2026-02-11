@@ -11,7 +11,7 @@ export function fetchCouponList(status = 'default') {
     const { getCouponList } = require('../../model/coupon');
     return delay().then(() => getCouponList(status));
   }
-  return request({ url: '/api/v1/member/coupons', method: 'GET', data: { status } }).then(
+  return request({ url: '/api/v1/member/coupons', method: 'GET', data: { status }, needAuth: true }).then(
     (res) => res?.list || [],
   );
 }
@@ -46,6 +46,19 @@ export function receiveCoupon(couponId) {
   return request({
     url: '/api/v1/member/coupons/receive',
     method: 'POST',
-    data: { coupon_id: couponId },
+    data: { couponId },
+    needAuth: true,
   });
+}
+
+/**
+ * 获取可领取的优惠券列表（领券中心）
+ */
+export function fetchAvailableCoupons(limit = 20) {
+  return request({
+    url: '/api/v1/coupons/available',
+    method: 'GET',
+    data: { limit },
+    needAuth: true,
+  }).then((res) => res?.list || []);
 }

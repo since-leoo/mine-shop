@@ -5,6 +5,7 @@ import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
 } from '../../../services/good/fetchGoodsDetailsComments';
+import { fetchOngoingGroups } from '../../../services/promotion/groupBuy';
 import { cdnBase } from '../../../config/index';
 
 const imgPrefix = `${cdnBase}/`;
@@ -61,6 +62,8 @@ Page({
     activityId: '',
     sessionId: '',
     activityInfo: null,
+    // 拼团进行中的团列表
+    ongoingGroups: [],
   },
 
   selectItem: null,
@@ -183,6 +186,15 @@ Page({
     } else if (orderType === 'group_buy') {
       query.orderType = 'group_buy';
       query.activityId = activityId;
+      query.groupBuyId = activityId; // 后端要求 group_buy_id
+      if (this._buyOriginalPrice) {
+        query.buyOriginalPrice = true;
+        this._buyOriginalPrice = false;
+      }
+      if (this._joinGroupNo) {
+        query.groupNo = this._joinGroupNo;
+        this._joinGroupNo = null;
+      }
     }
 
     const urlQueryStr = obj2Params({ goodsRequestList: JSON.stringify([query]) });
@@ -246,6 +258,11 @@ Page({
         activityInfo: activityInfo || null,
         list: [],
       });
+
+      // 拼团商品：加载正在拼团的团列表
+      if (activityInfo && this.data.orderType === 'group_buy') {
+        this.loadOngoingGroups(activityInfo.activityId);
+      }
     }).catch((err) => {
       console.error('getDetail error:', err);
       Toast({ context: this, selector: '#t-toast', message: '商品加载失败', duration: 2000 });
@@ -294,12 +311,71 @@ Page({
     };
   },
 
+  loadOngoingGroups(activityId) {
+    fetchOngoingGroups(activityId).then((list) => {
+      const now = Date.now();
+      const groups = (list || []).map((g) => {
+        const expireMs = new Date(g.expireTime).getTime();
+        const remainSec = Math.max(0, Math.floor((expireMs - now) / 1000));
+        return { ...g, remainSec, remainText: this.formatRemainTime(remainSec) };
+      });
+      this.setData({ ongoingGroups: groups });
+      if (groups.length > 0) this.startGroupCountdown();
+    }).catch(() => {});
+  },
+
+  formatRemainTime(sec) {
+    if (sec <= 0) return '已结束';
+    const h = Math.floor(sec / 3600);
+    const m = String(Math.floor((sec % 3600) / 60)).padStart(2, '0');
+    const s = String(sec % 60).padStart(2, '0');
+    return h > 0 ? `${h}:${m}:${s}` : `${m}:${s}`;
+  },
+
+  startGroupCountdown() {
+    if (this._groupTimer) clearInterval(this._groupTimer);
+    this._groupTimer = setInterval(() => {
+      const { ongoingGroups } = this.data;
+      let hasActive = false;
+      const updated = ongoingGroups.map((g) => {
+        const sec = Math.max(0, g.remainSec - 1);
+        if (sec > 0) hasActive = true;
+        return { ...g, remainSec: sec, remainText: this.formatRemainTime(sec) };
+      });
+      this.setData({ ongoingGroups: updated });
+      if (!hasActive) clearInterval(this._groupTimer);
+    }, 1000);
+  },
+
+  /** 原价购买 */
+  buyOriginalPrice() {
+    this._buyOriginalPrice = true;
+    this.showSkuSelectPopup(1);
+  },
+
+  /** 开新团 */
+  startNewGroup() {
+    this._buyOriginalPrice = false;
+    this.showSkuSelectPopup(1);
+  },
+
+  /** 参加已有团 */
+  joinGroup(e) {
+    const { groupNo } = e.currentTarget.dataset;
+    this._joinGroupNo = groupNo;
+    this.showSkuSelectPopup(1);
+  },
+
+  onUnload() {
+    if (this._groupTimer) clearInterval(this._groupTimer);
+  },
+
   onLoad(query) {
-    const { spuId, orderType, activityId, sessionId } = query;
+    const { spuId, orderType, activityId, groupBuyId, sessionId } = query;
     this.setData({
       spuId,
       orderType: orderType || '',
-      activityId: activityId || '',
+      activityId: activityId || groupBuyId || '',
       sessionId: sessionId || '',
     });
     this.getDetail(spuId);

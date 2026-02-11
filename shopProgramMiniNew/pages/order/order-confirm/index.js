@@ -34,10 +34,7 @@ Page({
     notesPosition: 'center',
     storeInfoList: [],
     storeNoteIndex: 0, //当前填写备注门店index
-    promotionGoodsList: [], //当前门店商品列表(优惠券)
-    couponList: [], //当前门店所选优惠券
-    submitCouponList: [], //所有门店所选优惠券
-    currentStoreId: '', //当前优惠券storeId
+    selectedCouponId: null, //当前选中的优惠券ID
     userAddress: null,
   },
 
@@ -101,8 +98,9 @@ Page({
     const orderType = firstGoods.orderType || this._orderType || 'normal';
     const activityId = firstGoods.activityId || this._activityId || null;
     const sessionId = firstGoods.sessionId || this._sessionId || null;
-    const groupBuyId = firstGoods.groupBuyId || this._groupBuyId || null;
+    const groupBuyId = firstGoods.groupBuyId || this._groupBuyId || (orderType === 'group_buy' ? activityId : null);
     const groupNo = firstGoods.groupNo || this._groupNo || null;
+    const buyOriginalPrice = firstGoods.buyOriginalPrice || this._buyOriginalPrice || false;
 
     // 缓存到实例上，刷新预览时保留
     this._orderType = orderType;
@@ -110,12 +108,15 @@ Page({
     this._sessionId = sessionId;
     this._groupBuyId = groupBuyId;
     this._groupNo = groupNo;
+    this._buyOriginalPrice = buyOriginalPrice;
 
-    // 优惠券：后端接受单个 coupon_id，取第一个
+    // 优惠券：后端接受单个 coupon_id
     let couponId = null;
     if (couponList && couponList.length > 0) {
       const first = couponList[0];
       couponId = first.couponId || first.id || first;
+    } else if (this._selectedCouponId) {
+      couponId = this._selectedCouponId;
     }
 
     const params = {
@@ -132,6 +133,7 @@ Page({
       sessionId,
       groupBuyId,
       groupNo,
+      buyOriginalPrice: buyOriginalPrice || undefined,
     };
 
     fetchSettleDetail(params).then(
@@ -141,7 +143,12 @@ Page({
         const resData = res?.data || res;
         this.initData(resData);
       },
-      () => { this.handleError(); },
+      (err) => {
+        this.setData({ loading: false });
+        const msg = (err && err.msg) || '订单预览失败，请重试';
+        Toast({ context: this, selector: '#t-toast', message: msg, duration: 3000, icon: 'close-circle' });
+        setTimeout(() => { wx.switchTab({ url: '/pages/home/home' }); }, 3000);
+      },
     );
   },
   initData(resData) {
@@ -209,6 +216,15 @@ Page({
     const data = this.handleResToGoodsCard(mapped);
     this.setData({ settleDetailData: data });
     this.isInvalidOrder(data);
+
+    // 首次加载时自动选最优券
+    if (!this._couponAutoSelected) {
+      this._couponAutoSelected = true;
+      const comp = this.selectComponent('#selectCoupons');
+      if (comp) {
+        comp.loadCoupons(true);
+      }
+    }
   },
 
   isInvalidOrder(data) {
@@ -416,7 +432,7 @@ Page({
   },
   // 提交订单
   submitOrder() {
-    const { settleDetailData, invoiceData, storeInfoList, submitCouponList } = this.data;
+    const { settleDetailData, invoiceData, storeInfoList } = this.data;
     const { goodsRequestList } = this;
     const userAddress = settleDetailData.userAddress || this.userAddressReq;
 
@@ -429,12 +445,7 @@ Page({
     }
     this.payLock = true;
 
-    const resSubmitCouponList = this.handleCouponList(submitCouponList);
-    let couponId = null;
-    if (resSubmitCouponList && resSubmitCouponList.length > 0) {
-      const first = resSubmitCouponList[0];
-      couponId = first.couponId || first.id || first;
-    }
+    const couponId = this._selectedCouponId || null;
 
     const params = {
       goodsRequestList: goodsRequestList.map((g) => ({ skuId: g.skuId, quantity: g.quantity })),
@@ -445,8 +456,9 @@ Page({
       orderType: this._orderType || 'normal',
       activityId: this._activityId || null,
       sessionId: this._sessionId || null,
-      groupBuyId: this._groupBuyId || null,
+      groupBuyId: this._groupBuyId || (this._orderType === 'group_buy' ? this._activityId : null),
       groupNo: this._groupNo || null,
+      buyOriginalPrice: this._buyOriginalPrice || undefined,
       storeInfoList,
       couponId,
       invoiceRequest: null,
@@ -493,36 +505,21 @@ Page({
   },
 
   onCoupons(e) {
-    const { submitCouponList, currentStoreId } = this.data;
-    const { goodsRequestList } = this;
     const { selectedList } = e.detail;
-    const tempSubmitCouponList = submitCouponList.map((storeCoupon) => {
-      return {
-        storeId: storeCoupon.storeId,
-        couponList: storeCoupon.storeId === currentStoreId ? selectedList : storeCoupon.couponList,
-      };
-    });
-    const resSubmitCouponList = this.handleCouponList(tempSubmitCouponList);
-    //确定选择优惠券，重新预览
-    this.handleOptionsParams({ goodsRequestList }, resSubmitCouponList);
-    this.setData({ couponsShow: false });
-  },
-  onOpenCoupons(e) {
-    const { storeid } = e.currentTarget.dataset;
-    this.setData({
-      couponsShow: true,
-      currentStoreId: storeid,
-    });
+    const couponId = selectedList.length > 0 ? selectedList[0].couponId : null;
+    this._selectedCouponId = couponId;
+    this.setData({ couponsShow: false, selectedCouponId: couponId });
+    // 重新预览订单
+    const { goodsRequestList } = this;
+    this.handleOptionsParams({ goodsRequestList }, couponId ? [{ couponId }] : null);
   },
 
-  handleCouponList(storeCouponList) {
-    //处理门店优惠券   转换成接口需要
-    if (!storeCouponList) return [];
-    const resSubmitCouponList = [];
-    storeCouponList.forEach((ele) => {
-      resSubmitCouponList.push(...ele.couponList);
-    });
-    return resSubmitCouponList;
+  onOpenCoupons() {
+    this.setData({ couponsShow: true });
+  },
+
+  onCloseCoupons() {
+    this.setData({ couponsShow: false });
   },
 
   onGoodsNumChange(e) {

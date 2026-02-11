@@ -102,3 +102,11 @@
   background-color: #fa4126;
   color: #ffffff;
 }
+
+.select-coupons .coupons-list .section-title {
+  font-size: 24rpx;
+  color: #999;
+  padding: 24rpx 0 12rpx;
+  border-top: 1rpx solid #eee;
+  margin-top: 16rpx;
+}

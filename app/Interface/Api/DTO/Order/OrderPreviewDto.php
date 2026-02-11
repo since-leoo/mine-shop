@@ -41,6 +41,8 @@ class OrderPreviewDto implements OrderPreviewInput
 
     public ?string $group_no = null;
 
+    public bool $buy_original_price = false;
+
     public function getMemberId(): int
     {
         return $this->member_id;
@@ -109,5 +111,10 @@ class OrderPreviewDto implements OrderPreviewInput
     public function getGroupNo(): ?string
     {
         return $this->group_no;
+    }
+
+    public function getBuyOriginalPrice(): bool
+    {
+        return $this->buy_original_price;
     }
 }

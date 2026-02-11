@@ -43,6 +43,18 @@ final class GroupBuyProductController extends AbstractController
         return $this->success($data);
     }
 
+    /**
+     * 获取某个拼团活动正在进行中的团列表（可参团）.
+     */
+    #[GetMapping(path: '{activityId}/groups')]
+    public function groups(int $activityId): Result
+    {
+        $limit = (int) ($this->request->query('limit', 10));
+        $list = $this->queryService->getOngoingGroups($activityId, $limit);
+
+        return $this->success(['list' => $list]);
+    }
+
     #[GetMapping(path: '{activityId}/{spuId}')]
     public function show(int $activityId, int $spuId): Result
     {

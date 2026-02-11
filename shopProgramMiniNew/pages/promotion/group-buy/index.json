@@ -1,0 +1,14 @@
+{
+  "navigationBarTitleText": "拼团活动",
+  "navigationBarBackgroundColor": "#ff6d00",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "t-image": "/components/webp-image/index",
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "t-toast": "tdesign-miniprogram/toast/toast",
+    "price": "/components/price/index"
+  }
+}

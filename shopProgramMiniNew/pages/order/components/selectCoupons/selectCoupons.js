@@ -1,148 +1,115 @@
-import dayjs from 'dayjs';
-import { couponsData } from './mock';
+import { fetchCouponList } from '../../../../services/coupon/index';
 
 const emptyCouponImg = `https://tdesign.gtimg.com/miniprogram/template/retail/coupon/ordersure-coupon-newempty.png`;
 
+// ui-coupon-card CouponType 枚举
+const CouponTypeMap = { price: 1, discount: 2 };
+
 Component({
   properties: {
-    storeId: {
-      type: String,
-      value: '',
-    },
-    promotionGoodsList: {
-      type: Array,
-      value: [],
-    },
-    orderSureCouponList: {
-      type: Array,
-      value: [],
-    },
     couponsShow: {
       type: Boolean,
       value: false,
-      observer(couponsShow) {
-        if (couponsShow) {
-          const { promotionGoodsList, orderSureCouponList, storeId } = this.data;
-          const products =
-            promotionGoodsList &&
-            promotionGoodsList.map((goods) => {
-              this.storeId = goods.storeId;
-              return {
-                skuId: goods.skuId,
-                spuId: goods.spuId,
-                storeId: goods.storeId,
-                selected: true,
-                quantity: goods.num,
-                prices: {
-                  sale: goods.settlePrice,
-                },
-              };
-            });
-          const selectedCoupons =
-            orderSureCouponList &&
-            orderSureCouponList.map((ele) => {
-              return {
-                promotionId: ele.promotionId,
-                storeId: ele.storeId,
-                couponId: ele.couponId,
-              };
-            });
-          this.setData({
-            products,
-          });
-          this.coupons({
-            products,
-            selectedCoupons,
-            storeId,
-          }).then((res) => {
-            this.initData(res);
-          });
+      observer(show) {
+        if (show) {
+          this.loadCoupons();
         }
       },
+    },
+    selectedCouponId: {
+      type: Number,
+      value: null,
+    },
+    // 订单商品总额（单位：分），用于判断优惠券是否满足门槛
+    orderAmount: {
+      type: Number,
+      value: 0,
     },
   },
   data: {
     emptyCouponImg,
-    goodsList: [],
-    selectedList: [],
-    couponsList: [],
+    availableList: [],
+    unavailableList: [],
+    loading: false,
   },
   methods: {
-    initData(data = {}) {
-      const { couponResultList = [], reduce = 0 } = data;
-      const selectedList = [];
-      let selectedNum = 0;
-      const couponsList =
-        couponResultList &&
-        couponResultList.map((coupon) => {
-          const { status, couponVO } = coupon;
-          const { couponId, condition = '', endTime = 0, name = '', startTime = 0, value, type } = couponVO;
-          if (status === 1) {
-            selectedNum++;
-            selectedList.push({
-              couponId,
-              promotionId: ruleId,
-              storeId: this.storeId,
+    /**
+     * 加载券列表并分组。
+     * @param {boolean} autoSelect 是否自动选中最优券（首次进页面时为 true）
+     */
+    loadCoupons(autoSelect) {
+      this.setData({ loading: true });
+      fetchCouponList('default')
+        .then((list) => {
+          const orderAmount = this.properties.orderAmount || 0;
+          const selectedId = this.properties.selectedCouponId;
+          const available = [];
+          const unavailable = [];
+
+          (list || []).forEach((item) => {
+            const coupon = {
+              key: item.key,
+              couponId: item.key,
+              title: item.title || '',
+              type: CouponTypeMap[item.type] || 1,
+              value: item.value || 0,
+              base: item.base || 0,
+              tag: item.tag || '',
+              desc: item.desc || '',
+              timeLimit: item.timeLimit || '',
+              isSelected: false,
+            };
+
+            if (coupon.base === 0 || orderAmount >= coupon.base) {
+              coupon.status = 'default';
+              available.push(coupon);
+            } else {
+              coupon.status = 'useless';
+              unavailable.push(coupon);
+            }
+          });
+
+          // 确定选中哪张券
+          if (selectedId) {
+            // 已有选中的，保持
+            const match = available.find((c) => String(c.couponId) === String(selectedId));
+            if (match) match.isSelected = true;
+          } else if (autoSelect && available.length > 0) {
+            // 自动选最优：优惠金额最大的那张
+            const best = available.reduce((a, b) => (b.value > a.value ? b : a), available[0]);
+            best.isSelected = true;
+            // 通知父页面带上这张券重新预览
+            this.triggerEvent('sure', {
+              selectedList: [{ couponId: best.couponId }],
             });
           }
-          const val = type === 2 ? value / 100 : value / 10;
-          return {
-            key: couponId,
-            title: name,
-            isSelected: false,
-            timeLimit: `${dayjs(+startTime).format('YYYY-MM-DD')}-${dayjs(+endTime).format('YYYY-MM-DD')}`,
-            value: val,
-            status: status === -1 ? 'useless' : 'default',
-            desc: condition,
-            type,
-            tag: '',
-          };
+
+          this.setData({ availableList: available, unavailableList: unavailable, loading: false });
+        })
+        .catch(() => {
+          this.setData({ availableList: [], unavailableList: [], loading: false });
         });
-      this.setData({
-        selectedList,
-        couponsList,
-        reduce,
-        selectedNum,
-      });
     },
+
     selectCoupon(e) {
       const { key } = e.currentTarget.dataset;
-      const { couponsList, selectedList } = this.data;
-      couponsList.forEach((coupon) => {
-        if (coupon.key === key) {
-          coupon.isSelected = !coupon.isSelected;
-        }
-      });
+      const { availableList } = this.data;
 
-      const couponSelected = couponsList.filter((coupon) => coupon.isSelected === true);
+      const updated = availableList.map((c) => ({
+        ...c,
+        isSelected: c.key === key ? !c.isSelected : false,
+      }));
 
-      this.setData({
-        selectedList: [...selectedList, ...couponSelected],
-        couponsList: [...couponsList],
-      });
+      const selected = updated.find((c) => c.isSelected);
+      this.setData({ availableList: updated });
 
       this.triggerEvent('sure', {
-        selectedList: [...selectedList, ...couponSelected],
+        selectedList: selected ? [{ couponId: selected.couponId }] : [],
       });
     },
+
     hide() {
-      this.setData({
-        couponsShow: false,
-      });
-    },
-    coupons(coupon = {}) {
-      return new Promise((resolve, reject) => {
-        if (coupon?.selectedCoupons) {
-          resolve({
-            couponResultList: couponsData.couponResultList,
-            reduce: couponsData.reduce,
-          });
-        }
-        return reject({
-          couponResultList: [],
-          reduce: undefined,
-        });
-      });
+      this.triggerEvent('close');
     },
   },
 });

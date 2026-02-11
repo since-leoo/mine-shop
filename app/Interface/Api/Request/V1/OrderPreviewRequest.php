@@ -40,6 +40,7 @@ class OrderPreviewRequest extends BaseRequest
             'store_info_list.*.remark' => ['nullable', 'string', 'max:200'],
             'activity_id' => ['required_if:order_type,seckill', 'integer', 'min:1'],
             'session_id' => ['required_if:order_type,seckill', 'integer', 'min:1'],
+            'buy_original_price' => ['nullable', 'boolean'],
         ];
     }
 
@@ -68,6 +69,7 @@ class OrderPreviewRequest extends BaseRequest
         $dto->session_id = isset($params['session_id']) ? (int) $params['session_id'] : null;
         $dto->group_buy_id = isset($params['group_buy_id']) ? (int) $params['group_buy_id'] : null;
         $dto->group_no = $params['group_no'] ?? null;
+        $dto->buy_original_price = ! empty($params['buy_original_price']);
         return $dto;
     }
 }

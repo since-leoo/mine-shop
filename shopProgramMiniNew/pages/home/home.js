@@ -23,7 +23,7 @@ Page({
     hotGoodsList: [],
     quickEntries: [
       { key: 'cart', name: '购物车', icon: 'cart', bg: '#f3e5f5', color: '#8e24aa' },
-      { key: 'address', name: '地址管理', icon: 'location', bg: '#e0f2f1', color: '#00897b' },
+      { key: 'groupbuy', name: '拼团活动', icon: 'usergroup', bg: '#e0f2f1', color: '#00897b' },
       { key: 'order', name: '我的订单', icon: 'file-paste', bg: '#fff8e1', color: '#f9a825' },
       { key: 'coupon', name: '领券中心', icon: 'discount', bg: '#fbe9e7', color: '#d84315' },
       { key: 'category', name: '全部分类', icon: 'view-module', bg: '#e8eaf6', color: '#3949ab' },
@@ -105,7 +105,7 @@ Page({
     const { key } = e.currentTarget.dataset;
     const routes = {
       cart: '/pages/cart/index',
-      address: '/pages/user/address/list/index',
+      groupbuy: '/pages/promotion/group-buy/index',
       order: '/pages/order/order-list/index',
       coupon: '/pages/coupon/coupon-list/index',
       category: '/pages/category/index',
