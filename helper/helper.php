@@ -15,6 +15,7 @@ namespace {
     use Hyperf\Context\ApplicationContext;
     use Hyperf\Contract\ConfigInterface;
     use Hyperf\Contract\LengthAwarePaginatorInterface;
+    use Hyperf\Logger\LoggerFactory;
     use Hyperf\Paginator\AbstractPaginator;
     use Hyperf\Paginator\LengthAwarePaginator;
     use Hyperf\Resource\Json\JsonResource;
@@ -66,7 +67,7 @@ namespace {
     if (! function_exists('logger')) {
         function logger(string $channel = 'default'): LoggerInterface
         {
-            return ApplicationContext::getContainer()->get(LoggerInterface::class);
+            return ApplicationContext::getContainer()->get(LoggerFactory::class)->make($channel);
         }
     }
 
