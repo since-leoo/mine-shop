@@ -68,7 +68,7 @@ class SendMessageListener implements ListenerInterface
                 );
                 $event->success = true;
 
-                system_message_logger()->info('SendMessageEvent queued', [
+                logger()->info('SendMessageEvent queued', [
                     'title' => $event->title,
                     'type' => $event->type->value,
                     'delay' => $event->queueDelay,
@@ -87,7 +87,7 @@ class SendMessageListener implements ListenerInterface
 
             $event->success = true;
 
-            system_message_logger()->info('SendMessageEvent processed', [
+            logger()->info('SendMessageEvent processed', [
                 'message_id' => $message->id,
                 'title' => $event->title,
                 'type' => $event->type->value,
@@ -97,7 +97,7 @@ class SendMessageListener implements ListenerInterface
             $event->success = false;
             $event->error = $e->getMessage();
 
-            system_message_logger()->error('SendMessageEvent failed', [
+            logger()->error('SendMessageEvent failed', [
                 'title' => $event->title,
                 'error' => $e->getMessage(),
             ]);
@@ -120,7 +120,7 @@ class SendMessageListener implements ListenerInterface
                 );
                 $event->success = true;
 
-                system_message_logger()->info('TemplateMessageEvent queued', [
+                logger()->info('TemplateMessageEvent queued', [
                     'template_class' => \get_class($event->template),
                     'title' => $event->template->getTitle(),
                     'delay' => $event->queueDelay,
@@ -139,7 +139,7 @@ class SendMessageListener implements ListenerInterface
 
             $event->success = true;
 
-            system_message_logger()->info('TemplateMessageEvent processed', [
+            logger()->info('TemplateMessageEvent processed', [
                 'message_id' => $message->id,
                 'template_class' => \get_class($event->template),
                 'title' => $event->template->getTitle(),
@@ -149,7 +149,7 @@ class SendMessageListener implements ListenerInterface
             $event->success = false;
             $event->error = $e->getMessage();
 
-            system_message_logger()->error('TemplateMessageEvent failed', [
+            logger()->error('TemplateMessageEvent failed', [
                 'template_class' => \get_class($event->template),
                 'error' => $e->getMessage(),
             ]);

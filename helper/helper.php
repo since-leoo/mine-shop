@@ -23,6 +23,7 @@ namespace {
     use Psr\Container\NotFoundExceptionInterface;
     use Psr\EventDispatcher\EventDispatcherInterface;
     use Psr\Http\Message\RequestInterface;
+    use Psr\Log\LoggerInterface;
 
     if (! function_exists('config_base')) {
         function config_base(): ConfigInterface
@@ -59,6 +60,13 @@ namespace {
         function event(object $event): object
         {
             return ApplicationContext::getContainer()->get(EventDispatcherInterface::class)->dispatch($event);
+        }
+    }
+
+    if (! function_exists('logger')) {
+        function logger(string $channel = 'default'): LoggerInterface
+        {
+            return ApplicationContext::getContainer()->get(LoggerInterface::class);
         }
     }
 

@@ -52,13 +52,13 @@ class MessageService
             $this->validateMessageData($data);
             $data = $this->setDefaultValues($data);
             $message = $this->repository->create($data);
-            system_message_logger()->info('Message created', [
+            logger()->info('Message created', [
                 'message_id' => $message->id, 'title' => $message->title,
                 'type' => $message->type, 'recipient_type' => $message->recipient_type,
             ]);
             return $message;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to create message', ['data' => $data, 'error' => $e->getMessage()]);
+            logger()->error('Failed to create message', ['data' => $data, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -78,12 +78,12 @@ class MessageService
             });
             $this->queueNotifications($message, $recipients);
             $this->getEventDispatcher()->dispatch(new MessageSent($message));
-            system_message_logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
+            logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
             return true;
         } catch (\Throwable $e) {
             if (isset($message) && $message->isSending()) { $message->markAsFailed(); }
             if (isset($message)) { $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage())); }
-            system_message_logger()->error('Failed to send message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            logger()->error('Failed to send message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -165,10 +165,10 @@ class MessageService
                 if ($message->{$key} !== $value) { $changes[$key] = ['old' => $message->{$key}, 'new' => $value]; }
             }
             $message->update($data);
-            system_message_logger()->info('Message updated', ['message_id' => $message->id, 'changes' => array_keys($changes)]);
+            logger()->info('Message updated', ['message_id' => $message->id, 'changes' => array_keys($changes)]);
             return $message;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to update message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            logger()->error('Failed to update message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -179,10 +179,10 @@ class MessageService
             $message = $this->repository->findById($messageId);
             if (! $message) { return false; }
             $result = $message->delete();
-            system_message_logger()->info('Message deleted', ['message_id' => $message->id]);
+            logger()->info('Message deleted', ['message_id' => $message->id]);
             return $result;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to delete message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            logger()->error('Failed to delete message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -198,7 +198,7 @@ class MessageService
         $processed = 0;
         foreach ($messages as $message) {
             try { $this->send($message->id); ++$processed; } catch (\Throwable $e) {
-                system_message_logger()->error('Failed to process scheduled message', ['message_id' => $message->id, 'error' => $e->getMessage()]);
+                logger()->error('Failed to process scheduled message', ['message_id' => $message->id, 'error' => $e->getMessage()]);
             }
         }
         return $processed;

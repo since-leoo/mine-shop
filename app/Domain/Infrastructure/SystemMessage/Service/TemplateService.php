@@ -37,10 +37,10 @@ class TemplateService
             $data = $this->setDefaultValues($data);
             $template = $this->repository->create($data);
             $this->getEventDispatcher()->dispatch(new TemplateCreated($template));
-            system_message_logger()->info('Template created', ['template_id' => $template->id, 'name' => $template->name, 'type' => $template->type]);
+            logger()->info('Template created', ['template_id' => $template->id, 'name' => $template->name, 'type' => $template->type]);
             return $template;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to create template', ['data' => $data, 'error' => $e->getMessage()]);
+            logger()->error('Failed to create template', ['data' => $data, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -57,10 +57,10 @@ class TemplateService
             }
             $template->update($data);
             if (! empty($changes)) { $this->getEventDispatcher()->dispatch(new TemplateUpdated($template, $changes)); }
-            system_message_logger()->info('Template updated', ['template_id' => $template->id, 'changes' => array_keys($changes)]);
+            logger()->info('Template updated', ['template_id' => $template->id, 'changes' => array_keys($changes)]);
             return $template;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to update template', ['template_id' => $templateId, 'error' => $e->getMessage()]);
+            logger()->error('Failed to update template', ['template_id' => $templateId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -73,10 +73,10 @@ class TemplateService
             if ($template->messages()->exists()) { throw new \InvalidArgumentException('Cannot delete template that is being used by messages'); }
             $result = $template->delete();
             $this->getEventDispatcher()->dispatch(new TemplateDeleted($template));
-            system_message_logger()->info('Template deleted', ['template_id' => $template->id]);
+            logger()->info('Template deleted', ['template_id' => $template->id]);
             return $result;
         } catch (\Throwable $e) {
-            system_message_logger()->error('Failed to delete template', ['template_id' => $templateId, 'error' => $e->getMessage()]);
+            logger()->error('Failed to delete template', ['template_id' => $templateId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -141,7 +141,7 @@ class TemplateService
         $deleted = 0;
         foreach ($templateIds as $templateId) {
             try { if ($this->delete($templateId)) { ++$deleted; } } catch (\Throwable $e) {
-                system_message_logger()->warning('Failed to delete template in batch', ['template_id' => $templateId, 'error' => $e->getMessage()]);
+                logger()->warning('Failed to delete template in batch', ['template_id' => $templateId, 'error' => $e->getMessage()]);
             }
         }
         return $deleted;

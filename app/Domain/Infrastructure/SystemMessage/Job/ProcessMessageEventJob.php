@@ -48,13 +48,13 @@ class ProcessMessageEventJob extends Job
                 $messageService->send($message->id);
             }
 
-            system_message_logger()->info('ProcessMessageEventJob completed', [
+            logger()->info('ProcessMessageEventJob completed', [
                 'message_id' => $message->id,
                 'title' => $this->messageData['title'] ?? '',
                 'send_immediately' => $this->sendImmediately,
             ]);
         } catch (\Throwable $e) {
-            system_message_logger()->error('ProcessMessageEventJob failed', [
+            logger()->error('ProcessMessageEventJob failed', [
                 'data' => $this->messageData,
                 'error' => $e->getMessage(),
             ]);

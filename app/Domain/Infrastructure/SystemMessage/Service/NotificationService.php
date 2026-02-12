@@ -34,24 +34,24 @@ class NotificationService
     {
         try {
             if (! $this->shouldSendNotification($message, $userId, $channel)) {
-                system_message_logger()->info('Notification skipped due to user preferences', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+                logger()->info('Notification skipped due to user preferences', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
                 return false;
             }
             if ($this->isInDoNotDisturbTime($userId)) {
-                system_message_logger()->info('Notification skipped due to do not disturb time', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+                logger()->info('Notification skipped due to do not disturb time', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
                 return false;
             }
             $result = $this->sendByChannel($message, $userId, $channel);
             $this->logDelivery($message, $userId, $channel, $result);
             if ($result) {
                 $this->getEventDispatcher()->dispatch(new NotificationSent($message, $userId, $channel));
-                system_message_logger()->info('Notification sent successfully', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+                logger()->info('Notification sent successfully', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
             }
             return $result;
         } catch (\Throwable $e) {
             $this->logDelivery($message, $userId, $channel, false, $e->getMessage());
             $this->getEventDispatcher()->dispatch(new NotificationFailed($message, $userId, $channel, $e->getMessage()));
-            system_message_logger()->error('Failed to send notification', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel, 'error' => $e->getMessage()]);
+            logger()->error('Failed to send notification', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel, 'error' => $e->getMessage()]);
             return false;
         }
     }
@@ -146,7 +146,7 @@ class NotificationService
 
     protected function sendRealtimeNotification(Message $message, int $userId, string $channel): bool
     {
-        system_message_logger()->info('Realtime notification skipped (not implemented)', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+        logger()->info('Realtime notification skipped (not implemented)', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
         return true;
     }
 
@@ -154,7 +154,7 @@ class NotificationService
     {
         $user = $this->getUserById($userId);
         if (! $user || empty($user->email)) { return false; }
-        system_message_logger()->info('Email notification skipped (mail service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
+        logger()->info('Email notification skipped (mail service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
 
@@ -162,19 +162,19 @@ class NotificationService
     {
         $user = $this->getUserById($userId);
         if (! $user || empty($user->phone)) { return false; }
-        system_message_logger()->info('SMS notification skipped (sms service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
+        logger()->info('SMS notification skipped (sms service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
 
     protected function sendPushNotification(Message $message, int $userId): bool
     {
-        system_message_logger()->info('Push notification skipped (push service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
+        logger()->info('Push notification skipped (push service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
 
     protected function sendMiniappNotification(Message $message, int $userId): bool
     {
-        system_message_logger()->info('Miniapp notification skipped (miniapp service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
+        logger()->info('Miniapp notification skipped (miniapp service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
 

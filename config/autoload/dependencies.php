@@ -12,8 +12,12 @@ declare(strict_types=1);
 use App\Application\Admin\Infrastructure\JwtTokenChecker;
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Catalog\Product\Service\DomainProductSnapshotService;
+use App\Domain\Trade\Coupon\Service\CouponServiceAdapter;
+use App\Domain\Trade\Order\Contract\CouponServiceInterface;
+use App\Domain\Trade\Order\Contract\FreightServiceInterface;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
+use App\Domain\Trade\Shipping\Service\FreightServiceAdapter;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 use Mine\Upload\Factory;
 use Mine\Upload\UploadInterface;
@@ -23,6 +27,8 @@ return [
     UploadInterface::class => Factory::class,
     CheckTokenInterface::class => JwtTokenChecker::class,
     ProductSnapshotInterface::class => DomainProductSnapshotService::class,
+    CouponServiceInterface::class => CouponServiceAdapter::class,
+    FreightServiceInterface::class => FreightServiceAdapter::class,
     OrderTypeStrategyFactory::class => static function (ContainerInterface $container) {
         return new OrderTypeStrategyFactory([
             $container->get(NormalOrderStrategy::class),
