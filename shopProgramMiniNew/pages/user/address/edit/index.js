@@ -307,13 +307,13 @@ Page({
     const payload = {
       name: locationState.name,
       phone: locationState.phone,
-      province_name: locationState.provinceName,
+      province: locationState.provinceName,
       province_code: locationState.provinceCode,
-      city_name: locationState.cityName,
+      city: locationState.cityName,
       city_code: locationState.cityCode,
-      district_name: locationState.districtName,
+      district: locationState.districtName,
       district_code: locationState.districtCode,
-      detail_address: locationState.detailAddress,
+      detail: locationState.detailAddress,
       is_default: locationState.isDefault ? 1 : 0,
       address_tag: locationState.addressTag || '',
     };
