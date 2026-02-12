@@ -28,12 +28,12 @@ final class MemberProfileTransformer
 
         return [
             'id' => $member['id'],
-            'avatar' => $avatar,
+            'avatar' => $avatar ?? '',
             'nickname' => $nickname,
             'phone' => $member['phone'] ?? '',
             'gender' => $member['gender'] ?? 'unknown',
-            'level_name' => $member['level_definition']['name'] ?? null,
-            'level' => $member['level'] ?? null,
+            'level_name' => $member['level_definition']['name'] ?? '',
+            'level' => $member['level'] ?? '',
             'balance' => (int) ($member['wallet']['balance'] ?? 0),
             'points' => (int) ($member['points_wallet']['balance'] ?? 0),
             'authorized_profile' => ($nickname !== '' && $nickname !== '微信用户' && $avatar !== null && $avatar !== ''),

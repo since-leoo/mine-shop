@@ -38,6 +38,7 @@ final class DomainApiGroupBuyListService
             'originPrice' => $gb->original_price,
             'tags' => [['title' => $gb->min_people . '人团']],
             'activityId' => $gb->id,
+            'soldQuantity' => $gb->sold_quantity ?? 0,
         ])->toArray();
 
         // 取第一个活动的状态作为整体状态

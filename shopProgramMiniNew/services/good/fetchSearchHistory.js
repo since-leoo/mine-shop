@@ -14,9 +14,32 @@ export function getSearchHistory() {
   if (config.useMock) {
     return mockSearchHistory();
   }
-  // 搜索历史存本地
   const history = wx.getStorageSync(SEARCH_HISTORY_KEY) || [];
   return Promise.resolve({ historyWords: history });
+}
+
+/** 保存搜索关键词到历史 */
+export function addSearchHistory(keyword) {
+  if (!keyword || !keyword.trim()) return;
+  const word = keyword.trim();
+  let history = wx.getStorageSync(SEARCH_HISTORY_KEY) || [];
+  // 去重，最新的放最前面，最多保留20条
+  history = history.filter((w) => w !== word);
+  history.unshift(word);
+  if (history.length > 20) history = history.slice(0, 20);
+  wx.setStorageSync(SEARCH_HISTORY_KEY, history);
+}
+
+/** 清除搜索历史 */
+export function clearSearchHistory() {
+  wx.removeStorageSync(SEARCH_HISTORY_KEY);
+}
+
+/** 删除单条搜索历史 */
+export function removeSearchHistoryItem(index) {
+  const history = wx.getStorageSync(SEARCH_HISTORY_KEY) || [];
+  history.splice(index, 1);
+  wx.setStorageSync(SEARCH_HISTORY_KEY, history);
 }
 
 /** 获取热门搜索 (mock) */

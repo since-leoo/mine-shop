@@ -77,8 +77,8 @@ export function fetchOrders(params) {
     return {
       data: {
         orders,
-        pageNum: data.pagination?.current_page || pageNum,
-        pageSize: data.pagination?.per_page || pageSize,
+        pageNum: data.pagination?.currentPage || pageNum,
+        pageSize: data.pagination?.perPage || pageSize,
         totalCount: data.pagination?.total || 0,
       },
     };
@@ -103,10 +103,10 @@ export function fetchOrdersCount(params) {
     needAuth: true,
   }).then((data) => {
     const tabsCount = [
-      { tabType: 5, orderNum: data.pending_count || 0 },
-      { tabType: 10, orderNum: data.paid_count || 0 },
-      { tabType: 40, orderNum: data.shipped_count || 0 },
-      { tabType: 50, orderNum: data.completed_count || 0 },
+      { tabType: 5, orderNum: data.pendingCount || 0 },
+      { tabType: 10, orderNum: data.paidCount || 0 },
+      { tabType: 40, orderNum: data.shippedCount || 0 },
+      { tabType: 50, orderNum: data.completedCount || 0 },
     ];
     return { data: tabsCount };
   });

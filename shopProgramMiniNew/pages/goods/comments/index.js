@@ -110,8 +110,8 @@ Page({
       });
       const code = 'SUCCESS';
       if (code.toUpperCase() === 'SUCCESS') {
-        const { pageList, totalCount = 0 } = data;
-        pageList.forEach((item) => {
+        const { pageList = [], totalCount = 0 } = data || {};
+        (pageList || []).forEach((item) => {
           // eslint-disable-next-line no-param-reassign
           item.commentTime = dayjs(Number(item.commentTime)).format(
             'YYYY/MM/DD HH:mm',

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Contract\ProfileAuthorizeInput;
+use App\Domain\Member\Contract\ProfileUpdateInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
@@ -109,6 +110,16 @@ final class DomainApiMemberAuthCommandService
     {
         $memberEntity = $this->getEntity($memberId);
         $memberEntity->authorizeProfile($input);
+        $this->memberRepository->updateEntity($memberEntity);
+    }
+
+    /**
+     * 修改个人资料.
+     */
+    public function updateProfile(int $memberId, ProfileUpdateInput $input): void
+    {
+        $memberEntity = $this->getEntity($memberId);
+        $memberEntity->updateProfile($input);
         $this->memberRepository->updateEntity($memberEntity);
     }
 

@@ -1,68 +1,77 @@
 <!-- 顶部 Banner -->
-<view class="banner">
-  <view class="banner__bg"></view>
-  <view class="banner__content">
-    <view class="banner__title-row">
-      <text class="banner__title">拼团特惠</text>
-      <text class="banner__sub">好物拼着买 更划算</text>
+<view class="header">
+  <view class="header__bg"></view>
+  <view class="header__circle header__circle--1"></view>
+  <view class="header__circle header__circle--2"></view>
+  <view class="header__body">
+    <view class="header__left">
+      <text class="header__title">拼团特惠</text>
+      <text class="header__desc">好物拼着买 更划算</text>
     </view>
-    <view class="banner__countdown" wx:if="{{countdown}}">
-      <text class="banner__cd-label">距结束</text>
-      <text class="banner__cd-block">{{countdown.h}}</text>
-      <text class="banner__cd-sep">:</text>
-      <text class="banner__cd-block">{{countdown.m}}</text>
-      <text class="banner__cd-sep">:</text>
-      <text class="banner__cd-block">{{countdown.s}}</text>
+    <view class="header__right" wx:if="{{countdown}}">
+      <text class="header__cd-label">距结束</text>
+      <view class="header__cd-row">
+        <text class="cd-day" wx:if="{{countdown.d > 0}}">{{countdown.d}}天</text>
+        <text class="cd-block">{{countdown.h}}</text>
+        <text class="cd-sep">:</text>
+        <text class="cd-block">{{countdown.m}}</text>
+        <text class="cd-sep">:</text>
+        <text class="cd-block">{{countdown.s}}</text>
+      </view>
     </view>
   </view>
-  <view class="banner__deco"></view>
 </view>
 
 <!-- 加载中 -->
-<view wx:if="{{loading}}" class="loading-wrap">
+<view wx:if="{{loading}}" class="state-wrap">
   <t-loading theme="circular" size="40rpx" text="加载中..." inherit-color />
 </view>
 
 <!-- 空状态 -->
-<view wx:elif="{{list.length === 0}}" class="empty-wrap">
+<view wx:elif="{{list.length === 0}}" class="state-wrap state-wrap--empty">
   <t-icon name="shop" size="120rpx" color="#ccc" />
-  <text class="empty-text">暂无拼团活动</text>
+  <text class="state-text">暂无拼团活动</text>
 </view>
 
 <!-- 商品列表 -->
-<view wx:else class="product-list">
-  <view
-    class="product-card"
-    wx:for="{{list}}"
-    wx:key="spuId"
-    data-spu-id="{{item.spuId}}"
-    data-activity-id="{{item.activityId}}"
-    bind:tap="onItemTap"
-  >
-    <view class="product-card__img-wrap">
-      <t-image
-        t-class="product-card__img"
-        src="{{item.thumb}}"
-        mode="aspectFill"
-      />
-      <view class="product-card__badge" wx:if="{{item.tags[0].title}}">
-        {{item.tags[0].title}}
+<scroll-view wx:else scroll-y class="product-scroll" enhanced show-scrollbar="{{false}}">
+  <view class="product-grid">
+    <view
+      class="card"
+      wx:for="{{list}}"
+      wx:key="spuId"
+      data-spu-id="{{item.spuId}}"
+      data-activity-id="{{item.activityId}}"
+      bind:tap="onItemTap"
+    >
+      <!-- 商品图 -->
+      <view class="card__img-box">
+        <t-image t-class="card__img" src="{{item.thumb}}" mode="aspectFill" />
+        <view class="card__tag" wx:if="{{item.tags[0].title}}">{{item.tags[0].title}}</view>
       </view>
-    </view>
-    <view class="product-card__info">
-      <text class="product-card__title">{{item.title}}</text>
-      <view class="product-card__price-row">
-        <view class="product-card__group-price">
-          <text class="price-label">拼团价</text>
-          <text class="price-value">¥{{item.price / 100}}</text>
+
+      <!-- 信息区 -->
+      <view class="card__body">
+        <text class="card__title">{{item.title}}</text>
+
+        <!-- 价格行 -->
+        <view class="card__price-row">
+          <view class="card__group-price">
+            <text class="gp-sym">¥</text>
+            <text class="gp-int">{{item.priceInt}}</text>
+            <text class="gp-dec" wx:if="{{item.priceDec}}">.{{item.priceDec}}</text>
+          </view>
+          <text class="card__origin" wx:if="{{item.originPrice}}">¥{{item.originPriceFmt}}</text>
         </view>
-        <text class="product-card__origin-price" wx:if="{{item.originPrice}}">¥{{item.originPrice / 100}}</text>
-      </view>
-      <view class="product-card__action">
-        <text class="product-card__btn">去拼团</text>
+
+        <!-- 已拼 + 按钮 -->
+        <view class="card__footer">
+          <text class="card__sold">已拼{{item.soldText}}件</text>
+          <view class="card__btn">去拼团</view>
+        </view>
       </view>
     </view>
   </view>
-</view>
+</scroll-view>
 
 <t-toast id="t-toast" />

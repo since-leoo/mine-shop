@@ -1,6 +1,9 @@
 import {
   getSearchHistory,
   getSearchPopular,
+  addSearchHistory,
+  clearSearchHistory,
+  removeSearchHistoryItem,
 } from '../../../services/good/fetchSearchHistory';
 
 Page({
@@ -27,13 +30,7 @@ Page({
   async queryHistory() {
     try {
       const data = await getSearchHistory();
-      const code = 'Success';
-      if (String(code).toUpperCase() === 'SUCCESS') {
-        const { historyWords = [] } = data;
-        this.setData({
-          historyWords,
-        });
-      }
+      this.setData({ historyWords: data.historyWords || [] });
     } catch (error) {
       console.error(error);
     }
@@ -42,13 +39,7 @@ Page({
   async queryPopular() {
     try {
       const data = await getSearchPopular();
-      const code = 'Success';
-      if (String(code).toUpperCase() === 'SUCCESS') {
-        const { popularWords = [] } = data;
-        this.setData({
-          popularWords,
-        });
-      }
+      this.setData({ popularWords: data.popularWords || [] });
     } catch (error) {
       console.error(error);
     }
@@ -56,15 +47,13 @@ Page({
 
   confirm() {
     const { historyWords } = this.data;
-    const { deleteType, deleteIndex } = this;
-    historyWords.splice(deleteIndex, 1);
-    if (deleteType === 0) {
-      this.setData({
-        historyWords,
-        dialogShow: false,
-      });
-    } else {
+    if (this.deleteType === 1) {
+      clearSearchHistory();
       this.setData({ historyWords: [], dialogShow: false });
+    } else {
+      removeSearchHistoryItem(this.deleteIndex);
+      historyWords.splice(this.deleteIndex, 1);
+      this.setData({ historyWords, dialogShow: false });
     }
   },
 
@@ -73,47 +62,45 @@ Page({
   },
 
   handleClearHistory() {
-    const { dialog } = this.data;
     this.deleteType = 1;
     this.setData({
-      dialog: {
-        ...dialog,
-        message: '确认删除所有历史记录',
-      },
+      dialog: { ...this.data.dialog, message: '确认删除所有历史记录' },
       dialogShow: true,
     });
   },
 
   deleteCurr(e) {
     const { index } = e.currentTarget.dataset;
-    const { dialog } = this.data;
     this.deleteIndex = index;
+    this.deleteType = 0;
     this.setData({
-      dialog: {
-        ...dialog,
-        message: '确认删除当前历史记录',
-        deleteType: 0,
-      },
+      dialog: { ...this.data.dialog, message: '确认删除当前历史记录' },
       dialogShow: true,
     });
   },
 
   handleHistoryTap(e) {
-    const { historyWords } = this.data;
-    const { dataset } = e.currentTarget;
-    const _searchValue = historyWords[dataset.index || 0] || '';
-    if (_searchValue) {
-      wx.navigateTo({
-        url: `/pages/goods/result/index?searchValue=${_searchValue}`,
-      });
-    }
+    const { index } = e.currentTarget.dataset;
+    const word = this.data.historyWords[index] || '';
+    if (word) this.doSearch(word);
+  },
+
+  handlePopularTap(e) {
+    const { index } = e.currentTarget.dataset;
+    const word = this.data.popularWords[index] || '';
+    if (word) this.doSearch(word);
   },
 
   handleSubmit(e) {
-    const { value } = e.detail.value;
-    if (value.length === 0) return;
+    const value = (e.detail.value || '').trim();
+    if (!value) return;
+    this.doSearch(value);
+  },
+
+  doSearch(keyword) {
+    addSearchHistory(keyword);
     wx.navigateTo({
-      url: `/pages/goods/result/index?searchValue=${value}`,
+      url: `/pages/goods/result/index?searchValue=${keyword}`,
     });
   },
 });

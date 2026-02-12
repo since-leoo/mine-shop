@@ -1,48 +1,99 @@
 <view class="person-info">
   <t-cell-group>
+    <!-- 头像 -->
     <t-cell
       title="头像"
       center="{{true}}"
-      data-type="avatarUrl"
-      bind:click="onClickCell"
       arrow
       t-class-left="order-group__left"
+      bind:click="onChooseAvatar"
     >
-      <t-image slot="note" src="{{personInfo.avatarUrl}}" t-class="avatarUrl" mode="aspectFill" />
+      <t-image wx:if="{{personInfo.avatarUrl}}" slot="note" src="{{personInfo.avatarUrl}}" t-class="avatarUrl" mode="aspectFill" />
+      <view wx:else slot="note" class="avatar-placeholder">未设置</view>
     </t-cell>
+    <!-- 昵称 -->
     <t-cell
       title="昵称"
       arrow
-      note="{{personInfo.nickName}}"
-      data-type="name"
-      bind:click="onClickCell"
+      note="{{personInfo.nickName || '未设置'}}"
       t-class="t-cell-class"
       t-class-left="order-group__left"
+      bind:click="onEditNickname"
     />
+    <!-- 性别 -->
     <t-cell
       title="性别"
       arrow
-      note="{{genderMap[personInfo.gender]}}"
+      note="{{genderMap[personInfo.gender] || '未设置'}}"
       data-type="gender"
       bind:click="onClickCell"
       t-class="t-cell-class"
       t-class-left="order-group__left"
     />
+    <!-- 手机号 -->
     <t-cell
-      bordered="{{false}}"
       title="手机号"
       arrow
-      note="{{personInfo.phoneNumber ? personInfo.phoneNumber : '去绑定手机号'}}"
-      data-type="phoneNumber"
-      bind:click="onClickCell"
+      note="{{personInfo.phoneNumber || '去绑定手机号'}}"
       t-class="t-cell-class"
       t-class-left="order-group__left"
+      bind:click="onEditPhone"
     />
   </t-cell-group>
 </view>
+
+<!-- 底部提交按钮 -->
 <view class="person-info__wrapper">
-  <view class="person-info__btn" bind:tap="openUnbindConfirm"> 切换账号登录 </view>
+  <t-button theme="primary" block loading="{{submitting}}" bind:tap="onSubmit">提交</t-button>
 </view>
+
+<!-- 昵称编辑弹窗 -->
+<t-dialog
+  visible="{{showNicknameDialog}}"
+  title="修改昵称"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onNicknameConfirm"
+  bind:cancel="onNicknameCancel"
+>
+  <view class="dialog-input-wrap">
+    <t-input
+      value="{{nicknameInput}}"
+      placeholder="请输入昵称"
+      maxlength="{{20}}"
+      bind:change="onNicknameInput"
+    />
+  </view>
+</t-dialog>
+
+<!-- 手机号编辑弹窗 -->
+<t-dialog
+  visible="{{showPhoneDialog}}"
+  title="修改手机号"
+  confirm-btn="确定"
+  cancel-btn="取消"
+  bind:confirm="onPhoneConfirm"
+  bind:cancel="onPhoneCancel"
+>
+  <view class="dialog-input-wrap">
+    <t-input
+      value="{{phoneInput}}"
+      type="number"
+      placeholder="请输入手机号"
+      maxlength="{{11}}"
+      bind:change="onPhoneInput"
+    />
+  </view>
+</t-dialog>
+
+<!-- 头像来源选择(已有头像时) -->
+<t-action-sheet
+  visible="{{showAvatarSheet}}"
+  items="{{avatarActions}}"
+  bind:selected="onAvatarActionSelected"
+  bind:cancel="onAvatarSheetCancel"
+/>
+
 <t-select-picker
   show="{{typeVisible}}"
   picker-options="{{pickerOptions}}"

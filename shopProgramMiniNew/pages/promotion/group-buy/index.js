@@ -1,5 +1,11 @@
 import { fetchGroupBuyList } from '../../../services/promotion/groupBuy';
 
+function fmtPrice(cents) {
+  const yuan = (cents / 100).toFixed(2);
+  const [int, dec] = yuan.split('.');
+  return { int, dec: dec === '00' ? '' : dec };
+}
+
 Page({
   data: {
     loading: true,
@@ -28,15 +34,24 @@ Page({
     this.setData({ loading: true });
     fetchGroupBuyList(50)
       .then((res) => {
-        const list = (res.list || []).map((item) => ({
-          spuId: item.spuId,
-          activityId: item.activityId,
-          thumb: item.thumb || '',
-          title: item.title || '',
-          price: item.price || 0,
-          originPrice: item.originPrice || 0,
-          tags: item.tags || [],
-        }));
+        const list = (res.list || []).map((item) => {
+          const p = fmtPrice(item.price || 0);
+          const op = ((item.originPrice || 0) / 100).toFixed(2);
+          const sold = item.soldQuantity || 0;
+          return {
+            spuId: item.spuId,
+            activityId: item.activityId,
+            thumb: item.thumb || '',
+            title: item.title || '',
+            price: item.price || 0,
+            priceInt: p.int,
+            priceDec: p.dec,
+            originPrice: item.originPrice || 0,
+            originPriceFmt: op,
+            tags: item.tags || [],
+            soldText: sold > 9999 ? (sold / 10000).toFixed(1) + '万' : String(sold),
+          };
+        });
         this._endTime = Date.now() + (res.time || 0);
         this.setData({ list, statusTag: res.statusTag || '', loading: false });
         if (res.time > 0) this.startTimer();
@@ -59,10 +74,11 @@ Page({
       this.setData({ countdown: null });
       return;
     }
-    const h = String(Math.floor(diff / 3600)).padStart(2, '0');
+    const days = Math.floor(diff / 86400);
+    const h = String(Math.floor((diff % 86400) / 3600)).padStart(2, '0');
     const m = String(Math.floor((diff % 3600) / 60)).padStart(2, '0');
     const s = String(diff % 60).padStart(2, '0');
-    this.setData({ countdown: { h, m, s } });
+    this.setData({ countdown: { d: days, h, m, s } });
   },
 
   clearTimer() {

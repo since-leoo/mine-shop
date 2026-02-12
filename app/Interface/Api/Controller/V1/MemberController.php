@@ -17,6 +17,7 @@ use App\Application\Api\Member\AppApiMemberCenterQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\PhoneAuthorizeRequest;
 use App\Interface\Api\Request\V1\ProfileAuthorizeRequest;
+use App\Interface\Api\Request\V1\ProfileUpdateRequest;
 use App\Interface\Api\Transformer\MemberCenterTransformer;
 use App\Interface\Api\Transformer\MemberProfileTransformer;
 use App\Interface\Common\Controller\AbstractController;
@@ -75,5 +76,12 @@ final class MemberController extends AbstractController
     {
         $this->memberAuthService->authorizeProfile($this->currentMember->id(), $request->toDto());
         return $this->success([], '头像昵称授权成功');
+    }
+
+    #[PostMapping(path: 'profile/update')]
+    public function updateProfile(ProfileUpdateRequest $request): Result
+    {
+        $this->memberAuthService->updateProfile($this->currentMember->id(), $request->toDto());
+        return $this->success([], '资料修改成功');
     }
 }

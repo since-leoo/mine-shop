@@ -15,6 +15,7 @@ namespace App\Application\Api\Member;
 use App\Domain\Auth\Service\DomainTokenService;
 use App\Domain\Member\Api\Command\DomainApiMemberAuthCommandService;
 use App\Domain\Member\Contract\ProfileAuthorizeInput;
+use App\Domain\Member\Contract\ProfileUpdateInput;
 
 /**
  * 小程序认证应用服务：编排登录、绑定手机号、授权头像昵称等流程.
@@ -67,5 +68,13 @@ final class AppApiMemberAuthCommandService
     public function authorizeProfile(int $memberId, ProfileAuthorizeInput $input): void
     {
         $this->authCommandService->authorizeProfile($memberId, $input);
+    }
+
+    /**
+     * 修改个人资料.
+     */
+    public function updateProfile(int $memberId, ProfileUpdateInput $input): void
+    {
+        $this->authCommandService->updateProfile($memberId, $input);
     }
 }

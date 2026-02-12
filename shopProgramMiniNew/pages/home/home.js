@@ -190,6 +190,11 @@ Page({
   goodListAddCartHandle(e) {
     const { goods } = e.detail;
     if (!goods) return;
+    // 活动商品不允许直接加购物车
+    if (goods.activityType === 'seckill' || goods.activityType === 'group_buy') {
+      Toast({ context: this, selector: '#t-toast', message: '活动商品请前往详情页购买', icon: 'info-circle' });
+      return;
+    }
     if (!goods.defaultSkuId) {
       wx.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
       return;

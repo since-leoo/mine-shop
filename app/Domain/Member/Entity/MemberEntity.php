@@ -14,6 +14,7 @@ namespace App\Domain\Member\Entity;
 
 use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Contract\ProfileAuthorizeInput;
+use App\Domain\Member\Contract\ProfileUpdateInput;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -451,6 +452,33 @@ final class MemberEntity
 
         if ($input->getGender() !== null) {
             $this->setGender($input->getGender());
+        }
+
+        return $this;
+    }
+
+    /**
+     * 修改个人资料行为方法.
+     */
+    public function updateProfile(ProfileUpdateInput $input): self
+    {
+        $nickname = $input->getNickname();
+        if ($nickname !== null && trim($nickname) !== '') {
+            $this->setNickname($nickname);
+        }
+
+        $avatarUrl = $input->getAvatarUrl();
+        if ($avatarUrl !== null && trim($avatarUrl) !== '') {
+            $this->setAvatar($avatarUrl);
+        }
+
+        if ($input->getGender() !== null) {
+            $this->setGender($input->getGender());
+        }
+
+        $phone = $input->getPhone();
+        if ($phone !== null && trim($phone) !== '') {
+            $this->setPhone($phone);
         }
 
         return $this;

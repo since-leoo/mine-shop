@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { getSearchResult } from '../../../services/good/fetchSearchResult';
+import { addSearchHistory } from '../../../services/good/fetchSearchHistory';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 const initFilters = {
@@ -100,7 +101,11 @@ Page({
 
         const _goodsList = reset ? spuList : goodsList.concat(spuList);
         _goodsList.forEach((v) => {
-          v.tags = v.spuTagList.map((u) => u.title);
+          if (v.spuTagList) {
+            v.tags = v.spuTagList.map((u) => u.title);
+          } else if (!v.tags) {
+            v.tags = [];
+          }
           v.hideKey = { desc: true };
         });
         const _loadMoreStatus = _goodsList.length === totalCount ? 2 : 0;
@@ -136,6 +141,8 @@ Page({
   },
 
   handleSubmit() {
+    const keyword = (this.data.keywords || '').trim();
+    if (keyword) addSearchHistory(keyword);
     this.setData(
       {
         goodsList: [],
@@ -159,12 +166,27 @@ Page({
     this.init(false);
   },
 
-  handleAddCart() {
-    Toast({
-      context: this,
-      selector: '#t-toast',
-      message: '点击加购',
-    });
+  handleAddCart(e) {
+    const { index } = e.detail;
+    const goods = this.data.goodsList[index];
+    if (!goods) return;
+    // 活动商品不允许直接加购物车
+    if (goods.activityType === 'seckill' || goods.activityType === 'group_buy') {
+      Toast({ context: this, selector: '#t-toast', message: '活动商品请前往详情页购买', icon: 'info-circle' });
+      return;
+    }
+    if (!goods.defaultSkuId) {
+      wx.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
+      return;
+    }
+    const { addCartItem } = require('../../../services/cart/cart');
+    addCartItem({ skuId: Number(goods.defaultSkuId), quantity: 1 })
+      .then(() => {
+        Toast({ context: this, selector: '#t-toast', message: '已加入购物车', icon: 'check-circle' });
+      })
+      .catch((err) => {
+        Toast({ context: this, selector: '#t-toast', message: err.msg || '加入购物车失败', icon: 'close-circle' });
+      });
   },
 
   gotoGoodsDetail(e) {

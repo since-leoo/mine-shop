@@ -60,14 +60,14 @@ final class MemberCenterTransformer
 
         return [
             'userInfo' => [
-                'avatarUrl' => $profile['avatar'],
-                'nickName' => $profile['nickname'],
-                'phoneNumber' => $profile['phone'],
-                'gender' => $profile['gender'],
-                'levelName' => $profile['level_name'],
-                'authorizedProfile' => $profile['authorized_profile'],
-                'balance' => $profile['balance'],
-                'points' => $profile['points'],
+                'avatarUrl' => $profile['avatar'] ?? '',
+                'nickName' => $profile['nickname'] ?? '',
+                'phoneNumber' => $profile['phone'] ?? '',
+                'gender' => $profile['gender'] ?? '',
+                'levelName' => $profile['level_name'] ?? '',
+                'authorizedProfile' => $profile['authorized_profile'] ?? false,
+                'balance' => $profile['balance'] ?? 0,
+                'points' => $profile['points'] ?? 0,
             ],
             'countsData' => [
                 [

@@ -19,5 +19,14 @@ export function fetchOngoingGroups(activityId, limit = 10) {
     url: `/api/v1/group-buy/products/${activityId}/groups`,
     method: 'GET',
     data: { limit },
-  }).then((res) => res?.list || []);
+  }).then((res) => {
+    return (res?.list || []).map((g) => ({
+      groupNo: g.groupNo || '',
+      leaderNickname: g.leaderNickname || '拼团用户',
+      leaderAvatar: g.leaderAvatar || '',
+      joinedCount: g.joinedCount || 0,
+      needCount: g.needCount || 0,
+      expireTime: g.expireTime || '',
+    }));
+  });
 }

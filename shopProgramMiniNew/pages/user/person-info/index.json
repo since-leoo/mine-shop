@@ -7,6 +7,8 @@
     "t-image": "/components/webp-image/index",
     "t-dialog": "tdesign-miniprogram/dialog/dialog",
     "t-toast": "tdesign-miniprogram/toast/toast",
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-action-sheet": "tdesign-miniprogram/action-sheet/action-sheet",
     "t-select-picker": "../../usercenter/components/ui-select-picker/index"
   }
 }

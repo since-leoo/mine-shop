@@ -8,7 +8,7 @@ const MEMBER_PROFILE_KEY = 'memberProfile';
 let sharedLoginPromise = null;
 
 const persistAuthResponse = (response = {}) => {
-  const { token, refresh_token: refreshToken, member } = response || {};
+  const { token, refreshToken, member } = response || {};
   if (token) {
     wx.setStorageSync(TOKEN_STORAGE_KEY, token);
   }

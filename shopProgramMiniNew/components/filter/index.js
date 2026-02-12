@@ -9,29 +9,14 @@ Component({
     overall: {
       type: Number,
       value: 1,
-      observer(overall) {
-        this.setData({
-          overall,
-        });
-      },
     },
     layout: {
       type: Number,
       value: 1,
-      observer(layout) {
-        this.setData({
-          layout,
-        });
-      },
     },
     sorts: {
       type: String,
       value: '',
-      observer(sorts) {
-        this.setData({
-          sorts,
-        });
-      },
     },
     color: {
       type: String,
@@ -39,11 +24,7 @@ Component({
     },
   },
 
-  data: {
-    layout: 1,
-    overall: 1,
-    sorts: '',
-  },
+  data: {},
 
   methods: {
     onChangeShowAction() {

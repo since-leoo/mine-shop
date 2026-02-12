@@ -10,13 +10,13 @@ Component({
       type: Array,
       observer(storeGoods) {
         for (const store of storeGoods) {
-          for (const activity of store.promotionGoodsList) {
-            for (const goods of activity.goodsPromotionList) {
-              goods.specs = goods.specInfo.map((item) => item.specValue); // 目前仅展示商品已选规格的值
+          for (const activity of (store.promotionGoodsList || [])) {
+            for (const goods of (activity.goodsPromotionList || [])) {
+              goods.specs = (goods.specInfo || []).map((item) => item.specValue);
             }
           }
-          for (const goods of store.shortageGoodsList) {
-            goods.specs = goods.specInfo.map((item) => item.specValue); // 目前仅展示商品已选规格的值
+          for (const goods of (store.shortageGoodsList || [])) {
+            goods.specs = (goods.specInfo || []).map((item) => item.specValue);
           }
         }
 
@@ -26,8 +26,8 @@ Component({
     invalidGoodItems: {
       type: Array,
       observer(invalidGoodItems) {
-        invalidGoodItems.forEach((goods) => {
-          goods.specs = goods.specInfo.map((item) => item.specValue); // 目前仅展示商品已选规格的值
+        (invalidGoodItems || []).forEach((goods) => {
+          goods.specs = (goods.specInfo || []).map((item) => item.specValue);
         });
         this.setData({ _invalidGoodItems: invalidGoodItems });
       },

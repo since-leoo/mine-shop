@@ -26,7 +26,15 @@ Page({
     this.init();
   },
 
+  onShow() {
+    // 页面显示时刷新地址列表,确保从编辑页返回后能看到最新数据
+    if (this._hasLoaded) {
+      this.getAddressList();
+    }
+  },
+
   init() {
+    this._hasLoaded = true;
     this.getAddressList();
   },
   onUnload() {

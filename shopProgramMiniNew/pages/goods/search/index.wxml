@@ -39,7 +39,7 @@
           class="search-item"
           hover-class="hover-history-item"
           wx:for="{{popularWords}}"
-          bind:tap="handleHistoryTap"
+          bind:tap="handlePopularTap"
           data-index="{{index}}"
           wx:key="*this"
         >
