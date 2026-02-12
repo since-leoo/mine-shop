@@ -44,10 +44,9 @@ Page({
     labelValue: '',
     columns: 3,
   },
-  privateData: {
-    verifyTips: '',
-  },
+  privateData: null,
   onLoad(options) {
+    this.initPrivateData();
     const { id } = options;
     this.init(id);
   },
@@ -59,6 +58,10 @@ Page({
   },
 
   hasSava: false,
+
+  initPrivateData() {
+    this.privateData = { verifyTips: '' };
+  },
 
   init(id) {
     if (id) {

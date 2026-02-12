@@ -10,7 +10,10 @@ Component({
 
   externalClasses: ['custom-class'],
   properties: {
-    title: String,
+    title: {
+      type: String,
+      value: '',
+    },
     disabled: Boolean,
   },
 

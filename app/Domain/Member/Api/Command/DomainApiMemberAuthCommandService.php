@@ -66,9 +66,6 @@ final class DomainApiMemberAuthCommandService
             $memberEntity->setId($model->id);
         } else {
             $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
-            $memberEntity->setNickname($payload['nickname'] ?? $memberEntity->getNickname());
-            $memberEntity->setAvatar($payload['avatarUrl'] ?? $memberEntity->getAvatar());
-            $memberEntity->setGender($payload['gender'] ?? $memberEntity->getGender());
             $memberEntity->setSource('mini_program');
             $memberEntity->setLastLoginAt(Carbon::now());
             $memberEntity->setLastLoginIp($ip ?? '');

@@ -30,15 +30,18 @@ Page({
     ],
   },
 
-  goodListPagination: { index: 0, num: 20 },
-  privateData: { tabIndex: 0, seckillEndTime: null, countdownTimer: null, seckillActivityId: null, seckillSessionId: null },
+  goodListPagination: null,
+  privateData: null,
 
   onShow() {
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar && typeof tabBar.init === 'function') tabBar.init();
   },
 
-  onLoad() { this.init(); },
+  onLoad() {
+    this.resetRuntimeState();
+    this.init();
+  },
   onUnload() { this.clearCountdown(); },
   onReachBottom() { if (this.data.goodsListLoadStatus === 0) this.loadGoodsList(); },
   onPullDownRefresh() { this.init(); },
@@ -202,6 +205,11 @@ Page({
   navToActivityDetail({ detail }) {
     const { index: promotionID = 0 } = detail || {};
     wx.navigateTo({ url: `/pages/promotion/promotion-detail/index?promotion_id=${promotionID}` });
+  },
+
+  resetRuntimeState() {
+    this.goodListPagination = { index: 0, num: 20 };
+    this.privateData = { tabIndex: 0, seckillEndTime: null, countdownTimer: null, seckillActivityId: null, seckillSessionId: null };
   },
 
   tabChangeHandle(e) {
