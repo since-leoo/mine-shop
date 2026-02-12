@@ -45,7 +45,7 @@ final class OrderEntity
 
     private string $payNo = '';
 
-    private string $payMethod = '';
+    private ?string $payMethod = null;
 
     private string $buyerRemark = '';
 
@@ -193,7 +193,7 @@ final class OrderEntity
         $this->payNo = $payNo;
     }
 
-    public function getPayMethod(): string
+    public function getPayMethod(): ?string
     {
         return $this->payMethod;
     }

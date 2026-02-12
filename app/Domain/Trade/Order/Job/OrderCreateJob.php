@@ -41,38 +41,42 @@ class OrderCreateJob extends Job
 
     public function handle(): void
     {
-        $container = ApplicationContext::getContainer();
-        $repository = $container->get(OrderRepository::class);
-        $strategyFactory = $container->get(OrderTypeStrategyFactory::class);
-        $mallSettingService = $container->get(DomainMallSettingService::class);
-        $pendingCache = $container->get(OrderPendingCacheService::class);
-        $logger = $container->get(LoggerInterface::class);
+        try {
+            $container = ApplicationContext::getContainer();
+            $repository = $container->get(OrderRepository::class);
+            $strategyFactory = $container->get(OrderTypeStrategyFactory::class);
+            $mallSettingService = $container->get(DomainMallSettingService::class);
+            $pendingCache = $container->get(OrderPendingCacheService::class);
 
-        // 从快照重建 Entity
-        $entity = $this->rebuildEntity($container);
-        $entity->applySubmissionPolicy($mallSettingService->order());
+            // 从快照重建 Entity
+            $entity = $this->rebuildEntity($container);
+            $entity->applySubmissionPolicy($mallSettingService->order());
 
-        $strategy = $strategyFactory->make($this->orderType);
+            $strategy = $strategyFactory->make($this->orderType);
 
-        // 策略自行恢复活动实体
-        $strategy->rehydrate($entity, $container);
+            // 策略自行恢复活动实体
+            $strategy->rehydrate($entity, $container);
 
-        // DB 事务：入库 + 后置逻辑（含优惠券核销）
-        $entity = Db::transaction(static function () use ($entity, $strategy, $repository) {
-            $savedEntity = $repository->save($entity);
-            $strategy->postCreate($savedEntity);
+            // DB 事务：入库 + 后置逻辑（含优惠券核销）
+            $entity = Db::transaction(static function () use ($entity, $strategy, $repository) {
+                $savedEntity = $repository->save($entity);
+                $strategy->postCreate($savedEntity);
 
-            return $savedEntity;
-        });
+                return $savedEntity;
+            });
 
-        // 标记成功
-        $pendingCache->markCreated($this->tradeNo);
-        event(new OrderCreatedEvent($entity));
+            // 标记成功
+            $pendingCache->markCreated($this->tradeNo);
+            event(new OrderCreatedEvent($entity));
 
-        $logger->info('OrderCreateJob: 订单创建成功', [
-            'trade_no' => $this->tradeNo,
-            'order_type' => $this->orderType,
-        ]);
+            logger()->info('OrderCreateJob: 订单创建成功', [
+                'trade_no' => $this->tradeNo,
+                'order_type' => $this->orderType,
+            ]);
+        }catch (\Exception $e) {
+            var_dump($e->getFile(), $e->getLine(), $e->getMessage());
+        }
+
     }
 
     /**
@@ -83,12 +87,11 @@ class OrderCreateJob extends Job
         $container = ApplicationContext::getContainer();
         $stockService = $container->get(DomainOrderStockService::class);
         $pendingCache = $container->get(OrderPendingCacheService::class);
-        $logger = $container->get(LoggerInterface::class);
 
         $stockService->rollback($this->itemsPayload, $this->stockHashKey);
         $pendingCache->markFailed($this->tradeNo, $e->getMessage());
 
-        $logger->error('OrderCreateJob: 最终失败，已回滚库存', [
+        logger()->error('OrderCreateJob: 最终失败，已回滚库存', [
             'trade_no' => $this->tradeNo,
             'error' => $e->getMessage(),
         ]);
