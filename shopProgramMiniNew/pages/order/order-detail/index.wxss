@@ -243,3 +243,20 @@
   --td-button-default-color: #000;
   --td-button-primary-text-color: #fa4126;
 }
+
+/* 评价按钮 */
+.review-btn-wrap {
+  display: flex;
+  justify-content: flex-end;
+  padding: 16rpx 32rpx;
+}
+
+.review-btn {
+  padding: 8rpx 32rpx;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  color: #fa4126;
+  border: 2rpx solid #fa4126;
+  border-radius: 36rpx;
+  background-color: #ffffff;
+}

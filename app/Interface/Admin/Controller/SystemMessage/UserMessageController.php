@@ -2,8 +2,10 @@
 
 declare(strict_types=1);
 
-namespace App\Interface\Api\Controller\V1\SystemMessage;
+namespace App\Interface\Admin\Controller\SystemMessage;
 
+use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
+use App\Interface\Common\Controller\SystemMessageAbstractController;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\Di\Annotation\Inject;
@@ -12,10 +14,8 @@ use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PutMapping;
-use App\Interface\Common\Controller\SystemMessageAbstractController;
-use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
 
-#[Controller(prefix: 'api/v1/system-message/user')]
+#[Controller(prefix: 'admin/system-message/user')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 class UserMessageController extends SystemMessageAbstractController
 {

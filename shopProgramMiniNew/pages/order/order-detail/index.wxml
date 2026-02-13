@@ -69,14 +69,25 @@
         bindtap="onGoodsCardTap"
         data-index="{{gIndex}}"
       >
-        <order-button-bar
-          slot="append-card"
-          class="goods-button-bar"
-          order="{{_order}}"
-          bindrefresh="onRefresh"
-          bindpay="onPayOrder"
-          goodsIndex="{{gIndex}}"
-        />
+        <view slot="append-card">
+          <order-button-bar
+            class="goods-button-bar"
+            order="{{_order}}"
+            bindrefresh="onRefresh"
+            bindpay="onPayOrder"
+            goodsIndex="{{gIndex}}"
+          />
+          <view
+            wx:if="{{showReviewButton && !orderHasCommented}}"
+            class="review-btn-wrap"
+          >
+            <view
+              class="review-btn"
+              catchtap="navToCommentCreate"
+              data-index="{{gIndex}}"
+            >评价</view>
+          </view>
+        </view>
       </order-goods-card>
       <view class="pay-detail">
         <view class="pay-item">

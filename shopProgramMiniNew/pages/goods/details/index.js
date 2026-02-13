@@ -269,9 +269,10 @@ Page({
     });
   },
 
-  async getCommentsList() {
+  async getCommentsList(spuId) {
+    const productId = spuId || this.data.spuId;
     try {
-      const data = await getGoodsDetailsCommentList();
+      const data = await getGoodsDetailsCommentList(productId);
       const { homePageComments } = data;
       this.setData({
         commentsList: (homePageComments || []).map((item) => ({
@@ -285,9 +286,10 @@ Page({
     } catch (error) { console.error('comments error:', error); }
   },
 
-  async getCommentsStatistics() {
+  async getCommentsStatistics(spuId) {
+    const productId = spuId || this.data.spuId;
     try {
-      const data = await getGoodsDetailsCommentsCount();
+      const data = await getGoodsDetailsCommentsCount(productId);
       const { badCount, commentCount, goodCount, goodRate, hasImageCount, middleCount } = data;
       this.setData({
         commentsStatistics: {

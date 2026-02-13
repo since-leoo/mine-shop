@@ -371,6 +371,66 @@ class MenuSeeder20240926 extends Seeder
                             ],
                         ],
                     ],
+                    [
+                        'name' => 'mall:review',
+                        'path' => '/mall/review',
+                        'component' => 'mall/views/review/index',
+                        'meta' => new Meta([
+                            'title' => '评价管理',
+                            'i18n' => 'mallMenu.mall.review',
+                            'icon' => 'ph:chat-circle-text',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'review:list',
+                                'meta' => new Meta([
+                                    'title' => '评价列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.reviewList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'review:read',
+                                'meta' => new Meta([
+                                    'title' => '评价详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.reviewRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'review:approve',
+                                'meta' => new Meta([
+                                    'title' => '评价审核通过',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.reviewApprove',
+                                ]),
+                            ],
+                            [
+                                'name' => 'review:reject',
+                                'meta' => new Meta([
+                                    'title' => '评价审核拒绝',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.reviewReject',
+                                ]),
+                            ],
+                            [
+                                'name' => 'review:reply',
+                                'meta' => new Meta([
+                                    'title' => '评价回复',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.reviewReply',
+                                ]),
+                            ],
+                        ],
+                    ],
                 ],
             ],
             [

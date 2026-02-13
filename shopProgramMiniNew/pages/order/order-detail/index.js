@@ -18,6 +18,8 @@ Page({
     logisticsNodes: [],
     /** 订单评论状态 */
     orderHasCommented: true,
+    /** 是否显示评价按钮 */
+    showReviewButton: false,
   },
 
   onLoad(query) {
@@ -133,9 +135,14 @@ Page({
         receiverAddress,
         groupInfoVo: null,
       };
+      // 判断订单是否已完成，控制评价按钮显示
+      const showReviewButton = order.status === 'completed';
+
       this.setData({
         order,
         _order,
+        showReviewButton,
+        orderHasCommented: !showReviewButton,
         formatCreateTime: order.createdAt || '',
         countDownTime: null,
         addressEditable: false,
@@ -269,9 +276,23 @@ Page({
   },
 
   /** 跳转订单评价 */
-  navToCommentCreate() {
+  navToCommentCreate(e) {
+    const { index } = e.currentTarget.dataset;
+    const item = (this.data.order.items || [])[index];
+    if (!item) return;
+
+    const params = [
+      `orderId=${this.data.order.id}`,
+      `orderItemId=${item.id}`,
+      `productId=${item.productId}`,
+      `skuId=${item.skuId}`,
+      `productImage=${encodeURIComponent(item.productImage || '')}`,
+      `productName=${encodeURIComponent(item.productName || '')}`,
+      `skuName=${encodeURIComponent(item.skuName || '')}`,
+    ].join('&');
+
     wx.navigateTo({
-      url: `/pages/order/createComment/index?orderNo=${this.orderNo}`,
+      url: `/pages/goods/comments/create/index?${params}`,
     });
   },
 

@@ -43,41 +43,41 @@ export interface UpdatePreferenceData {
 export const preferenceApi = {
   // 获取用户偏好设置
   get() {
-    return http.get('/plugin/api/system-message/preference/index')
+    return http.get('/admin/system-message/preference/index')
   },
 
   // 更新用户偏好设置
   update(data: UpdatePreferenceData) {
-    return http.put('/plugin/api/system-message/preference/update', data)
+    return http.put('/admin/system-message/preference/update', data)
   },
 
   // 重置偏好设置为默认值
   reset() {
-    return http.post('/plugin/api/system-message/preference/reset')
+    return http.post('/admin/system-message/preference/reset')
   },
 
   // 获取默认偏好设置
   getDefaults() {
-    return http.get('/plugin/api/system-message/preference/defaults')
+    return http.get('/admin/system-message/preference/defaults')
   },
 
   // 更新渠道偏好设置
   updateChannelPreferences(channels: Partial<NotificationPreference['channel_preferences']>) {
-    return http.put('/plugin/api/system-message/preference/updateChannels', {
+    return http.put('/admin/system-message/preference/updateChannels', {
       channels
     })
   },
 
   // 更新消息类型偏好设置
   updateTypePreferences(types: Partial<NotificationPreference['type_preferences']>) {
-    return http.put('/plugin/api/system-message/preference/updateTypes', {
+    return http.put('/admin/system-message/preference/updateTypes', {
       types
     })
   },
 
   // 设置免打扰时间
   setDoNotDisturbTime(startTime: string, endTime: string, enabled = true) {
-    return http.put('/plugin/api/system-message/preference/setDoNotDisturbTime', {
+    return http.put('/admin/system-message/preference/setDoNotDisturbTime', {
       start_time: startTime,
       end_time: endTime,
       enabled
@@ -86,21 +86,21 @@ export const preferenceApi = {
 
   // 启用/禁用免打扰
   toggleDoNotDisturb(enabled: boolean) {
-    return http.put('/plugin/api/system-message/preference/toggleDoNotDisturb', {
+    return http.put('/admin/system-message/preference/toggleDoNotDisturb', {
       enabled
     })
   },
 
   // 设置最小优先级
   setMinPriority(priority: number) {
-    return http.put('/plugin/api/system-message/preference/setMinPriority', {
+    return http.put('/admin/system-message/preference/setMinPriority', {
       priority
     })
   },
 
   // 检查是否在免打扰时间内
   checkDoNotDisturb() {
-    return http.get('/plugin/api/system-message/preference/checkDoNotDisturb')
+    return http.get('/admin/system-message/preference/checkDoNotDisturb')
   }
 }
 
@@ -150,13 +150,13 @@ export const preferenceUtils = {
   isInDoNotDisturbTime(startTime: string, endTime: string): boolean {
     const now = new Date()
     const currentTime = now.getHours() * 60 + now.getMinutes()
-    
+
     const [startHour, startMinute] = startTime.split(':').map(Number)
     const [endHour, endMinute] = endTime.split(':').map(Number)
-    
+
     const start = startHour * 60 + startMinute
     const end = endHour * 60 + endMinute
-    
+
     if (start <= end) {
       return currentTime >= start && currentTime <= end
     } else {

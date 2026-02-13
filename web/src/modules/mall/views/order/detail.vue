@@ -101,6 +101,42 @@
           {{ order.seller_remark }}
         </el-descriptions-item>
       </el-descriptions>
+
+      <!-- 评价信息 -->
+      <div>
+        <div class="text-base font-medium mb-3">评价信息</div>
+        <div v-if="reviewLoading" v-loading="true" class="py-6" />
+        <el-empty v-else-if="!reviews.length" description="暂无评价" :image-size="60" />
+        <el-table v-else :data="reviews" size="small" border>
+          <el-table-column label="评分" width="100" align="center">
+            <template #default="{ row }">
+              <el-rate :model-value="row.rating" disabled size="small" />
+            </template>
+          </el-table-column>
+          <el-table-column label="评价内容" min-width="200" show-overflow-tooltip>
+            <template #default="{ row }">
+              {{ row.content }}
+            </template>
+          </el-table-column>
+          <el-table-column label="状态" width="90" align="center">
+            <template #default="{ row }">
+              <el-tag :type="reviewStatusType[row.status || 'pending']" size="small">
+                {{ reviewStatusLabel[row.status || 'pending'] }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="管理员回复" min-width="160" show-overflow-tooltip>
+            <template #default="{ row }">
+              {{ row.admin_reply || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="评价时间" width="160" align="center">
+            <template #default="{ row }">
+              {{ formatTime(row.created_at) }}
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
     </div>
     <template #footer>
       <el-button @click="handleClose">关闭</el-button>
@@ -109,8 +145,10 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { ref, watch } from 'vue'
 import type { OrderVo } from '~/mall/api/order'
+import type { ReviewVo } from '~/mall/api/review'
+import { reviewsByOrder } from '~/mall/api/review'
 import dayjs from 'dayjs'
 import { formatYuan } from '@/utils/price'
 
@@ -124,6 +162,9 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:visible': [value: boolean]
 }>()
+
+const reviews = ref<ReviewVo[]>([])
+const reviewLoading = ref(false)
 
 const statusLabelMap: Record<string, string> = {
   pending: '待付款',
@@ -141,13 +182,45 @@ const statusTypeMap: Record<string, string> = {
   cancelled: 'info',
 }
 
+const reviewStatusLabel: Record<string, string> = {
+  pending: '待审核',
+  approved: '已通过',
+  rejected: '已拒绝',
+}
+
+const reviewStatusType: Record<string, string> = {
+  pending: 'warning',
+  approved: 'success',
+  rejected: 'danger',
+}
+
 const formatTime = (time?: string) => (time ? dayjs(time).format('YYYY-MM-DD HH:mm:ss') : '-')
 
 const handleClose = () => emit('update:visible', false)
 
+async function loadReviews(orderId: number) {
+  reviewLoading.value = true
+  try {
+    const res = await reviewsByOrder(orderId)
+    reviews.value = res.data ?? []
+  }
+  catch {
+    reviews.value = []
+  }
+  finally {
+    reviewLoading.value = false
+  }
+}
+
 watch(
   () => props.visible,
   (visible) => {
+    if (visible && props.order?.id) {
+      loadReviews(props.order.id)
+    }
+    else {
+      reviews.value = []
+    }
     if (!visible) {
       emit('update:visible', false)
     }

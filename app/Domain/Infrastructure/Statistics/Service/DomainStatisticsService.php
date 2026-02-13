@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Infrastructure\Statistics\Service;
 
 use App\Domain\Infrastructure\Statistics\Repository\StatisticsRepository;
+use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
@@ -22,6 +23,7 @@ final class DomainStatisticsService
 {
     public function __construct(
         private readonly StatisticsRepository $repository,
+        private readonly ReviewRepository $reviewRepository,
     ) {}
 
     // ═══════════════════════════════════════════════════════
@@ -95,6 +97,9 @@ final class DomainStatisticsService
         // 近7天热销商品 Top5
         $hotProducts = $this->repository->getProductRanking($weekStart, $weekEnd, 5);
 
+        // 评价统计
+        $reviewStats = $this->reviewRepository->getStatistics();
+
         return [
             'today' => [
                 'orders' => $todayOrders,
@@ -113,6 +118,12 @@ final class DomainStatisticsService
                 'total_products' => $totalProducts,
                 'total_orders' => $totalOrders,
                 'total_sales' => $totalSales,
+            ],
+            'review' => [
+                'today_reviews' => $reviewStats['today_reviews'],
+                'pending_reviews' => $reviewStats['pending_reviews'],
+                'total_reviews' => $reviewStats['total_reviews'],
+                'average_rating' => $reviewStats['average_rating'],
             ],
             'sales_trend' => $salesTrend,
             'hot_products' => $hotProducts,

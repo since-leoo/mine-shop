@@ -161,56 +161,56 @@ export const messageAdminApi = {
 export const messageUserApi = {
   // 获取用户消息列表
   getList(params: UserMessageListParams = {}) {
-    return http.get('/plugin/api/system-message/user/index', { params })
+    return http.get('/admin/system-message/user/index', { params })
   },
 
   // 获取消息详情
   getDetail(messageId: number) {
-    return http.get(`/plugin/api/system-message/user/read/${messageId}`)
+    return http.get(`/admin/system-message/user/read/${messageId}`)
   },
 
   // 标记消息为已读
   markAsRead(messageId: number) {
-    return http.put(`/plugin/api/system-message/user/markRead/${messageId}`)
+    return http.put(`/admin/system-message/user/markRead/${messageId}`)
   },
 
   // 批量标记消息为已读
   batchMarkAsRead(messageIds: number[]) {
-    return http.put('/plugin/api/system-message/user/batchMarkRead', {
+    return http.put('/admin/system-message/user/batchMarkRead', {
       message_ids: messageIds
     })
   },
 
   // 标记所有消息为已读
   markAllAsRead() {
-    return http.put('/plugin/api/system-message/user/markAllRead')
+    return http.put('/admin/system-message/user/markAllRead')
   },
 
   // 删除用户消息
   delete(messageId: number) {
-    return http.delete(`/plugin/api/system-message/user/delete/${messageId}`)
+    return http.delete(`/admin/system-message/user/delete/${messageId}`)
   },
 
   // 批量删除用户消息
   batchDelete(messageIds: number[]) {
-    return http.delete('/plugin/api/system-message/user/batchDelete', {
+    return http.delete('/admin/system-message/user/batchDelete', {
       data: { message_ids: messageIds }
     })
   },
 
   // 获取未读消息数量
   getUnreadCount() {
-    return http.get('/plugin/api/system-message/user/unreadCount')
+    return http.get('/admin/system-message/user/unreadCount')
   },
 
   // 获取消息类型统计
   getTypeStats() {
-    return http.get('/plugin/api/system-message/user/typeStats')
+    return http.get('/admin/system-message/user/typeStats')
   },
 
   // 搜索用户消息
   search(keyword: string, params: Omit<UserMessageListParams, 'keyword'> = {}) {
-    return http.get('/plugin/api/system-message/user/search', {
+    return http.get('/admin/system-message/user/search', {
       params: { keyword, ...params }
     })
   }
@@ -220,11 +220,11 @@ export const messageUserApi = {
 export const messagePublicApi = {
   // 获取消息类型列表
   getMessageTypes() {
-    return http.get('/plugin/api/system-message/public/message-types')
+    return http.get('/admin/system-message/public/message-types')
   },
 
   // 获取收件人类型列表
   getRecipientTypes() {
-    return http.get('/plugin/api/system-message/public/recipient-types')
+    return http.get('/admin/system-message/public/recipient-types')
   }
 }
