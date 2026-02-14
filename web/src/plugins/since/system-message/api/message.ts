@@ -80,39 +80,39 @@ export interface UpdateMessageData extends Partial<CreateMessageData> {}
 export const messageAdminApi = {
   // 获取消息列表
   getList(params: MessageListParams = {}) {
-    return http.get('/plugin/admin/system-message/index', { params })
+    return http.get('/admin/system-message/index', { params })
   },
 
   // 获取消息详情
   getDetail(id: number) {
-    return http.get(`/plugin/admin/system-message/read/${id}`)
+    return http.get(`/admin/system-message/read/${id}`)
   },
 
   // 创建消息
   create(data: CreateMessageData) {
-    return http.post('/plugin/admin/system-message/save', data)
+    return http.post('/admin/system-message/save', data)
   },
 
   // 更新消息
   update(id: number, data: UpdateMessageData) {
-    return http.put(`/plugin/admin/system-message/update/${id}`, data)
+    return http.put(`/admin/system-message/update/${id}`, data)
   },
 
   // 删除消息
   delete(id: number) {
-    return http.delete('/plugin/admin/system-message/delete', {
+    return http.delete('/admin/system-message/delete', {
       data: { ids: [id] }
     })
   },
 
   // 发送消息
   send(id: number) {
-    return http.post('/plugin/admin/system-message/send', { id })
+    return http.post('/admin/system-message/send', { id })
   },
 
   // 调度消息
   schedule(id: number, scheduledAt: string) {
-    return http.post('/plugin/admin/system-message/schedule', {
+    return http.post('/admin/system-message/schedule', {
       id,
       scheduled_at: scheduledAt
     })
@@ -120,38 +120,38 @@ export const messageAdminApi = {
 
   // 批量删除消息
   batchDelete(ids: number[]) {
-    return http.delete('/plugin/admin/system-message/delete', {
+    return http.delete('/admin/system-message/delete', {
       data: { ids }
     })
   },
 
   // 批量发送消息
   batchSend(ids: number[]) {
-    return http.post('/plugin/admin/system-message/batchSend', { ids })
+    return http.post('/admin/system-message/batchSend', { ids })
   },
 
   // 搜索消息
   search(keyword: string, params: Omit<MessageListParams, 'keyword'> = {}) {
-    return http.get('/plugin/admin/system-message/search', {
+    return http.get('/admin/system-message/search', {
       params: { keyword, ...params }
     })
   },
 
   // 获取消息统计
   getStatistics() {
-    return http.get('/plugin/admin/system-message/statistics')
+    return http.get('/admin/system-message/statistics')
   },
 
   // 获取热门消息
   getPopular(limit = 10) {
-    return http.get('/plugin/admin/system-message/popular', {
+    return http.get('/admin/system-message/popular', {
       params: { limit }
     })
   },
 
   // 获取最近消息
   getRecent(days = 7, limit = 20) {
-    return http.get('/plugin/admin/system-message/recent', {
+    return http.get('/admin/system-message/recent', {
       params: { days, limit }
     })
   }

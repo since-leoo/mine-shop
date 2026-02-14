@@ -56,7 +56,7 @@
   bind:confirm="onNicknameConfirm"
   bind:cancel="onNicknameCancel"
 >
-  <view class="dialog-input-wrap">
+  <view slot="content" class="dialog-input-wrap">
     <t-input
       value="{{nicknameInput}}"
       placeholder="请输入昵称"
@@ -75,7 +75,7 @@
   bind:confirm="onPhoneConfirm"
   bind:cancel="onPhoneCancel"
 >
-  <view class="dialog-input-wrap">
+  <view slot="content" class="dialog-input-wrap">
     <t-input
       value="{{phoneInput}}"
       type="number"

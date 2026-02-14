@@ -19,14 +19,12 @@ export default function getSearchItems(): MaSearchItem[] {
     {
       label: () => '状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部状态' },
-      renderSlots: {
-        default: () => [
-          <el-option label="启用" value="active" />,
-          <el-option label="停用" value="inactive" />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部状态">
+          <el-option label="启用" value="active" />
+          <el-option label="停用" value="inactive" />
+        </el-select>
+      ),
     },
   ]
 }

@@ -5,30 +5,26 @@ export default function getSearchItems(): MaSearchItem[] {
     {
       label: () => '状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部状态' },
-      renderSlots: {
-        default: () => [
-          <el-option label="待审核" value="pending" />,
-          <el-option label="已通过" value="approved" />,
-          <el-option label="已拒绝" value="rejected" />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部状态">
+          <el-option label="待审核" value="pending" />
+          <el-option label="已通过" value="approved" />
+          <el-option label="已拒绝" value="rejected" />
+        </el-select>
+      ),
     },
     {
       label: () => '评分',
       prop: 'rating',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部评分' },
-      renderSlots: {
-        default: () => [
-          <el-option label="5星" value={5} />,
-          <el-option label="4星" value={4} />,
-          <el-option label="3星" value={3} />,
-          <el-option label="2星" value={2} />,
-          <el-option label="1星" value={1} />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部评分">
+          <el-option label="5星" value={5} />
+          <el-option label="4星" value={4} />
+          <el-option label="3星" value={3} />
+          <el-option label="2星" value={2} />
+          <el-option label="1星" value={1} />
+        </el-select>
+      ),
     },
     {
       label: () => '商品名称',

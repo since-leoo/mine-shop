@@ -61,6 +61,16 @@ mallMenu:
     orderRead: Order Detail
     orderCreate: Create Order
     orderUpdate: Update Order
+    groupBuyOrder: Group Buy Orders
+    groupBuyOrderList: Group Buy Order List
+    seckillOrder: Flash Sale Orders
+    seckillOrderList: Flash Sale Order List
+    review: Review Management
+    reviewList: Review List
+    reviewRead: Review Detail
+    reviewApprove: Approve Review
+    reviewReject: Reject Review
+    reviewReply: Reply Review
     config: Mall Settings
     productSetting: Product & Inventory
     orderSetting: Orders & After-sales

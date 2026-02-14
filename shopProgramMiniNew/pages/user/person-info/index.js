@@ -1,5 +1,4 @@
 import { fetchPerson, updateProfile, uploadImage } from '../../../services/usercenter/fetchPerson';
-import { bindPhoneNumber } from '../../../services/usercenter/authorizeProfile';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 Page({
@@ -43,10 +42,9 @@ Page({
   },
 
   // ========== 头像 ==========
-  // 无头像 → 直接微信授权; 有头像 → 弹出选择面板
   onChooseAvatar() {
     if (!this.data.personInfo.avatarUrl) {
-      this.authorizeWechatProfile();
+      this.chooseWechatAvatar();
     } else {
       this.setData({ showAvatarSheet: true });
     }
@@ -61,7 +59,7 @@ Page({
     if (e.detail.index === 0) {
       this.chooseImageFromAlbum();
     } else {
-      this.authorizeWechatProfile();
+      this.chooseWechatAvatar();
     }
   },
 
@@ -90,35 +88,34 @@ Page({
     });
   },
 
-  // 微信授权获取头像+昵称(一次性获取)
-  authorizeWechatProfile() {
-    wx.getUserProfile({
-      desc: '用于完善个人资料',
+  // 微信头像选择（使用 chooseAvatar 能力）
+  chooseWechatAvatar() {
+    wx.chooseMedia({
+      count: 1,
+      mediaType: ['image'],
+      sourceType: ['album', 'camera'],
       success: (res) => {
-        const { avatarUrl, nickName } = res.userInfo || {};
-        const updates = {};
-        if (avatarUrl) updates['personInfo.avatarUrl'] = avatarUrl;
-        if (nickName) updates['personInfo.nickName'] = nickName;
-        if (Object.keys(updates).length) {
-          this.setData(updates);
-          Toast({ context: this, selector: '#t-toast', message: '授权成功', theme: 'success' });
-        }
+        const tempFilePath = res.tempFiles[0].tempFilePath;
+        Toast({ context: this, selector: '#t-toast', message: '上传中...', theme: 'loading', duration: 0 });
+        uploadImage(tempFilePath)
+          .then((url) => {
+            this.setData({ 'personInfo.avatarUrl': url });
+            Toast({ context: this, selector: '#t-toast', message: '头像已更新', theme: 'success' });
+          })
+          .catch((err) => {
+            Toast({ context: this, selector: '#t-toast', message: err.msg || '上传失败', theme: 'error' });
+          });
       },
       fail: () => {},
     });
   },
 
   // ========== 昵称 ==========
-  // 无昵称 → 微信授权; 有昵称 → 弹编辑框
   onEditNickname() {
-    if (!this.data.personInfo.nickName) {
-      this.authorizeWechatProfile();
-    } else {
-      this.setData({
-        showNicknameDialog: true,
-        nicknameInput: this.data.personInfo.nickName,
-      });
-    }
+    this.setData({
+      showNicknameDialog: true,
+      nicknameInput: this.data.personInfo.nickName || '',
+    });
   },
 
   onNicknameInput(e) {
@@ -154,25 +151,10 @@ Page({
   },
 
   // ========== 手机号 ==========
-  // 无手机号 → 微信授权获取手机号; 有手机号 → 弹编辑框
   onEditPhone() {
-    if (!this.data.personInfo.phoneNumber) {
-      this.authorizeWechatPhone();
-    } else {
-      this.setData({
-        showPhoneDialog: true,
-        phoneInput: this.data.personInfo.phoneNumber,
-      });
-    }
-  },
-
-  authorizeWechatPhone() {
-    // 微信获取手机号需要 button open-type="getPhoneNumber"
-    // 这里用 wx.showModal 引导用户
-    wx.showModal({
-      title: '绑定手机号',
-      content: '请在个人中心使用微信授权绑定手机号',
-      showCancel: false,
+    this.setData({
+      showPhoneDialog: true,
+      phoneInput: this.data.personInfo.phoneNumber || '',
     });
   },
 

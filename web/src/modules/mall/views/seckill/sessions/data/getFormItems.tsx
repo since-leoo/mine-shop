@@ -36,16 +36,14 @@ export default function getFormItems(
     {
       label: () => '场次状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { placeholder: '请选择状态' },
-      renderSlots: {
-        default: () => [
-          <el-option label="待开始" value="pending" />,
-          <el-option label="进行中" value="active" />,
-          <el-option label="已结束" value="ended" />,
-          <el-option label="已取消" value="cancelled" />,
-        ],
-      },
+      render: () => (
+        <el-select placeholder="请选择状态">
+          <el-option label="待开始" value="pending" />
+          <el-option label="进行中" value="active" />
+          <el-option label="已结束" value="ended" />
+          <el-option label="已取消" value="cancelled" />
+        </el-select>
+      ),
     },
     {
       label: () => '每人限购',

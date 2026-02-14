@@ -19,28 +19,24 @@ export default function getSearchItems(): MaSearchItem[] {
     {
       label: () => '状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部状态' },
-      renderSlots: {
-        default: () => [
-          <el-option label="待开始" value="pending" />,
-          <el-option label="进行中" value="active" />,
-          <el-option label="已结束" value="ended" />,
-          <el-option label="已取消" value="cancelled" />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部状态">
+          <el-option label="待开始" value="pending" />
+          <el-option label="进行中" value="active" />
+          <el-option label="已结束" value="ended" />
+          <el-option label="已取消" value="cancelled" />
+        </el-select>
+      ),
     },
     {
       label: () => '启用状态',
       prop: 'is_enabled',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部' },
-      renderSlots: {
-        default: () => [
-          <el-option label="启用" value={true} />,
-          <el-option label="禁用" value={false} />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部">
+          <el-option label="启用" value={true} />
+          <el-option label="禁用" value={false} />
+        </el-select>
+      ),
     },
   ]
 }

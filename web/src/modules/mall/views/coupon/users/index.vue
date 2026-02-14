@@ -61,15 +61,13 @@ const schema = ref<MaProTableSchema>({
     {
       label: () => '状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { placeholder: '请选择' },
-      renderSlots: {
-        default: () => [
-          <el-option label="未使用" value="unused" />,
-          <el-option label="已使用" value="used" />,
-          <el-option label="已过期" value="expired" />,
-        ],
-      },
+      render: () => (
+        <el-select placeholder="请选择">
+          <el-option label="未使用" value="unused" />
+          <el-option label="已使用" value="used" />
+          <el-option label="已过期" value="expired" />
+        </el-select>
+      ),
     },
   ],
   tableColumns: [

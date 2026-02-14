@@ -61,6 +61,16 @@ mallMenu:
     orderRead: 訂單詳情
     orderCreate: 訂單新增
     orderUpdate: 訂單更新
+    groupBuyOrder: 拼團訂單
+    groupBuyOrderList: 拼團訂單列表
+    seckillOrder: 秒殺訂單
+    seckillOrderList: 秒殺訂單列表
+    review: 評價管理
+    reviewList: 評價列表
+    reviewRead: 評價詳情
+    reviewApprove: 評價審核通過
+    reviewReject: 評價審核拒絕
+    reviewReply: 評價回覆
     config: 商城設定
     productSetting: 商品與庫存
     orderSetting: 訂單與售後

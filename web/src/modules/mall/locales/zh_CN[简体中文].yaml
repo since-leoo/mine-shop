@@ -61,6 +61,16 @@ mallMenu:
     orderRead: 订单详情
     orderCreate: 订单新增
     orderUpdate: 订单更新
+    groupBuyOrder: 拼团订单
+    groupBuyOrderList: 拼团订单列表
+    seckillOrder: 秒杀订单
+    seckillOrderList: 秒杀订单列表
+    review: 评价管理
+    reviewList: 评价列表
+    reviewRead: 评价详情
+    reviewApprove: 评价审核通过
+    reviewReject: 评价审核拒绝
+    reviewReply: 评价回复
     config: 商城配置
     productSetting: 商品与库存
     orderSetting: 订单与售后

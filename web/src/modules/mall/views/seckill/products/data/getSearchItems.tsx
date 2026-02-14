@@ -13,14 +13,12 @@ export default function getSearchItems(): MaSearchItem[] {
     {
       label: () => '启用状态',
       prop: 'is_enabled',
-      render: 'select',
-      renderProps: { clearable: true, placeholder: '全部' },
-      renderSlots: {
-        default: () => [
-          <el-option label="启用" value={true} />,
-          <el-option label="禁用" value={false} />,
-        ],
-      },
+      render: () => (
+        <el-select clearable placeholder="全部">
+          <el-option label="启用" value={true} />
+          <el-option label="禁用" value={false} />
+        </el-select>
+      ),
     },
   ]
 }

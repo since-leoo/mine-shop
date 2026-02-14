@@ -20,26 +20,22 @@ export default function getSearchItems(): MaSearchItem[] {
     {
       label: () => '优惠类型',
       prop: 'type',
-      render: 'select',
-      renderProps: { placeholder: '请选择类型' },
-      renderSlots: {
-        default: () => [
-          <el-option label="满减" value="fixed" />,
-          <el-option label="折扣" value="percent" />,
-        ],
-      },
+      render: () => (
+        <el-select placeholder="请选择类型">
+          <el-option label="满减" value="fixed" />
+          <el-option label="折扣" value="percent" />
+        </el-select>
+      ),
     },
     {
       label: () => '状态',
       prop: 'status',
-      render: 'select',
-      renderProps: { placeholder: '请选择状态' },
-      renderSlots: {
-        default: () => [
-          <el-option label="启用" value="active" />,
-          <el-option label="停用" value="inactive" />,
-        ],
-      },
+      render: () => (
+        <el-select placeholder="请选择状态">
+          <el-option label="启用" value="active" />
+          <el-option label="停用" value="inactive" />
+        </el-select>
+      ),
     },
   ]
 }
