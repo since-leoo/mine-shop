@@ -12,7 +12,7 @@
 .user-center-card__header {
   margin-top: 192rpx;
   margin-bottom: 48rpx;
-  height: 96rpx;
+  min-height: 96rpx;
   line-height: 48rpx;
   display: flex;
   justify-content: flex-start;
@@ -25,8 +25,16 @@
   height: 96rpx;
   border-radius: 48rpx;
   overflow: hidden;
+  flex-shrink: 0;
 }
-
+.user-center-card__header__info {
+  flex: 1;
+  margin-left: 24rpx;
+  margin-right: 16rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .user-center-card__header__name {
   font-size: 36rpx;
   line-height: 48rpx;
@@ -34,6 +42,27 @@
   font-weight: bold;
   margin-left: 24rpx;
   margin-right: 16rpx;
+}
+.user-center-card__header__info .user-center-card__header__name {
+  margin-left: 0;
+  margin-right: 0;
+}
+.user-center-card__header__invite-code {
+  font-size: 24rpx;
+  line-height: 36rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+.user-center-card__header__qrcode {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16rpx;
+  position: relative;
+  z-index: 2;
 }
 .user-center-card__header__transparent {
   position: absolute;

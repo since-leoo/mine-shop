@@ -105,6 +105,44 @@ final class MemberRepository extends IRepository
         return $member ? MemberMapper::fromModel($member) : null;
     }
 
+    public function findByInviteCode(string $inviteCode): ?MemberEntity
+    {
+        /** @var null|Member $member */
+        $member = $this->getQuery()->where('invite_code', $inviteCode)->first();
+        return $member ? MemberMapper::fromModel($member) : null;
+    }
+
+    /**
+     * 查询指定会员的直接下级（分页）.
+     *
+     * @return array{list: array, total: int}
+     */
+    public function referralPage(int $memberId, int $page = 1, int $pageSize = 10): array
+    {
+        $paginator = $this->getQuery()
+            ->where('referrer_id', $memberId)
+            ->orderByDesc('id')
+            ->paginate(perPage: $pageSize, page: $page);
+
+        return [
+            'list' => collect($paginator->items())->map(static fn (Member $m) => [
+                'id' => $m->id,
+                'nickname' => $m->nickname,
+                'avatar' => $m->avatar,
+                'created_at' => $m->created_at?->toDateTimeString(),
+            ])->toArray(),
+            'total' => $paginator->total(),
+        ];
+    }
+
+    /**
+     * 查询指定会员的直接下级数量.
+     */
+    public function referralCount(int $memberId): int
+    {
+        return $this->getQuery()->where('referrer_id', $memberId)->count();
+    }
+
     public function save(MemberEntity $entity): Member
     {
         return $this->model->newQuery()->create($entity->toArray());

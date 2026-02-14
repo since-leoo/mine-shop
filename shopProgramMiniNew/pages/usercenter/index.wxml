@@ -6,6 +6,7 @@
   avatar-class="customer-avatar-class"
   currAuthStep="{{currAuthStep}}"
   bind:gotoUserEditPage="gotoUserEditPage"
+  bind:tapQrCode="onTapQrCode"
 />
 <view class="content-wrapper">
   <view class="order-group-wrapper">

@@ -10,7 +10,13 @@
   <block wx:if="{{currAuthStep === AuthStepType.TWO}}">
     <view class="user-center-card__header">
       <t-avatar image="{{userInfo.avatarUrl || defaultAvatarUrl}}" class="user-center-card__header__avatar" />
-      <view class="user-center-card__header__name">{{userInfo.nickName || '微信用户'}}</view>
+      <view class="user-center-card__header__info">
+        <view class="user-center-card__header__name">{{userInfo.nickName || '微信用户'}}</view>
+        <view class="user-center-card__header__invite-code" wx:if="{{userInfo.inviteCode}}">邀请码: {{userInfo.inviteCode}}</view>
+      </view>
+      <view class="user-center-card__header__qrcode" wx:if="{{userInfo.inviteCode}}" bind:tap="onTapQrCode">
+        <t-icon name="qrcode" size="48rpx" color="#666" />
+      </view>
       <!-- 需要授权用户信息，通过slot添加弹窗 -->
       <view class="user-center-card__header__transparent" wx:if="{{isNeedGetUserInfo}}">
         <slot name="getUserInfo" />
@@ -28,7 +34,13 @@
         class="user-center-card__header__avatar"
         image="{{userInfo.avatarUrl || defaultAvatarUrl}}"
       />
-      <view class="user-center-card__header__name">{{userInfo.nickName || '微信用户'}}</view>
+      <view class="user-center-card__header__info">
+        <view class="user-center-card__header__name">{{userInfo.nickName || '微信用户'}}</view>
+        <view class="user-center-card__header__invite-code" wx:if="{{userInfo.inviteCode}}">邀请码: {{userInfo.inviteCode}}</view>
+      </view>
+      <view class="user-center-card__header__qrcode" wx:if="{{userInfo.inviteCode}}" catchtap="onTapQrCode">
+        <t-icon name="qrcode" size="48rpx" color="#666" />
+      </view>
     </view>
   </block>
 </view>

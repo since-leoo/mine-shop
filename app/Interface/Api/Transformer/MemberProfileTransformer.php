@@ -37,6 +37,7 @@ final class MemberProfileTransformer
             'balance' => (int) ($member['wallet']['balance'] ?? 0),
             'points' => (int) ($member['points_wallet']['balance'] ?? 0),
             'authorized_profile' => ($nickname !== '' && $nickname !== '微信用户' && $avatar !== null && $avatar !== ''),
+            'invite_code' => $member['invite_code'] ?? '',
         ];
     }
 }

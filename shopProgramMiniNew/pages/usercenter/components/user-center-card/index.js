@@ -30,5 +30,8 @@ Component({
     gotoUserEditPage() {
       this.triggerEvent('gotoUserEditPage');
     },
+    onTapQrCode() {
+      this.triggerEvent('tapQrCode');
+    },
   },
 });

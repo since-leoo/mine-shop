@@ -20,5 +20,6 @@ final class MemberRegistered
     public function __construct(
         public readonly int $memberId,
         public readonly string $source,
+        public readonly ?int $referrerId = null,
     ) {}
 }

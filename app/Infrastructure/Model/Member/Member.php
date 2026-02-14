@@ -15,6 +15,7 @@ namespace App\Infrastructure\Model\Member;
 use App\Infrastructure\Model\Concerns\LoadsRelations;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Collection as ModelCollection;
+use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\BelongsToMany;
 use Hyperf\Database\Model\Relations\HasMany;
@@ -46,6 +47,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $status
  * @property string $source
  * @property null|string $remark
+ * @property null|string $invite_code
+ * @property null|int $referrer_id
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -79,6 +82,8 @@ class Member extends Model
         'status',
         'source',
         'remark',
+        'invite_code',
+        'referrer_id',
     ];
 
     protected array $casts = [
@@ -87,6 +92,7 @@ class Member extends Model
         'level_id' => 'integer',
         'total_orders' => 'integer',
         'total_amount' => 'integer',
+        'referrer_id' => 'integer',
         'last_login_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -97,6 +103,29 @@ class Member extends Model
         'points_total',
         'level_info',
     ];
+
+    public function creating(Creating $event)
+    {
+        if (empty($this->invite_code)) {
+            $this->invite_code = self::generateUniqueInviteCode();
+        }
+    }
+
+    /**
+     * 邀请人.
+     */
+    public function referrer(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'referrer_id', 'id');
+    }
+
+    /**
+     * 直接下级（被邀请人列表）.
+     */
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referrer_id', 'id');
+    }
 
     public function addresses(): HasMany
     {
@@ -240,5 +269,14 @@ class Member extends Model
         }
 
         return null;
+    }
+
+    private static function generateUniqueInviteCode(): string
+    {
+        do {
+            $code = strtoupper(substr(md5(uniqid((string) mt_rand(), true)), 0, 8));
+        } while (self::where('invite_code', $code)->exists());
+
+        return $code;
     }
 }

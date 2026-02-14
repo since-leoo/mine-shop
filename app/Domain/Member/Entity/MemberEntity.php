@@ -64,6 +64,10 @@ final class MemberEntity
 
     private ?string $remark = null;
 
+    private ?string $inviteCode = null;
+
+    private ?int $referrerId = null;
+
     private ?Carbon $lastLoginAt;
 
     private string $lastLoginIp = '';
@@ -377,6 +381,28 @@ final class MemberEntity
         $this->markDirty('remark');
     }
 
+    public function getInviteCode(): ?string
+    {
+        return $this->inviteCode;
+    }
+
+    public function setInviteCode(?string $inviteCode): void
+    {
+        $this->inviteCode = $inviteCode;
+        $this->markDirty('invite_code');
+    }
+
+    public function getReferrerId(): ?int
+    {
+        return $this->referrerId;
+    }
+
+    public function setReferrerId(?int $referrerId): void
+    {
+        $this->referrerId = $referrerId;
+        $this->markDirty('referrer_id');
+    }
+
     public function setLastLoginAt(Carbon $now)
     {
         $this->lastLoginAt = $now;
@@ -509,6 +535,8 @@ final class MemberEntity
                 'status' => $this->status,
                 'source' => $this->source,
                 'remark' => $this->remark,
+                'invite_code' => $this->inviteCode,
+                'referrer_id' => $this->referrerId,
                 'last_login_at' => $this->lastLoginAt?->toDateTimeString(),
                 'last_login_ip' => $this->lastLoginIp,
                 default => null,

@@ -14,6 +14,7 @@ namespace App\Application\Api\Member;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Member\Api\Query\DomainApiMemberQueryService;
+use App\Domain\Member\Service\DomainMemberReferralService;
 use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
@@ -26,6 +27,7 @@ final class AppApiMemberCenterQueryService
         private readonly DomainApiOrderQueryService $orderQueryService,
         private readonly DomainApiCouponUserQueryService $couponUserQueryService,
         private readonly DomainMallSettingService $mallSettingService,
+        private readonly DomainMemberReferralService $referralService,
     ) {}
 
     /**
@@ -42,7 +44,7 @@ final class AppApiMemberCenterQueryService
     }
 
     /**
-     * @return array{member: array, orderCounts: array, couponCount: int, servicePhone: string}
+     * @return array{member: array, orderCounts: array, couponCount: int, servicePhone: string, referralCount: int}
      */
     public function overview(int $memberId): array
     {
@@ -50,12 +52,14 @@ final class AppApiMemberCenterQueryService
         $orderCounts = $this->orderQueryService->countByMemberStatuses($memberId);
         $couponCount = $this->couponUserQueryService->countByMember($memberId, 'unused');
         $servicePhone = $this->mallSettingService->order()->customerServicePhone();
+        $referralCount = $this->referralService->referralCount($memberId);
 
         return [
             'member' => $member,
             'orderCounts' => $orderCounts,
             'couponCount' => $couponCount,
             'servicePhone' => $servicePhone,
+            'referralCount' => $referralCount,
         ];
     }
 }

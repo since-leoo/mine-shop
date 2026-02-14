@@ -19,3 +19,14 @@ export function fetchUserCenter() {
     needAuth: true,
   });
 }
+
+/** 获取邀请小程序码 */
+export function fetchInviteQrCode(page) {
+  const params = page ? { page } : {};
+  return request({
+    url: '/api/v1/member/invite/qrcode',
+    method: 'GET',
+    data: params,
+    needAuth: true,
+  });
+}

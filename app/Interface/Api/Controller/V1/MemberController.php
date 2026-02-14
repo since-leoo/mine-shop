@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1;
 
 use App\Application\Api\Member\AppApiMemberAuthCommandService;
 use App\Application\Api\Member\AppApiMemberCenterQueryService;
+use App\Application\Api\Member\AppApiMemberReferralQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\PhoneAuthorizeRequest;
 use App\Interface\Api\Request\V1\ProfileAuthorizeRequest;
@@ -27,6 +28,7 @@ use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
+use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/member')]
 #[Middleware(TokenMiddleware::class)]
@@ -37,7 +39,9 @@ final class MemberController extends AbstractController
         private readonly MemberProfileTransformer $profileTransformer,
         private readonly MemberCenterTransformer $centerTransformer,
         private readonly CurrentMember $currentMember,
-        private readonly AppApiMemberAuthCommandService $memberAuthService
+        private readonly AppApiMemberAuthCommandService $memberAuthService,
+        private readonly AppApiMemberReferralQueryService $referralQueryService,
+        private readonly RequestInterface $request,
     ) {}
 
     #[GetMapping(path: 'profile')]
@@ -57,7 +61,8 @@ final class MemberController extends AbstractController
             $profile,
             $data['orderCounts'],
             $data['couponCount'],
-            $data['servicePhone']
+            $data['servicePhone'],
+            $data['referralCount'] ?? 0
         );
 
         return $this->success($overview, '获取成功');
@@ -83,5 +88,13 @@ final class MemberController extends AbstractController
     {
         $this->memberAuthService->updateProfile($this->currentMember->id(), $request->toDto());
         return $this->success([], '资料修改成功');
+    }
+
+    #[GetMapping(path: 'invite/qrcode')]
+    public function inviteQrCode(): Result
+    {
+        $page = $this->request->input('page', 'pages/home/home');
+        $result = $this->referralQueryService->generateInviteQrCode($this->currentMember->id(), $page);
+        return $this->success($result, '获取成功');
     }
 }

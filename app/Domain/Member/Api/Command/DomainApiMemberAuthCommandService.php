@@ -44,7 +44,8 @@ final class DomainApiMemberAuthCommandService
         ?string $encryptedData = null,
         ?string $iv = null,
         ?string $ip = null,
-        ?string $manualOpenid = null
+        ?string $manualOpenid = null,
+        ?string $inviteCode = null
     ): MemberEntity {
         if (! empty($encryptedData) && ! empty($iv)) {
             $payload = $this->miniApp->performSilentLogin($code, $encryptedData, $iv);
@@ -64,11 +65,22 @@ final class DomainApiMemberAuthCommandService
             $memberEntity = MemberMapper::fromMiniProfile($payload);
             $memberEntity->setLastLoginAt(Carbon::now());
             $memberEntity->setLastLoginIp($ip ?? '');
+
+            // 绑定邀请人
+            $referrerId = null;
+            if (! empty($inviteCode)) {
+                $referrer = $this->memberRepository->findByInviteCode($inviteCode);
+                if ($referrer) {
+                    $referrerId = $referrer->getId();
+                    $memberEntity->setReferrerId($referrerId);
+                }
+            }
+
             $model = $this->memberRepository->save($memberEntity);
             $memberEntity->setId($model->id);
 
             // 派发会员注册事件（触发注册赠送积分等后续流程）
-            event(new MemberRegistered(memberId: $model->id, source: 'mini_program'));
+            event(new MemberRegistered(memberId: $model->id, source: 'mini_program', referrerId: $referrerId));
         } else {
             $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
             $memberEntity->setSource('mini_program');

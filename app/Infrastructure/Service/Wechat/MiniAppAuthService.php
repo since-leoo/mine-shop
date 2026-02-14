@@ -41,4 +41,32 @@ final class MiniAppAuthService
     {
         return $this->miniApp->getPhoneNumber($code);
     }
+
+    /**
+     * 获取小程序码.
+     *
+     * @return array{path?: string, name?: string, msg: string}
+     */
+    public function getWxaCode(string $page, string $scene, array $options = []): array
+    {
+        // 确保二维码保存目录存在
+        $savePath = $options['save_path'] ?? '/uploadfile/wechat/mini/qrcode/';
+        $dir = BASE_PATH . '/public' . $savePath;
+        if (! is_dir($dir)) {
+            mkdir($dir, 0755, true);
+        }
+
+        try {
+            $result = $this->miniApp->getLimitedWxaCode($page, $scene, false, $options);
+        } catch (\Throwable $e) {
+            return ['path' => '', 'msg' => '获取小程序码失败: ' . $e->getMessage()];
+        }
+
+        // 修正返回的 path 为可访问的相对路径
+        if (! empty($result['name']) && file_exists($result['name'])) {
+            $result['path'] = $savePath . basename($result['name']);
+        }
+
+        return $result;
+    }
 }

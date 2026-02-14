@@ -51,6 +51,8 @@ final class MemberMapper
         $entity->setStatus($member->status);
         $entity->setSource($member->source);
         $entity->setRemark($member->remark);
+        $entity->setInviteCode($member->invite_code);
+        $entity->setReferrerId($member->referrer_id);
         $entity->clearDirty();
 
         return $entity;

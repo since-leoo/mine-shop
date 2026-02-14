@@ -34,6 +34,7 @@ return [
             'domain' => env('OSS_DOMAIN', ''),
             'schema' => env('OSS_SCHEMA', 'https://'),
             'isCName' => false,
+            'public_url' => env('OSS_DOMAIN', ''),
             // 'timeout'        => 3600,
             // 'connectTimeout' => 10,
             // 'token'          => '',
@@ -45,6 +46,7 @@ return [
             'bucket' => env('QINIU_BUCKET', ''),
             'domain' => env('QINIU_DOMAIN', ''),
             'schema' => 'http://',
+            'public_url' => env('QINIU_DOMAIN', ''),
         ],
         'cos' => [
             'driver' => CosAdapterFactory::class,

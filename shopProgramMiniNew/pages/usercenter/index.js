@@ -1,4 +1,4 @@
-import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
+import { fetchUserCenter, fetchInviteQrCode } from '../../services/usercenter/fetchUsercenter';
 import Toast from 'tdesign-miniprogram/toast/index';
 
 const menuData = [
@@ -225,6 +225,35 @@ Page({
     } else {
       this.fetUseriInfoHandle();
     }
+  },
+
+  onTapQrCode() {
+    wx.showLoading({ title: '生成中...' });
+    fetchInviteQrCode()
+      .then((res) => {
+        wx.hideLoading();
+        if (res.path) {
+          wx.previewImage({ urls: [res.path], current: res.path });
+        } else {
+          Toast({
+            context: this,
+            selector: '#t-toast',
+            message: res.msg || '生成失败',
+            icon: '',
+            duration: 1500,
+          });
+        }
+      })
+      .catch(() => {
+        wx.hideLoading();
+        Toast({
+          context: this,
+          selector: '#t-toast',
+          message: '获取小程序码失败',
+          icon: '',
+          duration: 1500,
+        });
+      });
   },
 
   getVersionInfo() {

@@ -32,9 +32,9 @@ final class AppApiMemberAuthCommandService
      *
      * @return array{token: string, refresh_token: string, expires_in: int, member: array<string, mixed>}
      */
-    public function miniProgramLogin(string $code, ?string $encryptedData = null, ?string $iv = null, ?string $ip = null, ?string $openid = null): array
+    public function miniProgramLogin(string $code, ?string $encryptedData = null, ?string $iv = null, ?string $ip = null, ?string $openid = null, ?string $inviteCode = null): array
     {
-        $member = $this->authCommandService->miniProgramLogin($code, $encryptedData, $iv, $ip, $openid);
+        $member = $this->authCommandService->miniProgramLogin($code, $encryptedData, $iv, $ip, $openid, $inviteCode);
         $tokenService = $this->tokenService->using('api');
 
         return [

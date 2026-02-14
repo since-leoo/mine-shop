@@ -17,7 +17,7 @@ final class MemberCenterTransformer
     /**
      * @return array<string, mixed>
      */
-    public function transform(array $profile, array $orderCounts, int $couponCount, string $servicePhone): array
+    public function transform(array $profile, array $orderCounts, int $couponCount, string $servicePhone, int $referralCount = 0): array
     {
         [$pending, $paid, $shipped, $completed, $afterSale] = $orderCounts;
         $orderTagInfos = [
@@ -68,6 +68,7 @@ final class MemberCenterTransformer
                 'authorizedProfile' => $profile['authorized_profile'] ?? false,
                 'balance' => $profile['balance'] ?? 0,
                 'points' => $profile['points'] ?? 0,
+                'inviteCode' => $profile['invite_code'] ?? '',
             ],
             'countsData' => [
                 [
@@ -91,6 +92,7 @@ final class MemberCenterTransformer
                 'servicePhone' => $servicePhone,
                 'serviceTimeDuration' => '每日 09:00-21:00',
             ],
+            'referralCount' => $referralCount,
         ];
     }
 }
