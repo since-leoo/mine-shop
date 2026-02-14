@@ -13,7 +13,10 @@ use App\Domain\Catalog\Product\Listener\ProductSkuStockListener;
 use App\Domain\Catalog\Product\Listener\ProductSnapshotListener;
 use App\Domain\Catalog\Product\Listener\ProductStockWarningListener;
 use App\Domain\Infrastructure\Attachment\Listener\UploadSubscriber;
+use App\Domain\Member\Listener\LevelUpgradeListener;
+use App\Domain\Member\Listener\PurchaseRewardListener;
 use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
+use App\Domain\Member\Listener\RegisterPointsListener;
 use App\Domain\Trade\Order\Listener\OrderCreatedListener;
 use App\Domain\Trade\Order\Listener\OrderStatusNotifyListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
@@ -48,6 +51,12 @@ return [
     OrderStatusNotifyListener::class,
     // 会员账户流水
     RecordMemberBalanceLogListener::class,
+    // 成长值变动 → 等级升降级
+    LevelUpgradeListener::class,
+    // 会员注册 → 赠送积分
+    RegisterPointsListener::class,
+    // 订单支付 → 消费返积分 + 成长值
+    PurchaseRewardListener::class,
     // 订单创建日志
     OrderCreatedListener::class,
     // 商品缓存

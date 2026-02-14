@@ -8,11 +8,14 @@
  */
 import type { MaFormItem } from '@mineadmin/form'
 import type { SeckillSessionVo } from '~/mall/api/seckill'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
   model: SeckillSessionVo,
 ): MaFormItem[] {
+  const { t } = useI18n()
+
   if (formType === 'add') {
     model.is_enabled = true
     model.status = 'pending'
@@ -22,51 +25,51 @@ export default function getFormItems(
 
   return [
     {
-      label: () => '开始时间',
+      label: () => t('mall.common.startTime'),
       prop: 'start_time',
-      render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择开始时间" style="width: 100%" />,
-      itemProps: { rules: [{ required: true, message: '请选择开始时间' }] },
+      render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder={t('mall.seckill.startTimePlaceholder')} style="width: 100%" />,
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.startTimeRequired') }] },
     },
     {
-      label: () => '结束时间',
+      label: () => t('mall.common.endTime'),
       prop: 'end_time',
-      render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder="请选择结束时间" style="width: 100%" />,
-      itemProps: { rules: [{ required: true, message: '请选择结束时间' }] },
+      render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder={t('mall.seckill.endTimePlaceholder')} style="width: 100%" />,
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.endTimeRequired') }] },
     },
     {
-      label: () => '场次状态',
+      label: () => t('mall.seckill.sessionStatus'),
       prop: 'status',
       render: () => (
-        <el-select placeholder="请选择状态">
-          <el-option label="待开始" value="pending" />
-          <el-option label="进行中" value="active" />
-          <el-option label="已结束" value="ended" />
-          <el-option label="已取消" value="cancelled" />
+        <el-select placeholder={t('mall.seckill.statusPlaceholder')}>
+          <el-option label={t('mall.activityStatus.pending')} value="pending" />
+          <el-option label={t('mall.activityStatus.active')} value="active" />
+          <el-option label={t('mall.activityStatus.ended')} value="ended" />
+          <el-option label={t('mall.activityStatus.cancelled')} value="cancelled" />
         </el-select>
       ),
     },
     {
-      label: () => '每人限购',
+      label: () => t('mall.seckill.perUserLimit'),
       prop: 'max_quantity_per_user',
       render: 'inputNumber',
-      renderProps: { min: 1, class: 'w-full', placeholder: '请输入每人限购数量' },
+      renderProps: { min: 1, class: 'w-full', placeholder: t('mall.seckill.perUserLimitPlaceholder') },
     },
     {
-      label: () => '排序',
+      label: () => t('mall.seckill.sortOrder'),
       prop: 'sort_order',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full', placeholder: '数值越小越靠前' },
+      renderProps: { min: 0, class: 'w-full', placeholder: t('mall.seckill.sortOrderPlaceholder') },
     },
     {
-      label: () => '启用状态',
+      label: () => t('mall.seckill.enabledStatus'),
       prop: 'is_enabled',
       render: () => <el-switch active-value={true} inactive-value={false} />,
     },
     {
-      label: () => '备注',
+      label: () => t('mall.seckill.remarkLabel'),
       prop: 'remark',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 2, placeholder: '请输入备注', maxlength: 500, showWordLimit: true },
+      renderProps: { type: 'textarea', rows: 2, placeholder: t('mall.seckill.remarkPlaceholder'), maxlength: 500, showWordLimit: true },
     },
   ]
 }

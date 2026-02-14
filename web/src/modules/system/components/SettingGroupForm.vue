@@ -6,7 +6,7 @@
         <div class="hero-label">System Configuration</div>
         <div class="hero-title">{{ computedTitle }}</div>
         <div class="hero-desc">
-          {{ computedDescription || '集中管理商城运行时配置，修改立即生效。' }}
+          {{ computedDescription || t('mall.system.configDesc') }}
         </div>
       </div>
       <div class="hero-actions">
@@ -17,7 +17,7 @@
           :loading="loading"
           @click="handleRefresh"
         >
-          刷新数据
+          {{ t('mall.system.refreshData') }}
         </el-button>
       </div>
     </section>
@@ -26,7 +26,7 @@
       <div v-if="loading" class="skeleton-wrap">
         <el-skeleton :rows="6" animated />
       </div>
-      <el-empty v-else-if="!settings.length" description="暂无配置项" />
+      <el-empty v-else-if="!settings.length" :description="t('mall.system.noConfigItems')" />
       <div v-else class="setting-grid">
         <div
           v-for="item in displaySettings"
@@ -42,7 +42,7 @@
                 </div>
                 <div>
                   <div class="setting-card__title">{{ item.label }}</div>
-                  <div class="setting-card__desc">{{ item.description || '暂无描述' }}</div>
+                  <div class="setting-card__desc">{{ item.description || t('mall.system.noDescription') }}</div>
                 </div>
               </div>
               <div class="setting-card__tags">
@@ -55,13 +55,13 @@
                   type="danger"
                   effect="plain"
                 >
-                  敏感
+                  {{ t('mall.system.sensitive') }}
                 </el-tag>
               </div>
             </div>
         <div class="setting-card__body">
             <div v-if="isStandaloneDialog(item)" class="dialog-card">
-              <p class="dialog-card__desc">{{ item.description || '请点击下方按钮配置' }}</p>
+              <p class="dialog-card__desc">{{ item.description || t('mall.system.clickToConfig') }}</p>
               <el-button type="primary" @click="openDialog(item)">
                 {{ dialogButtonLabel(item) }}
               </el-button>
@@ -70,7 +70,7 @@
             <div v-if="isSelect(item)" class="control-inline">
               <el-select
                 v-model="formValues[item.key]"
-                placeholder="请选择"
+                :placeholder="t('mall.system.selectPlaceholder')"
                 clearable
                 class="w-full"
               >
@@ -157,7 +157,7 @@
                 <el-select
                   v-else-if="getFieldComponent(field) === 'select'"
                   v-model="formValues[item.key][field.key]"
-                  placeholder="请选择"
+                  :placeholder="t('mall.system.selectPlaceholder')"
                   clearable
                   class="w-full"
                 >
@@ -173,12 +173,12 @@
                   v-model="formValues[item.key][field.key]"
                   type="textarea"
                   :rows="field.rows || 3"
-                  :placeholder="field.placeholder || `请输入${field.label}`"
+                  :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                 />
                 <el-input
                   v-else
                   v-model="formValues[item.key][field.key]"
-                  :placeholder="field.placeholder || `请输入${field.label}`"
+                  :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                   :show-password="getFieldComponent(field) === 'password'"
                   :type="getFieldComponent(field) === 'password' ? 'password' : 'text'"
                   clearable
@@ -196,14 +196,14 @@
                 class="collection-form__entry"
               >
                 <div class="collection-form__header">
-                  <div>配置 {{ index + 1 }}</div>
+                  <div>{{ t('mall.system.configN', { n: index + 1 }) }}</div>
                   <el-button
                     text
                     type="danger"
                     :disabled="!canRemoveCollection(item)"
                     @click="removeCollectionRow(item, index)"
                   >
-                    删除
+                    {{ t('mall.system.deleteAction') }}
                   </el-button>
                 </div>
                 <div class="collection-form__fields">
@@ -231,7 +231,7 @@
                     <el-select
                       v-else-if="getFieldComponent(field) === 'select'"
                       v-model="formValues[item.key][index][field.key]"
-                      placeholder="请选择"
+                      :placeholder="t('mall.system.selectPlaceholder')"
                       clearable
                       class="w-full"
                     >
@@ -247,12 +247,12 @@
                       v-model="formValues[item.key][index][field.key]"
                       type="textarea"
                       :rows="field.rows || 3"
-                      :placeholder="field.placeholder || `请输入${field.label}`"
+                      :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                     />
                     <el-input
                       v-else
                       v-model="formValues[item.key][index][field.key]"
-                      :placeholder="field.placeholder || `请输入${field.label}`"
+                      :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                       :show-password="getFieldComponent(field) === 'password'"
                       :type="getFieldComponent(field) === 'password' ? 'password' : 'text'"
                       clearable
@@ -276,7 +276,7 @@
                 >
                   {{ getCollectionAddLabel(item) }}
                 </el-button>
-                <span v-else class="collection-limit-tip">已达到最大配置数量</span>
+                <span v-else class="collection-limit-tip">{{ t('mall.config.maxReached') }}</span>
               </div>
             </div>
 
@@ -307,7 +307,7 @@
               v-model="formValues[item.key]"
               type="textarea"
               :rows="6"
-              placeholder="请输入 JSON 格式"
+              :placeholder="t('mall.system.inputJson')"
             />
 
             <el-input
@@ -315,7 +315,7 @@
               v-model="formValues[item.key]"
               type="textarea"
               :rows="4"
-              placeholder="请输入内容"
+              :placeholder="t('mall.system.inputContent')"
             />
 
             <el-input
@@ -323,7 +323,7 @@
               v-model="formValues[item.key]"
               :show-password="!!item.is_sensitive"
               :type="item.is_sensitive ? 'password' : 'text'"
-              placeholder="请输入配置值"
+              :placeholder="t('mall.system.inputConfigValue')"
               clearable
             />
             <div v-if="jsonErrors[item.key]" class="json-error">
@@ -334,13 +334,13 @@
             <div class="setting-card__footer">
               <div class="setting-card__key">{{ item.key }}</div>
               <div class="setting-card__actions">
-                <el-button text type="primary" @click="handleReset(item)">恢复默认</el-button>
+                <el-button text type="primary" @click="handleReset(item)">{{ t('mall.config.resetDefault') }}</el-button>
                 <el-button
                   type="primary"
                   :loading="savingKey === item.key"
                   @click="handleSave(item)"
                 >
-                  保存
+                  {{ t('mall.system.saveAction') }}
                 </el-button>
               </div>
             </div>
@@ -392,7 +392,7 @@
               <el-select
                 v-else-if="getFieldComponent(field) === 'select'"
                 v-model="formValues[dialogSetting.key][field.key]"
-                placeholder="请选择"
+                :placeholder="t('mall.system.selectPlaceholder')"
                 clearable
                 class="w-full"
               >
@@ -408,12 +408,12 @@
                 v-model="formValues[dialogSetting.key][field.key]"
                 type="textarea"
                 :rows="field.rows || 3"
-                :placeholder="field.placeholder || `请输入${field.label}`"
+                :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
               />
               <el-input
                 v-else
                 v-model="formValues[dialogSetting.key][field.key]"
-                :placeholder="field.placeholder || `请输入${field.label}`"
+                :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                 :show-password="getFieldComponent(field) === 'password'"
                 :type="getFieldComponent(field) === 'password' ? 'password' : 'text'"
                 clearable
@@ -437,14 +437,14 @@
               class="collection-form__entry"
             >
               <div class="collection-form__header">
-                <div>配置 {{ index + 1 }}</div>
+                <div>{{ t('mall.system.configN', { n: index + 1 }) }}</div>
                 <el-button
                   text
                   type="danger"
                   :disabled="!canRemoveCollection(dialogSetting)"
                   @click="removeCollectionRow(dialogSetting, index)"
                 >
-                  删除
+                  {{ t('mall.system.deleteAction') }}
                 </el-button>
               </div>
               <div class="collection-form__fields">
@@ -472,7 +472,7 @@
                   <el-select
                     v-else-if="getFieldComponent(field) === 'select'"
                     v-model="formValues[dialogSetting.key][index][field.key]"
-                    placeholder="请选择"
+                    :placeholder="t('mall.system.selectPlaceholder')"
                     clearable
                     class="w-full"
                   >
@@ -488,12 +488,12 @@
                     v-model="formValues[dialogSetting.key][index][field.key]"
                     type="textarea"
                     :rows="field.rows || 3"
-                    :placeholder="field.placeholder || `请输入${field.label}`"
+                    :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                   />
                   <el-input
                     v-else
                     v-model="formValues[dialogSetting.key][index][field.key]"
-                    :placeholder="field.placeholder || `请输入${field.label}`"
+                    :placeholder="field.placeholder || t('form.pleaseInput', { msg: field.label })"
                     :show-password="getFieldComponent(field) === 'password'"
                     :type="getFieldComponent(field) === 'password' ? 'password' : 'text'"
                     clearable
@@ -517,7 +517,7 @@
               >
                 {{ getCollectionAddLabel(dialogSetting) }}
               </el-button>
-              <span v-else class="collection-limit-tip">已达到最大配置数量</span>
+              <span v-else class="collection-limit-tip">{{ t('mall.config.maxReached') }}</span>
             </div>
           </div>
 
@@ -526,7 +526,7 @@
             v-model="formValues[dialogSetting.key]"
             type="textarea"
             :rows="5"
-            placeholder="请输入内容"
+            :placeholder="t('mall.system.inputContent')"
           />
 
           <el-input
@@ -534,7 +534,7 @@
             v-model="formValues[dialogSetting.key]"
             type="textarea"
             :rows="6"
-            placeholder="请输入 JSON 格式"
+            :placeholder="t('mall.system.inputJson')"
           />
 
           <el-input
@@ -542,7 +542,7 @@
             v-model="formValues[dialogSetting.key]"
             :type="dialogSetting.is_sensitive ? 'password' : 'text'"
             :show-password="!!dialogSetting.is_sensitive"
-            placeholder="请输入配置值"
+            :placeholder="t('mall.system.inputConfigValue')"
             clearable
           />
           <div v-if="jsonErrors[dialogSetting.key]" class="json-error">
@@ -552,14 +552,14 @@
       </div>
       </template>
       <template #footer>
-      <el-button @click="closeDialog">取消</el-button>
+      <el-button @click="closeDialog">{{ t('mall.system.cancelAction') }}</el-button>
       <el-button
         type="primary"
         :disabled="!dialogSetting"
         :loading="dialogSetting && savingKey === dialogSetting.key"
         @click="handleDialogSave"
       >
-        保存
+        {{ t('mall.system.saveAction') }}
       </el-button>
       </template>
     </el-dialog>
@@ -584,6 +584,7 @@ import {
 import type { SystemSettingItem } from '@/modules/system/api/setting'
 import { systemSettingApi } from '@/modules/system/api/setting'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
+import { useI18n } from 'vue-i18n'
 
 interface Props {
   groupKey: string
@@ -618,6 +619,7 @@ interface TagOption {
 
 const props = defineProps<Props>()
 
+const { t } = useI18n()
 const loading = ref(false)
 const settings = ref<SystemSettingItem[]>([])
 const formValues = reactive<Record<string, any>>({})
@@ -660,15 +662,6 @@ const typeIconMap: Record<string, Component> = {
   json: Collection,
 }
 
-const typeLabelMap: Record<string, string> = {
-  string: '文本输入',
-  text: '长文本',
-  integer: '整数数值',
-  decimal: '浮点数值',
-  boolean: '开关',
-  json: '结构化数据',
-}
-
 const typeTagMap: Record<string, 'info' | 'success' | 'warning' | 'danger' | 'primary'> = {
   boolean: 'success',
   integer: 'warning',
@@ -679,7 +672,17 @@ const typeTagMap: Record<string, 'info' | 'success' | 'warning' | 'danger' | 'pr
 }
 
 const resolveIcon = (item: SystemSettingItem) => typeIconMap[item.type] ?? Setting
-const resolveTypeLabel = (type: string) => typeLabelMap[type] ?? '配置项'
+const resolveTypeLabel = (type: string) => {
+  const map: Record<string, string> = {
+    string: t('mall.system.typeString'),
+    text: t('mall.system.typeText'),
+    integer: t('mall.system.typeInteger'),
+    decimal: t('mall.system.typeDecimal'),
+    boolean: t('mall.system.typeBoolean'),
+    json: t('mall.system.typeJson'),
+  }
+  return map[type] ?? t('mall.system.configItem')
+}
 const resolveTagType = (type: string) => typeTagMap[type] ?? 'info'
 
 const fetchMeta = async () => {
@@ -698,7 +701,7 @@ const fetchMeta = async () => {
     }
   }
   catch (error) {
-    console.error('加载配置分组信息失败', error)
+    console.error(t('mall.system.loadGroupFailed'), error)
   }
 }
 
@@ -714,7 +717,7 @@ const loadSettings = async (options: { skipLoading?: boolean } = {}) => {
     initializeForm(normalized)
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载配置项失败')
+    ElMessage.error(error?.message || t('mall.system.loadSettingsFailed'))
   }
   finally {
     if (!options.skipLoading) {
@@ -820,7 +823,7 @@ const dialogButtonLabel = (dialogItem: SystemSettingItem) => {
   if (typeof dialogItem.meta?.button_label === 'string') {
     return dialogItem.meta.button_label
   }
-  return '配置'
+  return t('mall.system.configLabel')
 }
 
 const isDialogTriggerActive = (triggerKey: string, dialogItem: SystemSettingItem) => {
@@ -885,7 +888,7 @@ const normalizeValue = (item: SystemSettingItem) => {
         return currentValue ?? {}
       }
       catch (error: any) {
-        jsonErrors[item.key] = error?.message || 'JSON 解析失败'
+        jsonErrors[item.key] = error?.message || 'JSON parse error'
         throw error
       }
     default:
@@ -899,11 +902,11 @@ const handleSave = async (item: SystemSettingItem) => {
     savingKey.value = item.key
     await systemSettingApi.update(item.key, value)
     item.value = value
-    ElMessage.success('配置已更新')
+    ElMessage.success(t('mall.system.configUpdated'))
   }
   catch (error: any) {
     if (!jsonErrors[item.key]) {
-      ElMessage.error(error?.message || '保存配置失败')
+      ElMessage.error(error?.message || t('mall.system.saveFailed'))
     }
   }
   finally {
@@ -1051,7 +1054,7 @@ const collectStructuredPayload = (item: SystemSettingItem, validate = true) => {
   getStructuredFields(item).forEach((field) => {
     const value = currentValue[field.key]
     if (validate && field.required && isEmptyValue(value, field)) {
-      errorBag[field.key] = `${field.label}不能为空`
+      errorBag[field.key] = `${field.label} ${t('mall.system.fieldRequired')}`
       hasError = true
     }
     else {
@@ -1062,7 +1065,7 @@ const collectStructuredPayload = (item: SystemSettingItem, validate = true) => {
   })
 
   if (validate && hasError) {
-    jsonErrors[item.key] = '请完善必填项'
+    jsonErrors[item.key] = t('mall.system.requiredFields')
     throw new Error(jsonErrors[item.key])
   }
 
@@ -1078,7 +1081,7 @@ const getCollectionMeta = (item: SystemSettingItem): CollectionMeta => {
   const meta = item.meta || {}
   const minItems = Number.isFinite(meta.min_items) ? Number(meta.min_items) : 0
   const maxItems = Number.isFinite(meta.max_items) ? Number(meta.max_items) : Infinity
-  const addLabel = typeof meta.add_label === 'string' ? meta.add_label : '新增一行'
+  const addLabel = typeof meta.add_label === 'string' ? meta.add_label : t('mall.system.addRow')
   return {
     minItems: Math.max(0, minItems),
     maxItems: maxItems <= 0 ? Infinity : maxItems,
@@ -1147,7 +1150,7 @@ const collectCollectionPayload = (item: SystemSettingItem, validate = true) => {
   Object.keys(errorBag).forEach((fieldKey) => delete errorBag[fieldKey])
 
   if (validate && rows.length < meta.minItems) {
-    jsonErrors[item.key] = `请至少保留 ${meta.minItems} 条配置`
+    jsonErrors[item.key] = t('mall.system.minRows', { n: meta.minItems })
     throw new Error(jsonErrors[item.key])
   }
 
@@ -1157,7 +1160,7 @@ const collectCollectionPayload = (item: SystemSettingItem, validate = true) => {
     getStructuredFields(item).forEach((field) => {
       const value = row?.[field.key]
       if (validate && field.required && isEmptyValue(value, field)) {
-        errorBag[`${rowIndex}-${field.key}`] = `${field.label}不能为空`
+        errorBag[`${rowIndex}-${field.key}`] = `${field.label} ${t('mall.system.fieldRequired')}`
         hasError = true
       }
       else {
@@ -1169,7 +1172,7 @@ const collectCollectionPayload = (item: SystemSettingItem, validate = true) => {
   })
 
   if (validate && hasError) {
-    jsonErrors[item.key] = '请完善必填项'
+    jsonErrors[item.key] = t('mall.system.requiredFields')
     throw new Error(jsonErrors[item.key])
   }
 
@@ -1229,7 +1232,7 @@ const getTagOptions = (item: SystemSettingItem): TagOption[] => {
 }
 
 const getTagPlaceholder = (item: SystemSettingItem) => {
-  return typeof item.meta?.placeholder === 'string' ? item.meta.placeholder : '请输入内容后回车'
+  return typeof item.meta?.placeholder === 'string' ? item.meta.placeholder : t('mall.system.inputHintEnter')
 }
 
 const collectTagPayload = (item: SystemSettingItem, validate = true) => {
@@ -1240,7 +1243,7 @@ const collectTagPayload = (item: SystemSettingItem, validate = true) => {
 
   const minItems = Number.isFinite(item.meta?.min_items) ? Number(item.meta.min_items) : 0
   if (validate && normalized.length < minItems) {
-    tagErrors[item.key] = `请至少填写 ${minItems} 个条目`
+    tagErrors[item.key] = t('mall.system.minTags', { n: minItems })
     jsonErrors[item.key] = tagErrors[item.key]
     throw new Error(tagErrors[item.key])
   }

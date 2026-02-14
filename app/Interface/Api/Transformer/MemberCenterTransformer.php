@@ -71,6 +71,11 @@ final class MemberCenterTransformer
             ],
             'countsData' => [
                 [
+                    'num' => $profile['balance'] ?? 0,
+                    'name' => '余额',
+                    'type' => 'balance',
+                ],
+                [
                     'num' => $profile['points'],
                     'name' => '积分',
                     'type' => 'point',

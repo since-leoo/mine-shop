@@ -13,6 +13,7 @@ import type { CategoryVo } from '~/mall/api/category'
 import type { ProductAttributeVo, ProductSkuVo, ProductVo } from '~/mall/api/product'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 import MaRichEditor from '@/components/ma-rich-editor/index.vue'
+import { useI18n } from 'vue-i18n'
 
 type BrandOption = {
   value?: number
@@ -32,6 +33,7 @@ export default function getFormItems(
   activeStep: Ref<number>,
   msg: ReturnType<typeof import('@/hooks/useMessage.ts').useMessage>,
 ): MaFormItem[] {
+  const { t } = useI18n()
   const categoryOptions = ref<CategoryVo[]>([])
   const brandOptions = ref<BrandOption[]>([])
   const shippingTemplateOptions = ref<{ id: number; name: string }[]>([])
@@ -135,11 +137,11 @@ export default function getFormItems(
   }
 
   const batchSet = (field: keyof ProductSkuVo, label: string, isInt = false) => {
-    msg.prompt(`请输入${label}`, '', label, (value) => {
+    msg.prompt(t('mall.productForm.inputPrompt', { label }), '', label, (value) => {
       if (value === '' || value === null || value === undefined) {
-        return '请输入有效数值'
+        return t('mall.productForm.inputValidNumber')
       }
-      return Number.isNaN(Number(value)) ? '请输入数字' : true
+      return Number.isNaN(Number(value)) ? t('mall.productForm.inputNumber') : true
     }).then(({ value }) => {
       const next = isInt ? parseInt(value, 10) : Number(value)
       if (!Number.isNaN(next)) {
@@ -248,32 +250,32 @@ export default function getFormItems(
 
   const items: MaFormItem[] = [
     {
-      label: () => '商品编码',
+      label: () => t('mall.product.productCode'),
       prop: 'product_code',
       render: 'input',
-      renderProps: { placeholder: '可留空自动生成', disabled: formType !== 'add' },
-      itemProps: { help: '留空则系统自动生成唯一编码。' },
+      renderProps: { placeholder: t('mall.productForm.productCodePlaceholder'), disabled: formType !== 'add' },
+      itemProps: { help: t('mall.productForm.productCodeHelp') },
       show: () => formType !== 'add',
       step: 1,
     },
     {
-      label: () => '商品名称',
+      label: () => t('mall.product.productName'),
       prop: 'name',
       render: 'input',
-      renderProps: { placeholder: '请输入商品名称' },
-      itemProps: { rules: [{ required: true, message: '请输入商品名称' }] },
+      renderProps: { placeholder: t('mall.product.productName') },
+      itemProps: { rules: [{ required: true, message: t('mall.productForm.productNameRequired') }] },
       step: 1,
     },
     {
-      label: () => '副标题',
+      label: () => t('mall.product.subTitle'),
       prop: 'sub_title',
       render: 'input',
-      renderProps: { placeholder: '请输入副标题' },
-      itemProps: { help: '用于列表展示的简短卖点，可选。' },
+      renderProps: { placeholder: t('mall.product.subTitle') },
+      itemProps: { help: t('mall.productForm.subTitleHelp') },
       step: 1,
     },
     {
-      label: () => '分类',
+      label: () => t('mall.product.category'),
       prop: 'category_id',
       render: () => (
         <el-tree-select
@@ -281,19 +283,19 @@ export default function getFormItems(
           props={{ value: 'id', label: 'name' }}
           check-strictly={true}
           clearable={true}
-          placeholder="请选择分类"
+          placeholder={t('mall.productForm.categoryPlaceholder')}
         />
       ),
-      itemProps: { rules: [{ required: true, message: '请选择分类' }] },
+      itemProps: { rules: [{ required: true, message: t('mall.productForm.categoryRequired') }] },
       step: 1,
     },
     {
-      label: () => '品牌',
+      label: () => t('mall.product.brand'),
       prop: 'brand_id',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="请选择品牌"
+          placeholder={t('mall.productForm.brandPlaceholder')}
           options={brandOptions.value.map(item => ({
             label: item.label ?? item.name ?? '',
             value: item.value ?? item.id,
@@ -303,128 +305,128 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => '状态',
+      label: () => t('mall.productForm.statusLabel'),
       prop: 'status',
       render: () => (
         <el-radio-group>
-          <el-radio value="draft">草稿</el-radio>
-          <el-radio value="active">上架</el-radio>
-          <el-radio value="inactive">下架</el-radio>
-          <el-radio value="sold_out">售罄</el-radio>
+          <el-radio value="draft">{t('mall.product.status.draft')}</el-radio>
+          <el-radio value="active">{t('mall.product.status.active')}</el-radio>
+          <el-radio value="inactive">{t('mall.product.status.inactive')}</el-radio>
+          <el-radio value="sold_out">{t('mall.product.status.soldOut')}</el-radio>
         </el-radio-group>
       ),
       step: 1,
     },
     {
-      label: () => '是否推荐',
+      label: () => t('mall.product.isRecommendLabel'),
       prop: 'is_recommend',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => '是否热销',
+      label: () => t('mall.product.isHotLabel'),
       prop: 'is_hot',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => '是否新品',
+      label: () => t('mall.product.isNewLabel'),
       prop: 'is_new',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => '运费类型',
+      label: () => t('mall.product.freightType'),
       prop: 'freight_type',
       render: () => (
-        <el-select placeholder="请选择运费类型" class="w-full">
-          <el-option label="系统默认" value="default" />
-          <el-option label="免运费" value="free" />
-          <el-option label="统一运费" value="flat" />
-          <el-option label="运费模板" value="template" />
+        <el-select placeholder={t('mall.common.selectPlaceholder')} class="w-full">
+          <el-option label={t('mall.product.freightDefault')} value="default" />
+          <el-option label={t('mall.product.freightFree')} value="free" />
+          <el-option label={t('mall.product.freightFlat')} value="flat" />
+          <el-option label={t('mall.product.freightTemplate')} value="template" />
         </el-select>
       ),
       itemProps: {
-        rules: [{ required: true, message: '请选择运费类型' }],
-        help: '系统默认将使用商城全局运费配置。',
+        rules: [{ required: true, message: t('mall.productForm.freightTypeRequired') }],
+        help: t('mall.productForm.freightHelp'),
       },
       cols: { md: 12, xs: 24 },
       step: 1,
     },
     {
-      label: () => '运费金额（元）',
+      label: () => t('mall.productForm.freightAmount'),
       prop: 'flat_freight_amount',
       render: 'inputNumber',
       renderProps: { min: 0, max: 999.99, precision: 2, class: 'w-full' },
       itemProps: {
-        rules: [{ required: true, message: '请输入运费金额' }],
+        rules: [{ required: true, message: t('mall.productForm.freightAmountRequired') }],
       },
       cols: { md: 12, xs: 24 },
       show: () => model.freight_type === 'flat',
       step: 1,
     },
     {
-      label: () => '运费模板',
+      label: () => t('mall.productForm.freightTemplate'),
       prop: 'shipping_template_id',
       render: () => (
-        <el-select placeholder="请选择运费模板" clearable class="w-full">
+        <el-select placeholder={t('mall.productForm.freightTemplatePlaceholder')} clearable class="w-full">
           {shippingTemplateOptions.value.map(t => (
             <el-option key={t.id} label={t.name} value={t.id} />
           ))}
         </el-select>
       ),
       itemProps: {
-        rules: [{ required: true, message: '请选择运费模板' }],
+        rules: [{ required: true, message: t('mall.productForm.freightTemplateRequired') }],
       },
       cols: { md: 12, xs: 24 },
       show: () => model.freight_type === 'template',
       step: 1,
     },
     {
-      label: () => '主图',
+      label: () => t('mall.productForm.mainImage'),
       prop: 'main_image',
       render: () => MaUploadImage,
       cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
-      label: () => '图集',
+      label: () => t('mall.productForm.gallery'),
       prop: 'gallery_images',
       render: () => MaUploadImage,
       renderProps: {
         multiple: true,
         limit: 8,
       },
-      itemProps: { help: '最多 8 张，第一张将作为默认主图。' },
+      itemProps: { help: t('mall.productForm.galleryTip') },
       cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
-      label: () => '简介',
+      label: () => t('mall.productForm.description'),
       prop: 'description',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 3, placeholder: '请输入简介' },
+      renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.productForm.descPlaceholder') },
       step: 4,
     },
     {
-      label: () => '详情',
+      label: () => t('mall.productForm.detail'),
       prop: 'detail_content',
       render: () => (
         <MaRichEditor
           modelValue={model.detail_content || ''}
-          placeholder="请输入详情内容"
+          placeholder={t('mall.productForm.detailPlaceholder')}
           height={360}
           onUpdate:modelValue={(val: string) => model.detail_content = val}
         />
       ),
-      itemProps: { help: '可粘贴简单图文描述，后续可按需升级富文本。' },
+      itemProps: { help: t('mall.productForm.skuHelp') },
       step: 4,
     },
     {
-      label: () => '最低价（元）',
+      label: () => t('mall.productForm.minPrice'),
       prop: 'min_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -432,7 +434,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => '最高价（元）',
+      label: () => t('mall.productForm.maxPrice'),
       prop: 'max_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -440,7 +442,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => '虚拟销量',
+      label: () => t('mall.productForm.virtualSales'),
       prop: 'virtual_sales',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -448,7 +450,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => '真实销量',
+      label: () => t('mall.productForm.realSales'),
       prop: 'real_sales',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -456,7 +458,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => '排序',
+      label: () => t('mall.productForm.sort'),
       prop: 'sort',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -464,44 +466,44 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => '商品属性',
+      label: () => t('mall.productForm.productAttributes'),
       prop: 'attributes',
       render: () => (
         <div class="w-full">
           <div class="mb-2 flex items-center justify-between">
             <div />
             <el-button type="primary" plain size="small" onClick={addAttribute}>
-              新增属性
+              {t('mall.productForm.addAttribute')}
             </el-button>
           </div>
           <el-table data={model.attributes || []} size="small" border>
-            <el-table-column label="属性名" min-width="160">
+            <el-table-column label={t('mall.productForm.attrName')} min-width="160">
               {{
                 default: ({ row }: { row: ProductAttributeVo }) => (
                   <el-input
                     modelValue={row.attribute_name}
                     onUpdate:modelValue={(val: string) => row.attribute_name = val}
-                    placeholder="属性名"
+                    placeholder={t('mall.productForm.attrNamePlaceholder')}
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="属性值" min-width="220">
+            <el-table-column label={t('mall.productForm.attrValue')} min-width="220">
               {{
                 default: ({ row }: { row: ProductAttributeVo }) => (
                   <el-input
                     modelValue={row.value}
                     onUpdate:modelValue={(val: string) => row.value = val}
-                    placeholder="属性值"
+                    placeholder={t('mall.productForm.attrValuePlaceholder')}
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="操作" width="90">
+            <el-table-column label={t('mall.productForm.operation')} width="90">
               {{
                 default: ({ $index }: { $index: number }) => (
                   <el-button type="danger" link onClick={() => removeAttribute($index)}>
-                    删除
+                    {t('mall.common.delete')}
                   </el-button>
                 ),
               }}
@@ -509,22 +511,22 @@ export default function getFormItems(
           </el-table>
         </div>
       ),
-      itemProps: { help: '用于商品参数展示，例如材质、产地等。' },
+      itemProps: { help: t('mall.productForm.attrHelp') },
       step: 3,
     },
     {
-      label: () => '规格配置',
+      label: () => t('mall.productForm.specConfig'),
       prop: 'specs',
       render: () => (
         <div class="w-full">
           <div class="mb-2 flex items-center justify-between">
             <div />
             <el-button type="primary" plain size="small" onClick={addSpec}>
-              新增规格
+              {t('mall.productForm.addSpec')}
             </el-button>
           </div>
           <el-table data={specItems.value} size="small" border>
-            <el-table-column label="规格名" min-width="160">
+            <el-table-column label={t('mall.productForm.specName')} min-width="160">
               {{
                 default: ({ row }: { row: SpecItem }) => (
                   <div class="flex flex-col gap-2">
@@ -540,13 +542,13 @@ export default function getFormItems(
                       allow-create
                       default-first-option
                       collapse-tags={false}
-                      placeholder="输入后回车生成标签"
+                      placeholder={t('mall.productForm.specNameTagPlaceholder')}
                     />
                   </div>
                 ),
               }}
             </el-table-column>
-            <el-table-column label="规格值" min-width="320">
+            <el-table-column label={t('mall.productForm.specValue')} min-width="320">
               {{
                 default: ({ row }: { row: SpecItem }) => (
                   <div class="flex flex-col gap-2">
@@ -561,17 +563,17 @@ export default function getFormItems(
                       allow-create
                       default-first-option
                       collapse-tags={false}
-                      placeholder="输入后回车生成标签"
+                      placeholder={t('mall.productForm.specValueTagPlaceholder')}
                     />
                   </div>
                 ),
               }}
             </el-table-column>
-            <el-table-column label="操作" width="90">
+            <el-table-column label={t('mall.productForm.operation')} width="90">
               {{
                 default: ({ $index }: { $index: number }) => (
                   <el-button type="danger" link onClick={() => removeSpec($index)}>
-                    删除
+                    {t('mall.common.delete')}
                   </el-button>
                 ),
               }}
@@ -579,61 +581,61 @@ export default function getFormItems(
           </el-table>
         </div>
       ),
-      itemProps: { help: '规格值以标签形式输入，自动生成 SKU。' },
+      itemProps: { help: t('mall.productForm.specHelp') },
       step: 3,
     },
     {
-      label: () => '规格与库存',
+      label: () => t('mall.productForm.skuList'),
       prop: 'skus',
       render: () => (
         <div class="w-full">
           <div class="mb-2 flex items-center justify-between">
             <div />
             <div class="flex flex-wrap items-center gap-2">
-              <el-button type="primary" plain size="small" onClick={() => batchSet('cost_price', '成本价')}>
-                批量设置成本价
+              <el-button type="primary" plain size="small" onClick={() => batchSet('cost_price', t('mall.productForm.costPrice'))}>
+                {t('mall.productForm.batchSetCostPrice')}
               </el-button>
-              <el-button type="primary" plain size="small" onClick={() => batchSet('market_price', '市场价')}>
-                批量设置市场价
+              <el-button type="primary" plain size="small" onClick={() => batchSet('market_price', t('mall.productForm.marketPrice'))}>
+                {t('mall.productForm.batchSetMarketPrice')}
               </el-button>
-              <el-button type="primary" plain size="small" onClick={() => batchSet('sale_price', '销售价')}>
-                批量设置销售价
+              <el-button type="primary" plain size="small" onClick={() => batchSet('sale_price', t('mall.productForm.salePrice'))}>
+                {t('mall.productForm.batchSetSalePrice')}
               </el-button>
-              <el-button type="primary" plain size="small" onClick={() => batchSet('stock', '库存', true)}>
-                批量设置库存
+              <el-button type="primary" plain size="small" onClick={() => batchSet('stock', t('mall.productForm.stock'), true)}>
+                {t('mall.productForm.batchSetStock')}
               </el-button>
-              <el-button type="primary" plain size="small" onClick={() => batchSet('warning_stock', '预警库存', true)}>
-                批量设置预警库存
+              <el-button type="primary" plain size="small" onClick={() => batchSet('warning_stock', t('mall.productForm.warningStock'), true)}>
+                {t('mall.productForm.batchWarningStock')}
               </el-button>
             </div>
           </div>
           <el-table data={model.skus || []} size="small" border>
             {formType === 'edit' && (
-              <el-table-column label="SKU编码" min-width="140">
+              <el-table-column label={t('mall.productForm.skuCode')} min-width="140">
                 {{
                   default: ({ row }: { row: ProductSkuVo }) => (
                     <el-input
                       modelValue={row.sku_code}
                       onUpdate:modelValue={(val: string) => row.sku_code = val}
-                      placeholder="SKU编码"
+                      placeholder={t('mall.productForm.skuCode')}
                       disabled
                     />
                   ),
                 }}
               </el-table-column>
             )}
-            <el-table-column label="SKU名称" min-width="160">
+            <el-table-column label={t('mall.productForm.skuName')} min-width="160">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input
                     modelValue={row.sku_name}
                     onUpdate:modelValue={(val: string) => row.sku_name = val}
-                    placeholder="SKU名称"
+                    placeholder={t('mall.productForm.skuNamePlaceholder')}
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="规格值" min-width="160">
+            <el-table-column label={t('mall.productForm.specValues')} min-width="160">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input
@@ -641,12 +643,12 @@ export default function getFormItems(
                     onUpdate:modelValue={(val: string) => {
                       row.spec_values = val.split(',').map(item => item.trim()).filter(Boolean)
                     }}
-                    placeholder="例：红色,XL"
+                    placeholder={t('mall.productForm.specValuesPlaceholder')}
                   />
                 ),
               }}
             </el-table-column>
-            <el-table-column label="图片" width="120">
+            <el-table-column label={t('mall.productForm.image')} width="120">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <MaUploadImage
@@ -659,7 +661,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="成本价（元）" width="110">
+            <el-table-column label={t('mall.productForm.costPriceYuan')} width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -673,7 +675,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="市场价（元）" width="110">
+            <el-table-column label={t('mall.productForm.marketPriceYuan')} width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -687,7 +689,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="销售价（元）" width="110">
+            <el-table-column label={t('mall.productForm.salePriceYuan')} width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -701,7 +703,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="库存" width="100">
+            <el-table-column label={t('mall.productForm.stock')} width="100">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -714,7 +716,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="预警库存" width="110">
+            <el-table-column label={t('mall.productForm.warningStock')} width="110">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -727,7 +729,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="重量" width="100">
+            <el-table-column label={t('mall.productForm.weight')} width="100">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-input-number
@@ -740,7 +742,7 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="状态" width="90">
+            <el-table-column label={t('mall.productForm.skuStatus')} width="90">
               {{
                 default: ({ row }: { row: ProductSkuVo }) => (
                   <el-switch
@@ -752,11 +754,11 @@ export default function getFormItems(
                 ),
               }}
             </el-table-column>
-            <el-table-column label="操作" width="80">
+            <el-table-column label={t('mall.productForm.operation')} width="80">
               {{
                 default: ({ $index }: { $index: number }) => (
                   <el-button type="danger" link onClick={() => removeSku($index)}>
-                    删除
+                    {t('mall.common.delete')}
                   </el-button>
                 ),
               }}
@@ -764,7 +766,7 @@ export default function getFormItems(
           </el-table>
         </div>
       ),
-      itemProps: { help: '生成后可微调价格与库存。' },
+      itemProps: { help: t('mall.productForm.skuHelp') },
       show: () => specItems.value.some(item => item.nameTags?.[0] && item.values.length > 0) || (model.skus?.length ?? 0) > 0,
       step: 3,
     },

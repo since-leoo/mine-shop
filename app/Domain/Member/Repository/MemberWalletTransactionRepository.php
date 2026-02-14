@@ -46,4 +46,20 @@ final class MemberWalletTransactionRepository extends IRepository
             })
             ->orderByDesc('id');
     }
+    /**
+     * 检查指定会员是否已存在某来源的流水记录.
+     *
+     * @param int $memberId 会员ID
+     * @param string $walletType 钱包类型（balance/points）
+     * @param string $source 来源标识
+     */
+    public function existsByMemberAndSource(int $memberId, string $walletType, string $source): bool
+    {
+        return $this->getQuery()
+            ->where('member_id', $memberId)
+            ->where('wallet_type', $walletType)
+            ->where('source', $source)
+            ->exists();
+    }
+
 }

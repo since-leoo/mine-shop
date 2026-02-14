@@ -11,11 +11,13 @@ import type { FormInstance } from 'element-plus'
 import { couponIssue } from '~/mall/api/coupon'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import { useMessage } from '@/hooks/useMessage.ts'
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   couponId: number
 }>()
 
+const { t } = useI18n()
 const formRef = ref<FormInstance>()
 const model = ref<{ member_ids: string; expire_at?: string }>({
   member_ids: '',
@@ -35,7 +37,7 @@ async function submit(): Promise<any> {
     .filter(Boolean)
 
   if (ids.length < 1) {
-    msg.warning('请输入至少一个会员ID')
+    msg.warning(t('mall.coupon.issueMinOne'))
     return Promise.reject(new Error('empty-member'))
   }
 
@@ -49,10 +51,10 @@ async function submit(): Promise<any> {
   const res = await couponIssue(props.couponId, payload)
   if (res.code === ResultCode.SUCCESS) {
     reset()
-    msg.success('发放成功')
+    msg.success(t('mall.coupon.issueSuccess'))
     return res
   }
-  throw new Error(res.message || '发放失败')
+  throw new Error(res.message || t('mall.coupon.issueFailed'))
 }
 
 defineExpose({ submit, reset })
@@ -61,27 +63,27 @@ defineExpose({ submit, reset })
 <template>
   <el-form ref="formRef" :model="model" label-width="100px">
     <el-form-item
-      label="会员ID列表"
+      :label="t('mall.coupon.memberIdsLabel')"
       prop="member_ids"
-      :rules="[{ required: true, message: '请输入会员ID' }]"
+      :rules="[{ required: true, message: t('mall.coupon.memberIdsRequired') }]"
     >
       <el-input
         v-model="model.member_ids"
         type="textarea"
         rows="3"
-        placeholder="输入会员ID，使用逗号分隔"
+        :placeholder="t('mall.coupon.memberIdsPlaceholder')"
       />
     </el-form-item>
-    <el-form-item label="自定义过期时间" prop="expire_at">
+    <el-form-item :label="t('mall.coupon.expireLabel')" prop="expire_at">
       <el-date-picker
         v-model="model.expire_at"
         type="datetime"
-        placeholder="不填则默认到优惠券结束时间"
+        :placeholder="t('mall.coupon.expirePlaceholder')"
         value-format="YYYY-MM-DD HH:mm:ss"
         class="w-full"
       />
     </el-form-item>
-    <el-alert title="建议通过会员列表导出ID后批量发放，逗号分隔。" type="info" :closable="false" />
+    <el-alert :title="t('mall.coupon.issueTip')" type="info" :closable="false" />
   </el-form>
 </template>
 

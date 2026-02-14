@@ -7,12 +7,12 @@
     <div class="mine-card">
       <div class="analysis-header">
         <div>
-          <div class="title">会员数据驾驶舱</div>
-          <div class="subtitle">对齐 dashboard/analysis 风格，随时替换为实时指标</div>
+          <div class="title">{{ t('member.overview.title') }}</div>
+          <div class="subtitle">{{ t('member.overview.subtitle') }}</div>
         </div>
         <el-button text type="primary" size="small" @click="loadOverview">
           <template #icon><el-icon><Refresh /></el-icon></template>
-          刷新数据
+          {{ t('mall.refreshData') }}
         </el-button>
       </div>
       <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -31,32 +31,32 @@
 
     <div class="analysis-row">
       <div class="mine-card flex-1">
-        <div class="card-title">会员增长走势</div>
-        <div class="card-subtitle">结合新增与活跃曲线，快速判断获客和留存趋势</div>
+        <div class="card-title">{{ t('member.overview.growthTrend') }}</div>
+        <div class="card-subtitle">{{ t('member.overview.growthTrendDesc') }}</div>
         <div ref="growthChartRef" class="chart-panel growth-chart" />
       </div>
       <div class="mine-card channel-card">
-        <div class="card-title">地区构成</div>
-        <div class="card-subtitle">统计会员省份分布，用于判读主力市场</div>
+        <div class="card-title">{{ t('member.overview.regionBreakdown') }}</div>
+        <div class="card-subtitle">{{ t('member.overview.regionBreakdownDesc') }}</div>
         <div class="channel-chart">
           <div ref="regionChartRef" class="chart-panel channel-pie" />
         </div>
-        <div v-if="!regionBreakdown.length" class="empty-text">暂无数据</div>
+        <div v-if="!regionBreakdown.length" class="empty-text">{{ t('mall.noData') }}</div>
         <div v-for="region in regionBreakdown" :key="region.label" class="channel-item">
           <div class="channel-header">
             <span>{{ region.label }}</span>
             <span class="font-medium">{{ region.percent }}%</span>
           </div>
           <el-progress :percentage="region.percent" :stroke-width="10" :color="region.color" />
-          <div class="channel-remark">累计人数：{{ formatNumber(region.value) }}</div>
+          <div class="channel-remark">{{ t('member.overview.regionTotal') }}：{{ formatNumber(region.value) }}</div>
         </div>
       </div>
     </div>
 
     <div class="analysis-row">
       <div class="mine-card flex-1">
-        <div class="card-title">运营待办</div>
-        <div class="card-subtitle">聚焦高优任务，辅助日常站会</div>
+        <div class="card-title">{{ t('member.overview.todoTitle') }}</div>
+        <div class="card-subtitle">{{ t('member.overview.todoDesc') }}</div>
         <ul class="todo-list">
           <li v-for="todo in todoList" :key="todo.title">
             <div class="todo-main">
@@ -65,31 +65,31 @@
             </div>
             <div class="todo-desc">{{ todo.desc }}</div>
             <div class="todo-meta">
-              <span>负责人：{{ todo.owner }}</span>
-              <span>截止：{{ todo.deadline }}</span>
+              <span>{{ t('member.overview.owner') }}：{{ todo.owner }}</span>
+              <span>{{ t('member.overview.deadline') }}：{{ todo.deadline }}</span>
             </div>
           </li>
         </ul>
       </div>
       <div class="mine-card flex-1">
-        <div class="card-title">等级结构</div>
-        <div class="card-subtitle">实时读取 mall_members.level 字段，展示会员等级分布</div>
+        <div class="card-title">{{ t('member.overview.levelStructure') }}</div>
+        <div class="card-subtitle">{{ t('member.overview.levelStructureDesc') }}</div>
         <div ref="levelChartRef" class="chart-panel level-chart" />
       </div>
     </div>
 
     <div class="analysis-row">
       <div class="mine-card flex-1">
-        <div class="card-title">行为洞察</div>
-        <div class="card-subtitle">后续可替换为漏斗或自定义图表</div>
+        <div class="card-title">{{ t('member.overview.behaviorInsight') }}</div>
+        <div class="card-subtitle">{{ t('member.overview.behaviorInsightDesc') }}</div>
         <el-table :data="behaviorInsights" size="small" border>
-          <el-table-column prop="scenario" label="场景" min-width="140" />
-          <el-table-column prop="conversion" label="转化率" width="120">
+          <el-table-column prop="scenario" :label="t('member.overview.scenarioColumn')" min-width="140" />
+          <el-table-column prop="conversion" :label="t('member.overview.conversionColumn')" width="120">
             <template #default="{ row }">
               <el-tag :type="row.conversion > 30 ? 'success' : 'info'">{{ row.conversion }}%</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="remark" label="备注" />
+          <el-table-column prop="remark" :label="t('member.overview.remarkColumn')" />
         </el-table>
       </div>
     </div>
@@ -97,40 +97,40 @@
     <div class="mine-card">
       <div class="table-header">
         <div>
-          <div class="card-title">最新会员</div>
-          <div class="card-subtitle">与分析页一致的卡片式列表，可快速查看画像</div>
+          <div class="card-title">{{ t('member.overview.recentMembers') }}</div>
+          <div class="card-subtitle">{{ t('member.overview.recentMembersDesc') }}</div>
         </div>
       </div>
       <el-table :data="recentMembers" stripe v-loading="loading">
-        <el-table-column prop="nickname" label="昵称" min-width="160">
+        <el-table-column prop="nickname" :label="t('member.overview.nickname')" min-width="160">
           <template #default="{ row }">
             <div class="flex items-center gap-2">
               <el-avatar :size="32" :src="row.avatar">
                 {{ row.nickname?.slice(0, 1) || 'U' }}
               </el-avatar>
               <div>
-                <div class="font-medium">{{ row.nickname || '未命名' }}</div>
+                <div class="font-medium">{{ row.nickname || t('member.overview.unnamed') }}</div>
                 <div class="text-xs text-gray-500">ID: {{ row.id }}</div>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="phone" label="手机号" width="140">
+        <el-table-column prop="phone" :label="t('member.overview.phoneColumn')" width="140">
           <template #default="{ row }">
             {{ row.phone || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="等级" width="120">
+        <el-table-column :label="t('member.overview.levelColumn')" width="120">
           <template #default="{ row }">
             <el-tag size="small" type="warning">{{ levelLabelMap[row.level || 'bronze'] }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="注册时间" width="180">
+        <el-table-column :label="t('member.overview.registeredAt')" width="180">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column :label="t('member.overview.statusColumn')" width="120">
           <template #default="{ row }">
             <el-tag :type="statusTagTypeMap[row.status]" size="small">
               {{ statusLabelMap[row.status] }}
@@ -138,13 +138,14 @@
           </template>
         </el-table-column>
       </el-table>
-      <el-empty v-if="!recentMembers.length && !loading" description="暂无数据" />
+      <el-empty v-if="!recentMembers.length && !loading" :description="t('mall.noData')" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, nextTick, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 import { ElMessage } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
@@ -152,6 +153,8 @@ import { memberApi, type MallMember, type MemberBreakdownItem, type MemberOvervi
 import { useEcharts } from '@/hooks/useEcharts.ts'
 
 defineOptions({ name: 'member:overview' })
+
+const { t } = useI18n()
 
 const loading = ref(false)
 const stats = reactive({
@@ -172,12 +175,12 @@ const overviewData = reactive({
   level: [] as MemberBreakdownItem[],
 })
 
-const statCards = [
-  { key: 'total', label: '累计会员', trend: 18, desc: '较上周' },
-  { key: 'new_today', label: '今日新增', trend: 6, desc: '实时刷新' },
-  { key: 'active_30d', label: '30 日活跃', trend: 11, desc: '偏运营 KPI' },
-  { key: 'sleeping_30d', label: '沉睡会员', trend: -4, desc: '需召回' },
-] as const
+const statCards = computed(() => [
+  { key: 'total', label: t('member.overview.totalMembers'), trend: 18, desc: t('member.overview.vsLastWeek') },
+  { key: 'new_today', label: t('member.overview.newToday'), trend: 6, desc: t('member.overview.realtime') },
+  { key: 'active_30d', label: t('member.overview.active30d'), trend: 11, desc: t('member.overview.kpiOps') },
+  { key: 'sleeping_30d', label: t('member.overview.sleeping30d'), trend: -4, desc: t('member.overview.needRecall') },
+] as const)
 
 const regionColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#9C27B0']
 const levelColors = ['#8CC5FF', '#A0DEFF', '#FDBA74', '#F7797D', '#BB8FCE', '#67C23A']
@@ -202,30 +205,30 @@ const regionBreakdown = computed(() => {
   }))
 })
 
-const todoList = ref([
-  { title: '沉睡会员召回', desc: '针对 30 天未登录用户推送成长任务券包', owner: 'Mia', deadline: '今日', priority: 'high', priorityLabel: '高' },
-  { title: '会员等级梳理', desc: '复核 LV3-LV4 条件，结合 GMV 微调', owner: 'Iris', deadline: '明日', priority: 'medium', priorityLabel: '中' },
-  { title: '积分规则埋点', desc: '补齐钱包合并后的前端曝光位', owner: 'DevOps', deadline: '本周', priority: 'low', priorityLabel: '低' },
+const todoList = computed(() => [
+  { title: t('member.overview.todoRecall'), desc: t('member.overview.todoRecallDesc'), owner: 'Mia', deadline: t('member.overview.today'), priority: 'high', priorityLabel: t('member.overview.priorityHigh') },
+  { title: t('member.overview.todoLevel'), desc: t('member.overview.todoLevelDesc'), owner: 'Iris', deadline: t('member.overview.tomorrow'), priority: 'medium', priorityLabel: t('member.overview.priorityMedium') },
+  { title: t('member.overview.todoPoints'), desc: t('member.overview.todoPointsDesc'), owner: 'DevOps', deadline: t('member.overview.thisWeek'), priority: 'low', priorityLabel: t('member.overview.priorityLow') },
 ])
 
-const behaviorInsights = ref([
-  { scenario: '首单引导', conversion: 36, remark: '新人券+包邮组合继续保持' },
-  { scenario: '复购激励', conversion: 24, remark: '需结合钱包余额推送个性化权益' },
-  { scenario: '沉睡唤醒', conversion: 12, remark: '建议联动短信+小程序直播' },
+const behaviorInsights = computed(() => [
+  { scenario: t('member.overview.scenarioFirstOrder'), conversion: 36, remark: t('member.overview.scenarioFirstOrderRemark') },
+  { scenario: t('member.overview.scenarioRepurchase'), conversion: 24, remark: t('member.overview.scenarioRepurchaseRemark') },
+  { scenario: t('member.overview.scenarioRecall'), conversion: 12, remark: t('member.overview.scenarioRecallRemark') },
 ])
 
-const levelLabelMap: Record<string, string> = {
-  bronze: '青铜',
-  silver: '白银',
-  gold: '黄金',
-  diamond: '钻石',
-}
+const levelLabelMap = computed<Record<string, string>>(() => ({
+  bronze: t('member.level.bronze'),
+  silver: t('member.level.silver'),
+  gold: t('member.level.gold'),
+  diamond: t('member.level.diamond'),
+}))
 
-const statusLabelMap: Record<string, string> = {
-  active: '正常',
-  inactive: '未激活',
-  banned: '已禁用',
-}
+const statusLabelMap = computed<Record<string, string>>(() => ({
+  active: t('member.status.active'),
+  inactive: t('member.status.inactive'),
+  banned: t('member.status.banned'),
+}))
 
 const statusTagTypeMap: Record<string, 'success' | 'info' | 'danger'> = {
   active: 'success',
@@ -251,7 +254,7 @@ const applyOverviewPayload = async (payload?: MemberOverviewResponse) => {
 const renderTrendChart = () => {
   const option = {
     tooltip: { trigger: 'axis' },
-    legend: { data: ['新增会员', '活跃会员'] },
+    legend: { data: [t('member.overview.newMemberLegend'), t('member.overview.activeMemberLegend')] },
     grid: { left: '2%', right: '3%', top: 40, bottom: 10, containLabel: true },
     xAxis: {
       type: 'category',
@@ -265,7 +268,7 @@ const renderTrendChart = () => {
     },
     series: [
       {
-        name: '新增会员',
+        name: t('member.overview.newMemberLegend'),
         type: 'line',
         smooth: true,
         showSymbol: false,
@@ -274,7 +277,7 @@ const renderTrendChart = () => {
         data: overviewData.trend.newMembers,
       },
       {
-        name: '活跃会员',
+        name: t('member.overview.activeMemberLegend'),
         type: 'line',
         smooth: true,
         showSymbol: false,
@@ -294,7 +297,7 @@ const renderRegionChart = () => {
         name: item.label,
         itemStyle: { color: regionColors[index % regionColors.length] },
       }))
-    : [{ value: 1, name: '暂无数据', itemStyle: { color: '#E4E7ED' } }]
+    : [{ value: 1, name: t('mall.noData'), itemStyle: { color: '#E4E7ED' } }]
 
   const option = {
     tooltip: { trigger: 'item' },
@@ -359,7 +362,7 @@ const loadOverview = async () => {
     await applyOverviewPayload(overviewRes.data)
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载会员概览失败')
+    ElMessage.error(error?.message || t('member.overview.loadFailed'))
   }
   finally {
     loading.value = false

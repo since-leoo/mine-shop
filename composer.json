@@ -76,6 +76,7 @@
     "doctrine/dbal": "^3.6",
     "fakerphp/faker": "^1.23",
     "friendsofphp/php-cs-fixer": "^3.0",
+    "giorgiosironi/eris": "^1.0",
     "hyperf/devtool": "3.1.*",
     "hyperf/ide-helper": "3.1.*",
     "hyperf/testing": "3.1.*",

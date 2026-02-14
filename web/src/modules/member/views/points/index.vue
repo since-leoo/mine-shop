@@ -6,21 +6,21 @@
   <div class="member-wallet-page p-3">
     <el-card shadow="never" class="mb-4">
       <el-form :model="filters" label-width="90px" inline>
-        <el-form-item label="会员ID">
-          <el-input v-model.number="filters.member_id" placeholder="请输入会员ID" clearable @keyup.enter="loadLogs">
+        <el-form-item :label="t('member.points.memberIdLabel')">
+          <el-input v-model.number="filters.member_id" :placeholder="t('member.points.memberIdPlaceholder')" clearable @keyup.enter="loadLogs">
             <template #prefix><el-icon><User /></el-icon></template>
           </el-input>
         </el-form-item>
-        <el-form-item label="钱包类型">
-          <el-select v-model="filters.wallet_type" placeholder="全部" class="w-40" @change="loadLogs">
-            <el-option label="余额钱包" value="balance" />
-            <el-option label="积分钱包" value="points" />
+        <el-form-item :label="t('member.points.walletType')">
+          <el-select v-model="filters.wallet_type" :placeholder="t('mall.all')" class="w-40" @change="loadLogs">
+            <el-option :label="t('member.points.balanceWallet')" value="balance" />
+            <el-option :label="t('member.points.pointsWallet')" value="points" />
           </el-select>
         </el-form-item>
-        <el-form-item label="来源">
+        <el-form-item :label="t('member.points.sourceLabel')">
           <el-select
             v-model="filters.source"
-            placeholder="全部"
+            :placeholder="t('mall.all')"
             clearable
             filterable
             allow-create
@@ -35,38 +35,38 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="操作类型">
-          <el-select v-model="filters.operator_type" placeholder="全部" clearable class="w-36" @change="loadLogs">
-            <el-option label="系统" value="system" />
-            <el-option label="管理员" value="admin" />
-            <el-option label="会员" value="member" />
+        <el-form-item :label="t('member.points.operatorType')">
+          <el-select v-model="filters.operator_type" :placeholder="t('mall.all')" clearable class="w-36" @change="loadLogs">
+            <el-option :label="t('member.points.operatorSystem')" value="system" />
+            <el-option :label="t('member.points.operatorAdmin')" value="admin" />
+            <el-option :label="t('member.points.operatorMember')" value="member" />
           </el-select>
         </el-form-item>
-        <el-form-item label="时间范围">
+        <el-form-item :label="t('member.points.timeRange')">
           <el-date-picker
             v-model="dateRange"
             type="daterange"
             value-format="YYYY-MM-DD"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
+            :range-separator="t('dashboard.dateRange.to')"
+            :start-placeholder="t('mall.startDate')"
+            :end-placeholder="t('mall.endDate')"
             @change="handleDateChange"
           />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="loadLogs">
             <template #icon><el-icon><Search /></el-icon></template>
-            搜索
+            {{ t('member.points.search') }}
           </el-button>
           <el-button @click="resetFilters">
             <template #icon><el-icon><Refresh /></el-icon></template>
-            重置
+            {{ t('member.points.reset') }}
           </el-button>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="openAdjust">
             <template #icon><el-icon><Coin /></el-icon></template>
-            调整钱包
+            {{ t('member.points.adjustWallet') }}
           </el-button>
         </el-form-item>
       </el-form>
@@ -75,22 +75,22 @@
     <el-card shadow="never">
       <el-table :data="logList" v-loading="loading" border stripe>
         <el-table-column type="index" width="60" label="#" />
-        <el-table-column label="会员ID" prop="member_id" width="100" />
-        <el-table-column label="钱包类型" width="120">
+        <el-table-column :label="t('member.points.memberIdColumn')" prop="member_id" width="100" />
+        <el-table-column :label="t('member.points.walletTypeColumn')" width="120">
           <template #default="{ row }">
             <el-tag size="small" :type="row.wallet_type === 'balance' ? 'primary' : 'success'">
               {{ walletTypeLabel(row.wallet_type) }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="变动金额" width="140">
+        <el-table-column :label="t('member.points.changeAmount')" width="140">
           <template #default="{ row }">
             <span :class="isIncome(row.type) ? 'text-green-600' : 'text-red-500'">
               {{ isIncome(row.type) ? '+' : '-' }}{{ row.wallet_type === 'balance' ? formatYuan(row.amount) : row.amount }}
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="变动前/后" min-width="220">
+        <el-table-column :label="t('member.points.beforeAfter')" min-width="220">
           <template #default="{ row }">
             <template v-if="row.wallet_type === 'balance'">
               {{ formatYuan(row.balance_before) }} → {{ formatYuan(row.balance_after) }}
@@ -100,14 +100,14 @@
             </template>
           </template>
         </el-table-column>
-        <el-table-column label="来源" prop="source" width="140" />
-        <el-table-column label="操作人" width="160">
+        <el-table-column :label="t('member.points.sourceColumn')" prop="source" width="140" />
+        <el-table-column :label="t('member.points.operatorColumn')" width="160">
           <template #default="{ row }">
             {{ row.operator_name || row.operator_type }}
           </template>
         </el-table-column>
-        <el-table-column label="备注" prop="remark" min-width="200" show-overflow-tooltip />
-        <el-table-column label="时间" prop="created_at" width="180" />
+        <el-table-column :label="t('member.points.remarkColumn')" prop="remark" min-width="200" show-overflow-tooltip />
+        <el-table-column :label="t('member.points.timeColumn')" prop="created_at" width="180" />
       </el-table>
 
       <div class="flex justify-end mt-4">
@@ -121,18 +121,18 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="adjustDialogVisible" title="调整会员钱包" width="480px">
+    <el-dialog v-model="adjustDialogVisible" :title="t('member.points.adjustTitle')" width="480px">
       <el-form ref="adjustFormRef" :model="adjustForm" :rules="adjustRules" label-width="90px">
-        <el-form-item label="会员ID" prop="member_id">
-          <el-input v-model="adjustForm.member_id" placeholder="请输入会员ID" />
+        <el-form-item :label="t('member.points.memberIdLabel')" prop="member_id">
+          <el-input v-model="adjustForm.member_id" :placeholder="t('member.points.memberIdPlaceholder')" />
         </el-form-item>
-        <el-form-item label="钱包类型" prop="type">
-          <el-select v-model="adjustForm.type" placeholder="请选择钱包类型" class="w-full">
-            <el-option label="余额钱包" value="balance" />
-            <el-option label="积分钱包" value="points" />
+        <el-form-item :label="t('member.points.walletType')" prop="type">
+          <el-select v-model="adjustForm.type" :placeholder="t('member.points.walletTypePlaceholder')" class="w-full">
+            <el-option :label="t('member.points.balanceWallet')" value="balance" />
+            <el-option :label="t('member.points.pointsWallet')" value="points" />
           </el-select>
         </el-form-item>
-        <el-form-item label="变动金额" prop="value">
+        <el-form-item :label="t('member.points.changeValue')" prop="value">
           <el-input-number
             v-model="adjustForm.value"
             :min="-1000000"
@@ -140,12 +140,12 @@
             :precision="adjustForm.type === 'balance' ? 2 : 0"
             class="w-full"
           />
-          <div v-if="adjustForm.type === 'balance'" class="text-xs text-gray-400 mt-1">单位：元</div>
+          <div v-if="adjustForm.type === 'balance'" class="text-xs text-gray-400 mt-1">{{ t('member.points.unitYuan') }}</div>
         </el-form-item>
-        <el-form-item label="来源" prop="source">
+        <el-form-item :label="t('member.points.sourceLabel')" prop="source">
           <el-select
             v-model="adjustForm.source"
-            placeholder="请选择来源"
+            :placeholder="t('member.points.sourcePlaceholder')"
             clearable
             filterable
             allow-create
@@ -159,15 +159,15 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="备注">
+        <el-form-item :label="t('member.points.remarkLabel')">
           <el-input v-model="adjustForm.remark" type="textarea" rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="adjustDialogVisible = false">取消</el-button>
+        <el-button @click="adjustDialogVisible = false">{{ t('mall.cancel') }}</el-button>
         <el-button type="primary" :loading="adjustLoading" @click="submitAdjust">
           <template #icon><el-icon><Check /></el-icon></template>
-          提交
+          {{ t('mall.submit') }}
         </el-button>
       </template>
     </el-dialog>
@@ -175,7 +175,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { Check, Coin, Link, Refresh, Search, User } from '@element-plus/icons-vue'
@@ -189,6 +190,8 @@ import { formatYuan, yuanToCents } from '@/utils/price'
 
 defineOptions({ name: 'member:wallet' })
 
+const { t } = useI18n()
+
 const loading = ref(false)
 const logList = ref<MemberWalletLog[]>([])
 const filters = reactive<MemberAccountLogParams>({
@@ -199,11 +202,11 @@ const filters = reactive<MemberAccountLogParams>({
   start_date: '',
   end_date: '',
 })
-const sourceOptions = [
-  { label: '系统', value: 'system' },
-  { label: '订单', value: 'order' },
-  { label: '手动', value: 'manual' },
-]
+const sourceOptions = computed(() => [
+  { label: t('member.points.sourceSystem'), value: 'system' },
+  { label: t('member.points.sourceOrder'), value: 'order' },
+  { label: t('member.points.sourceManual'), value: 'manual' },
+])
 const dateRange = ref<[string, string] | null>(null)
 const pagination = reactive({
   page: 1,
@@ -222,12 +225,12 @@ const adjustForm = reactive<MemberAccountAdjustPayload>({
   remark: '',
 })
 
-const adjustRules: FormRules = {
-  member_id: [{ required: true, message: '请输入会员ID', trigger: 'blur' }],
-  type: [{ required: true, message: '请选择钱包类型', trigger: 'change' }],
-  value: [{ required: true, message: '请输入变动值', trigger: 'blur' }],
-  source: [{ required: true, message: '请选择来源', trigger: ['change', 'blur'] }],
-}
+const adjustRules = computed<FormRules>(() => ({
+  member_id: [{ required: true, message: t('member.points.memberIdRequired'), trigger: 'blur' }],
+  type: [{ required: true, message: t('member.points.walletTypeRequired'), trigger: 'change' }],
+  value: [{ required: true, message: t('member.points.changeValueRequired'), trigger: 'blur' }],
+  source: [{ required: true, message: t('member.points.sourceRequired'), trigger: ['change', 'blur'] }],
+}))
 
 const buildParams = () => ({
   ...filters,
@@ -243,7 +246,7 @@ const loadLogs = async () => {
     pagination.total = res.data.total
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载失败')
+    ElMessage.error(error?.message || t('member.points.loadFailed'))
   }
   finally {
     loading.value = false
@@ -303,12 +306,12 @@ const submitAdjust = async () => {
       payload.value = yuanToCents(payload.value)
     }
     await memberAccountApi.adjustWallet(payload)
-    ElMessage.success('操作成功')
+    ElMessage.success(t('member.points.adjustSuccess'))
     adjustDialogVisible.value = false
     loadLogs()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '操作失败')
+    ElMessage.error(error?.message || t('member.points.adjustFailed'))
   }
   finally {
     adjustLoading.value = false
@@ -316,7 +319,7 @@ const submitAdjust = async () => {
 }
 
 const isIncome = (type: string) => ['recharge', 'refund', 'adjust_in'].includes(type)
-const walletTypeLabel = (type: string) => (type === 'points' ? '积分钱包' : '余额钱包')
+const walletTypeLabel = (type: string) => (type === 'points' ? t('member.points.pointsWallet') : t('member.points.balanceWallet'))
 
 loadLogs()
 </script>

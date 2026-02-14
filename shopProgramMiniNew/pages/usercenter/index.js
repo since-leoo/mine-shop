@@ -154,14 +154,13 @@ Page({
         this.openMakePhone();
         break;
       }
-      case 'wallet': {
-        Toast({
-          context: this,
-          selector: '#t-toast',
-          message: '余额功能开发中',
-          icon: '',
-          duration: 1000,
-        });
+      case 'wallet':
+      case 'balance': {
+        wx.navigateTo({ url: '/pages/usercenter/wallet-transactions/index?type=balance' });
+        break;
+      }
+      case 'point': {
+        wx.navigateTo({ url: '/pages/usercenter/wallet-transactions/index?type=points' });
         break;
       }
       case 'help-center': {

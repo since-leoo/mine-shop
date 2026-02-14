@@ -71,6 +71,44 @@ final class MemberWalletEntity
             changeAmount: $this->changeBalance
         );
     }
+    /**
+     * 增加积分/余额（通用加款行为）.
+     *
+     * @param int $amount 增加数量（正整数）
+     * @param string $source 来源标识
+     * @param string $remark 备注
+     */
+    public function grant(int $amount, string $source, string $remark = ''): void
+    {
+        $this->setChangeBalance($amount);
+        $this->setSource($source);
+        $this->setRemark($remark);
+        $this->changeBalance();
+    }
+
+    /**
+     * 安全扣减积分/余额（余额不足时扣减至零，不抛异常）.
+     *
+     * @param int $amount 期望扣减数量（正整数）
+     * @param string $source 来源标识
+     * @param string $remark 备注
+     * @return int 实际扣减数量
+     */
+    public function deductSafe(int $amount, string $source, string $remark = ''): int
+    {
+        $actualDeduction = min($amount, $this->balance);
+        if ($actualDeduction <= 0) {
+            return 0;
+        }
+
+        $this->setChangeBalance(-$actualDeduction);
+        $this->setSource($source);
+        $this->setRemark($remark);
+        $this->changeBalance();
+
+        return $actualDeduction;
+    }
+
 
     public function setId(int $id): void
     {

@@ -15,6 +15,7 @@ namespace App\Domain\Trade\Payment;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
+use App\Domain\Member\Event\OrderPaidForMember;
 use App\Domain\Member\Service\DomainMemberWalletService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
@@ -141,6 +142,13 @@ class DomainPayService
             ['type' => 'member', 'id' => $this->memberEntity->getId(), 'name' => $this->memberEntity->getNickname()]
         ));
 
+        // 派发订单支付事件，用于会员成长值和消费返积分
+        event(new OrderPaidForMember(
+            $this->memberEntity->getId(),
+            $this->orderEntity->getOrderNo(),
+            $this->orderEntity->getPayAmount(),
+        ));
+
         return ['is_paid' => true];
     }
 
@@ -168,6 +176,13 @@ class DomainPayService
                 $callback['transaction_id'],
                 $callback
             );
+
+            // 派发订单支付事件，用于会员成长值和消费返积分
+            event(new OrderPaidForMember(
+                $orderEntity->getMemberId(),
+                $orderEntity->getOrderNo(),
+                $orderEntity->getPayAmount(),
+            ));
         }
     }
 }

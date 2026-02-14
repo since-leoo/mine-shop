@@ -10,8 +10,11 @@
 import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { CouponVo } from '~/mall/api/coupon'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(model: CouponVo): MaFormItem[] {
+  const { t } = useI18n()
+
   if (!model.status) {
     model.status = 'active'
   }
@@ -19,23 +22,23 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
   const validateCouponValue = () => ({
     validator: (_: any, value: any, callback: (error?: Error) => void) => {
       if (value === undefined || value === null || value === '') {
-        callback(new Error('请输入优惠值'))
+        callback(new Error(t('mall.coupon.valueRequired')))
         return
       }
       if (typeof value !== 'number' || Number.isNaN(value)) {
-        callback(new Error('优惠值必须为数字'))
+        callback(new Error(t('mall.coupon.valueMustBeNumber')))
         return
       }
       if (model.type === 'percent') {
         // 表单输入折扣值如 8.5 表示8.5折，有效范围 0.1-9.9
         if (value <= 0 || value >= 10) {
-          callback(new Error('折扣值需在 0.1-9.9 之间（如8.5表示8.5折）'))
+          callback(new Error(t('mall.coupon.percentRange')))
           return
         }
       }
       else {
         if (value <= 0) {
-          callback(new Error('优惠金额必须大于0'))
+          callback(new Error(t('mall.coupon.amountPositive')))
           return
         }
       }
@@ -51,11 +54,11 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
         return
       }
       if (typeof value !== 'number' || Number.isNaN(value)) {
-        callback(new Error(`${label}必须为数字`))
+        callback(new Error(t('mall.coupon.minAmountMustBeNumber')))
         return
       }
       if (value < 0) {
-        callback(new Error(`${label}不能小于0`))
+        callback(new Error(t('mall.coupon.minAmountNonNegative')))
         return
       }
       callback()
@@ -66,15 +69,15 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
   const positiveIntegerRule = (label: string, requiredMessage?: string) => ({
     validator: (_: any, value: any, callback: (error?: Error) => void) => {
       if (value === undefined || value === null || value === '') {
-        callback(new Error(requiredMessage ?? `请输入${label}`))
+        callback(new Error(requiredMessage ?? t('mall.coupon.totalCountRequired')))
         return
       }
       if (typeof value !== 'number' || Number.isNaN(value) || !Number.isInteger(value)) {
-        callback(new Error(`${label}必须为正整数`))
+        callback(new Error(t('mall.coupon.totalCountPositiveInt')))
         return
       }
       if (value <= 0) {
-        callback(new Error(`${label}必须大于0`))
+        callback(new Error(t('mall.coupon.totalCountPositive')))
         return
       }
       callback()
@@ -89,7 +92,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
         return
       }
       if (typeof value !== 'number' || Number.isNaN(value) || !Number.isInteger(value) || value <= 0) {
-        callback(new Error(`${label}必须为正整数`))
+        callback(new Error(t('mall.coupon.perLimitPositiveInt')))
         return
       }
       callback()
@@ -99,25 +102,25 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
 
   return [
     {
-      label: () => '优惠券名称',
+      label: () => t('mall.coupon.name'),
       prop: 'name',
       render: 'input',
-      renderProps: { placeholder: '请输入优惠券名称', maxlength: 120, showWordLimit: true },
-      itemProps: { rules: [{ required: true, message: '请输入优惠券名称', trigger: ['blur', 'change'] }] },
+      renderProps: { placeholder: t('mall.coupon.namePlaceholder'), maxlength: 120, showWordLimit: true },
+      itemProps: { rules: [{ required: true, message: t('mall.coupon.nameRequired'), trigger: ['blur', 'change'] }] },
     },
     {
-      label: () => '优惠类型',
+      label: () => t('mall.coupon.typeLabel'),
       prop: 'type',
       render: () => (
-        <el-select placeholder="请选择类型">
-          <el-option label="满减" value="fixed" />
-          <el-option label="折扣" value="percent" />
+        <el-select placeholder={t('mall.coupon.typePlaceholder')}>
+          <el-option label={t('mall.coupon.typeFixed')} value="fixed" />
+          <el-option label={t('mall.coupon.typePercent')} value="percent" />
         </el-select>
       ),
-      itemProps: { rules: [{ required: true, message: '请选择优惠类型', trigger: ['change'] }] },
+      itemProps: { rules: [{ required: true, message: t('mall.coupon.typeRequired'), trigger: ['change'] }] },
     },
     {
-      label: () => '优惠值',
+      label: () => t('mall.coupon.valueLabel'),
       prop: 'value',
       render: () => (
         <el-input-number
@@ -125,7 +128,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           onUpdate:modelValue={(val: number | null) => model.value = typeof val === 'number' ? val : undefined}
           min={0.01}
           precision={2}
-          placeholder={model.type === 'percent' ? '如8.5表示8.5折' : '请输入优惠金额（元）'}
+          placeholder={model.type === 'percent' ? t('mall.coupon.valuePlaceholderPercent') : t('mall.coupon.valuePlaceholderFixed')}
           controls-position="right"
           class="w-full"
         />
@@ -137,7 +140,7 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
       },
     },
     {
-      label: () => '最低使用金额（元）',
+      label: () => t('mall.coupon.minAmountLabel'),
       prop: 'min_amount',
       render: () => (
         <el-input-number
@@ -145,15 +148,15 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           onUpdate:modelValue={(val: number | null) => model.min_amount = typeof val === 'number' ? val : undefined}
           min={0}
           precision={2}
-          placeholder="请输入最低使用金额"
+          placeholder={t('mall.coupon.minAmountPlaceholder')}
           controls-position="right"
           class="w-full"
         />
       ),
-      itemProps: { rules: [optionalNonNegative('最低使用金额')] },
+      itemProps: { rules: [optionalNonNegative(t('mall.coupon.minAmountLabel'))] },
     },
     {
-      label: () => '发放总数',
+      label: () => t('mall.coupon.totalCountLabel'),
       prop: 'total_quantity',
       render: () => (
         <el-input-number
@@ -162,18 +165,18 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           min={1}
           step={1}
           controls-position="right"
-          placeholder="请输入发放数量"
+          placeholder={t('mall.coupon.totalCountPlaceholder')}
           class="w-full"
         />
       ),
       itemProps: {
         rules: [
-          positiveIntegerRule('发放总数'),
+          positiveIntegerRule(t('mall.coupon.totalCountLabel')),
         ],
       },
     },
     {
-      label: () => '每人限领',
+      label: () => t('mall.coupon.perLimitLabel'),
       prop: 'per_user_limit',
       render: () => (
         <el-input-number
@@ -184,35 +187,35 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
           min={1}
           step={1}
           controls-position="right"
-          placeholder="请输入限领数量（留空则不限）"
+          placeholder={t('mall.coupon.perLimitPlaceholder')}
           class="w-full"
         />
       ),
-      itemProps: { rules: [optionalPositiveInteger('每人限领')] },
+      itemProps: { rules: [optionalPositiveInteger(t('mall.coupon.perLimitLabel'))] },
     },
     {
-      label: () => '有效期',
+      label: () => t('mall.coupon.validityLabel'),
       prop: 'dateRange',
       render: () => (
         <el-date-picker
           v-model={model.dateRange}
           type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
+          range-separator={t('dashboard.dateRange.to')}
+          start-placeholder={t('mall.common.startTime')}
+          end-placeholder={t('mall.common.endTime')}
           value-format="YYYY-MM-DD HH:mm:ss"
           class="w-full"
         />
       ),
       itemProps: {
         rules: [
-          { required: true, message: '请选择有效期', trigger: ['change'] },
+          { required: true, message: t('mall.coupon.validityRequired'), trigger: ['change'] },
           {
             validator: (_: any, value: any, callback: (error?: Error) => void) => {
               if (Array.isArray(value) && value.length === 2) {
                 const [start, end] = value
                 if (start && end && dayjs(start).isAfter(dayjs(end))) {
-                  callback(new Error('开始时间不能晚于结束时间'))
+                  callback(new Error(t('mall.coupon.startBeforeEnd')))
                   return
                 }
               }
@@ -224,15 +227,15 @@ export default function getFormItems(model: CouponVo): MaFormItem[] {
       },
     },
     {
-      label: () => '状态',
+      label: () => t('mall.coupon.statusLabel'),
       prop: 'status',
-      render: () => <el-switch active-value="active" inactive-value="inactive" active-text="启用" inactive-text="停用" />,
+      render: () => <el-switch active-value="active" inactive-value="inactive" active-text={t('mall.coupon.statusActive')} inactive-text={t('mall.coupon.statusInactive')} />,
     },
     {
-      label: () => '描述',
+      label: () => t('mall.coupon.descriptionLabel'),
       prop: 'description',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 3, maxlength: 500, showWordLimit: true, placeholder: '请输入描述' },
+      renderProps: { type: 'textarea', rows: 3, maxlength: 500, showWordLimit: true, placeholder: t('mall.coupon.descriptionPlaceholder') },
     },
   ]
 }

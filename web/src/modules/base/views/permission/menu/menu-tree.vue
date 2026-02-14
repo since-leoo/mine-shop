@@ -27,9 +27,9 @@ const setNodeExpand = inject('setNodeExpand') as (id: number, state: boolean) =>
 const t = useTrans().globalTrans
 
 const menuType = ref<{ [key: string]: Record<string, string> }>({
-  M: { color: 'primary', label: '菜单' },
-  B: { color: 'danger', label: '按钮' },
-  L: { color: 'success', label: '外链' },
+  M: { color: 'primary', label: t('baseMenuManage.typeItem.M') },
+  B: { color: 'danger', label: t('baseMenuManage.typeItem.B') },
+  L: { color: 'success', label: t('baseMenuManage.typeItem.L') },
   I: { color: 'warning', label: 'iFrame' },
 })
 

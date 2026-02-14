@@ -15,6 +15,7 @@ import { ResultCode } from '@/utils/ResultCode.ts'
 import { centsToYuan, yuanToCents } from '@/utils/price'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 import MaRichEditor from '@/components/ma-rich-editor/index.vue'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:product:form' })
 
@@ -34,6 +35,7 @@ const elFormRef = ref<FormInstance>()
 const model = ref<ProductFormModel>({})
 const activeStep = ref(1)
 const msg = useMessage()
+const { t } = useI18n()
 
 // Options
 const categoryOptions = ref<any[]>([])
@@ -145,9 +147,9 @@ function addAttribute() { model.value.attributes?.push({ attribute_name: '', val
 function removeAttribute(index: number) { model.value.attributes?.splice(index, 1) }
 
 function batchSet(field: keyof ProductSkuVo, label: string, isInt = false) {
-  msg.prompt(`请输入${label}`, '', label, (value) => {
-    if (value === '' || value === null || value === undefined) return '请输入有效数值'
-    return Number.isNaN(Number(value)) ? '请输入数字' : true
+  msg.prompt(t('mall.productForm.inputPrompt', { label }), '', label, (value) => {
+    if (value === '' || value === null || value === undefined) return t('mall.productForm.inputValidNumber')
+    return Number.isNaN(Number(value)) ? t('mall.productForm.inputNumber') : true
   }).then(({ value }) => {
     const next = isInt ? parseInt(value, 10) : Number(value)
     if (!Number.isNaN(next)) model.value.skus?.forEach((sku) => { (sku as any)[field] = next })
@@ -223,10 +225,10 @@ function edit(): Promise<any> {
 const hasSpecs = computed(() => specItems.value.some(s => s.nameTags?.[0] && s.values.length > 0) || (model.value.skus?.length ?? 0) > 0)
 
 const steps = [
-  { title: '基础信息' },
-  { title: '价格与展示' },
-  { title: '属性与规格' },
-  { title: '简介与详情' },
+  { title: t('mall.product.steps.basicInfo') },
+  { title: t('mall.product.steps.priceDisplay') },
+  { title: t('mall.product.steps.attrSpec') },
+  { title: t('mall.product.steps.descDetail') },
 ]
 
 // Expose for parent drawer
@@ -257,42 +259,42 @@ defineExpose({
       <!-- ========== Step 1: 基础信息 ========== -->
       <div v-show="activeStep === 1" class="step-panel">
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">基本信息</span></template>
+          <template #header><span class="section-title">{{ t('mall.productForm.basicInfo') }}</span></template>
           <el-row :gutter="20">
             <el-col v-if="formType === 'edit'" :span="24">
-              <el-form-item label="商品编码">
-                <el-input v-model="model.product_code" disabled placeholder="自动生成" />
+              <el-form-item :label="t('mall.product.productCode')">
+                <el-input v-model="model.product_code" disabled :placeholder="t('mall.product.autoGenerate')" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="商品名称" prop="name" :rules="[{ required: true, message: '请输入商品名称' }]">
-                <el-input v-model="model.name" placeholder="请输入商品名称" />
+              <el-form-item :label="t('mall.product.productName')" prop="name" :rules="[{ required: true, message: t('mall.productForm.productNameRequired') }]">
+                <el-input v-model="model.name" :placeholder="t('mall.product.productName')" />
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <el-form-item label="副标题">
-                <el-input v-model="model.sub_title" placeholder="请输入副标题（可选）" />
+              <el-form-item :label="t('mall.product.subTitle')">
+                <el-input v-model="model.sub_title" :placeholder="t('mall.product.subTitlePlaceholder')" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="分类" prop="category_id" :rules="[{ required: true, message: '请选择分类' }]">
+              <el-form-item :label="t('mall.product.category')" prop="category_id" :rules="[{ required: true, message: t('mall.productForm.categoryRequired') }]">
                 <el-tree-select
                   v-model="model.category_id"
                   :data="categoryOptions"
                   :props="{ value: 'id', label: 'name' }"
                   check-strictly
                   clearable
-                  placeholder="请选择分类"
+                  :placeholder="t('mall.productForm.categoryPlaceholder')"
                   class="w-full"
                 />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="品牌">
+              <el-form-item :label="t('mall.product.brand')">
                 <el-select-v2
                   v-model="model.brand_id"
                   clearable
-                  placeholder="请选择品牌"
+                  :placeholder="t('mall.productForm.brandPlaceholder')"
                   class="w-full"
                   :options="brandOptions.map(b => ({ label: b.label ?? b.name ?? '', value: b.value ?? b.id }))"
                 />
@@ -302,30 +304,30 @@ defineExpose({
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">状态与标签</span></template>
+          <template #header><span class="section-title">{{ t('mall.productForm.statusAndTags') }}</span></template>
           <el-row :gutter="20">
             <el-col :span="24">
-              <el-form-item label="状态">
+              <el-form-item :label="t('mall.productForm.statusLabel')">
                 <el-radio-group v-model="model.status">
-                  <el-radio value="draft">草稿</el-radio>
-                  <el-radio value="active">上架</el-radio>
-                  <el-radio value="inactive">下架</el-radio>
-                  <el-radio value="sold_out">售罄</el-radio>
+                  <el-radio value="draft">{{ t('mall.product.status.draft') }}</el-radio>
+                  <el-radio value="active">{{ t('mall.product.status.active') }}</el-radio>
+                  <el-radio value="inactive">{{ t('mall.product.status.inactive') }}</el-radio>
+                  <el-radio value="sold_out">{{ t('mall.product.status.soldOut') }}</el-radio>
                 </el-radio-group>
               </el-form-item>
             </el-col>
             <el-col :md="8" :xs="24">
-              <el-form-item label="推荐">
+              <el-form-item :label="t('mall.productForm.recommend')">
                 <el-switch v-model="model.is_recommend" />
               </el-form-item>
             </el-col>
             <el-col :md="8" :xs="24">
-              <el-form-item label="热销">
+              <el-form-item :label="t('mall.productForm.hotSale')">
                 <el-switch v-model="model.is_hot" />
               </el-form-item>
             </el-col>
             <el-col :md="8" :xs="24">
-              <el-form-item label="新品">
+              <el-form-item :label="t('mall.productForm.newProduct')">
                 <el-switch v-model="model.is_new" />
               </el-form-item>
             </el-col>
@@ -333,32 +335,32 @@ defineExpose({
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">运费配置</span></template>
+          <template #header><span class="section-title">{{ t('mall.productForm.freightConfig') }}</span></template>
           <el-row :gutter="20">
             <el-col :md="12" :xs="24">
-              <el-form-item label="运费类型" prop="freight_type" :rules="[{ required: true, message: '请选择运费类型' }]">
-                <el-select v-model="model.freight_type" placeholder="请选择" class="w-full">
-                  <el-option label="系统默认" value="default" />
-                  <el-option label="免运费" value="free" />
-                  <el-option label="统一运费" value="flat" />
-                  <el-option label="运费模板" value="template" />
+              <el-form-item :label="t('mall.product.freightType')" prop="freight_type" :rules="[{ required: true, message: t('mall.productForm.freightTypeRequired') }]">
+                <el-select v-model="model.freight_type" :placeholder="t('mall.common.selectPlaceholder')" class="w-full">
+                  <el-option :label="t('mall.product.freightDefault')" value="default" />
+                  <el-option :label="t('mall.product.freightFree')" value="free" />
+                  <el-option :label="t('mall.product.freightFlat')" value="flat" />
+                  <el-option :label="t('mall.product.freightTemplate')" value="template" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col v-if="model.freight_type === 'flat'" :md="12" :xs="24">
-              <el-form-item label="运费金额（元）" prop="flat_freight_amount" :rules="[{ required: true, message: '请输入运费金额' }]">
+              <el-form-item :label="t('mall.productForm.freightAmount')" prop="flat_freight_amount" :rules="[{ required: true, message: t('mall.productForm.freightAmountRequired') }]">
                 <el-input-number v-model="model.flat_freight_amount" :min="0" :max="999.99" :precision="2" class="w-full" />
               </el-form-item>
             </el-col>
             <el-col v-if="model.freight_type === 'template'" :md="12" :xs="24">
-              <el-form-item label="运费模板" prop="shipping_template_id" :rules="[{ required: true, message: '请选择运费模板' }]">
-                <el-select v-model="model.shipping_template_id" placeholder="请选择运费模板" clearable class="w-full">
+              <el-form-item :label="t('mall.productForm.freightTemplate')" prop="shipping_template_id" :rules="[{ required: true, message: t('mall.productForm.freightTemplateRequired') }]">
+                <el-select v-model="model.shipping_template_id" :placeholder="t('mall.productForm.freightTemplatePlaceholder')" clearable class="w-full">
                   <el-option v-for="t in shippingTemplateOptions" :key="t.id" :label="t.name" :value="t.id" />
                 </el-select>
               </el-form-item>
             </el-col>
             <el-col :span="24">
-              <div class="text-xs text-gray-400">系统默认：使用商城全局运费配置；免运费：不收运费；统一运费：所有地区相同金额；运费模板：按模板规则计算。</div>
+              <div class="text-xs text-gray-400">{{ t('mall.productForm.freightTip') }}</div>
             </el-col>
           </el-row>
         </el-card>
@@ -367,47 +369,47 @@ defineExpose({
       <!-- ========== Step 2: 价格与展示 ========== -->
       <div v-show="activeStep === 2" class="step-panel">
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">商品图片</span></template>
+          <template #header><span class="section-title">{{ t('mall.productForm.productImages') }}</span></template>
           <el-row :gutter="20">
             <el-col :md="12" :xs="24">
-              <el-form-item label="主图">
+              <el-form-item :label="t('mall.productForm.mainImage')">
                 <MaUploadImage v-model="model.main_image" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="图集">
+              <el-form-item :label="t('mall.productForm.gallery')">
                 <MaUploadImage v-model="model.gallery_images" :multiple="true" :limit="8" />
-                <div class="text-xs text-gray-400 mt-1">最多 8 张，第一张将作为默认主图。</div>
+                <div class="text-xs text-gray-400 mt-1">{{ t('mall.productForm.galleryTip') }}</div>
               </el-form-item>
             </el-col>
           </el-row>
         </el-card>
 
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">价格与销量</span></template>
+          <template #header><span class="section-title">{{ t('mall.productForm.priceAndSales') }}</span></template>
           <el-row :gutter="20">
             <el-col :md="12" :xs="24">
-              <el-form-item label="最低价（元）">
+              <el-form-item :label="t('mall.productForm.minPrice')">
                 <el-input-number v-model="model.min_price" :min="0" :precision="2" class="w-full" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="最高价（元）">
+              <el-form-item :label="t('mall.productForm.maxPrice')">
                 <el-input-number v-model="model.max_price" :min="0" :precision="2" class="w-full" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="虚拟销量">
+              <el-form-item :label="t('mall.productForm.virtualSales')">
                 <el-input-number v-model="model.virtual_sales" :min="0" class="w-full" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="真实销量">
+              <el-form-item :label="t('mall.productForm.realSales')">
                 <el-input-number v-model="model.real_sales" :min="0" class="w-full" />
               </el-form-item>
             </el-col>
             <el-col :md="12" :xs="24">
-              <el-form-item label="排序">
+              <el-form-item :label="t('mall.productForm.sort')">
                 <el-input-number v-model="model.sort" :min="0" class="w-full" />
               </el-form-item>
             </el-col>
@@ -420,39 +422,39 @@ defineExpose({
         <el-card shadow="never" class="section-card">
           <template #header>
             <div class="flex items-center justify-between">
-              <span class="section-title">商品属性</span>
-              <el-button type="primary" plain size="small" @click="addAttribute">新增属性</el-button>
+              <span class="section-title">{{ t('mall.productForm.productAttributes') }}</span>
+              <el-button type="primary" plain size="small" @click="addAttribute">{{ t('mall.productForm.addAttribute') }}</el-button>
             </div>
           </template>
           <el-table :data="model.attributes || []" size="small" border>
-            <el-table-column label="属性名" min-width="160">
+            <el-table-column :label="t('mall.productForm.attrName')" min-width="160">
               <template #default="{ row }">
-                <el-input v-model="row.attribute_name" placeholder="属性名" />
+                <el-input v-model="row.attribute_name" :placeholder="t('mall.productForm.attrNamePlaceholder')" />
               </template>
             </el-table-column>
-            <el-table-column label="属性值" min-width="220">
+            <el-table-column :label="t('mall.productForm.attrValue')" min-width="220">
               <template #default="{ row }">
-                <el-input v-model="row.value" placeholder="属性值" />
+                <el-input v-model="row.value" :placeholder="t('mall.productForm.attrValuePlaceholder')" />
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80" align="center">
+            <el-table-column :label="t('mall.productForm.operation')" width="80" align="center">
               <template #default="{ $index }">
-                <el-button type="danger" link @click="removeAttribute($index)">删除</el-button>
+                <el-button type="danger" link @click="removeAttribute($index)">{{ t('mall.common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
-          <div v-if="!model.attributes?.length" class="text-center text-xs text-gray-400 py-4">暂无属性，点击上方按钮添加。</div>
+          <div v-if="!model.attributes?.length" class="text-center text-xs text-gray-400 py-4">{{ t('mall.productForm.noAttributes') }}</div>
         </el-card>
 
         <el-card shadow="never" class="section-card">
           <template #header>
             <div class="flex items-center justify-between">
-              <span class="section-title">规格配置</span>
-              <el-button type="primary" plain size="small" @click="addSpec">新增规格</el-button>
+              <span class="section-title">{{ t('mall.productForm.specConfig') }}</span>
+              <el-button type="primary" plain size="small" @click="addSpec">{{ t('mall.productForm.addSpec') }}</el-button>
             </div>
           </template>
           <el-table :data="specItems" size="small" border>
-            <el-table-column label="规格名" min-width="160">
+            <el-table-column :label="t('mall.productForm.specName')" min-width="160">
               <template #default="{ row }">
                 <el-select
                   v-model="row.nameTags"
@@ -462,12 +464,12 @@ defineExpose({
                   allow-create
                   default-first-option
                   :collapse-tags="false"
-                  placeholder="输入后回车"
+                  :placeholder="t('mall.productForm.specNamePlaceholder')"
                   @change="updateSkusFromSpecs"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="规格值" min-width="320">
+            <el-table-column :label="t('mall.productForm.specValue')" min-width="320">
               <template #default="{ row }">
                 <el-select
                   v-model="row.values"
@@ -476,69 +478,69 @@ defineExpose({
                   allow-create
                   default-first-option
                   :collapse-tags="false"
-                  placeholder="输入后回车"
+                  :placeholder="t('mall.productForm.specValuePlaceholder')"
                   @change="updateSkusFromSpecs"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="80" align="center">
+            <el-table-column :label="t('mall.productForm.operation')" width="80" align="center">
               <template #default="{ $index }">
-                <el-button type="danger" link @click="removeSpec($index)">删除</el-button>
+                <el-button type="danger" link @click="removeSpec($index)">{{ t('mall.common.delete') }}</el-button>
               </template>
             </el-table-column>
           </el-table>
-          <div v-if="!specItems.length" class="text-center text-xs text-gray-400 py-4">暂无规格，点击上方按钮添加。</div>
+          <div v-if="!specItems.length" class="text-center text-xs text-gray-400 py-4">{{ t('mall.productForm.noSpecs') }}</div>
         </el-card>
 
         <el-card v-if="hasSpecs" shadow="never" class="section-card">
           <template #header>
             <div class="flex items-center justify-between">
-              <span class="section-title">SKU 列表</span>
+              <span class="section-title">{{ t('mall.productForm.skuList') }}</span>
               <div class="flex flex-wrap gap-1">
-                <el-button plain size="small" @click="batchSet('cost_price', '成本价')">批量成本价</el-button>
-                <el-button plain size="small" @click="batchSet('market_price', '市场价')">批量市场价</el-button>
-                <el-button plain size="small" @click="batchSet('sale_price', '销售价')">批量销售价</el-button>
-                <el-button plain size="small" @click="batchSet('stock', '库存', true)">批量库存</el-button>
+                <el-button plain size="small" @click="batchSet('cost_price', t('mall.productForm.costPrice'))">{{ t('mall.productForm.batchCostPrice') }}</el-button>
+                <el-button plain size="small" @click="batchSet('market_price', t('mall.productForm.marketPrice'))">{{ t('mall.productForm.batchMarketPrice') }}</el-button>
+                <el-button plain size="small" @click="batchSet('sale_price', t('mall.productForm.salePrice'))">{{ t('mall.productForm.batchSalePrice') }}</el-button>
+                <el-button plain size="small" @click="batchSet('stock', t('mall.productForm.stock'), true)">{{ t('mall.productForm.batchStock') }}</el-button>
               </div>
             </div>
           </template>
           <el-table :data="model.skus || []" size="small" border max-height="400">
-            <el-table-column v-if="formType === 'edit'" label="SKU编码" min-width="120">
+            <el-table-column v-if="formType === 'edit'" :label="t('mall.productForm.skuCode')" min-width="120">
               <template #default="{ row }"><el-input v-model="row.sku_code" disabled /></template>
             </el-table-column>
-            <el-table-column label="名称" min-width="140">
-              <template #default="{ row }"><el-input v-model="row.sku_name" placeholder="SKU名称" /></template>
+            <el-table-column :label="t('mall.productForm.skuName')" min-width="140">
+              <template #default="{ row }"><el-input v-model="row.sku_name" :placeholder="t('mall.productForm.skuNamePlaceholder')" /></template>
             </el-table-column>
-            <el-table-column label="规格值" min-width="140">
+            <el-table-column :label="t('mall.productForm.specValues')" min-width="140">
               <template #default="{ row }">
                 <el-input
                   :model-value="Array.isArray(row.spec_values) ? row.spec_values.map((v: any) => specValStr(v)).join(',') : row.spec_values"
-                  placeholder="红色,XL"
+                  :placeholder="t('mall.productForm.specValuesPlaceholder')"
                   @update:model-value="(v: string) => row.spec_values = v.split(',').map((s: string) => s.trim()).filter(Boolean)"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="图片" width="90" align="center">
+            <el-table-column :label="t('mall.productForm.image')" width="90" align="center">
               <template #default="{ row }">
                 <MaUploadImage v-model="row.image" :size="50" />
               </template>
             </el-table-column>
-            <el-table-column label="成本价" width="130">
+            <el-table-column :label="t('mall.productForm.costPrice')" width="130">
               <template #default="{ row }"><el-input-number v-model="row.cost_price" :min="0" :precision="2" class="w-full" controls-position="right" /></template>
             </el-table-column>
-            <el-table-column label="市场价" width="130">
+            <el-table-column :label="t('mall.productForm.marketPrice')" width="130">
               <template #default="{ row }"><el-input-number v-model="row.market_price" :min="0" :precision="2" class="w-full" controls-position="right" /></template>
             </el-table-column>
-            <el-table-column label="销售价" width="130">
+            <el-table-column :label="t('mall.productForm.salePrice')" width="130">
               <template #default="{ row }"><el-input-number v-model="row.sale_price" :min="0" :precision="2" class="w-full" controls-position="right" /></template>
             </el-table-column>
-            <el-table-column label="库存" width="110">
+            <el-table-column :label="t('mall.productForm.stock')" width="110">
               <template #default="{ row }"><el-input-number v-model="row.stock" :min="0" class="w-full" controls-position="right" /></template>
             </el-table-column>
-            <el-table-column label="重量" width="110">
+            <el-table-column :label="t('mall.productForm.weight')" width="110">
               <template #default="{ row }"><el-input-number v-model="row.weight" :min="0" class="w-full" controls-position="right" /></template>
             </el-table-column>
-            <el-table-column label="状态" width="70" align="center">
+            <el-table-column :label="t('mall.productForm.skuStatus')" width="70" align="center">
               <template #default="{ row }"><el-switch v-model="row.status" active-value="active" inactive-value="inactive" /></template>
             </el-table-column>
           </el-table>
@@ -548,12 +550,12 @@ defineExpose({
       <!-- ========== Step 4: 简介与详情 ========== -->
       <div v-show="activeStep === 4" class="step-panel">
         <el-card shadow="never" class="section-card">
-          <template #header><span class="section-title">商品描述</span></template>
-          <el-form-item label="简介">
-            <el-input v-model="model.description" type="textarea" :rows="3" placeholder="请输入简介" />
+          <template #header><span class="section-title">{{ t('mall.productForm.productDesc') }}</span></template>
+          <el-form-item :label="t('mall.productForm.description')">
+            <el-input v-model="model.description" type="textarea" :rows="3" :placeholder="t('mall.productForm.descPlaceholder')" />
           </el-form-item>
-          <el-form-item label="详情">
-            <MaRichEditor v-model="model.detail_content" placeholder="请输入详情内容" :height="360" />
+          <el-form-item :label="t('mall.productForm.detail')">
+            <MaRichEditor v-model="model.detail_content" :placeholder="t('mall.productForm.detailPlaceholder')" :height="360" />
           </el-form-item>
         </el-card>
       </div>
@@ -561,8 +563,8 @@ defineExpose({
 
     <!-- Footer -->
     <div class="step-footer">
-      <el-button v-if="activeStep > 1" @click="activeStep -= 1">上一步</el-button>
-      <el-button v-if="activeStep < 4" type="primary" @click="activeStep += 1">下一步</el-button>
+      <el-button v-if="activeStep > 1" @click="activeStep -= 1">{{ t('mall.productForm.prevStep') }}</el-button>
+      <el-button v-if="activeStep < 4" type="primary" @click="activeStep += 1">{{ t('mall.productForm.nextStep') }}</el-button>
     </div>
   </div>
 </template>

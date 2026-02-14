@@ -3,30 +3,33 @@ import type { GroupBuyOrderDetailVo } from '~/mall/api/group-buy-order'
 
 import { ElTag } from 'element-plus'
 import { formatYuan } from '@/utils/price'
-
-const orderStatusMap: Record<string, { text: string, type: string }> = {
-  pending: { text: '待付款', type: 'warning' },
-  paid: { text: '已付款', type: 'success' },
-  grouped: { text: '已成团', type: 'success' },
-  cancelled: { text: '已取消', type: 'info' },
-  failed: { text: '拼团失败', type: 'danger' },
-}
+import { useI18n } from 'vue-i18n'
 
 export default function getOrderColumns(): MaProTableColumns[] {
+  const { t } = useI18n()
+
+  const orderStatusMap: Record<string, { text: string, type: string }> = {
+    pending: { text: t('mall.orderStatus.pending'), type: 'warning' },
+    paid: { text: t('mall.orderStatus.paid'), type: 'success' },
+    grouped: { text: t('mall.orderStatus.grouped'), type: 'success' },
+    cancelled: { text: t('mall.orderStatus.cancelled'), type: 'info' },
+    failed: { text: t('mall.orderStatus.failed'), type: 'danger' },
+  }
+
   return [
-    { label: () => '团号', prop: 'group_no', width: '180px' },
+    { label: () => t('mall.groupBuyOrder.groupNo'), prop: 'group_no', width: '180px' },
     {
-      label: () => '团长',
+      label: () => t('mall.groupBuyOrder.leader'),
       prop: 'is_leader',
       width: '60px',
       cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) =>
-        row.is_leader ? <ElTag type="warning" size="small">团长</ElTag> : <span class="text-gray-400">团员</span>,
+        row.is_leader ? <ElTag type="warning" size="small">{t('mall.groupBuyOrder.leaderTag')}</ElTag> : <span class="text-gray-400">{t('mall.groupBuyOrder.member')}</span>,
     },
-    { label: () => '会员', prop: 'member_nickname', width: '100px' },
-    { label: () => '手机号', prop: 'member_phone', width: '120px' },
-    { label: () => '数量', prop: 'quantity', width: '60px' },
+    { label: () => t('mall.groupBuyOrder.memberName'), prop: 'member_nickname', width: '100px' },
+    { label: () => t('mall.groupBuyOrder.phone'), prop: 'member_phone', width: '120px' },
+    { label: () => t('mall.groupBuyOrder.quantity'), prop: 'quantity', width: '60px' },
     {
-      label: () => '团购价',
+      label: () => t('mall.groupBuyOrder.groupPrice'),
       prop: 'group_price',
       width: '90px',
       cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => (
@@ -34,7 +37,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       ),
     },
     {
-      label: () => '实付金额',
+      label: () => t('mall.groupBuyOrder.paidAmount'),
       prop: 'total_amount',
       width: '100px',
       cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => (
@@ -42,7 +45,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       ),
     },
     {
-      label: () => '拼团状态',
+      label: () => t('mall.groupBuyOrder.groupStatus'),
       prop: 'status',
       width: '90px',
       cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => {
@@ -50,8 +53,8 @@ export default function getOrderColumns(): MaProTableColumns[] {
         return <ElTag type={s.type as any} size="small">{s.text}</ElTag>
       },
     },
-    { label: () => '关联订单', prop: 'order_no', width: '180px' },
-    { label: () => '参团时间', prop: 'join_time', width: '160px' },
-    { label: () => '过期时间', prop: 'expire_time', width: '160px' },
+    { label: () => t('mall.groupBuyOrder.relatedOrder'), prop: 'order_no', width: '180px' },
+    { label: () => t('mall.groupBuyOrder.joinTime'), prop: 'join_time', width: '160px' },
+    { label: () => t('mall.groupBuyOrder.expireTime'), prop: 'expire_time', width: '160px' },
   ]
 }

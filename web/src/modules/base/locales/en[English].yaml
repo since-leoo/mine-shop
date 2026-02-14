@@ -3,6 +3,8 @@ baseUserManage:
   username: Username
   nickname: Nickname
   phone: Phone
+  dept: Department
+  post: Position
   email: Email
   password: Password
   userType: User type
@@ -48,6 +50,9 @@ baseMenuManage:
   isBreadcrumb: Breadcrumb
   isAffix: Tab Is Fixed
   remark: Remarks
+  baseInfo: Basic Info
+  frontAuth: Frontend Auth
+  otherInfo: Other Info
   typeItem:
     M: Menu
     B: Button
@@ -74,6 +79,38 @@ baseMenuManage:
     btnName: Please enter the button name
     btnCode: Please enter the button code
     btnI18n: Please enter the button i18n
+baseRole:
+  name: Role Name
+  code: Role Code
+  remark: Remark
+  permission: Permission Menu
+  placeholder:
+    name: Please enter role name
+    code: Please enter role code, must be unique globally
+    remark: Remarks
+basePermission:
+  name: Permission Name
+  code: Permission Code
+  remark: Remark
+  placeholder:
+    name: Please enter permission name
+    code: Please enter permission code, must be unique globally
+    remark: Remarks
+baseDict:
+  name: Dictionary Name
+  code: Dictionary Code
+  remark: Remark
+  placeholder:
+    name: Please enter dictionary name
+    code: Please enter dictionary code, must be unique globally
+    remark: Remarks
+baseDictItem:
+  name: Dictionary Item Name
+  code: Dictionary Item Code
+  remark: Remark
+  placeholder:
+    name: Please enter dictionary item name
+    code: Please enter dictionary item code, must be unique globally
 baseLoginLog:
   title: User Login log
   username: Username
@@ -91,6 +128,43 @@ baseOperationLog:
   ip: Request IP
   created_at: Creation Time
   updated_at: Update Time
+baseDepartment:
+  name: Department Name
+  created_at: Creation Time
+  updated_at: Update Time
+  leaderCount: Leader Count
+  positionsCount: Position Count
+  usersCount: User Count
+  parentDepartment: Parent Department
+  page:
+    mainTitle: Department Management
+    subTitle: Manage departments, positions, and department leaders.
+    setLeader: Set Leader
+    previewUser: View Users
+    managePost: Manage Positions
+  placeholder:
+    name: Please enter department name
+    parentDepartment: Please select parent department
+  error:
+    selfNotParent: Cannot select self as parent department, data has been restored
+basePost:
+  name: Post Name
+  belongPost: Belongs to Position
+  belongDept: Belongs to Department
+  created_at: Creation Time
+  updated_at: Update Time
+  dataScope: Data Permissions
+  selectDept: Selected Departments
+  callFunc: Function Call Name
+  placeholder:
+    name: Please enter position name
+baseDeptLeader:
+  belongDept: Department
+  username: Username
+  nickname: Nickname
+  user_id: Select User
+  placeholder:
+    user_id: Please select a user to set as leader
 baseMenu:
   permission:
     index: Permission
@@ -124,17 +198,10 @@ baseMenu:
     positionSave: Edit post
     positionDelete: Delete post
     positionDataScope: Set post data scope
-basePost:
-  name: Post Name
-  belongPost: Belongs to Position
-  belongDept: Belongs to Department
-  created_at: Creation Time
-  updated_at: Update Time
-  dataScope: Data Permissions
-  selectDept: Selected Departments
-  callFunc: Function Call Name
-  placeholder:
-    name: Please enter position name
+    leaderList: Department leader list
+    leaderCreate: Add department leader
+    leaderSave: Edit department leader
+    leaderDelete: Delete department leader
   log:
     index: Log Management
     userLoginLog: Login Log

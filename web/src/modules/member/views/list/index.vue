@@ -8,10 +8,10 @@
       <el-form label-width="90px" :model="filters">
         <el-row :gutter="16">
           <el-col :span="6">
-            <el-form-item label="关键词">
+            <el-form-item :label="t('member.list.keyword')">
               <el-input
                 v-model="filters.keyword"
-                placeholder="昵称 / 手机号 / OpenID"
+                :placeholder="t('member.list.keywordPlaceholder')"
                 clearable
                 @keyup.enter="handleSearch"
               >
@@ -22,22 +22,22 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="状态">
-              <el-select v-model="filters.status" placeholder="全部状态" clearable class="w-full" @change="handleSearch">
+            <el-form-item :label="t('member.list.statusLabel')">
+              <el-select v-model="filters.status" :placeholder="t('mall.allStatus')" clearable class="w-full" @change="handleSearch">
                 <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="等级">
-              <el-select v-model="filters.level" placeholder="全部等级" clearable class="w-full" @change="handleSearch">
+            <el-form-item :label="t('member.list.levelLabel')">
+              <el-select v-model="filters.level" :placeholder="t('mall.allLevel')" clearable class="w-full" @change="handleSearch">
                 <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="来源">
-              <el-select v-model="filters.source" placeholder="全部来源" clearable class="w-full" @change="handleSearch">
+            <el-form-item :label="t('member.list.sourceLabel')">
+              <el-select v-model="filters.source" :placeholder="t('mall.allSource')" clearable class="w-full" @change="handleSearch">
                 <el-option v-for="item in sourceOptions" :key="item.value" :label="item.label" :value="item.value" />
               </el-select>
             </el-form-item>
@@ -45,20 +45,20 @@
         </el-row>
         <el-row :gutter="16">
           <el-col :span="6">
-            <el-form-item label="标签">
-              <el-select v-model="filters.tag_id" placeholder="全部标签" clearable filterable class="w-full" @change="handleSearch">
+            <el-form-item :label="t('member.list.tagLabel')">
+              <el-select v-model="filters.tag_id" :placeholder="t('mall.allTag')" clearable filterable class="w-full" @change="handleSearch">
                 <el-option v-for="tag in tagOptions" :key="tag.id" :label="tag.name" :value="tag.id" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="10">
-            <el-form-item label="注册时间">
+            <el-form-item :label="t('member.list.registeredAt')">
               <el-date-picker
                 v-model="createdRange"
                 value-format="YYYY-MM-DD"
                 type="daterange"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :start-placeholder="t('mall.startDate')"
+                :end-placeholder="t('mall.endDate')"
                 class="w-full"
                 @change="handleDateChange"
               />
@@ -67,15 +67,15 @@
           <el-col :span="8" class="text-right">
             <el-button type="primary" @click="handleSearch">
               <template #icon><el-icon><Search /></el-icon></template>
-              搜索
+              {{ t('member.list.search') }}
             </el-button>
             <el-button @click="resetFilters">
               <template #icon><el-icon><Refresh /></el-icon></template>
-              重置
+              {{ t('member.list.reset') }}
             </el-button>
             <el-button @click="tagManagerVisible = true">
               <template #icon><el-icon><Collection /></el-icon></template>
-              标签管理
+              {{ t('member.list.tagManager') }}
             </el-button>
           </el-col>
         </el-row>
@@ -85,15 +85,15 @@
     <el-card shadow="never">
       <template #header>
         <div class="flex items-center justify-between">
-          <span class="font-medium">会员列表</span>
+          <span class="font-medium">{{ t('member.list.memberList') }}</span>
           <div class="flex items-center gap-2">
             <el-button type="primary" size="small" v-auth="['member:member:create']" @click="openCreate">
               <template #icon><el-icon><Plus /></el-icon></template>
-              新增会员
+              {{ t('member.list.createMember') }}
             </el-button>
             <el-button size="small" @click="loadMembers">
               <template #icon><el-icon><Refresh /></el-icon></template>
-              刷新
+              {{ t('member.list.refresh') }}
             </el-button>
           </div>
         </div>
@@ -101,25 +101,25 @@
 
       <el-table :data="memberList" v-loading="loading" border stripe row-key="id">
         <el-table-column type="index" label="#" width="60" />
-        <el-table-column label="会员" min-width="200">
+        <el-table-column :label="t('member.list.memberColumn')" min-width="200">
           <template #default="{ row }">
             <div class="flex items-center gap-3">
               <el-avatar :size="40" :src="row.avatar">
                 {{ row.nickname?.slice(0, 1) || 'U' }}
               </el-avatar>
               <div class="text-left">
-                <div class="font-medium">{{ row.nickname || '未设置昵称' }}</div>
+                <div class="font-medium">{{ row.nickname || t('member.list.noNickname') }}</div>
                 <div class="text-xs text-gray-500">ID: {{ row.id }}</div>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="手机号" width="140">
+        <el-table-column :label="t('member.list.phoneColumn')" width="140">
           <template #default="{ row }">
             {{ row.phone || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="标签" min-width="200">
+        <el-table-column :label="t('member.list.tagColumn')" min-width="200">
           <template #default="{ row }">
             <div class="flex flex-wrap gap-1">
               <el-tag
@@ -135,74 +135,79 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="等级" width="100">
+        <el-table-column :label="t('member.list.levelColumn')" width="100">
           <template #default="{ row }">
             <el-tag type="warning" size="small">
               {{ levelLabelMap[row.level || 'bronze'] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="成长值" width="120">
+        <el-table-column :label="t('member.list.growthValue')" width="120">
           <template #default="{ row }">
             {{ row.growth_value ?? 0 }}
           </template>
         </el-table-column>
-        <el-table-column label="积分" width="120">
+        <el-table-column :label="t('member.list.balanceColumn')" width="120">
+          <template #default="{ row }">
+            ¥{{ formatYuan(row.wallet?.balance) }}
+          </template>
+        </el-table-column>
+        <el-table-column :label="t('member.list.pointsColumn')" width="120">
           <template #default="{ row }">
             {{ row.points_wallet?.balance ?? row.points_balance ?? 0 }}
           </template>
         </el-table-column>
-        <el-table-column label="订单数" width="100" prop="total_orders" />
-        <el-table-column label="累计消费" width="120">
+        <el-table-column :label="t('member.list.orderCount')" width="100" prop="total_orders" />
+        <el-table-column :label="t('member.list.totalSpent')" width="120">
           <template #default="{ row }">
             ¥{{ formatYuan(row.total_amount) }}
           </template>
         </el-table-column>
-        <el-table-column label="最近登录" width="170">
+        <el-table-column :label="t('member.list.lastLogin')" width="170">
           <template #default="{ row }">
-            {{ row.last_login_at ? formatDateTime(row.last_login_at) : '暂无' }}
+            {{ row.last_login_at ? formatDateTime(row.last_login_at) : t('member.list.noLogin') }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="110">
+        <el-table-column :label="t('member.list.statusColumn')" width="110">
           <template #default="{ row }">
             <el-tag :type="statusTagTypeMap[row.status]" size="small">
               {{ statusLabelMap[row.status] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="来源" width="120">
+        <el-table-column :label="t('member.list.sourceColumn')" width="120">
           <template #default="{ row }">
             {{ sourceLabelMap[row.source || 'wechat'] }}
           </template>
         </el-table-column>
-        <el-table-column label="注册时间" width="170">
+        <el-table-column :label="t('member.list.registeredAtColumn')" width="170">
           <template #default="{ row }">
             {{ formatDateTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="260">
+        <el-table-column :label="t('member.list.operation')" fixed="right" width="260">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
               <el-button type="primary" link size="small" @click="openDetail(row)">
                 <el-icon><View /></el-icon>
-                详情
+                {{ t('member.list.detail') }}
               </el-button>
               <el-button type="primary" link size="small" @click="openEdit(row)">
                 <el-icon><EditPen /></el-icon>
-                编辑
+                {{ t('member.list.edit') }}
               </el-button>
               <el-button type="success" link size="small" @click="openTagDrawer(row)">
                 <el-icon><Collection /></el-icon>
-                打标签
+                {{ t('member.list.assignTag') }}
               </el-button>
               <el-popconfirm
-                :title="row.status === 'banned' ? '解除禁用该会员？' : '确认禁用该会员？'"
+                :title="row.status === 'banned' ? t('member.list.unbanConfirm') : t('member.list.banConfirm')"
                 @confirm="toggleStatus(row)"
               >
                 <template #reference>
                   <el-button :type="row.status === 'banned' ? 'warning' : 'danger'" link size="small">
                     <el-icon><Lock /></el-icon>
-                    {{ row.status === 'banned' ? '解禁' : '禁用' }}
+                    {{ row.status === 'banned' ? t('member.list.unban') : t('member.list.ban') }}
                   </el-button>
                 </template>
               </el-popconfirm>
@@ -229,38 +234,38 @@
 
     <el-drawer v-model="editVisible" :title="editDrawerTitle" size="480px">
       <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="100px">
-        <el-form-item label="昵称" prop="nickname">
-          <el-input v-model="editForm.nickname" placeholder="请输入昵称" />
+        <el-form-item :label="t('member.list.nicknameLabel')" prop="nickname">
+          <el-input v-model="editForm.nickname" :placeholder="t('member.list.nicknamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="editForm.phone" placeholder="请输入手机号" />
+        <el-form-item :label="t('member.list.phoneColumn')">
+          <el-input v-model="editForm.phone" :placeholder="t('member.list.phonePlaceholder')" />
         </el-form-item>
-        <el-form-item label="性别">
-          <el-select v-model="editForm.gender" placeholder="请选择性别" clearable>
-            <el-option label="未知" value="unknown" />
-            <el-option label="男" value="male" />
-            <el-option label="女" value="female" />
+        <el-form-item :label="t('member.list.genderLabel')">
+          <el-select v-model="editForm.gender" :placeholder="t('member.list.genderPlaceholder')" clearable>
+            <el-option :label="t('member.list.genderUnknown')" value="unknown" />
+            <el-option :label="t('member.list.genderMale')" value="male" />
+            <el-option :label="t('member.list.genderFemale')" value="female" />
           </el-select>
         </el-form-item>
-        <el-form-item label="等级">
-          <el-select v-model="editForm.level" placeholder="请选择等级">
+        <el-form-item :label="t('member.list.levelColumn')">
+          <el-select v-model="editForm.level" :placeholder="t('mall.allLevel')">
             <el-option v-for="item in levelOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="成长值">
+        <el-form-item :label="t('member.list.growthValueLabel')">
           <el-input-number v-model="editForm.growth_value" :min="0" class="w-full" />
         </el-form-item>
-        <el-form-item label="状态">
+        <el-form-item :label="t('member.list.statusLabel')">
           <el-select v-model="editForm.status">
             <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="来源">
+        <el-form-item :label="t('member.list.sourceLabel')">
           <el-select v-model="editForm.source">
             <el-option v-for="item in sourceOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
-        <el-form-item label="所在地区">
+        <el-form-item :label="t('member.list.regionLabel')">
           <el-cascader
             v-model="editForm.regionCodes"
             :options="geoTree"
@@ -273,12 +278,12 @@
             @change="handleRegionChange"
           />
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="editForm.remark" type="textarea" rows="3" placeholder="可选，管理员备注" />
+        <el-form-item :label="t('member.list.remarkLabel')">
+          <el-input v-model="editForm.remark" type="textarea" rows="3" :placeholder="t('member.list.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editVisible = false">取消</el-button>
+        <el-button @click="editVisible = false">{{ t('member.list.cancel') }}</el-button>
         <el-button type="primary" :loading="editLoading" @click="submitEdit">
           <template #icon><el-icon><Check /></el-icon></template>
           {{ submitButtonText }}
@@ -286,27 +291,27 @@
       </template>
     </el-drawer>
 
-    <el-drawer v-model="tagDrawerVisible" title="会员标签" size="420px">
+    <el-drawer v-model="tagDrawerVisible" :title="t('member.list.tagDrawerTitle')" size="420px">
       <el-form label-width="90px">
-        <el-form-item label="会员">
+        <el-form-item :label="t('member.list.tagMember')">
           <div class="text-base font-medium">{{ currentMember?.nickname || '-' }} (ID: {{ currentMember?.id }})</div>
         </el-form-item>
-        <el-form-item label="选择标签">
-          <el-select v-model="selectedTags" multiple filterable class="w-full" placeholder="选择标签">
+        <el-form-item :label="t('member.list.selectTag')">
+          <el-select v-model="selectedTags" multiple filterable class="w-full" :placeholder="t('member.list.selectTagPlaceholder')">
             <el-option v-for="tag in tagOptions" :key="tag.id" :label="tag.name" :value="tag.id">
               <span class="flex items-center gap-2">
                 <el-tag :style="{ borderColor: tag.color, color: tag.color }" size="small">{{ tag.name }}</el-tag>
-                <small class="text-gray-400">{{ tag.status === 'active' ? '启用' : '停用' }}</small>
+                <small class="text-gray-400">{{ tag.status === 'active' ? t('member.list.tagEnabled') : t('member.list.tagDisabled') }}</small>
               </span>
             </el-option>
           </el-select>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="tagDrawerVisible = false">取消</el-button>
+        <el-button @click="tagDrawerVisible = false">{{ t('member.list.cancel') }}</el-button>
         <el-button type="primary" :loading="tagLoading" @click="saveTags">
           <template #icon><el-icon><Check /></el-icon></template>
-          保存
+          {{ t('member.list.save') }}
         </el-button>
       </template>
     </el-drawer>
@@ -315,6 +320,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
@@ -326,6 +332,8 @@ import { memberApi, memberTagApi, type MallMember, type MemberTag } from '~/memb
 import { formatYuan } from '@/utils/price'
 
 defineOptions({ name: 'member:list' })
+
+const { t } = useI18n()
 
 const { geoTree, ensureGeoTree, getRegionNames, getRegionPath } = useGeo()
 const geoCascaderProps = {
@@ -359,31 +367,31 @@ const pagination = reactive({
   total: 0,
 })
 
-const statusOptions = [
-  { label: '正常', value: 'active' },
-  { label: '未激活', value: 'inactive' },
-  { label: '已禁用', value: 'banned' },
-]
+const statusOptions = computed(() => [
+  { label: t('member.status.active'), value: 'active' },
+  { label: t('member.status.inactive'), value: 'inactive' },
+  { label: t('member.status.banned'), value: 'banned' },
+])
 
-const levelOptions = [
-  { label: '青铜', value: 'bronze' },
-  { label: '白银', value: 'silver' },
-  { label: '黄金', value: 'gold' },
-  { label: '钻石', value: 'diamond' },
-]
+const levelOptions = computed(() => [
+  { label: t('member.level.bronze'), value: 'bronze' },
+  { label: t('member.level.silver'), value: 'silver' },
+  { label: t('member.level.gold'), value: 'gold' },
+  { label: t('member.level.diamond'), value: 'diamond' },
+])
 
-const sourceOptions = [
-  { label: '微信公众号', value: 'wechat' },
-  { label: '微信小程序', value: 'mini_program' },
-  { label: 'H5', value: 'h5' },
-  { label: '后台导入', value: 'admin' },
-]
+const sourceOptions = computed(() => [
+  { label: t('member.source.wechat'), value: 'wechat' },
+  { label: t('member.source.miniProgram'), value: 'mini_program' },
+  { label: t('member.source.h5'), value: 'h5' },
+  { label: t('member.source.admin'), value: 'admin' },
+])
 
-const statusLabelMap: Record<string, string> = {
-  active: '正常',
-  inactive: '未激活',
-  banned: '已禁用',
-}
+const statusLabelMap = computed<Record<string, string>>(() => ({
+  active: t('member.status.active'),
+  inactive: t('member.status.inactive'),
+  banned: t('member.status.banned'),
+}))
 
 const statusTagTypeMap: Record<string, 'success' | 'info' | 'danger'> = {
   active: 'success',
@@ -391,19 +399,19 @@ const statusTagTypeMap: Record<string, 'success' | 'info' | 'danger'> = {
   banned: 'danger',
 }
 
-const levelLabelMap: Record<string, string> = {
-  bronze: '青铜',
-  silver: '白银',
-  gold: '黄金',
-  diamond: '钻石',
-}
+const levelLabelMap = computed<Record<string, string>>(() => ({
+  bronze: t('member.level.bronze'),
+  silver: t('member.level.silver'),
+  gold: t('member.level.gold'),
+  diamond: t('member.level.diamond'),
+}))
 
-const sourceLabelMap: Record<string, string> = {
-  wechat: '微信公众号',
-  mini_program: '微信小程序',
-  h5: 'H5',
-  admin: '后台导入',
-}
+const sourceLabelMap = computed<Record<string, string>>(() => ({
+  wechat: t('member.source.wechat'),
+  mini_program: t('member.source.miniProgram'),
+  h5: t('member.source.h5'),
+  admin: t('member.source.admin'),
+}))
 
 const formatDateTime = (value?: string | null) => (value ? dayjs(value).format('YYYY-MM-DD HH:mm') : '-')
 
@@ -429,7 +437,7 @@ const loadMembers = async () => {
     pagination.total = res.data.total
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载会员失败')
+    ElMessage.error(error?.message || t('member.list.loadFailed'))
   }
   finally {
     loading.value = false
@@ -442,7 +450,7 @@ const loadTagOptions = async () => {
     tagOptions.value = res.data
   }
   catch (error) {
-    console.error('加载标签失败', error)
+    console.error(t('member.list.loadTagFailed'), error)
   }
 }
 
@@ -531,13 +539,13 @@ const resetEditForm = () => {
 }
 
 const isCreateMode = ref(false)
-const editDrawerTitle = computed(() => (isCreateMode.value ? '新增会员' : '编辑会员'))
-const submitButtonText = computed(() => (isCreateMode.value ? '创建' : '保存'))
+const editDrawerTitle = computed(() => (isCreateMode.value ? t('member.list.createTitle') : t('member.list.editTitle')))
+const submitButtonText = computed(() => (isCreateMode.value ? t('member.list.create') : t('member.list.save')))
 
-const editRules: FormRules = {
-  nickname: [{ required: true, message: '请输入昵称', trigger: 'blur' }],
-  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
-}
+const editRules = computed<FormRules>(() => ({
+  nickname: [{ required: true, message: t('member.list.nicknameRequired'), trigger: 'blur' }],
+  status: [{ required: true, message: t('member.list.statusRequired'), trigger: 'change' }],
+}))
 
 const openCreate = async () => {
   await ensureGeoTree()
@@ -614,17 +622,17 @@ const submitEdit = async () => {
   try {
     if (isCreateMode.value) {
       await memberApi.create(payload)
-      ElMessage.success('会员已创建')
+      ElMessage.success(t('member.list.memberCreated'))
     }
     else {
       await memberApi.update(editForm.id, payload)
-      ElMessage.success('会员已更新')
+      ElMessage.success(t('member.list.memberUpdated'))
     }
     editVisible.value = false
     loadMembers()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || (isCreateMode.value ? '创建失败' : '更新失败'))
+    ElMessage.error(error?.message || (isCreateMode.value ? t('member.list.createFailed') : t('member.list.updateFailed')))
   }
   finally {
     editLoading.value = false
@@ -647,13 +655,13 @@ const saveTags = async () => {
   tagLoading.value = true
   try {
     await memberApi.syncTags(currentMember.value.id, selectedTags.value)
-    ElMessage.success('标签已更新')
+    ElMessage.success(t('member.list.tagUpdated'))
     tagDrawerVisible.value = false
     currentMember.value = null
     loadMembers()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '更新标签失败')
+    ElMessage.error(error?.message || t('member.list.tagUpdateFailed'))
   }
   finally {
     tagLoading.value = false
@@ -664,11 +672,11 @@ const toggleStatus = async (row: MallMember) => {
   const nextStatus = row.status === 'banned' ? 'active' : 'banned'
   try {
     await memberApi.updateStatus(row.id, nextStatus)
-    ElMessage.success(nextStatus === 'banned' ? '会员已禁用' : '已解除禁用')
+    ElMessage.success(nextStatus === 'banned' ? t('member.list.memberBanned') : t('member.list.memberUnbanned'))
     loadMembers()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '操作失败')
+    ElMessage.error(error?.message || t('member.list.loadFailed'))
   }
 }
 

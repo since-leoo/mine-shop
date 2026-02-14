@@ -8,11 +8,14 @@
  */
 import type { MaFormItem } from '@mineadmin/form'
 import type { SeckillActivityVo } from '~/mall/api/seckill'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
   model: SeckillActivityVo,
 ): MaFormItem[] {
+  const { t } = useI18n()
+
   if (formType === 'add') {
     model.is_enabled = true
     model.status = 'pending'
@@ -20,40 +23,40 @@ export default function getFormItems(
 
   return [
     {
-      label: () => '活动标题',
+      label: () => t('mall.seckill.activityTitle'),
       prop: 'title',
       render: 'input',
-      renderProps: { placeholder: '请输入活动标题', maxlength: 100, showWordLimit: true },
-      itemProps: { rules: [{ required: true, message: '请输入活动标题' }] },
+      renderProps: { placeholder: t('mall.seckill.activityTitlePlaceholder'), maxlength: 100, showWordLimit: true },
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.activityTitleRequired') }] },
     },
     {
-      label: () => '活动描述',
+      label: () => t('mall.seckill.activityDesc'),
       prop: 'description',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 3, placeholder: '请输入活动描述', maxlength: 500, showWordLimit: true },
+      renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.seckill.activityDescPlaceholder'), maxlength: 500, showWordLimit: true },
     },
     {
-      label: () => '活动状态',
+      label: () => t('mall.seckill.activityStatus'),
       prop: 'status',
       render: () => (
-        <el-select placeholder="请选择状态">
-          <el-option label="待开始" value="pending" />
-          <el-option label="进行中" value="active" />
-          <el-option label="已结束" value="ended" />
-          <el-option label="已取消" value="cancelled" />
+        <el-select placeholder={t('mall.seckill.statusPlaceholder')}>
+          <el-option label={t('mall.activityStatus.pending')} value="pending" />
+          <el-option label={t('mall.activityStatus.active')} value="active" />
+          <el-option label={t('mall.activityStatus.ended')} value="ended" />
+          <el-option label={t('mall.activityStatus.cancelled')} value="cancelled" />
         </el-select>
       ),
     },
     {
-      label: () => '启用状态',
+      label: () => t('mall.seckill.enabledStatus'),
       prop: 'is_enabled',
       render: () => <el-switch active-value={true} inactive-value={false} />,
     },
     {
-      label: () => '备注',
+      label: () => t('mall.seckill.remarkLabel'),
       prop: 'remark',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 2, placeholder: '请输入备注', maxlength: 500, showWordLimit: true },
+      renderProps: { type: 'textarea', rows: 2, placeholder: t('mall.seckill.remarkPlaceholder'), maxlength: 500, showWordLimit: true },
     },
   ]
 }

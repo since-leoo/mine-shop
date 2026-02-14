@@ -17,6 +17,7 @@ use App\Domain\Member\Contract\ProfileUpdateInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
+use App\Domain\Member\Event\MemberRegistered;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -65,6 +66,9 @@ final class DomainApiMemberAuthCommandService
             $memberEntity->setLastLoginIp($ip ?? '');
             $model = $this->memberRepository->save($memberEntity);
             $memberEntity->setId($model->id);
+
+            // 派发会员注册事件（触发注册赠送积分等后续流程）
+            event(new MemberRegistered(memberId: $model->id, source: 'mini_program'));
         } else {
             $memberEntity->setUnionid($payload['unionid'] ?? $memberEntity->getUnionid());
             $memberEntity->setSource('mini_program');

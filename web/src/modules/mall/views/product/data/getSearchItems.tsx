@@ -9,6 +9,7 @@
  */
 import type { MaSearchItem } from '@mineadmin/search'
 import type { CategoryVo } from '~/mall/api/category'
+import { useI18n } from 'vue-i18n'
 type BrandOption = {
   value?: number
   label?: string
@@ -17,6 +18,7 @@ type BrandOption = {
 }
 
 export default function getSearchItems(): MaSearchItem[] {
+  const { t } = useI18n()
   const categoryOptions = ref<CategoryVo[]>([])
   const brandOptions = ref<BrandOption[]>([])
 
@@ -29,19 +31,19 @@ export default function getSearchItems(): MaSearchItem[] {
 
   return [
     {
-      label: () => '关键词',
+      label: () => t('mall.product.keyword'),
       prop: 'keyword',
       render: 'input',
-      renderProps: { placeholder: '商品名称/编码' },
+      renderProps: { placeholder: t('mall.product.keywordPlaceholder') },
     },
     {
-      label: () => '商品编码',
+      label: () => t('mall.product.productCode'),
       prop: 'product_code',
       render: 'input',
-      renderProps: { placeholder: '商品编码' },
+      renderProps: { placeholder: t('mall.product.productCode') },
     },
     {
-      label: () => '分类',
+      label: () => t('mall.product.category'),
       prop: 'category_id',
       render: () => (
         <el-tree-select
@@ -49,17 +51,17 @@ export default function getSearchItems(): MaSearchItem[] {
           props={{ value: 'id', label: 'name' }}
           check-strictly={true}
           clearable={true}
-          placeholder="全部分类"
+          placeholder={t('mall.product.allCategory')}
         />
       ),
     },
     {
-      label: () => '品牌',
+      label: () => t('mall.product.brand'),
       prop: 'brand_id',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="全部品牌"
+          placeholder={t('mall.product.allBrand')}
           options={brandOptions.value.map(item => ({
             label: item.label ?? item.name ?? '',
             value: item.value ?? item.id,
@@ -68,92 +70,92 @@ export default function getSearchItems(): MaSearchItem[] {
       ),
     },
     {
-      label: () => '状态',
+      label: () => t('mall.product.statusText'),
       prop: 'status',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="全部状态"
+          placeholder={t('mall.product.allStatus')}
           options={[
-            { label: '草稿', value: 'draft' },
-            { label: '上架', value: 'active' },
-            { label: '下架', value: 'inactive' },
-            { label: '售罄', value: 'sold_out' },
+            { label: t('mall.product.status.draft'), value: 'draft' },
+            { label: t('mall.product.status.active'), value: 'active' },
+            { label: t('mall.product.status.inactive'), value: 'inactive' },
+            { label: t('mall.product.status.soldOut'), value: 'sold_out' },
           ]}
         />
       ),
     },
     {
-      label: () => '是否推荐',
+      label: () => t('mall.product.isRecommendLabel'),
       prop: 'is_recommend',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="全部"
+          placeholder={t('mall.product.all')}
           options={[
-            { label: '推荐', value: true },
-            { label: '不推荐', value: false },
+            { label: t('mall.product.isRecommend'), value: true },
+            { label: t('mall.product.notRecommend'), value: false },
           ]}
         />
       ),
     },
     {
-      label: () => '是否热销',
+      label: () => t('mall.product.isHotLabel'),
       prop: 'is_hot',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="全部"
+          placeholder={t('mall.product.all')}
           options={[
-            { label: '热销', value: true },
-            { label: '非热销', value: false },
+            { label: t('mall.product.isHot'), value: true },
+            { label: t('mall.product.notHot'), value: false },
           ]}
         />
       ),
     },
     {
-      label: () => '是否新品',
+      label: () => t('mall.product.isNewLabel'),
       prop: 'is_new',
       render: () => (
         <el-select-v2
           clearable
-          placeholder="全部"
+          placeholder={t('mall.product.all')}
           options={[
-            { label: '新品', value: true },
-            { label: '非新品', value: false },
+            { label: t('mall.product.isNew'), value: true },
+            { label: t('mall.product.notNew'), value: false },
           ]}
         />
       ),
     },
     {
-      label: () => '最低价',
+      label: () => t('mall.product.minPrice'),
       prop: 'min_price',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => '最高价',
+      label: () => t('mall.product.maxPrice'),
       prop: 'max_price',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => '销量下限',
+      label: () => t('mall.product.salesMin'),
       prop: 'sales_min',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => '销量上限',
+      label: () => t('mall.product.salesMax'),
       prop: 'sales_max',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => '商品名称',
+      label: () => t('mall.product.productName'),
       prop: 'name',
       render: 'input',
-      renderProps: { placeholder: '商品名称' },
+      renderProps: { placeholder: t('mall.product.productName') },
     },
   ]
 }

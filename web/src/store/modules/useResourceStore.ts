@@ -13,7 +13,7 @@ import { uploadLocal } from '@/utils/uploadLocal.ts'
 const resourceDefaultButtons: Resources.Button[] = [
   {
     name: 'local-image-upload',
-    label: '图片上传',
+    label: 'resource.imageUpload',
     icon: 'solar:upload-square-broken',
     upload: (files: FileList, args: Resources.Args) => {
       const options = { file: files[0] }
@@ -31,7 +31,7 @@ const resourceDefaultButtons: Resources.Button[] = [
   },
   {
     name: 'local-file-upload',
-    label: '文件上传',
+    label: 'resource.fileUpload',
     icon: 'hugeicons:file-upload',
     upload: (files: FileList, args: Resources.Args) => {
       const options = { file: files[0] }

@@ -1,5 +1,5 @@
 {
-  "pages": ["pages/home/home", "pages/category/index", "pages/cart/index", "pages/usercenter/index"],
+  "pages": ["pages/home/home", "pages/category/index", "pages/cart/index", "pages/usercenter/index", "pages/usercenter/wallet-transactions/index"],
   "subpackages": [
     {
       "root": "pages/user",

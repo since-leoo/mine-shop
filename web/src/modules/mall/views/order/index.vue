@@ -30,8 +30,8 @@
       <el-form label-width="90px" :model="filters">
         <el-row :gutter="16">
           <el-col :span="6">
-            <el-form-item label="订单号">
-              <el-input v-model="filters.order_no" placeholder="请输入订单号" clearable @keyup.enter="handleSearch">
+            <el-form-item :label="t('mall.order.orderNo')">
+              <el-input v-model="filters.order_no" :placeholder="t('mall.order.orderNoPlaceholder')" clearable @keyup.enter="handleSearch">
                 <template #prefix>
                   <el-icon><Document /></el-icon>
                 </template>
@@ -39,8 +39,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="交易号">
-              <el-input v-model="filters.pay_no" placeholder="请输入交易号" clearable @keyup.enter="handleSearch">
+            <el-form-item :label="t('mall.order.payNo')">
+              <el-input v-model="filters.pay_no" :placeholder="t('mall.order.payNoPlaceholder')" clearable @keyup.enter="handleSearch">
                 <template #prefix>
                   <el-icon><Tickets /></el-icon>
                 </template>
@@ -48,8 +48,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="用户ID">
-              <el-input v-model="filters.member_id" placeholder="请输入用户ID" clearable @keyup.enter="handleSearch">
+            <el-form-item :label="t('mall.order.memberId')">
+              <el-input v-model="filters.member_id" :placeholder="t('mall.order.memberIdPlaceholder')" clearable @keyup.enter="handleSearch">
                 <template #prefix>
                   <el-icon><User /></el-icon>
                 </template>
@@ -57,8 +57,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="手机号">
-              <el-input v-model="filters.member_phone" placeholder="请输入手机号" clearable @keyup.enter="handleSearch">
+            <el-form-item :label="t('mall.order.phone')">
+              <el-input v-model="filters.member_phone" :placeholder="t('mall.order.phonePlaceholder')" clearable @keyup.enter="handleSearch">
                 <template #prefix>
                   <el-icon><Phone /></el-icon>
                 </template>
@@ -68,8 +68,8 @@
         </el-row>
         <el-row :gutter="16">
           <el-col :span="6">
-            <el-form-item label="商品名称">
-              <el-input v-model="filters.product_name" placeholder="请输入商品名称" clearable @keyup.enter="handleSearch">
+            <el-form-item :label="t('mall.order.productNameLabel')">
+              <el-input v-model="filters.product_name" :placeholder="t('mall.order.productNamePlaceholder')" clearable @keyup.enter="handleSearch">
                 <template #prefix>
                   <el-icon><Goods /></el-icon>
                 </template>
@@ -77,36 +77,36 @@
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="订单状态">
-              <el-select v-model="filters.status" clearable placeholder="全部状态" class="w-full" @change="handleSearch">
-                <el-option value="pending" label="待付款" />
-                <el-option value="paid" label="已付款" />
-                <el-option value="shipped" label="已发货" />
-                <el-option value="completed" label="已完成" />
-                <el-option value="cancelled" label="已取消" />
+            <el-form-item :label="t('mall.order.orderStatus')">
+              <el-select v-model="filters.status" clearable :placeholder="t('mall.allStatus')" class="w-full" @change="handleSearch">
+                <el-option value="pending" :label="t('mall.order.statusPending')" />
+                <el-option value="paid" :label="t('mall.order.statusPaid')" />
+                <el-option value="shipped" :label="t('mall.order.statusShipped')" />
+                <el-option value="completed" :label="t('mall.order.statusCompleted')" />
+                <el-option value="cancelled" :label="t('mall.order.statusCancelled')" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="支付状态">
-              <el-select v-model="filters.pay_status" clearable placeholder="全部状态" class="w-full" @change="handleSearch">
-                <el-option value="pending" label="待支付" />
-                <el-option value="paid" label="已支付" />
-                <el-option value="failed" label="支付失败" />
-                <el-option value="cancelled" label="已取消" />
-                <el-option value="refunded" label="已退款" />
+            <el-form-item :label="t('mall.order.payStatus')">
+              <el-select v-model="filters.pay_status" clearable :placeholder="t('mall.allStatus')" class="w-full" @change="handleSearch">
+                <el-option value="pending" :label="t('mall.order.payPending')" />
+                <el-option value="paid" :label="t('mall.order.payPaid')" />
+                <el-option value="failed" :label="t('mall.order.payFailed')" />
+                <el-option value="cancelled" :label="t('mall.order.statusCancelled')" />
+                <el-option value="refunded" :label="t('mall.order.payRefunded')" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="6">
-            <el-form-item label="下单时间">
+            <el-form-item :label="t('mall.order.orderTime')">
               <el-date-picker
                 v-model="dateRange"
                 type="daterange"
                 value-format="YYYY-MM-DD"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :range-separator="t('dashboard.dateRange.to')"
+                :start-placeholder="t('mall.startDate')"
+                :end-placeholder="t('mall.endDate')"
                 class="w-full"
                 @change="handleDateChange"
               />
@@ -116,15 +116,15 @@
         <div class="text-right">
           <el-button type="primary" @click="handleSearch">
             <template #icon><el-icon><Search /></el-icon></template>
-            搜索
+            {{ t('mall.search') }}
           </el-button>
           <el-button @click="resetFilters">
             <template #icon><el-icon><Refresh /></el-icon></template>
-            重置
+            {{ t('mall.reset') }}
           </el-button>
           <el-button @click="handleExport">
             <template #icon><el-icon><Download /></el-icon></template>
-            导出
+            {{ t('mall.export') }}
           </el-button>
         </div>
       </el-form>
@@ -133,10 +133,10 @@
     <el-card shadow="never">
       <template #header>
         <div class="flex items-center justify-between">
-          <span class="font-medium">订单列表</span>
+          <span class="font-medium">{{ t('mall.order.orderList') }}</span>
           <el-button size="small" @click="loadData">
             <template #icon><el-icon><Refresh /></el-icon></template>
-            刷新
+            {{ t('mall.refresh') }}
           </el-button>
         </div>
       </template>
@@ -150,18 +150,18 @@
         :header-cell-style="{ background: '#f5f7fa', textAlign: 'center' }"
         :cell-style="{ textAlign: 'center' }"
       >
-        <el-table-column type="index" label="序号" width="60" fixed />
-        <el-table-column label="订单号" width="180" fixed>
+        <el-table-column type="index" :label="t('mall.order.index')" width="60" fixed />
+        <el-table-column :label="t('mall.order.orderNo')" width="180" fixed>
           <template #default="{ row }">
             <el-tag type="primary" size="small">{{ row.order_no }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="交易号" width="190" show-overflow-tooltip>
+        <el-table-column :label="t('mall.order.payNo')" width="190" show-overflow-tooltip>
           <template #default="{ row }">
             {{ row.pay_no || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="用户" width="150">
+        <el-table-column :label="t('mall.order.user')" width="150">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-1">
               <el-icon><User /></el-icon>
@@ -169,12 +169,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="手机号" width="130">
+        <el-table-column :label="t('mall.order.phone')" width="130">
           <template #default="{ row }">
             {{ row.address?.phone || row.member?.phone || '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="商品信息" min-width="220">
+        <el-table-column :label="t('mall.order.productInfo')" min-width="220">
           <template #default="{ row }">
             <div v-if="row.items?.length" class="flex items-center justify-center gap-2">
               <el-image
@@ -186,57 +186,57 @@
               <div class="text-left">
                 <div class="text-sm">{{ row.items[0].product_name }}</div>
                 <div class="text-xs text-gray-500">
-                  {{ row.items[0].sku_name || '默认规格' }} x{{ row.items[0].quantity }}
+                  {{ row.items[0].sku_name || t('mall.product.defaultSpec') }} x{{ row.items[0].quantity }}
                 </div>
                 <el-tag v-if="row.items.length > 1" size="small" class="mt-1" type="info">
-                  +{{ row.items.length - 1 }}件
+                  +{{ row.items.length - 1 }}{{ t('mall.product.itemUnit') }}
                 </el-tag>
               </div>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="数量" width="90">
+        <el-table-column :label="t('mall.order.quantity')" width="90">
           <template #default="{ row }">
-            <el-tag type="warning" size="small">{{ getTotalQuantity(row.items) }}件</el-tag>
+            <el-tag type="warning" size="small">{{ getTotalQuantity(row.items) }}{{ t('mall.product.itemUnit') }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="实付金额" width="120">
+        <el-table-column :label="t('mall.order.paidAmount')" width="120">
           <template #default="{ row }">
             <span class="text-red-500 font-semibold">¥{{ formatYuan(row.pay_amount) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="订单状态" width="110">
+        <el-table-column :label="t('mall.order.orderStatus')" width="110">
           <template #default="{ row }">
             <el-tag :type="statusTypeMap[row.status || 'pending']" size="small">
               {{ statusLabelMap[row.status || 'pending'] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="支付状态" width="110">
+        <el-table-column :label="t('mall.order.payStatus')" width="110">
           <template #default="{ row }">
             <el-tag :type="paymentStatusTypeMap[row.pay_status || 'pending']" size="small">
               {{ paymentStatusLabelMap[row.pay_status || 'pending'] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="发货状态" width="120">
+        <el-table-column :label="t('mall.order.shippingStatus')" width="120">
           <template #default="{ row }">
             <el-tag :type="shippingStatusTypeMap[row.shipping_status || 'pending']" size="small">
               {{ shippingStatusLabelMap[row.shipping_status || 'pending'] }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="下单时间" width="170">
+        <el-table-column :label="t('mall.order.orderTime')" width="170">
           <template #default="{ row }">
             {{ formatDate(row.created_at) }} {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column :label="t('mall.order.operation')" fixed="right" width="200">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
               <el-button type="primary" link size="small" @click="showDetail(row)">
                 <el-icon><View /></el-icon>
-                详情
+                {{ t('mall.detail') }}
               </el-button>
               <el-button
                 v-if="row.status === 'paid'"
@@ -246,17 +246,17 @@
                 @click="openShipDialog(row)"
               >
                 <el-icon><Van /></el-icon>
-                发货
+                {{ t('mall.order.ship') }}
               </el-button>
               <el-popconfirm
                 v-if="row.status === 'pending'"
-                title="确定要取消该订单吗？"
+                :title="t('mall.order.cancelConfirm')"
                 @confirm="handleCancel(row.id)"
               >
                 <template #reference>
                   <el-button type="danger" link size="small">
                     <el-icon><Close /></el-icon>
-                    取消
+                    {{ t('mall.order.cancelOrder') }}
                   </el-button>
                 </template>
               </el-popconfirm>
@@ -280,10 +280,10 @@
 
     <OrderDetail v-model:visible="detailVisible" :order="currentOrder" />
 
-    <el-dialog v-model="shipDialogVisible" title="订单发货" width="480px">
+    <el-dialog v-model="shipDialogVisible" :title="t('mall.order.shipDialog')" width="480px">
       <el-form ref="shipFormRef" :model="shipForm" :rules="shipRules" label-width="100px">
-        <el-form-item label="快递公司" prop="shipping_company">
-          <el-select v-model="shipForm.shipping_company" placeholder="请选择快递公司" class="w-full">
+        <el-form-item :label="t('mall.order.expressCompany')" prop="shipping_company">
+          <el-select v-model="shipForm.shipping_company" :placeholder="t('mall.order.expressCompanyPlaceholder')" class="w-full">
             <el-option v-for="option in expressOptions" :key="option.value" :label="option.label" :value="option.value">
               <span class="flex items-center gap-2">
                 <el-icon><Van /></el-icon>{{ option.label }}
@@ -291,22 +291,22 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="快递单号" prop="shipping_no">
-          <el-input v-model="shipForm.shipping_no" placeholder="请输入快递单号">
+        <el-form-item :label="t('mall.order.expressNo')" prop="shipping_no">
+          <el-input v-model="shipForm.shipping_no" :placeholder="t('mall.order.expressNoPlaceholder')">
             <template #prefix>
               <el-icon><Tickets /></el-icon>
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="shipForm.remark" type="textarea" rows="3" placeholder="可选，发货备注" />
+        <el-form-item :label="t('mall.order.remark')">
+          <el-input v-model="shipForm.remark" type="textarea" rows="3" :placeholder="t('mall.order.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="shipDialogVisible = false">取消</el-button>
+        <el-button @click="shipDialogVisible = false">{{ t('mall.cancel') }}</el-button>
         <el-button type="primary" :loading="shipLoading" @click="handleShip">
           <template #icon><el-icon><Check /></el-icon></template>
-          确认发货
+          {{ t('mall.order.confirmShip') }}
         </el-button>
       </template>
     </el-dialog>
@@ -314,7 +314,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import {
   Document,
@@ -333,12 +333,14 @@ import {
   Tickets,
 } from '@element-plus/icons-vue'
 import dayjs from 'dayjs'
+import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
 import { orderApi, type OrderVo } from '~/mall/api/order'
 import OrderDetail from './detail.vue'
 
 defineOptions({ name: 'mall:order' })
 
+const { t } = useI18n()
 const loading = ref(false)
 const orderList = ref<OrderVo[]>([])
 const dateRange = ref<[string, string] | null>(null)
@@ -370,10 +372,10 @@ const stats = reactive({
 })
 
 const statCards = [
-  { key: 'total', label: '总订单数', icon: Document },
-  { key: 'pending', label: '待付款', icon: Clock },
-  { key: 'paid', label: '已付款', icon: Wallet },
-  { key: 'shipped', label: '已发货', icon: Van },
+  { key: 'total', label: t('mall.order.totalOrders'), icon: Document },
+  { key: 'pending', label: t('mall.order.pendingPayment'), icon: Clock },
+  { key: 'paid', label: t('mall.order.paid'), icon: Wallet },
+  { key: 'shipped', label: t('mall.order.shipped'), icon: Van },
 ] as const
 
 const detailVisible = ref(false)
@@ -389,31 +391,31 @@ const shipForm = reactive({
   remark: '',
 })
 
-const expressOptions = [
-  { label: '顺丰速运', value: 'SF' },
-  { label: '圆通速递', value: 'YTO' },
-  { label: '中通快递', value: 'ZTO' },
-  { label: '韵达快递', value: 'YD' },
-  { label: '申通快递', value: 'STO' },
+const expressOptions = computed(() => [
+  { label: t('mall.order.express.sf'), value: 'SF' },
+  { label: t('mall.order.express.yto'), value: 'YTO' },
+  { label: t('mall.order.express.zto'), value: 'ZTO' },
+  { label: t('mall.order.express.yd'), value: 'YD' },
+  { label: t('mall.order.express.sto'), value: 'STO' },
   { label: 'EMS', value: 'EMS' },
-  { label: '京东物流', value: 'JD' },
-]
+  { label: t('mall.order.express.jd'), value: 'JD' },
+])
 
-const shipRules: FormRules = {
-  shipping_company: [{ required: true, message: '请选择快递公司', trigger: 'change' }],
+const shipRules = computed<FormRules>(() => ({
+  shipping_company: [{ required: true, message: t('mall.order.expressCompanyPlaceholder'), trigger: 'change' }],
   shipping_no: [
-    { required: true, message: '请输入快递单号', trigger: 'blur' },
-    { min: 5, max: 50, message: '快递单号长度 5-50 字符', trigger: 'blur' },
+    { required: true, message: t('mall.order.expressNoPlaceholder'), trigger: 'blur' },
+    { min: 5, max: 50, message: t('mall.order.expressNoLength'), trigger: 'blur' },
   ],
-}
+}))
 
-const statusLabelMap: Record<string, string> = {
-  pending: '待付款',
-  paid: '已付款',
-  shipped: '已发货',
-  completed: '已完成',
-  cancelled: '已取消',
-}
+const statusLabelMap = computed<Record<string, string>>(() => ({
+  pending: t('mall.order.statusPending'),
+  paid: t('mall.order.statusPaid'),
+  shipped: t('mall.order.statusShipped'),
+  completed: t('mall.order.statusCompleted'),
+  cancelled: t('mall.order.statusCancelled'),
+}))
 
 const statusTypeMap: Record<string, string> = {
   pending: 'warning',
@@ -423,13 +425,13 @@ const statusTypeMap: Record<string, string> = {
   cancelled: 'info',
 }
 
-const paymentStatusLabelMap: Record<string, string> = {
-  pending: '待支付',
-  paid: '已支付',
-  failed: '支付失败',
-  cancelled: '已取消',
-  refunded: '已退款',
-}
+const paymentStatusLabelMap = computed<Record<string, string>>(() => ({
+  pending: t('mall.order.payPending'),
+  paid: t('mall.order.payPaid'),
+  failed: t('mall.order.payFailed'),
+  cancelled: t('mall.order.payCancelled'),
+  refunded: t('mall.order.payRefunded'),
+}))
 
 const paymentStatusTypeMap: Record<string, string> = {
   pending: 'warning',
@@ -439,12 +441,12 @@ const paymentStatusTypeMap: Record<string, string> = {
   refunded: 'danger',
 }
 
-const shippingStatusLabelMap: Record<string, string> = {
-  pending: '待发货',
-  partial_shipped: '部分发货',
-  shipped: '已发货',
-  delivered: '已送达',
-}
+const shippingStatusLabelMap = computed<Record<string, string>>(() => ({
+  pending: t('mall.order.shipPending'),
+  partial_shipped: t('mall.order.shipPartial'),
+  shipped: t('mall.order.shipShipped'),
+  delivered: t('mall.order.shipDelivered'),
+}))
 
 const shippingStatusTypeMap: Record<string, string> = {
   pending: 'info',
@@ -485,7 +487,7 @@ const loadData = async () => {
     pagination.total = res.data.total
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载订单失败')
+    ElMessage.error(error?.message || t('mall.order.loadFailed'))
   }
   finally {
     loading.value = false
@@ -501,7 +503,7 @@ const loadStats = async () => {
     Object.assign(stats, res.data)
   }
   catch (error) {
-    console.error('加载统计失败', error)
+    console.error(t('mall.order.loadStatsFailed'), error)
   }
 }
 
@@ -547,10 +549,10 @@ const handleSizeChange = (size: number) => {
 const handleExport = async () => {
   try {
     const res = await orderApi.export(buildQueryParams())
-    ElMessage.success(res.message || '导出任务已触发')
+    ElMessage.success(res.message || t('mall.order.exportTriggered'))
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '导出失败')
+    ElMessage.error(error?.message || t('mall.order.exportFailed'))
   }
 }
 
@@ -578,13 +580,13 @@ const handleShip = () => {
     shipLoading.value = true
     try {
       await orderApi.ship(shipOrderId.value, { ...shipForm })
-      ElMessage.success('发货成功')
+      ElMessage.success(t('mall.order.shipSuccess'))
       shipDialogVisible.value = false
       loadData()
       loadStats()
     }
     catch (error: any) {
-      ElMessage.error(error?.message || '发货失败')
+      ElMessage.error(error?.message || t('mall.order.shipFailed'))
     }
     finally {
       shipLoading.value = false
@@ -595,12 +597,12 @@ const handleShip = () => {
 const handleCancel = async (id: number) => {
   try {
     await orderApi.cancel(id)
-    ElMessage.success('订单已取消')
+    ElMessage.success(t('mall.order.cancelSuccess'))
     loadData()
     loadStats()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '取消失败')
+    ElMessage.error(error?.message || t('mall.order.cancelFailed'))
   }
 }
 

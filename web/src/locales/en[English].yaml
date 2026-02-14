@@ -166,6 +166,737 @@ form:
   pleaseSelect: Please select {msg}
   requiredInput: '{msg} Required'
   requiredSelect: '{msg} Required'
+resource:
+  imageUpload: Image Upload
+  fileUpload: File Upload
+dashboard:
+  mallAnalysis: Mall Data Analysis
+  workbench: Operations Workbench
+  statisticsReport: Statistics Report
+  dateRange:
+    to: to
+    start: Start
+    end: End
+  summary:
+    totalSales: Sales
+    totalSalesAll: Total Sales
+    paidOrders: Paid Orders
+    paidOrdersShort: Paid Orders
+    visitorsToday: Visitors (Today)
+    totalMembers: Total Members
+    newMembers: New Users
+    newMembersShort: New Members
+    avgOrderAmount: Avg. Order
+    payingMembers: Paying Members
+    conversionRate: Conversion Rate
+    refundAmount: Refund Amount
+    discountTotal: Discount Total
+    refundRate: Refund Rate
+    refundCount: '{count} refunds'
+    qoq: QoQ
+  chart:
+    salesTrend: Sales Trend
+    membersTrend: Members Trend
+    paymentDistribution: Payment Distribution
+    orderTypeDistribution: Order Type Distribution
+    productSalesRanking: Product Sales Ranking
+    categorySalesRanking: Category Sales Ranking
+    regionSalesRanking: Regional Sales Ranking
+    memberLevelDistribution: Member Level Distribution
+    orderAmountDistribution: Order Amount Distribution
+    salesAmountYuan: Sales (¥)
+    orderCount: Order Count
+    salesAmount: Sales
+    newMember: New Members
+    activeMember: Active Members
+    noData: No data
+    unitOrder: orders
+    unitPerson: members
+  payMethod:
+    wechat: WeChat Pay
+    alipay: Alipay
+    balance: Balance
+    unknown: Unknown
+  orderType:
+    normal: Normal Order
+    seckill: Flash Sale Order
+    groupBuy: Group Buy Order
+  ranking:
+    productSalesTop10: Product Sales Top 10
+    categorySalesTop10: Category Sales Top 10
+    productSalesDetailTop10: Product Sales Detail Top 10
+    categorySalesDetailTop10: Category Sales Detail Top 10
+    productSalesTop20: Product Sales Top 20
+    categorySalesTop20: Category Sales Top 20
+  table:
+    index: '#'
+    productName: Product Name
+    categoryName: Category Name
+    salesCount: Sales
+    salesAmount: Sales Amount
+mall:
+  search: Search
+  reset: Reset
+  export: Export
+  refresh: Refresh
+  refreshData: Refresh Data
+  cancel: Cancel
+  save: Save
+  submit: Submit
+  confirm: Confirm
+  detail: Detail
+  edit: Edit
+  create: Create
+  noData: No data
+  loadFailed: Load failed
+  operationSuccess: Operation successful
+  operationFailed: Operation failed
+  all: All
+  allStatus: All Status
+  allLevel: All Levels
+  allSource: All Sources
+  allTag: All Tags
+  keyword: Keyword
+  startDate: Start Date
+  endDate: End Date
+  product:
+    status:
+      draft: Draft
+      active: On Sale
+      inactive: Off Shelf
+      soldOut: Sold Out
+    isRecommend: Recommended
+    notRecommend: Not Recommended
+    isHot: Hot
+    notHot: Not Hot
+    isNew: New
+    notNew: Not New
+    allStatus: All Status
+    all: All
+    productCode: Product Code
+    autoGenerate: Auto Generated
+    productName: Product Name
+    subTitle: Subtitle
+    subTitlePlaceholder: Enter subtitle (optional)
+    category: Category
+    brand: Brand
+    freightType: Freight Type
+    freightDefault: System Default
+    freightFree: Free Shipping
+    freightFlat: Flat Rate
+    freightTemplate: Freight Template
+    keyword: Keyword
+    keywordPlaceholder: Product name/code
+    statusText: Status
+    isRecommendLabel: Recommended
+    isHotLabel: Hot Sale
+    isNewLabel: New Arrival
+    minPrice: Min Price
+    maxPrice: Max Price
+    salesMin: Min Sales
+    salesMax: Max Sales
+    allCategory: All Categories
+    allBrand: All Brands
+    defaultSpec: Default Spec
+    moreItems: +{count} items
+    itemUnit: items
+    steps:
+      basicInfo: Basic Info
+      priceDisplay: Price & Display
+      attrSpec: Attributes & Specs
+      descDetail: Description & Details
+  order:
+    totalOrders: Total Orders
+    pendingPayment: Pending Payment
+    paid: Paid
+    shipped: Shipped
+    orderNo: Order No.
+    orderNoPlaceholder: Enter order number
+    payNo: Transaction No.
+    payNoPlaceholder: Enter transaction number
+    memberId: User ID
+    memberIdPlaceholder: Enter user ID
+    phone: Phone
+    phonePlaceholder: Enter phone number
+    productNameLabel: Product Name
+    productNamePlaceholder: Enter product name
+    orderStatus: Order Status
+    payStatus: Payment Status
+    orderTime: Order Time
+    orderList: Order List
+    index: '#'
+    user: User
+    productInfo: Product Info
+    quantity: Quantity
+    paidAmount: Paid Amount
+    shippingStatus: Shipping Status
+    operation: Operation
+    ship: Ship
+    cancelOrder: Cancel
+    cancelConfirm: Are you sure to cancel this order?
+    shipDialog: Ship Order
+    expressCompany: Express Company
+    expressCompanyPlaceholder: Select express company
+    expressNo: Tracking No.
+    expressNoPlaceholder: Enter tracking number
+    expressNoLength: Tracking number must be 5-50 characters
+    remark: Remark
+    remarkPlaceholder: Optional shipping remark
+    confirmShip: Confirm Shipment
+    shipSuccess: Shipped successfully
+    shipFailed: Shipment failed
+    cancelSuccess: Order cancelled
+    cancelFailed: Cancel failed
+    exportTriggered: Export task triggered
+    exportFailed: Export failed
+    loadFailed: Failed to load orders
+    loadStatsFailed: Failed to load statistics
+    statusPending: Pending Payment
+    statusPaid: Paid
+    statusShipped: Shipped
+    statusCompleted: Completed
+    statusCancelled: Cancelled
+    payPending: Pending
+    payPaid: Paid
+    payFailed: Payment Failed
+    payCancelled: Cancelled
+    payRefunded: Refunded
+    shipPending: Pending
+    shipPartial: Partially Shipped
+    shipShipped: Shipped
+    shipDelivered: Delivered
+    express:
+      sf: SF Express
+      yto: YTO Express
+      zto: ZTO Express
+      yd: Yunda Express
+      sto: STO Express
+      ems: EMS
+      jd: JD Logistics
+  orderStatus:
+    pending: Pending Payment
+    paid: Paid
+    grouped: Grouped
+    cancelled: Cancelled
+    failed: Group Failed
+  activityStatus:
+    pending: Pending
+    active: Active
+    ended: Ended
+    cancelled: Cancelled
+    soldOut: Sold Out
+  coupon:
+    name: Coupon Name
+    namePlaceholder: Enter coupon name
+    nameRequired: Please enter coupon name
+    type: Type
+    typePlaceholder: Select type
+    typeRequired: Please select coupon type
+    typeFixed: Fixed Discount
+    typePercent: Percentage Off
+    typeLabel: Discount Type
+    valueLabel: Discount Value
+    valuePlaceholderPercent: e.g. 8.5 means 85% off
+    valuePlaceholderFixed: Enter discount amount (¥)
+    valueRequired: Please enter discount value
+    valueMustBeNumber: Discount value must be a number
+    percentRange: Discount must be between 0.1-9.9 (e.g. 8.5 means 85% off)
+    amountPositive: Discount amount must be greater than 0
+    minAmountLabel: Min. Order Amount (¥)
+    minAmountMustBeNumber: Min. amount must be a number
+    minAmountNonNegative: Min. amount cannot be negative
+    totalCountLabel: Total Quantity
+    totalCountRequired: Please enter total quantity
+    totalCountPositiveInt: Total quantity must be a positive integer
+    totalCountPositive: Total quantity must be greater than 0
+    perLimitLabel: Per-User Limit
+    perLimitPositiveInt: Per-user limit must be a positive integer
+    validityLabel: Validity Period
+    startBeforeEnd: Start time cannot be later than end time
+    statusLabel: Status
+    descriptionLabel: Description
+    searchLabel: Keyword
+    status: Status
+    statusActive: Active
+    statusInactive: Inactive
+    statusPlaceholder: Select status
+    minAmountPlaceholder: Enter minimum amount
+    totalCountPlaceholder: Enter total count
+    perLimitPlaceholder: Enter per-user limit (leave empty for unlimited)
+    validityRequired: Please select validity period
+    descriptionPlaceholder: Enter description
+    searchNamePlaceholder: Search by name
+    memberIdsLabel: Member ID List
+    memberIdsRequired: Please enter member IDs
+    memberIdsPlaceholder: Enter member IDs, separated by commas
+    expireLabel: Custom Expiry Time
+    expirePlaceholder: Leave empty to use coupon end time
+    issueTip: It is recommended to export IDs from the member list for batch issuance, separated by commas.
+    issueSuccess: Issued successfully
+    issueFailed: Issue failed
+    issueMinOne: Please enter at least one member ID
+  couponUser:
+    unused: Unused
+    used: Used
+    expired: Expired
+    statusPlaceholder: Select
+    recordTitle: Coupon Records
+    recordSubtitle: View user coupon usage
+    keywordLabel: Keyword
+    keywordPlaceholder: Enter nickname or phone
+    memberColumn: Member
+    couponColumn: Coupon
+    statusColumn: Status
+    receivedAt: Received At
+    usedAt: Used At
+    expireAt: Expires At
+    markUsed: Mark as Used
+    markExpired: Mark as Expired
+  review:
+    allStatus: All Status
+    pending: Pending Review
+    approved: Approved
+    rejected: Rejected
+    allRating: All Ratings
+    star5: 5 Stars
+    star4: 4 Stars
+    star3: 3 Stars
+    star2: 2 Stars
+    star1: 1 Star
+    searchProduct: Search product name
+    startDate: Start Date
+    endDate: End Date
+    replyPlaceholder: Enter reply content
+    statusLabel: Status
+    ratingLabel: Rating
+    createdAtLabel: Created At
+    pageTitle: Review Management
+    pageSubtitle: View, audit and reply to product reviews
+    totalReviews: Total Reviews
+    pendingReview: Pending Review
+    newToday: New Today
+    avgRating: Average Rating
+    emptyData: No review data
+    viewReply: View Reply
+    replyReview: Reply to Review
+    reviewContent: "Review Content:"
+    cancelReply: Cancel
+    confirmReply: Confirm Reply
+    replySuccess: Reply successful
+    replyEmpty: Please enter reply content
+  groupBuy:
+    searchActivity: Search activity name
+    activityName: Activity Name
+  groupBuyOrder:
+    groupNo: Group No.
+    leader: Leader
+    member: Member
+    memberName: Member
+    phone: Phone
+    quantity: Quantity
+    groupPrice: Group Price
+    paidAmount: Paid Amount
+    groupStatus: Group Status
+    relatedOrder: Related Order
+    joinTime: Join Time
+    expireTime: Expire Time
+    leaderTag: Leader
+  seckill:
+    statusPlaceholder: Select status
+    activityTitle: Activity Title
+    activityTitlePlaceholder: Enter activity title
+    activityTitleRequired: Please enter activity title
+    activityDesc: Activity Description
+    activityDescPlaceholder: Enter activity description
+    activityStatus: Activity Status
+    enabledStatus: Enabled Status
+    remarkLabel: Remark
+    remarkPlaceholder: Enter remark
+    sessionStatus: Session Status
+    perUserLimit: Per-User Limit
+    perUserLimitPlaceholder: Enter per-user limit
+    sortOrder: Sort Order
+    sortOrderPlaceholder: Lower value = higher priority
+    startTimePlaceholder: Select start time
+    startTimeRequired: Please select start time
+    endTimePlaceholder: Select end time
+    endTimeRequired: Please select end time
+  common:
+    enabled: Enabled
+    disabled: Disabled
+    startTime: Start Time
+    endTime: End Time
+    selectPlaceholder: Select
+    status: Status
+    delete: Delete
+  config:
+    maxReached: Maximum configuration count reached
+    resetDefault: Reset to Default
+  productForm:
+    basicInfo: Basic Info
+    statusAndTags: Status & Tags
+    freightConfig: Freight Configuration
+    productImages: Product Images
+    priceAndSales: Price & Sales
+    productAttributes: Product Attributes
+    specConfig: Spec Configuration
+    skuList: SKU List
+    productDesc: Product Description
+    statusLabel: Status
+    recommend: Recommended
+    hotSale: Hot Sale
+    newProduct: New Arrival
+    freightAmount: Freight Amount (¥)
+    freightAmountRequired: Please enter freight amount
+    freightTemplate: Freight Template
+    freightTemplateRequired: Please select freight template
+    freightTemplatePlaceholder: Select freight template
+    freightTypeRequired: Please select freight type
+    freightTip: "System Default: uses global freight config; Free: no freight; Flat Rate: same amount for all regions; Template: calculated by template rules."
+    mainImage: Main Image
+    gallery: Gallery
+    galleryTip: Up to 8 images, the first will be the default main image.
+    minPrice: Min Price (¥)
+    maxPrice: Max Price (¥)
+    virtualSales: Virtual Sales
+    realSales: Real Sales
+    sort: Sort
+    addAttribute: Add Attribute
+    attrName: Attribute Name
+    attrValue: Attribute Value
+    attrNamePlaceholder: Attribute name
+    attrValuePlaceholder: Attribute value
+    noAttributes: No attributes yet, click the button above to add.
+    addSpec: Add Spec
+    specName: Spec Name
+    specValue: Spec Value
+    specNamePlaceholder: Press Enter to add
+    specValuePlaceholder: Press Enter to add
+    noSpecs: No specs yet, click the button above to add.
+    batchCostPrice: Batch Cost Price
+    batchMarketPrice: Batch Market Price
+    batchSalePrice: Batch Sale Price
+    batchStock: Batch Stock
+    batchWarningStock: Batch Warning Stock
+    skuCode: SKU Code
+    skuName: Name
+    specValues: Spec Values
+    image: Image
+    costPrice: Cost Price
+    marketPrice: Market Price
+    salePrice: Sale Price
+    stock: Stock
+    weight: Weight
+    skuStatus: Status
+    operation: Operation
+    description: Description
+    descPlaceholder: Enter description
+    detail: Detail
+    detailPlaceholder: Enter detail content
+    prevStep: Previous
+    nextStep: Next
+    productNameRequired: Please enter product name
+    categoryRequired: Please select category
+    categoryPlaceholder: Select category
+    brandPlaceholder: Select brand
+    productCodePlaceholder: Leave empty for auto-generation
+    productCodeHelp: Leave empty for auto-generated unique code.
+    subTitleHelp: Short selling point for list display, optional.
+    freightHelp: System default uses global freight config.
+    attrHelp: For product parameter display, e.g. material, origin.
+    specHelp: Enter spec values as tags, SKUs are auto-generated.
+    skuHelp: Fine-tune price and stock after generation.
+    specNameTagPlaceholder: Type and press Enter
+    specValueTagPlaceholder: Type and press Enter
+    skuNamePlaceholder: SKU name
+    specValuesPlaceholder: "Red,XL"
+    costPriceYuan: Cost Price (¥)
+    marketPriceYuan: Market Price (¥)
+    salePriceYuan: Sale Price (¥)
+    warningStock: Warning Stock
+    batchSetCostPrice: Batch Set Cost Price
+    batchSetMarketPrice: Batch Set Market Price
+    batchSetSalePrice: Batch Set Sale Price
+    batchSetStock: Batch Set Stock
+    inputPrompt: "Enter {label}"
+    inputValidNumber: Please enter a valid number
+    inputNumber: Please enter a number
+  system:
+    configDesc: Centralized management of mall runtime configuration, changes take effect immediately.
+    refreshData: Refresh Data
+    noConfigItems: No configuration items
+    noDescription: No description
+    sensitive: Sensitive
+    clickToConfig: Click the button below to configure
+    selectPlaceholder: Select
+    configN: "Config {n}"
+    deleteAction: Delete
+    inputJson: Enter JSON format
+    inputContent: Enter content
+    inputConfigValue: Enter configuration value
+    saveAction: Save
+    cancelAction: Cancel
+    typeString: Text Input
+    typeText: Long Text
+    typeInteger: Integer
+    typeDecimal: Decimal
+    typeBoolean: Switch
+    typeJson: Structured Data
+    configItem: Config Item
+    loadGroupFailed: Failed to load config group info
+    loadSettingsFailed: Failed to load settings
+    configLabel: Configure
+    configUpdated: Configuration updated
+    saveFailed: Failed to save configuration
+    requiredFields: Please complete required fields
+    fieldRequired: Required
+    minRows: "Please keep at least {n} rows"
+    minTags: "Please enter at least {n} items"
+    addRow: Add Row
+    inputHintEnter: Type and press Enter
+member:
+  level:
+    bronze: Bronze
+    silver: Silver
+    gold: Gold
+    diamond: Diamond
+  status:
+    active: Active
+    inactive: Inactive
+    banned: Banned
+  source:
+    wechat: WeChat Official
+    miniProgram: WeChat Mini Program
+    h5: H5
+    admin: Admin Import
+  overview:
+    title: Member Dashboard
+    subtitle: Aligned with dashboard/analysis style, replaceable with real-time metrics
+    totalMembers: Total Members
+    newToday: New Today
+    active30d: 30-Day Active
+    sleeping30d: Sleeping Members
+    vsLastWeek: vs last week
+    realtime: Real-time
+    kpiOps: Ops KPI
+    needRecall: Need recall
+    todoRecall: Sleeping Member Recall
+    todoRecallDesc: Push growth task coupon packs to users inactive for 30 days
+    todoLevel: Member Level Review
+    todoLevelDesc: Review LV3-LV4 conditions, fine-tune with GMV
+    todoPoints: Points Rule Tracking
+    todoPointsDesc: Complete frontend exposure after wallet merge
+    today: Today
+    tomorrow: Tomorrow
+    thisWeek: This Week
+    priorityHigh: High
+    priorityMedium: Medium
+    priorityLow: Low
+    growthTrend: Member Growth Trend
+    growthTrendDesc: Combine new and active curves to quickly assess acquisition and retention
+    regionBreakdown: Regional Distribution
+    regionBreakdownDesc: Member province distribution for identifying key markets
+    regionTotal: Total members
+    todoTitle: Operations Todo
+    todoDesc: Focus on high-priority tasks for daily standups
+    owner: Owner
+    deadline: Deadline
+    levelStructure: Level Structure
+    levelStructureDesc: Real-time member level distribution from mall_members.level
+    behaviorInsight: Behavior Insights
+    behaviorInsightDesc: Can be replaced with funnel or custom charts
+    scenarioColumn: Scenario
+    conversionColumn: Conversion Rate
+    remarkColumn: Remark
+    scenarioFirstOrder: First Order Guide
+    scenarioFirstOrderRemark: Keep new user coupon + free shipping combo
+    scenarioRepurchase: Repurchase Incentive
+    scenarioRepurchaseRemark: Combine wallet balance with personalized benefits push
+    scenarioRecall: Sleeping Recall
+    scenarioRecallRemark: Recommend SMS + mini program live streaming
+    recentMembers: Recent Members
+    recentMembersDesc: Card-style list consistent with analysis page for quick profile view
+    nickname: Nickname
+    phoneColumn: Phone
+    levelColumn: Level
+    registeredAt: Registered At
+    statusColumn: Status
+    unnamed: Unnamed
+    loadFailed: Failed to load member overview
+    newMemberLegend: New Members
+    activeMemberLegend: Active Members
+  list:
+    keyword: Keyword
+    keywordPlaceholder: Nickname / Phone / OpenID
+    statusLabel: Status
+    levelLabel: Level
+    sourceLabel: Source
+    tagLabel: Tag
+    registeredAt: Registered At
+    search: Search
+    reset: Reset
+    tagManager: Tag Manager
+    memberList: Member List
+    createMember: New Member
+    refresh: Refresh
+    memberColumn: Member
+    noNickname: No nickname set
+    phoneColumn: Phone
+    tagColumn: Tags
+    levelColumn: Level
+    growthValue: Growth Value
+    balanceColumn: Balance
+    pointsColumn: Points
+    orderCount: Orders
+    totalSpent: Total Spent
+    lastLogin: Last Login
+    noLogin: Never
+    statusColumn: Status
+    sourceColumn: Source
+    registeredAtColumn: Registered At
+    operation: Operation
+    detail: Detail
+    edit: Edit
+    assignTag: Assign Tag
+    unban: Unban
+    ban: Ban
+    banConfirm: Are you sure to ban this member?
+    unbanConfirm: Are you sure to unban this member?
+    editTitle: Edit Member
+    createTitle: New Member
+    nicknameLabel: Nickname
+    nicknamePlaceholder: Enter nickname
+    nicknameRequired: Please enter nickname
+    phonePlaceholder: Enter phone number
+    genderLabel: Gender
+    genderPlaceholder: Select gender
+    genderUnknown: Unknown
+    genderMale: Male
+    genderFemale: Female
+    growthValueLabel: Growth Value
+    statusRequired: Please select status
+    regionLabel: Region
+    remarkLabel: Remark
+    remarkPlaceholder: Optional admin remark
+    cancel: Cancel
+    save: Save
+    create: Create
+    tagDrawerTitle: Member Tags
+    tagMember: Member
+    selectTag: Select Tags
+    selectTagPlaceholder: Select tags
+    tagEnabled: Active
+    tagDisabled: Inactive
+    memberCreated: Member created
+    memberUpdated: Member updated
+    createFailed: Create failed
+    updateFailed: Update failed
+    tagUpdated: Tags updated
+    tagUpdateFailed: Failed to update tags
+    memberBanned: Member banned
+    memberUnbanned: Member unbanned
+    loadFailed: Failed to load members
+    loadTagFailed: Failed to load tags
+  points:
+    sourceSystem: System
+    sourceOrder: Order
+    sourceManual: Manual
+    memberIdLabel: Member ID
+    memberIdPlaceholder: Enter member ID
+    walletType: Wallet Type
+    balanceWallet: Balance Wallet
+    pointsWallet: Points Wallet
+    sourceLabel: Source
+    operatorType: Operator Type
+    operatorSystem: System
+    operatorAdmin: Admin
+    operatorMember: Member
+    timeRange: Time Range
+    search: Search
+    reset: Reset
+    adjustWallet: Adjust Wallet
+    memberIdColumn: Member ID
+    walletTypeColumn: Wallet Type
+    changeAmount: Change Amount
+    beforeAfter: Before/After
+    sourceColumn: Source
+    operatorColumn: Operator
+    remarkColumn: Remark
+    timeColumn: Time
+    adjustTitle: Adjust Member Wallet
+    walletTypePlaceholder: Select wallet type
+    changeValue: Change Amount
+    changeValueRequired: Please enter change value
+    memberIdRequired: Please enter member ID
+    walletTypeRequired: Please select wallet type
+    sourceRequired: Please select source
+    sourcePlaceholder: Select source
+    remarkLabel: Remark
+    unitYuan: "Unit: ¥"
+    loadFailed: Load failed
+    adjustSuccess: Operation successful
+    adjustFailed: Operation failed
+  levelConfig:
+    keyword: Keyword
+    levelName: Level name
+    status: Status
+    allStatus: All Status
+    active: Active
+    inactive: Inactive
+    search: Search
+    reset: Reset
+    title: Level Settings
+    createLevel: New Level
+    name: Name
+    levelValue: Level Value
+    growthRange: Growth Range
+    discountRate: Discount Rate
+    pointRate: Point Rate
+    statusColumn: Status
+    sortOrder: Sort Order
+    operation: Operation
+    edit: Edit
+    delete: Delete
+    deleteConfirm: Are you sure to delete this level?
+    drawerCreateTitle: New Level
+    drawerEditTitle: Edit Level
+    nameLabel: Name
+    namePlaceholder: Enter level name
+    nameRequired: Please enter level name
+    levelLabel: Level Value
+    levelRequired: Please enter level value
+    growthMinLabel: Growth Min
+    growthMinRequired: Please enter growth min value
+    growthMaxLabel: Growth Max
+    discountRateLabel: Discount Rate (%)
+    pointRateLabel: Point Rate (%)
+    colorLabel: Color
+    iconLabel: Icon
+    iconPlaceholder: Iconify name
+    statusLabel: Status
+    sortOrderLabel: Sort Order
+    descriptionLabel: Description
+    cancel: Cancel
+    save: Save
+    levelUpdated: Level updated
+    levelCreated: Level created
+    saveFailed: Save failed
+    deleted: Deleted
+    deleteFailed: Delete failed
+    loadFailed: Load failed
+plugin:
+  systemMessage:
+    title: Message Management
+    list: Message List
+    statistics: Message Statistics
+    settings: Message Settings
+  mall:
+    title: Mall Management
+    categories: Category Management
+    brands: Brand Management
+    products: Product Management
+    orders: Order Management
+    members: Member Management
 dictionary:
   system:
     statusEnabled: Enabled
@@ -182,9 +913,3 @@ dictionary:
     self: Personal data permissions
     customDept: Custom department selection data permissions
     customFunc: Custom function data permissions
-plugin:
-  systemMessage:
-    title: Message Management
-    list: Message List
-    statistics: Message Statistics
-    settings: Message Settings

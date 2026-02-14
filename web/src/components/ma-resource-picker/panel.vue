@@ -573,7 +573,7 @@ onUnmounted(() => {
       <template v-for="btn in resourceStore.getAllButton()">
         <div class="res-app-container">
           <div class="res-app">
-            <m-tooltip :text="btn.label">
+            <m-tooltip :text="$t(btn.label)">
               <input
                 type="file"
                 :name="btn.name"

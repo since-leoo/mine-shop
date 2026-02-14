@@ -17,19 +17,21 @@ import { ResultCode } from '@/utils/ResultCode.ts'
 import { useMessage } from '@/hooks/useMessage.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
 import { ElTag } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:coupon:user-list' })
 
 const route = useRoute()
 const router = useRouter()
 const msg = useMessage()
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const couponId = computed(() => Number(route.query.coupon_id ?? 0))
 
 const statusMap: Record<string, { text: string; type: any }> = {
-  unused: { text: '未使用', type: 'info' },
-  used: { text: '已使用', type: 'success' },
-  expired: { text: '已过期', type: 'warning' },
+  unused: { text: t('mall.couponUser.unused'), type: 'info' },
+  used: { text: t('mall.couponUser.used'), type: 'success' },
+  expired: { text: t('mall.couponUser.expired'), type: 'warning' },
 }
 
 const options = ref<MaProTableOptions>({
@@ -41,8 +43,8 @@ const options = ref<MaProTableOptions>({
     }),
   },
   header: {
-    mainTitle: () => '领券记录',
-    subTitle: () => '查看用户领取与使用情况',
+    mainTitle: () => t('mall.couponUser.recordTitle'),
+    subTitle: () => t('mall.couponUser.recordSubtitle'),
     backBtn: {
       show: true,
       onClick: () => router.back(),
@@ -53,25 +55,25 @@ const options = ref<MaProTableOptions>({
 const schema = ref<MaProTableSchema>({
   searchItems: [
     {
-      label: () => '关键字',
+      label: () => t('mall.couponUser.keywordLabel'),
       prop: 'keyword',
       render: 'input',
-      renderProps: { placeholder: '输入昵称或手机号' },
+      renderProps: { placeholder: t('mall.couponUser.keywordPlaceholder') },
     },
     {
-      label: () => '状态',
+      label: () => t('mall.couponUser.statusColumn'),
       prop: 'status',
       render: () => (
-        <el-select placeholder="请选择">
-          <el-option label="未使用" value="unused" />
-          <el-option label="已使用" value="used" />
-          <el-option label="已过期" value="expired" />
+        <el-select placeholder={t('mall.couponUser.statusPlaceholder')}>
+          <el-option label={t('mall.couponUser.unused')} value="unused" />
+          <el-option label={t('mall.couponUser.used')} value="used" />
+          <el-option label={t('mall.couponUser.expired')} value="expired" />
         </el-select>
       ),
     },
   ],
   tableColumns: [
-    { label: () => '会员', prop: 'member_nickname', minWidth: '160px',
+    { label: () => t('mall.couponUser.memberColumn'), prop: 'member_nickname', minWidth: '160px',
       cellRender: ({ row }: { row: CouponUserVo }) => (
         <div>
           <div class="font-medium">{row.member_nickname ?? '--'}</div>
@@ -79,19 +81,19 @@ const schema = ref<MaProTableSchema>({
         </div>
       ),
     },
-    { label: () => '优惠券', prop: 'coupon_name', minWidth: '160px' },
-    { label: () => '状态', prop: 'status', width: '120px',
+    { label: () => t('mall.couponUser.couponColumn'), prop: 'coupon_name', minWidth: '160px' },
+    { label: () => t('mall.couponUser.statusColumn'), prop: 'status', width: '120px',
       cellRender: ({ row }: { row: CouponUserVo }) => {
         const meta = statusMap[row.status || 'unused']
         return <ElTag type={meta?.type}>{meta?.text}</ElTag>
       },
     },
-    { label: () => '领取时间', prop: 'received_at', width: '160px' },
-    { label: () => '使用时间', prop: 'used_at', width: '160px' },
-    { label: () => '过期时间', prop: 'expire_at', width: '160px' },
+    { label: () => t('mall.couponUser.receivedAt'), prop: 'received_at', width: '160px' },
+    { label: () => t('mall.couponUser.usedAt'), prop: 'used_at', width: '160px' },
+    { label: () => t('mall.couponUser.expireAt'), prop: 'expire_at', width: '160px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('mall.order.operation'),
       width: '220px',
       operationConfigure: {
         type: 'tile',
@@ -99,12 +101,12 @@ const schema = ref<MaProTableSchema>({
           {
             name: 'mark-used',
             show: ({ row }: { row: CouponUserVo }) => row.status === 'unused' && hasAuth('coupon:user:update'),
-            text: () => '标记已使用',
+            text: () => t('mall.couponUser.markUsed'),
             icon: 'ph:check-circle',
             onClick: async ({ row }: { row: CouponUserVo }) => {
               const res = await couponUserMarkUsed(row.id as number)
               if (res.code === ResultCode.SUCCESS) {
-                msg.success('操作成功')
+                msg.success(t('mall.operationSuccess'))
                 await proTableRef.value.refresh()
               }
             },
@@ -112,12 +114,12 @@ const schema = ref<MaProTableSchema>({
           {
             name: 'mark-expired',
             show: ({ row }: { row: CouponUserVo }) => row.status === 'unused' && hasAuth('coupon:user:update'),
-            text: () => '标记过期',
+            text: () => t('mall.couponUser.markExpired'),
             icon: 'ph:warning',
             onClick: async ({ row }: { row: CouponUserVo }) => {
               const res = await couponUserMarkExpired(row.id as number)
               if (res.code === ResultCode.SUCCESS) {
-                msg.success('操作成功')
+                msg.success(t('mall.operationSuccess'))
                 await proTableRef.value.refresh()
               }
             },

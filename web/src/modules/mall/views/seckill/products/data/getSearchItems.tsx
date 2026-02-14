@@ -7,16 +7,18 @@
  * @Link   https://github.com/mineadmin
  */
 import type { MaSearchItem } from '@mineadmin/search'
+import { useI18n } from 'vue-i18n'
 
 export default function getSearchItems(): MaSearchItem[] {
+  const { t } = useI18n()
   return [
     {
-      label: () => '启用状态',
+      label: () => t('mall.seckill.enabledStatus'),
       prop: 'is_enabled',
       render: () => (
-        <el-select clearable placeholder="全部">
-          <el-option label="启用" value={true} />
-          <el-option label="禁用" value={false} />
+        <el-select clearable placeholder={t('mall.product.all')}>
+          <el-option label={t('mall.common.enabled')} value={true} />
+          <el-option label={t('mall.common.disabled')} value={false} />
         </el-select>
       ),
     },

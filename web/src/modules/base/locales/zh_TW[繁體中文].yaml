@@ -3,6 +3,8 @@ baseUserManage:
   username: 用戶名
   nickname: 昵稱
   phone: 手機
+  dept: 所屬部門
+  post: 部門職位
   email: 郵箱
   password: 密碼
   userType: 用戶類型
@@ -48,6 +50,9 @@ baseMenuManage:
   isBreadcrumb: 麵包屑顯示
   isAffix: Tab是否固定
   remark: 備註
+  baseInfo: 基礎資訊
+  frontAuth: 前端權限驗證
+  otherInfo: 其他資訊
   typeItem:
     M: 菜單
     B: 按鍵
@@ -74,6 +79,38 @@ baseMenuManage:
     btnName: 請輸入按鍵名稱
     btnCode: 請輸入按鍵標識
     btnI18n: 請輸入按鍵國際化
+baseRole:
+  name: 角色名稱
+  code: 角色標識
+  remark: 備註
+  permission: 權限菜單
+  placeholder:
+    name: 請輸入角色名稱
+    code: 請輸入角色標識，此項全局唯一
+    remark: 備註資訊
+basePermission:
+  name: 權限名稱
+  code: 權限標識
+  remark: 備註
+  placeholder:
+    name: 請輸入權限名稱
+    code: 請輸入權限標識，此項全局唯一
+    remark: 備註資訊
+baseDict:
+  name: 字典名稱
+  code: 字典標識
+  remark: 備註
+  placeholder:
+    name: 請輸入字典名稱
+    code: 請輸入字典標識，此項全局唯一
+    remark: 備註資訊
+baseDictItem:
+  name: 字典項名稱
+  code: 字典項標識
+  remark: 備註
+  placeholder:
+    name: 請輸入字典項名稱
+    code: 請輸入字典項標識，此項全局唯一
 baseLoginLog:
   title: 用戶登錄日志
   username: 使用者名稱
@@ -91,6 +128,43 @@ baseOperationLog:
   ip: 請求IP
   created_at: 建立時間
   updated_at: 更新時間
+baseDepartment:
+  name: 部門名稱
+  created_at: 建立時間
+  updated_at: 更新時間
+  leaderCount: 負責人數
+  positionsCount: 職位數
+  usersCount: 人員數
+  parentDepartment: 上級部門
+  page:
+    mainTitle: 部門管理
+    subTitle: 提供公司、機構的人員部門管理、以及部門負責人。
+    setLeader: 設置負責人
+    previewUser: 查看用戶
+    managePost: 管理職位
+  placeholder:
+    name: 請輸入部門名稱
+    parentDepartment: 請選擇上級部門
+  error:
+    selfNotParent: 不可選擇自己作為上級部門，已還原預設數據
+basePost:
+  name: 職位名稱
+  belongPost: 所屬職位
+  belongDept: 所屬部門
+  created_at: 創建時間
+  updated_at: 更新時間
+  dataScope: 數據權限
+  selectDept: 自選部門
+  callFunc: 調用函數名
+  placeholder:
+    name: 請輸入職位名稱
+baseDeptLeader:
+  belongDept: 所屬部門
+  username: 用戶名
+  nickname: 昵稱
+  user_id: 選擇用戶
+  placeholder:
+    user_id: 請選擇要設置為負責人的用戶
 baseMenu:
   permission:
     index: 權限管理
@@ -110,10 +184,10 @@ baseMenu:
     getRolePermission: 查詢角色權限
     setRolePermission: 賦予角色權限
     menu: 菜單管理
-    menuList: 菜單管列表
-    menuSave: 菜單管保存
-    menuUpdate: 菜單管更新
-    menuDelete: 菜單管刪除
+    menuList: 菜單列表
+    menuSave: 菜單保存
+    menuUpdate: 菜單更新
+    menuDelete: 菜單刪除
     department: 部門管理
     departmentList: 部門列表
     departmentCreate: 新增部門
@@ -124,17 +198,10 @@ baseMenu:
     positionSave: 編輯職位
     positionDelete: 刪除職位
     positionDataScope: 設置職位數據權限
-basePost:
-  name: 職位名稱
-  belongPost: 所屬職位
-  belongDept: 所屬部門
-  created_at: 創建時間
-  updated_at: 更新時間
-  dataScope: 數據權限
-  selectDept: 自選部門
-  callFunc: 調用函數名
-  placeholder:
-    name: 請輸入職位名稱
+    leaderList: 部門領導列表
+    leaderCreate: 新增部門領導
+    leaderSave: 編輯部門領導
+    leaderDelete: 刪除部門領導
   log:
     index: 日志管理
     userLoginLog: 登錄日志

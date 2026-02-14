@@ -8,9 +8,11 @@ import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:review' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const msg = useMessage()
 const statsData = ref({ today_reviews: 0, pending_reviews: 0, total_reviews: 0, average_rating: 0 })
@@ -29,14 +31,14 @@ function onReply(row: ReviewVo) {
 
 async function submitReply() {
   if (!replyContent.value.trim()) {
-    msg.warning('请输入回复内容')
+    msg.warning(t('mall.review.replyEmpty'))
     return
   }
   replyLoading.value = true
   try {
     const res = await reviewReply(replyRow.value!.id!, { content: replyContent.value })
     if (res.code === ResultCode.SUCCESS) {
-      msg.success('回复成功')
+      msg.success(t('mall.review.replySuccess'))
       replyDialogVisible.value = false
       proTableRef.value.refresh()
     }
@@ -52,14 +54,14 @@ async function submitReply() {
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 140,
   header: {
-    mainTitle: () => '评价管理',
-    subTitle: () => '查看、审核和回复商品评价',
+    mainTitle: () => t('mall.review.pageTitle'),
+    subTitle: () => t('mall.review.pageSubtitle'),
   },
   searchOptions: {
     fold: false,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
     },
   },
   searchFormOptions: { labelWidth: '90px' },
@@ -91,7 +93,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card slate">
             <div>
-              <div class="stats-label">评价总数</div>
+              <div class="stats-label">{{ t('mall.review.totalReviews') }}</div>
               <div class="stats-value">{{ statsData.total_reviews }}</div>
             </div>
             <ma-svg-icon name="ph:chat-circle-text" size="24" />
@@ -102,7 +104,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card amber">
             <div>
-              <div class="stats-label">待审核</div>
+              <div class="stats-label">{{ t('mall.review.pendingReview') }}</div>
               <div class="stats-value">{{ statsData.pending_reviews }}</div>
             </div>
             <ma-svg-icon name="ph:clock" size="24" />
@@ -113,7 +115,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card emerald">
             <div>
-              <div class="stats-label">今日新增</div>
+              <div class="stats-label">{{ t('mall.review.newToday') }}</div>
               <div class="stats-value">{{ statsData.today_reviews }}</div>
             </div>
             <ma-svg-icon name="ph:plus-circle" size="24" />
@@ -124,7 +126,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card blue">
             <div>
-              <div class="stats-label">平均评分</div>
+              <div class="stats-label">{{ t('mall.review.avgRating') }}</div>
               <div class="stats-value">{{ statsData.average_rating }}</div>
             </div>
             <ma-svg-icon name="ph:star" size="24" />
@@ -135,33 +137,33 @@ onMounted(() => {
 
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
       <template #empty>
-        <el-empty description="暂无评价数据" />
+        <el-empty :description="t('mall.review.emptyData')" />
       </template>
     </MaProTable>
 
     <!-- 回复弹窗 -->
     <el-dialog
       v-model="replyDialogVisible"
-      :title="replyRow?.admin_reply ? '查看回复' : '回复评价'"
+      :title="replyRow?.admin_reply ? t('mall.review.viewReply') : t('mall.review.replyReview')"
       width="500px"
       destroy-on-close
     >
       <div class="mb-4">
-        <div class="text-sm text-gray-500 mb-1">评价内容：</div>
+        <div class="text-sm text-gray-500 mb-1">{{ t('mall.review.reviewContent') }}</div>
         <div class="text-sm">{{ replyRow?.content }}</div>
       </div>
       <el-input
         v-model="replyContent"
         type="textarea"
         :rows="4"
-        placeholder="请输入回复内容"
+        :placeholder="t('mall.review.replyPlaceholder')"
         maxlength="500"
         show-word-limit
       />
       <template #footer>
-        <el-button @click="replyDialogVisible = false">取消</el-button>
+        <el-button @click="replyDialogVisible = false">{{ t('mall.review.cancelReply') }}</el-button>
         <el-button type="primary" :loading="replyLoading" @click="submitReply">
-          确认回复
+          {{ t('mall.review.confirmReply') }}
         </el-button>
       </template>
     </el-dialog>

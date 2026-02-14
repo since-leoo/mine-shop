@@ -8,32 +8,34 @@
  */
 
 import type { MaSearchItem } from '@mineadmin/pro-table'
+import { useI18n } from 'vue-i18n'
 
 export default function getSearchItems(): MaSearchItem[] {
+  const { t } = useI18n()
   return [
     {
-      label: () => '关键字',
+      label: () => t('mall.coupon.searchLabel'),
       prop: 'name',
       render: 'input',
-      renderProps: { placeholder: '请输入名称关键字' },
+      renderProps: { placeholder: t('mall.coupon.searchNamePlaceholder') },
     },
     {
-      label: () => '优惠类型',
+      label: () => t('mall.coupon.typeLabel'),
       prop: 'type',
       render: () => (
-        <el-select placeholder="请选择类型">
-          <el-option label="满减" value="fixed" />
-          <el-option label="折扣" value="percent" />
+        <el-select placeholder={t('mall.coupon.typePlaceholder')}>
+          <el-option label={t('mall.coupon.typeFixed')} value="fixed" />
+          <el-option label={t('mall.coupon.typePercent')} value="percent" />
         </el-select>
       ),
     },
     {
-      label: () => '状态',
+      label: () => t('mall.coupon.statusLabel'),
       prop: 'status',
       render: () => (
-        <el-select placeholder="请选择状态">
-          <el-option label="启用" value="active" />
-          <el-option label="停用" value="inactive" />
+        <el-select placeholder={t('mall.coupon.statusPlaceholder')}>
+          <el-option label={t('mall.coupon.statusActive')} value="active" />
+          <el-option label={t('mall.coupon.statusInactive')} value="inactive" />
         </el-select>
       ),
     },
