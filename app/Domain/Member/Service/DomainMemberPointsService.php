@@ -90,7 +90,7 @@ final class DomainMemberPointsService
      *
      * @return ?MemberBalanceAdjusted 变动事件对象供调用方派发（无变动时返回 null）
      */
-    public function grantPurchasePoints(int $memberId, int $payAmountCents, string $orderNo): ?MemberBalanceAdjusted
+    public function grantPurchasePoints(int $memberId, int $payAmountCents, string $orderNo): void
     {
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
@@ -108,14 +108,14 @@ final class DomainMemberPointsService
         $points = $this->calculatePurchasePoints($payAmountCents, $pointRate);
 
         if ($points <= 0) {
-            return null;
+            return;
         }
 
         $walletEntity = $this->walletService->getEntity($memberId, 'points');
         $walletEntity->grant($points, 'purchase_reward', '消费奖励:' . $orderNo);
         $this->walletService->saveEntity($walletEntity);
 
-        return new MemberBalanceAdjusted(
+        event(new MemberBalanceAdjusted(
             memberId: $memberId,
             walletId: $walletEntity->getId(),
             walletType: 'points',
@@ -124,7 +124,7 @@ final class DomainMemberPointsService
             afterBalance: $walletEntity->getAfterBalance(),
             source: 'purchase_reward',
             remark: '消费奖励:' . $orderNo,
-        );
+        ));
     }
 
     /**
