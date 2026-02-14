@@ -22,7 +22,7 @@ use App\Infrastructure\Abstract\IService;
 final class DomainPositionService extends IService
 {
     public function __construct(
-        public readonly PositionRepository $repository
+        private readonly PositionRepository $repository
     ) {}
 
     /**
@@ -69,5 +69,34 @@ final class DomainPositionService extends IService
     public function setDataPermission(int $id, array $payload): bool
     {
         return $this->repository->updateById($id, $payload);
+    }
+
+    /**
+     * 设置岗位数据权限策略.
+     */
+    public function setDataPermissionPolicy(int $positionId, string $policyType, mixed $value): bool
+    {
+        $positionModel = $this->repository->findById($positionId);
+        if ($positionModel === null) {
+            return false;
+        }
+
+        $result = $positionModel->setDataPermissionPolicy($policyType, $value);
+
+        if ($result->success) {
+            $payload = [
+                'policy_type' => $result->policyType,
+                'value' => $result->value,
+            ];
+
+            $policy = $positionModel->policy()->first();
+            if ($policy) {
+                $policy->update($payload);
+            } else {
+                $positionModel->policy()->create($payload);
+            }
+        }
+
+        return $result->success;
     }
 }

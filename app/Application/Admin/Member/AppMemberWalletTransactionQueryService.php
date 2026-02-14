@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Member;
 
-use App\Domain\Member\Repository\MemberWalletTransactionRepository;
+use App\Domain\Member\Service\DomainMemberWalletTransactionService;
 
 final class AppMemberWalletTransactionQueryService
 {
     public function __construct(
-        public readonly MemberWalletTransactionRepository $repository,
+        private readonly DomainMemberWalletTransactionService $walletTransactionService,
     ) {}
 
     /**
@@ -25,6 +25,6 @@ final class AppMemberWalletTransactionQueryService
      */
     public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->repository->page($filters, $page, $pageSize);
+        return $this->walletTransactionService->page($filters, $page, $pageSize);
     }
 }

@@ -17,10 +17,19 @@ use App\Domain\Permission\Entity\MenuEntity;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\Menu;
+use Hyperf\Collection\Collection;
 
 final class DomainMenuService extends IService
 {
-    public function __construct(public readonly MenuRepository $repository) {}
+    public function __construct(private readonly MenuRepository $repository) {}
+
+    /**
+     * 查询菜单列表.
+     */
+    public function list(array $filters = []): Collection
+    {
+        return $this->repository->list($filters);
+    }
 
     public function create(MenuEntity $entity): Menu
     {

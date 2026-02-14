@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Application\Api\Member;
 
-use App\Domain\Member\Repository\MemberWalletTransactionRepository;
+use App\Domain\Member\Service\DomainMemberWalletTransactionService;
 
 final class AppApiMemberWalletQueryService
 {
     public function __construct(
-        private readonly MemberWalletTransactionRepository $repository,
+        private readonly DomainMemberWalletTransactionService $walletTransactionService,
     ) {}
 
     /**
@@ -31,7 +31,7 @@ final class AppApiMemberWalletQueryService
      */
     public function transactions(int $memberId, string $walletType, int $page, int $pageSize): array
     {
-        return $this->repository->page(
+        return $this->walletTransactionService->page(
             ['member_id' => $memberId, 'wallet_type' => $walletType],
             $page,
             $pageSize

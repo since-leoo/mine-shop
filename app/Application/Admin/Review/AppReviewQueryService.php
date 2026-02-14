@@ -12,20 +12,16 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Review;
 
-use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Domain\Trade\Review\Service\DomainReviewService;
-use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Model\Review\Review;
 use Hyperf\Collection\Collection;
 
 /**
  * 后台评价查询服务.
  */
-final class AppReviewQueryService extends IService
+final class AppReviewQueryService
 {
     public function __construct(
-        public readonly ReviewRepository $repository,
-        private readonly DomainReviewService $reviewService
+        private readonly DomainReviewService $reviewService,
     ) {}
 
     /**
@@ -35,14 +31,9 @@ final class AppReviewQueryService extends IService
      */
     public function page(array $params, int $page = 1, int $pageSize = 10): array
     {
-        return $this->repository->page($params, $page, $pageSize);
+        return $this->reviewService->page($params, $page, $pageSize);
     }
 
-    /**
-     * 查询单条评价详情.
-     *
-     * @throws \RuntimeException 评价不存在时抛出异常
-     */
     /**
      * 查询单条评价详情.
      *
@@ -50,12 +41,7 @@ final class AppReviewQueryService extends IService
      */
     public function findById(mixed $id): mixed
     {
-        /** @var null|Review $review */
-        $review = $this->repository->findById($id);
-        if (! $review) {
-            throw new \RuntimeException('评价不存在');
-        }
-        return $review;
+        return $this->reviewService->getEntity((int) $id);
     }
 
     /**
@@ -63,7 +49,7 @@ final class AppReviewQueryService extends IService
      */
     public function listByOrderId(int $orderId): Collection
     {
-        return Review::where('order_id', $orderId)->orderByDesc('id')->get();
+        return $this->reviewService->listByOrderId($orderId);
     }
 
     /**

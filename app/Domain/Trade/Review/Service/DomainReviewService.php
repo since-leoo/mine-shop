@@ -17,6 +17,7 @@ use App\Domain\Trade\Review\Mapper\ReviewMapper;
 use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Review\Review;
+use Hyperf\Collection\Collection;
 
 final class DomainReviewService extends IService
 {
@@ -62,6 +63,14 @@ final class DomainReviewService extends IService
     {
         $entity->reply($content);
         return $this->repository->updateFromEntity($entity);
+    }
+
+    /**
+     * 按订单ID查询评价列表.
+     */
+    public function listByOrderId(int $orderId): Collection
+    {
+        return Review::where('order_id', $orderId)->orderByDesc('id')->get();
     }
 
     /**

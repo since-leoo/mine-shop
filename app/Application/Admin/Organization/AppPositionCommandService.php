@@ -39,36 +39,10 @@ final class AppPositionCommandService
 
     public function setDataPermission(PositionSetDataPermissionInput $input): bool
     {
-        // 步骤1: 从 DTO 获取岗位ID
-        $positionId = $input->getPositionId();
-
-        // 步骤2: 通过 Repository 获取 Model
-        $positionModel = $this->positionService->repository->findById($positionId);
-        if ($positionModel === null) {
-            return false;
-        }
-
-        // 步骤3: 调用 Model 的行为方法（包含业务规则验证）
-        $result = $positionModel->setDataPermissionPolicy(
+        return $this->positionService->setDataPermissionPolicy(
+            $input->getPositionId(),
             $input->getPolicyType(),
             $input->getValue()
         );
-
-        // 步骤4: 根据结果执行持久化操作
-        if ($result->success) {
-            $payload = [
-                'policy_type' => $result->policyType,
-                'value' => $result->value,
-            ];
-
-            $policy = $positionModel->policy()->first();
-            if ($policy) {
-                $policy->update($payload);
-            } else {
-                $positionModel->policy()->create($payload);
-            }
-        }
-
-        return $result->success;
     }
 }

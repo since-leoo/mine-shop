@@ -25,7 +25,7 @@ final class AppOrderQueryService
      */
     public function page(array $filters, int $page, int $pageSize): array
     {
-        return $this->orderService->repository->page($filters, $page, $pageSize);
+        return $this->orderService->page($filters, $page, $pageSize);
     }
 
     /**

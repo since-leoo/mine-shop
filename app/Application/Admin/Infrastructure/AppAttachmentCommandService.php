@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Admin\Infrastructure;
 
 use App\Domain\Infrastructure\Attachment\Entity\AttachmentEntity;
-use App\Domain\Infrastructure\Attachment\Repository\AttachmentRepository;
-use App\Infrastructure\Abstract\IService;
+use App\Domain\Infrastructure\Attachment\Service\DomainAttachmentService;
 use Mine\Upload\UploadInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -22,12 +21,12 @@ use Symfony\Component\Finder\SplFileInfo;
 /**
  * 附件命令服务：处理所有写操作.
  */
-final class AppAttachmentCommandService extends IService
+final class AppAttachmentCommandService
 {
     public function __construct(
-        public readonly AttachmentRepository $repository,
+        private readonly DomainAttachmentService $attachmentService,
         private readonly AppAttachmentQueryService $queryService,
-        private readonly UploadInterface $upload
+        private readonly UploadInterface $upload,
     ) {}
 
     public function upload(SplFileInfo $fileInfo, UploadedFileInterface $uploadedFile, int $userId): AttachmentEntity
@@ -53,13 +52,13 @@ final class AppAttachmentCommandService extends IService
             ->setSizeInfo((string) $upload->getSizeInfo())
             ->setUrl($upload->getUrl());
 
-        return $this->repository->save($entity);
+        return $this->attachmentService->save($entity);
     }
 
     public function delete(int $id): bool
     {
         $attachment = $this->queryService->find($id);
         $attachment || throw new \InvalidArgumentException(trans('attachment.attachment_not_exist'));
-        return $this->repository->deleteByIds([$id]) > 0;
+        return $this->attachmentService->deleteByIds([$id]) > 0;
     }
 }

@@ -86,16 +86,13 @@ final class AppGroupBuyCommandService
 
             // 刚创建的活动需要查出 ID
             if ($id === null) {
-                $latest = $this->groupBuyService->repository->getQuery()
-                    ->orderByDesc('id')->first();
-                if (! $latest || $latest->status !== 'pending') {
+                $id = $this->groupBuyService->findLatestPendingId();
+                if ($id === null) {
                     return;
                 }
-                $id = (int) $latest->id;
             }
 
-            $model = $this->groupBuyService->repository->findById($id);
-            if (! $model || $model->status !== 'pending') {
+            if (! $this->groupBuyService->isPending($id)) {
                 return;
             }
 

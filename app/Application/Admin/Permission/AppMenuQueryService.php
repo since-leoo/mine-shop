@@ -21,6 +21,6 @@ final class AppMenuQueryService
 
     public function list(array $filters = []): Collection
     {
-        return $this->menuService->repository->list($filters);
+        return $this->menuService->list($filters);
     }
 }

@@ -29,7 +29,7 @@ final class DomainOrderService extends IService
 {
     public function __construct(
         public readonly OrderRepository $repository,
-        private readonly DomainMallSettingService $mallSettingService,
+        public readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**

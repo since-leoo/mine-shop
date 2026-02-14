@@ -26,6 +26,28 @@ final class DomainGroupBuyService extends IService
         public readonly GroupBuyRepository $repository
     ) {}
 
+    /**
+     * 查找最新的 pending 状态活动 ID.
+     */
+    public function findLatestPendingId(): ?int
+    {
+        $latest = $this->repository->getQuery()
+            ->orderByDesc('id')->first();
+        if (! $latest || $latest->status !== 'pending') {
+            return null;
+        }
+        return (int) $latest->id;
+    }
+
+    /**
+     * 判断指定活动是否为 pending 状态.
+     */
+    public function isPending(int $id): bool
+    {
+        $model = $this->repository->findById($id);
+        return $model && $model->status === 'pending';
+    }
+
     public function create(GroupBuyCreateInput $dto): bool
     {
         $entity = GroupBuyMapper::getNewEntity();
