@@ -36,4 +36,15 @@ final class GroupBuyOrderRepository extends IRepository
     {
         return GroupBuyOrder::where('order_id', $orderId)->first();
     }
+
+    /**
+     * 将团购订单标记为已支付.
+     */
+    public function markPaidByOrderId(int $orderId): bool
+    {
+        return (bool) $this->getQuery()
+            ->where('order_id', $orderId)
+            ->where('status', 'pending')
+            ->update(['status' => 'paid', 'pay_time' => \Carbon\Carbon::now()]);
+    }
 }

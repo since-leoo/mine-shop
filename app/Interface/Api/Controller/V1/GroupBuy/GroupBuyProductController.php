@@ -62,6 +62,9 @@ final class GroupBuyProductController extends AbstractController
         if ($data === null) {
             throw new BusinessException(ResultCode::NOT_FOUND, '拼团商品不存在或活动已结束');
         }
-        return $this->successWithTransform($data, fn (array $d) => $this->transformer->transformDetail($d));
+        $detail = $this->transformer->transformDetail($data);
+        $detail['ongoingGroups'] = $this->queryService->getOngoingGroups($activityId);
+
+        return $this->success($detail);
     }
 }

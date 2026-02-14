@@ -21,5 +21,6 @@ final class OrderPaidForMember
         public readonly int $memberId,
         public readonly string $orderNo,
         public readonly int $payAmountCents,
+        public readonly int $orderId = 0,
     ) {}
 }

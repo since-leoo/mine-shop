@@ -147,6 +147,7 @@ class DomainPayService
             $this->memberEntity->getId(),
             $this->orderEntity->getOrderNo(),
             $this->orderEntity->getPayAmount(),
+            $this->orderEntity->getId(),
         ));
 
         return ['is_paid' => true];
@@ -182,6 +183,7 @@ class DomainPayService
                 $orderEntity->getMemberId(),
                 $orderEntity->getOrderNo(),
                 $orderEntity->getPayAmount(),
+                $orderEntity->getId(),
             ));
         }
     }

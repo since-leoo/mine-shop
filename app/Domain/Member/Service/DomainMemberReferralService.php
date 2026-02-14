@@ -14,6 +14,7 @@ namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Repository\MemberRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Service\Wechat\MiniAppAuthService;
 
 /**
@@ -47,7 +48,7 @@ final class DomainMemberReferralService extends IService
      */
     public function getInviteCode(int $memberId): ?string
     {
-        /** @var null|\App\Infrastructure\Model\Member\Member $member */
+        /** @var null|Member $member */
         $member = $this->repository->findById($memberId);
         return $member?->invite_code;
     }

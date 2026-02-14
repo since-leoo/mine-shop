@@ -13,13 +13,35 @@ declare(strict_types=1);
 namespace App\Domain\Trade\GroupBuy\Service;
 
 use Carbon\Carbon;
+use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
 use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
 
 final class DomainGroupBuyLifecycleService
 {
     public function __construct(
         private readonly DomainGroupBuyService $groupBuyService,
+        private readonly GroupBuyOrderRepository $groupBuyOrderRepository,
     ) {}
+
+    /**
+     * 订单支付成功后，更新团购订单状态并检查是否成团.
+     */
+    public function onOrderPaid(int $orderId): void
+    {
+        $groupBuyOrder = $this->groupBuyOrderRepository->findByOrderId($orderId);
+        if (! $groupBuyOrder || $groupBuyOrder->status !== 'pending') {
+            return;
+        }
+
+        $this->groupBuyOrderRepository->markPaidByOrderId($orderId);
+
+        try {
+            $entity = $this->groupBuyService->getEntity((int) $groupBuyOrder->group_buy_id);
+            $this->checkAndCompleteGroup($groupBuyOrder->group_no, $entity->getId(), $entity->getMinPeople());
+        } catch (\RuntimeException) {
+            // 活动不存在，跳过成团检查
+        }
+    }
 
     public function checkAndCompleteGroup(string $groupNo, int $groupBuyId, int $minPeople): void
     {

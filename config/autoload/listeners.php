@@ -17,6 +17,7 @@ use App\Domain\Member\Listener\LevelUpgradeListener;
 use App\Domain\Member\Listener\PurchaseRewardListener;
 use App\Domain\Member\Listener\RecordMemberBalanceLogListener;
 use App\Domain\Member\Listener\RegisterPointsListener;
+use App\Domain\Trade\GroupBuy\Listener\GroupBuyOrderPaidListener;
 use App\Domain\Trade\Order\Listener\OrderCreatedListener;
 use App\Domain\Trade\Order\Listener\OrderStatusNotifyListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
@@ -59,6 +60,8 @@ return [
     PurchaseRewardListener::class,
     // 订单创建日志
     OrderCreatedListener::class,
+    // 订单支付 → 团购订单状态同步
+    GroupBuyOrderPaidListener::class,
     // 商品缓存
     ProductSnapshotListener::class,
 ];
