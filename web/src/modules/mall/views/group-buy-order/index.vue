@@ -3,6 +3,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { GroupBuyOrderSummaryVo } from '~/mall/api/group-buy-order'
 
+import { useI18n } from 'vue-i18n'
 import { summaryPage, ordersByActivity } from '~/mall/api/group-buy-order'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -10,6 +11,7 @@ import getOrderColumns from './data/getOrderColumns.tsx'
 
 defineOptions({ name: 'mall:group_buy_order' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 
 // 抽屉：拼团订单明细
@@ -24,7 +26,7 @@ const drawerPageSize = ref(15)
 
 function onViewOrders(row: GroupBuyOrderSummaryVo) {
   drawerActivityId.value = row.id
-  drawerTitle.value = `拼团订单 - ${row.title}`
+  drawerTitle.value = t('mall.groupBuyOrder.drawerTitle', { title: row.title })
   drawerPage.value = 1
   drawerVisible.value = true
   loadDrawerOrders()
@@ -57,17 +59,17 @@ function onDrawerPageChange(p: number) {
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 100,
   header: {
-    mainTitle: () => '拼团订单',
-    subTitle: () => '以拼团活动为维度查看参团情况',
+    mainTitle: () => t('mall.groupBuyOrder.title'),
+    subTitle: () => t('mall.groupBuyOrder.subtitle'),
   },
   searchOptions: {
     fold: false,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: summaryPage },
 })
 
@@ -83,7 +85,7 @@ const orderColumns = getOrderColumns()
   <div class="mine-layout pt-3">
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
       <template #empty>
-        <el-empty description="暂无拼团订单数据" />
+        <el-empty :description="t('mall.groupBuyOrder.noData')" />
       </template>
     </MaProTable>
 

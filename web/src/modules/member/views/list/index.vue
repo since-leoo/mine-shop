@@ -5,7 +5,7 @@
 <template>
   <div class="member-page p-3">
     <el-card shadow="never" class="mb-4">
-      <el-form label-width="90px" :model="filters">
+      <el-form label-width="100px" :model="filters">
         <el-row :gutter="16">
           <el-col :span="6">
             <el-form-item :label="t('member.list.keyword')">
@@ -655,7 +655,7 @@ const saveTags = async () => {
   tagLoading.value = true
   try {
     await memberApi.syncTags(currentMember.value.id, selectedTags.value)
-    ElMessage.success(t('member.list.tagUpdated'))
+    ElMessage.success(t('member.list.tagAssignSuccess'))
     tagDrawerVisible.value = false
     currentMember.value = null
     loadMembers()

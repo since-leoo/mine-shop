@@ -1,22 +1,25 @@
 import type { MaProTableColumns } from '@mineadmin/pro-table'
 
 import { ElTag } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
 
-const orderStatusMap: Record<string, { text: string, type: string }> = {
-  pending: { text: '待付款', type: 'warning' },
-  paid: { text: '已付款', type: 'success' },
-  cancelled: { text: '已取消', type: 'info' },
-}
-
 export default function getOrderColumns(): MaProTableColumns[] {
+  const { t } = useI18n()
+
+  const orderStatusMap: Record<string, { text: string, type: string }> = {
+    pending: { text: t('mall.seckillOrder.orderPending'), type: 'warning' },
+    paid: { text: t('mall.seckillOrder.orderPaid'), type: 'success' },
+    cancelled: { text: t('mall.seckillOrder.orderCancelled'), type: 'info' },
+  }
+
   return [
-    { label: () => '会员', prop: 'member_nickname', width: '100px' },
-    { label: () => '手机号', prop: 'member_phone', width: '120px' },
-    { label: () => '场次', prop: 'session_time', width: '110px' },
-    { label: () => '数量', prop: 'quantity', width: '60px' },
+    { label: () => t('mall.seckillOrder.memberLabel'), prop: 'member_nickname', width: '100px' },
+    { label: () => t('mall.seckillOrder.phoneLabel'), prop: 'member_phone', width: '120px' },
+    { label: () => t('mall.seckillOrder.sessionLabel'), prop: 'session_time', width: '110px' },
+    { label: () => t('mall.seckillOrder.quantityLabel'), prop: 'quantity', width: '60px' },
     {
-      label: () => '秒杀价',
+      label: () => t('mall.seckillOrder.seckillPrice'),
       prop: 'seckill_price',
       width: '90px',
       cellRender: (({ row }: any) => (
@@ -24,7 +27,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       )) as any,
     },
     {
-      label: () => '实付金额',
+      label: () => t('mall.seckillOrder.paidAmount'),
       prop: 'total_amount',
       width: '100px',
       cellRender: (({ row }: any) => (
@@ -32,7 +35,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       )) as any,
     },
     {
-      label: () => '状态',
+      label: () => t('mall.common.status'),
       prop: 'status',
       width: '90px',
       cellRender: (({ row }: any) => {
@@ -40,7 +43,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
         return <ElTag type={s.type as any} size="small">{s.text}</ElTag>
       }) as any,
     },
-    { label: () => '关联订单', prop: 'order_no', width: '180px' },
-    { label: () => '秒杀时间', prop: 'seckill_time', width: '160px' },
+    { label: () => t('mall.seckillOrder.relatedOrder'), prop: 'order_no', width: '180px' },
+    { label: () => t('mall.seckillOrder.seckillTime'), prop: 'seckill_time', width: '160px' },
   ]
 }

@@ -3,29 +3,29 @@
  * Please view the LICENSE file distributed with this source code.
 -->
 <template>
-  <el-dialog :model-value="visible" title="标签管理" width="720px" @close="handleClose">
+  <el-dialog :model-value="visible" :title="t('member.list.tagManagerTitle')" width="720px" @close="handleClose">
     <div class="flex items-center justify-between mb-3">
-      <el-input v-model="keyword" placeholder="搜索标签名称" class="w-60" clearable @keyup.enter="loadData">
+      <el-input v-model="keyword" :placeholder="t('member.list.searchTagPlaceholder')" class="w-60" clearable @keyup.enter="loadData">
         <template #prefix>
           <el-icon><Search /></el-icon>
         </template>
       </el-input>
       <div class="flex items-center gap-2">
-        <el-select v-model="status" placeholder="全部状态" clearable class="w-40" @change="loadData">
-          <el-option label="启用" value="active" />
-          <el-option label="停用" value="inactive" />
+        <el-select v-model="status" :placeholder="t('mall.allStatus')" clearable class="w-40" @change="loadData">
+          <el-option :label="t('mall.common.enabled')" value="active" />
+          <el-option :label="t('mall.common.disabled')" value="inactive" />
         </el-select>
         <el-button type="primary" @click="openCreate">
           <template #icon><el-icon><Plus /></el-icon></template>
-          新建标签
+          {{ t('member.list.createTag') }}
         </el-button>
       </div>
     </div>
 
     <el-table :data="tagList" v-loading="loading" border stripe>
       <el-table-column type="index" label="#" width="60" />
-      <el-table-column label="名称" prop="name" min-width="140" />
-      <el-table-column label="颜色" width="120">
+      <el-table-column :label="t('member.list.tagName')" prop="name" min-width="140" />
+      <el-table-column :label="t('member.list.tagColor')" width="120">
         <template #default="{ row }">
           <el-tag v-if="row.color" :style="{ borderColor: row.color, color: row.color }">
             {{ row.color }}
@@ -33,25 +33,25 @@
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="100">
+      <el-table-column :label="t('member.list.tagStatus')" width="100">
         <template #default="{ row }">
           <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-            {{ row.status === 'active' ? '启用' : '停用' }}
+            {{ row.status === 'active' ? t('mall.common.enabled') : t('mall.common.disabled') }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort_order" width="80" />
-      <el-table-column label="操作" width="180">
+      <el-table-column :label="t('member.list.tagSort')" prop="sort_order" width="80" />
+      <el-table-column :label="t('member.list.tagOperation')" width="180">
         <template #default="{ row }">
           <el-button link size="small" type="primary" @click="openEdit(row)">
             <el-icon><EditPen /></el-icon>
-            编辑
+            {{ t('mall.common.edit') }}
           </el-button>
-          <el-popconfirm title="确认删除该标签？" @confirm="handleDelete(row.id)">
+          <el-popconfirm :title="t('member.list.confirmDeleteTag')" @confirm="handleDelete(row.id)">
             <template #reference>
               <el-button link size="small" type="danger">
                 <el-icon><Delete /></el-icon>
-                删除
+                {{ t('mall.common.delete') }}
               </el-button>
             </template>
           </el-popconfirm>
@@ -69,32 +69,32 @@
       />
     </div>
 
-    <el-drawer v-model="formVisible" :title="isEdit ? '编辑标签' : '新建标签'" size="400px">
+    <el-drawer v-model="formVisible" :title="isEdit ? t('member.list.editTag') : t('member.list.createTag')" size="400px">
       <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="form.name" placeholder="请输入标签名称" />
+        <el-form-item :label="t('member.list.tagNameLabel')" prop="name">
+          <el-input v-model="form.name" :placeholder="t('member.list.tagNamePlaceholder')" />
         </el-form-item>
-        <el-form-item label="颜色">
+        <el-form-item :label="t('member.list.tagColorLabel')">
           <el-color-picker v-model="form.color" show-alpha class="w-full" />
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-select v-model="form.status" placeholder="请选择状态">
-            <el-option label="启用" value="active" />
-            <el-option label="停用" value="inactive" />
+        <el-form-item :label="t('member.list.tagStatusLabel')" prop="status">
+          <el-select v-model="form.status" :placeholder="t('mall.common.selectPlaceholder')">
+            <el-option :label="t('mall.common.enabled')" value="active" />
+            <el-option :label="t('mall.common.disabled')" value="inactive" />
           </el-select>
         </el-form-item>
-        <el-form-item label="排序">
+        <el-form-item :label="t('member.list.tagSortLabel')">
           <el-input-number v-model="form.sort_order" :min="0" :max="9999" class="w-full" />
         </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="form.description" type="textarea" rows="3" placeholder="可选，标签说明" />
+        <el-form-item :label="t('member.list.tagDescLabel')">
+          <el-input v-model="form.description" type="textarea" rows="3" :placeholder="t('member.list.tagDescPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="formVisible = false">取消</el-button>
+        <el-button @click="formVisible = false">{{ t('mall.cancel') }}</el-button>
         <el-button type="primary" :loading="submitLoading" @click="submitForm">
           <template #icon><el-icon><Check /></el-icon></template>
-          保存
+          {{ t('mall.save') }}
         </el-button>
       </template>
     </el-drawer>
@@ -106,9 +106,12 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import { Check, Delete, EditPen, Plus, Search } from '@element-plus/icons-vue'
+import { useI18n } from 'vue-i18n'
 import { memberTagApi, type MemberTag, type MemberTagPayload } from '~/member/api/member'
 
 defineOptions({ name: 'MemberTagManager' })
+
+const { t } = useI18n()
 
 const props = defineProps<{ visible: boolean }>()
 
@@ -143,8 +146,8 @@ const form = reactive<MemberTagPayload>({
 })
 
 const rules: FormRules = {
-  name: [{ required: true, message: '请输入标签名称', trigger: 'blur' }],
-  status: [{ required: true, message: '请选择状态', trigger: 'change' }],
+  name: [{ required: true, message: () => t('member.list.tagNameRequired'), trigger: 'blur' }],
+  status: [{ required: true, message: () => t('member.list.tagStatusRequired'), trigger: 'change' }],
 }
 
 const buildParams = () => ({
@@ -163,7 +166,7 @@ const loadData = async () => {
     pagination.total = res.data.total
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '加载标签失败')
+    ElMessage.error(error?.message || t('member.list.tagLoadFailed'))
   }
   finally {
     loading.value = false
@@ -212,18 +215,18 @@ const submitForm = async () => {
   try {
     if (isEdit.value && editingId.value) {
       await memberTagApi.update(editingId.value, form)
-      ElMessage.success('标签已更新')
+      ElMessage.success(t('member.list.tagUpdated'))
     }
     else {
       await memberTagApi.create(form)
-      ElMessage.success('标签已创建')
+      ElMessage.success(t('member.list.tagCreated'))
     }
     formVisible.value = false
     emit('updated')
     loadData()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '保存失败')
+    ElMessage.error(error?.message || t('member.list.tagSaveFailed'))
   }
   finally {
     submitLoading.value = false
@@ -233,12 +236,12 @@ const submitForm = async () => {
 const handleDelete = async (id: number) => {
   try {
     await memberTagApi.delete(id)
-    ElMessage.success('标签已删除')
+    ElMessage.success(t('member.list.tagDeleted'))
     emit('updated')
     loadData()
   }
   catch (error: any) {
-    ElMessage.error(error?.message || '删除失败')
+    ElMessage.error(error?.message || t('member.list.tagDeleteFailed'))
   }
 }
 

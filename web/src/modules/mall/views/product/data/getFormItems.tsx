@@ -75,7 +75,7 @@ export default function getFormItems(
     // 生成规格配置
     if (specMap.size > 0) {
       specItems.value = Array.from(specMap.entries()).map(([index, values]) => ({
-        nameTags: [`规格${index + 1}`], // 默认规格名
+        nameTags: [t('mall.productForm.defaultSpecName', { n: index + 1 })], // default spec name
         values: Array.from(values),
       }))
       ;(model as any).specs = specItems.value

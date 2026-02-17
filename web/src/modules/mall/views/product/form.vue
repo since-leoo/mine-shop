@@ -119,7 +119,7 @@ async function loadDetail() {
       if (Array.isArray(sku.spec_values)) {
         sku.spec_values.forEach((raw: any, index: number) => {
           if (!specMap.has(index)) {
-            const specName = typeof raw === 'object' && raw !== null ? (raw.name ?? `规格${index + 1}`) : `规格${index + 1}`
+            const specName = typeof raw === 'object' && raw !== null ? (raw.name ?? t('mall.productForm.defaultSpecName', { n: index + 1 })) : t('mall.productForm.defaultSpecName', { n: index + 1 })
             specMap.set(index, { name: specName, values: new Set() })
           }
           specMap.get(index)!.values.add(specValStr(raw))

@@ -9,6 +9,7 @@
 import type { MaFormItem } from '@mineadmin/form'
 import type { SeckillProductVo } from '~/mall/api/seckill'
 import type { ProductVo } from '~/mall/api/product'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
@@ -18,6 +19,8 @@ export default function getFormItems(
   onProductChange: (productId?: number) => void,
   onSkuChange: (skuId?: number) => void,
 ): MaFormItem[] {
+  const { t } = useI18n()
+
   if (formType === 'add') {
     model.is_enabled = true
     model.max_quantity_per_user = 1
@@ -29,76 +32,76 @@ export default function getFormItems(
   if (formType === 'add') {
     items.push(
       {
-        label: () => '选择商品',
+        label: () => t('mall.seckill.formSelectProduct'),
         prop: 'product_id',
         render: () => (
           <el-select
             filterable
             clearable
-            placeholder="请选择商品"
+            placeholder={t('mall.seckill.formSelectProductPlaceholder')}
             style="width: 100%"
             onChange={(val: number) => onProductChange(val)}
           >
             {productOptions.value.map(item => <el-option key={item.id} label={item.name} value={item.id} />)}
           </el-select>
         ),
-        itemProps: { rules: [{ required: true, message: '请选择商品' }] },
+        itemProps: { rules: [{ required: true, message: t('mall.seckill.formSelectProductRequired') }] },
       },
       {
-        label: () => '选择SKU',
+        label: () => t('mall.seckill.formSelectSku'),
         prop: 'product_sku_id',
         render: () => (
           <el-select
             filterable
             clearable
-            placeholder="请先选择商品"
+            placeholder={t('mall.seckill.formSelectSkuPlaceholder')}
             style="width: 100%"
             onChange={(val: number) => onSkuChange(val)}
           >
             {skuOptions.value.map(item => <el-option key={item.id} label={item.label} value={item.id} />)}
           </el-select>
         ),
-        itemProps: { rules: [{ required: true, message: '请选择SKU' }] },
+        itemProps: { rules: [{ required: true, message: t('mall.seckill.formSelectSkuRequired') }] },
       },
     )
   }
 
   items.push(
     {
-      label: () => '原价',
+      label: () => t('mall.seckill.formOriginalPrice'),
       prop: 'original_price',
       render: 'inputNumber',
-      renderProps: { min: 0.01, precision: 2, class: 'w-full', placeholder: '请输入原价' },
-      itemProps: { rules: [{ required: true, message: '请输入原价' }] },
+      renderProps: { min: 0.01, precision: 2, class: 'w-full', placeholder: t('mall.seckill.formOriginalPricePlaceholder') },
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.formOriginalPriceRequired') }] },
     },
     {
-      label: () => '秒杀价',
+      label: () => t('mall.seckill.formSeckillPrice'),
       prop: 'seckill_price',
       render: 'inputNumber',
-      renderProps: { min: 0.01, precision: 2, class: 'w-full', placeholder: '请输入秒杀价（需小于原价）' },
-      itemProps: { rules: [{ required: true, message: '请输入秒杀价' }] },
+      renderProps: { min: 0.01, precision: 2, class: 'w-full', placeholder: t('mall.seckill.formSeckillPricePlaceholder') },
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.formSeckillPriceRequired') }] },
     },
     {
-      label: () => '库存数量',
+      label: () => t('mall.seckill.formStock'),
       prop: 'quantity',
       render: 'inputNumber',
-      renderProps: { min: 1, class: 'w-full', placeholder: '请输入库存数量' },
-      itemProps: { rules: [{ required: true, message: '请输入库存数量' }] },
+      renderProps: { min: 1, class: 'w-full', placeholder: t('mall.seckill.formStockPlaceholder') },
+      itemProps: { rules: [{ required: true, message: t('mall.seckill.formStockRequired') }] },
     },
     {
-      label: () => '每人限购',
+      label: () => t('mall.seckill.formPerUserLimit'),
       prop: 'max_quantity_per_user',
       render: 'inputNumber',
-      renderProps: { min: 1, class: 'w-full', placeholder: '请输入每人限购数量' },
+      renderProps: { min: 1, class: 'w-full', placeholder: t('mall.seckill.formPerUserLimitPlaceholder') },
     },
     {
-      label: () => '排序',
+      label: () => t('mall.seckill.formSortOrder'),
       prop: 'sort_order',
       render: 'inputNumber',
-      renderProps: { min: 0, class: 'w-full', placeholder: '数值越小越靠前' },
+      renderProps: { min: 0, class: 'w-full', placeholder: t('mall.seckill.formSortPlaceholder') },
     },
     {
-      label: () => '启用状态',
+      label: () => t('mall.seckill.formEnabledStatus'),
       prop: 'is_enabled',
       render: () => <el-switch active-value={true} inactive-value={false} />,
     },

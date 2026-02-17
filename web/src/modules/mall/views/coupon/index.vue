@@ -12,6 +12,7 @@ import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 import type { CouponVo } from '~/mall/api/coupon'
 
+import { useI18n } from 'vue-i18n'
 import { couponPage, couponStats } from '~/mall/api/coupon'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -24,6 +25,7 @@ import { useRouter } from 'vue-router'
 
 defineOptions({ name: 'mall:coupon' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const formRef = ref<any>()
 const issueRef = ref<any>()
@@ -43,7 +45,7 @@ const formDialog: UseDialogExpose = useDialog({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.operationSuccess')) : msg.error(res.message)
         formDialog.close()
         proTableRef.value.refresh()
         loadStats()
@@ -71,18 +73,18 @@ const issueDialog: UseDialogExpose = useDialog({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 140,
   header: {
-    mainTitle: () => '优惠券管理',
-    subTitle: () => '配置并发放营销优惠券',
+    mainTitle: () => t('mall.coupon.title'),
+    subTitle: () => t('mall.coupon.subtitle'),
   },
   searchOptions: {
     fold: true,
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: couponPage },
 })
 
 const openIssue = (row: CouponVo) => {
-  issueDialog.setTitle(`发放 ${row.name}`)
+  issueDialog.setTitle(t('mall.coupon.issueLabel', { name: row.name }))
   issueDialog.open({ couponId: row.id })
 }
 
@@ -102,7 +104,7 @@ async function loadStats() {
 }
 
 function handleAdd() {
-  formDialog.setTitle('新增优惠券')
+  formDialog.setTitle(t('mall.coupon.addCoupon'))
   formDialog.open({ formType: 'add', data: {} })
 }
 
@@ -118,7 +120,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card slate">
             <div>
-              <div class="stats-label">优惠券总数</div>
+              <div class="stats-label">{{ t('mall.coupon.totalCoupons') }}</div>
               <div class="stats-value">{{ statsData.total }}</div>
             </div>
             <ma-svg-icon name="ph:ticket" size="24" />
@@ -129,7 +131,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card emerald">
             <div>
-              <div class="stats-label">启用中</div>
+              <div class="stats-label">{{ t('mall.coupon.activeCount') }}</div>
               <div class="stats-value">{{ statsData.active }}</div>
             </div>
             <ma-svg-icon name="ph:check-circle" size="24" />
@@ -140,7 +142,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="stats-card gray">
             <div>
-              <div class="stats-label">停用</div>
+              <div class="stats-label">{{ t('mall.coupon.inactiveCount') }}</div>
               <div class="stats-value">{{ statsData.inactive }}</div>
             </div>
             <ma-svg-icon name="ph:pause-circle" size="24" />
@@ -152,7 +154,7 @@ onMounted(() => {
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
       <template #actions>
         <el-button v-auth="['coupon:create']" type="primary" @click="handleAdd">
-          新增优惠券
+          {{ t('mall.coupon.addCoupon') }}
         </el-button>
       </template>
     </MaProTable>

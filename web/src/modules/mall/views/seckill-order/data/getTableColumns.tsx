@@ -2,14 +2,8 @@ import type { MaProTableColumns } from '@mineadmin/pro-table'
 import type { SeckillOrderSummaryVo } from '~/mall/api/seckill-order'
 
 import { ElTag, ElButton } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
-
-const statusTextMap: Record<string, string> = {
-  pending: '待开始',
-  active: '进行中',
-  ended: '已结束',
-  cancelled: '已取消',
-}
 
 const statusTypeMap: Record<string, string> = {
   pending: 'info',
@@ -19,11 +13,20 @@ const statusTypeMap: Record<string, string> = {
 }
 
 export default function getTableColumns(onViewOrders: (row: SeckillOrderSummaryVo) => void): MaProTableColumns[] {
+  const { t } = useI18n()
+
+  const statusTextMap: Record<string, string> = {
+    pending: t('mall.activityStatus.pending'),
+    active: t('mall.activityStatus.active'),
+    ended: t('mall.activityStatus.ended'),
+    cancelled: t('mall.activityStatus.cancelled'),
+  }
+
   return [
     { label: () => 'ID', prop: 'id', width: '70px' },
-    { label: () => '活动名称', prop: 'title', minWidth: '180px' },
+    { label: () => t('mall.seckillOrder.activityName'), prop: 'title', minWidth: '180px' },
     {
-      label: () => '状态',
+      label: () => t('mall.common.status'),
       prop: 'status',
       width: '90px',
       cellRender: (({ row }: any) => (
@@ -33,18 +36,18 @@ export default function getTableColumns(onViewOrders: (row: SeckillOrderSummaryV
       )) as any,
     },
     {
-      label: () => '启用',
+      label: () => t('mall.seckillOrder.enabledLabel'),
       prop: 'is_enabled',
       width: '70px',
       cellRender: (({ row }: any) => (
         <ElTag type={row.is_enabled ? 'success' : 'info'} size="small">
-          {row.is_enabled ? '是' : '否'}
+          {row.is_enabled ? t('mall.seckillOrder.yes') : t('mall.seckillOrder.no')}
         </ElTag>
       )) as any,
     },
-    { label: () => '场次数', prop: 'sessions_count', width: '80px' },
+    { label: () => t('mall.seckillOrder.sessionsCount'), prop: 'sessions_count', width: '80px' },
     {
-      label: () => '秒杀人数',
+      label: () => t('mall.seckillOrder.buyerCount'),
       prop: 'buyer_count',
       width: '90px',
       cellRender: (({ row }: any) => (
@@ -52,22 +55,21 @@ export default function getTableColumns(onViewOrders: (row: SeckillOrderSummaryV
       )) as any,
     },
     {
-      label: () => '秒杀总金额',
+      label: () => t('mall.seckillOrder.totalAmount'),
       prop: 'total_amount',
       width: '120px',
       cellRender: (({ row }: any) => (
         <span class="text-red-500 font-semibold">¥{formatYuan(row.total_amount)}</span>
       )) as any,
     },
-    { label: () => '创建时间', prop: 'created_at', width: '160px' },
+    { label: () => t('mall.seckillOrder.createdAt'), prop: 'created_at', width: '160px' },
     {
-      label: () => '操作',
+      label: () => t('mall.seckillOrder.operation'),
       prop: 'action',
       width: '120px',
-      fixed: 'right',
       cellRender: (({ row }: any) => (
         <ElButton type="primary" link size="small" onClick={() => onViewOrders(row)}>
-          查看秒杀订单
+          {t('mall.seckillOrder.viewOrders')}
         </ElButton>
       )) as any,
     },

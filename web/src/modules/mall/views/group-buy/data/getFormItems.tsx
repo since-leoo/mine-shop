@@ -10,6 +10,7 @@ import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { ProductVo } from '~/mall/api/product'
 import type { GroupBuyVo } from '~/mall/api/group-buy'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
@@ -18,43 +19,46 @@ export default function getFormItems(
   skuOptions: Ref<{ id: number; label: string }[]>,
   onProductChange: (productId?: number) => void,
 ): MaFormItem[] {
+  const { t } = useI18n()
+
   const numberRule = (
     label: string,
     { min, max, allowZero = false, integer = false }: { min?: number; max?: number; allowZero?: boolean; integer?: boolean } = {},
   ) => ({
     validator: (_: any, value: any, callback: (error?: Error) => void) => {
       if (value === undefined || value === null || value === '') {
-        callback(new Error(`请输入${label}`))
+        callback(new Error(t('mall.groupBuy.formInputRequired', { label })))
         return
       }
       if (typeof value !== 'number' || Number.isNaN(value)) {
-        callback(new Error(`${label}必须为数字`))
+        callback(new Error(t('mall.groupBuy.formMustBeNumber', { label })))
         return
       }
       if (!allowZero && value <= 0) {
-        callback(new Error(`${label}必须大于0`))
+        callback(new Error(t('mall.groupBuy.formMustBePositive', { label })))
         return
       }
       if (allowZero && value < 0) {
-        callback(new Error(`${label}不能小于0`))
+        callback(new Error(t('mall.groupBuy.formCannotBeNegative', { label })))
         return
       }
       if (min !== undefined && value < min) {
-        callback(new Error(`${label}不能小于${min}`))
+        callback(new Error(t('mall.groupBuy.formCannotBeLessThan', { label, min })))
         return
       }
       if (max !== undefined && value > max) {
-        callback(new Error(`${label}不能大于${max}`))
+        callback(new Error(t('mall.groupBuy.formCannotBeGreaterThan', { label, max })))
         return
       }
       if (integer && !Number.isInteger(value)) {
-        callback(new Error(`${label}必须为整数`))
+        callback(new Error(t('mall.groupBuy.formMustBeInteger', { label })))
         return
       }
       callback()
     },
     trigger: ['blur', 'change'],
   })
+
 
   if (formType === 'add') {
     model.is_enabled = true
@@ -80,64 +84,64 @@ export default function getFormItems(
 
   return [
     {
-      label: () => '活动标题',
+      label: () => t('mall.groupBuy.formTitle'),
       prop: 'title',
       render: 'input',
-      renderProps: { placeholder: '请输入活动标题' },
-      itemProps: { rules: [{ required: true, message: '请输入活动标题', trigger: ['blur', 'change'] }] },
+      renderProps: { placeholder: t('mall.groupBuy.formTitlePlaceholder') },
+      itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formTitleRequired'), trigger: ['blur', 'change'] }] },
     },
     {
-      label: () => '商品',
+      label: () => t('mall.groupBuy.formProduct'),
       prop: 'product_id',
       render: () => (
         <el-select
           filterable
           clearable
-          placeholder="请选择商品"
+          placeholder={t('mall.groupBuy.formProductPlaceholder')}
           onChange={(val: number) => onProductChange(val)}
         >
           {productOptions.value.map(item => <el-option key={item.id} label={item.name} value={item.id} />)}
         </el-select>
       ),
-      itemProps: { rules: [{ required: true, message: '请选择商品', trigger: ['change'] }] },
+      itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formProductRequired'), trigger: ['change'] }] },
     },
     {
       label: () => 'SKU',
       prop: 'sku_id',
       render: () => (
-        <el-select filterable clearable placeholder="请选择SKU">
+        <el-select filterable clearable placeholder={t('mall.groupBuy.formSkuPlaceholder')}>
           {skuOptions.value.map(item => <el-option key={item.id} label={item.label} value={item.id} />)}
         </el-select>
       ),
-      itemProps: { rules: [{ required: true, message: '请选择SKU', trigger: ['change'] }] },
+      itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formSkuRequired'), trigger: ['change'] }] },
     },
     {
-      label: () => '原价（元）',
+      label: () => t('mall.groupBuy.formOriginalPrice'),
       prop: 'original_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('原价', { allowZero: true, min: 0 }),
+          numberRule(t('mall.groupBuy.formOriginalPrice'), { allowZero: true, min: 0 }),
         ],
       },
     },
     {
-      label: () => '团购价（元）',
+      label: () => t('mall.groupBuy.formGroupPrice'),
       prop: 'group_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('团购价', { min: 0.01 }),
+          numberRule(t('mall.groupBuy.formGroupPrice'), { min: 0.01 }),
           {
             validator: (_: any, value: any, callback: (error?: Error) => void) => {
               if (typeof value !== 'number' || Number.isNaN(value)) {
-                callback(new Error('请输入团购价'))
+                callback(new Error(t('mall.groupBuy.formGroupPriceRequired')))
                 return
               }
               if (typeof model.original_price === 'number' && value > model.original_price) {
-                callback(new Error('团购价不能高于原价'))
+                callback(new Error(t('mall.groupBuy.formGroupPriceExceed')))
                 return
               }
               callback()
@@ -148,32 +152,32 @@ export default function getFormItems(
       },
     },
     {
-      label: () => '成团人数',
+      label: () => t('mall.groupBuy.formMinPeople'),
       prop: 'min_people',
       render: 'inputNumber',
       renderProps: { min: 2, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('成团人数', { min: 2, integer: true }),
+          numberRule(t('mall.groupBuy.formMinPeople'), { min: 2, integer: true }),
         ],
       },
     },
     {
-      label: () => '最大人数',
+      label: () => t('mall.groupBuy.formMaxPeople'),
       prop: 'max_people',
       render: 'inputNumber',
       renderProps: { min: 2, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('最大人数', { min: 2, integer: true }),
+          numberRule(t('mall.groupBuy.formMaxPeople'), { min: 2, integer: true }),
           {
             validator: (_: any, value: any, callback: (error?: Error) => void) => {
               if (typeof value !== 'number' || Number.isNaN(value)) {
-                callback(new Error('请输入最大人数'))
+                callback(new Error(t('mall.groupBuy.formMaxPeopleRequired')))
                 return
               }
               if (typeof model.min_people === 'number' && value < model.min_people) {
-                callback(new Error('最大人数需大于或等于成团人数'))
+                callback(new Error(t('mall.groupBuy.formMaxPeopleGteMin')))
                 return
               }
               callback()
@@ -184,39 +188,39 @@ export default function getFormItems(
       },
     },
     {
-      label: () => '成团时限(小时)',
+      label: () => t('mall.groupBuy.formTimeLimit'),
       prop: 'group_time_limit',
       render: 'inputNumber',
       renderProps: { min: 1, max: 168, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('成团时限', { min: 1, max: 168, integer: true }),
+          numberRule(t('mall.groupBuy.formTimeLimit'), { min: 1, max: 168, integer: true }),
         ],
       },
     },
     {
-      label: () => '库存',
+      label: () => t('mall.groupBuy.formStock'),
       prop: 'total_quantity',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
       itemProps: {
         rules: [
-          numberRule('库存', { min: 1, integer: true }),
+          numberRule(t('mall.groupBuy.formStock'), { min: 1, integer: true }),
         ],
       },
     },
     {
-      label: () => '开始时间',
+      label: () => t('mall.groupBuy.formStartTime'),
       prop: 'start_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" />,
       renderProps: { class: 'w-full' },
       itemProps: {
         rules: [
-          { required: true, message: '请选择开始时间', trigger: ['change'] },
+          { required: true, message: t('mall.groupBuy.formStartTimeRequired'), trigger: ['change'] },
           {
             validator: (_: any, value: any, callback: (error?: Error) => void) => {
               if (value && model.end_time && dayjs(value).isAfter(dayjs(model.end_time))) {
-                callback(new Error('开始时间不能晚于结束时间'))
+                callback(new Error(t('mall.groupBuy.formStartBeforeEnd')))
                 return
               }
               callback()
@@ -227,17 +231,17 @@ export default function getFormItems(
       },
     },
     {
-      label: () => '结束时间',
+      label: () => t('mall.groupBuy.formEndTime'),
       prop: 'end_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" />,
       renderProps: { class: 'w-full' },
       itemProps: {
         rules: [
-          { required: true, message: '请选择结束时间', trigger: ['change'] },
+          { required: true, message: t('mall.groupBuy.formEndTimeRequired'), trigger: ['change'] },
           {
             validator: (_: any, value: any, callback: (error?: Error) => void) => {
               if (value && model.start_time && dayjs(value).isBefore(dayjs(model.start_time))) {
-                callback(new Error('结束时间需晚于开始时间'))
+                callback(new Error(t('mall.groupBuy.formEndAfterStart')))
                 return
               }
               callback()
@@ -248,17 +252,17 @@ export default function getFormItems(
       },
     },
     {
-      label: () => '启用',
+      label: () => t('mall.groupBuy.formEnabled'),
       prop: 'is_enabled',
       render: () => (
         <el-switch active-value={true} inactive-value={false} />
       ),
     },
     {
-      label: () => '备注',
+      label: () => t('mall.groupBuy.formRemark'),
       prop: 'remark',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 3, placeholder: '请输入备注' },
+      renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.groupBuy.formRemarkPlaceholder') },
     },
   ]
 }

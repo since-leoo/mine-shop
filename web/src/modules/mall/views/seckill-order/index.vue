@@ -3,6 +3,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { SeckillOrderSummaryVo } from '~/mall/api/seckill-order'
 
+import { useI18n } from 'vue-i18n'
 import { summaryPage, ordersByActivity } from '~/mall/api/seckill-order'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -10,6 +11,7 @@ import getOrderColumns from './data/getOrderColumns.tsx'
 
 defineOptions({ name: 'mall:seckill_order' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 
 const drawerVisible = ref(false)
@@ -23,7 +25,7 @@ const drawerPageSize = ref(15)
 
 function onViewOrders(row: SeckillOrderSummaryVo) {
   drawerActivityId.value = row.id!
-  drawerTitle.value = `秒杀订单 - ${row.title}`
+  drawerTitle.value = t('mall.seckillOrder.drawerTitle', { title: row.title })
   drawerPage.value = 1
   drawerVisible.value = true
   loadDrawerOrders()
@@ -56,17 +58,17 @@ function onDrawerPageChange(p: number) {
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 100,
   header: {
-    mainTitle: () => '秒杀订单',
-    subTitle: () => '以秒杀活动为维度查看秒杀订单情况',
+    mainTitle: () => t('mall.seckillOrder.title'),
+    subTitle: () => t('mall.seckillOrder.subtitle'),
   },
   searchOptions: {
     fold: false,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: summaryPage },
 })
 
@@ -82,7 +84,7 @@ const orderColumns = getOrderColumns()
   <div class="mine-layout pt-3">
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
       <template #empty>
-        <el-empty description="暂无秒杀订单数据" />
+        <el-empty :description="t('mall.seckillOrder.noData')" />
       </template>
     </MaProTable>
 

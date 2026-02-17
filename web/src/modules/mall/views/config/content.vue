@@ -2,12 +2,15 @@
   <div class="mine-layout config-setting-page">
     <SettingGroupForm
       group-key="content"
-      title="内容与合规"
-      description="协议、公告以及内容审核策略。"
+      :title="t('mall.config.contentTitle')"
+      :description="t('mall.config.contentDesc')"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import SettingGroupForm from '@/modules/system/components/SettingGroupForm.vue'
+
+const { t } = useI18n()
 </script>

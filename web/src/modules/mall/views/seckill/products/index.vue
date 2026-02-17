@@ -11,6 +11,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { productPage, productRemove } from '~/mall/api/seckill'
 import getSearchItems from './data/getSearchItems.tsx'
@@ -23,6 +24,7 @@ import ProductForm from './form.vue'
 
 defineOptions({ name: 'mall:seckill:product' })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const sessionId = computed(() => Number(route.query.session_id) || 0)
@@ -41,7 +43,7 @@ const maDialog: UseDialogExpose = useDialog({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.seckill.operationSuccess')) : msg.error(res.message)
         maDialog.close()
         proTableRef.value.refresh()
       }).catch((err: any) => {
@@ -54,8 +56,8 @@ const maDialog: UseDialogExpose = useDialog({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 161,
   header: {
-    mainTitle: () => '商品配置',
-    subTitle: () => '配置秒杀场次的商品和价格',
+    mainTitle: () => t('mall.seckill.productConfig'),
+    subTitle: () => t('mall.seckill.productConfigSubtitle'),
   },
   tableOptions: {
     on: {
@@ -65,13 +67,13 @@ const options = ref<MaProTableOptions>({
   searchOptions: {
     fold: true,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
-      isFoldBtn: () => '展开',
-      notFoldBtn: () => '收起',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
+      isFoldBtn: () => t('mall.common.unfold'),
+      notFoldBtn: () => t('mall.common.fold'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: {
     api: (params: any) => productPage({ ...params, session_id: sessionId.value }),
   },
@@ -85,14 +87,14 @@ const schema = ref<MaProTableSchema>({
 function handleBatchDelete() {
   const ids = selections.value.map(item => item.id)
   if (ids.length < 1) {
-    msg.warning('请选择要删除的数据')
+    msg.warning(t('mall.seckill.selectDeleteData'))
     return
   }
-  msg.delConfirm('确定移除选中的商品吗？').then(async () => {
+  msg.delConfirm(t('mall.seckill.confirmRemoveProducts')).then(async () => {
     const tasks = ids.map((id: number) => productRemove(id))
     const results = await Promise.all(tasks)
     if (results.every(item => item.code === ResultCode.SUCCESS)) {
-      msg.success('删除成功')
+      msg.success(t('mall.seckill.deleteSuccess'))
       proTableRef.value.refresh()
     }
   })
@@ -108,7 +110,7 @@ function goBack() {
     <div class="mb-3 mx-3">
       <el-button @click="goBack">
         <ma-svg-icon name="material-symbols:arrow-back" class="mr-1" />
-        返回场次列表
+        {{ t('mall.seckill.backToSessions') }}
       </el-button>
     </div>
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
@@ -117,11 +119,11 @@ function goBack() {
           v-auth="['seckill:product:create']"
           type="primary"
           @click="() => {
-            maDialog.setTitle('添加商品')
+            maDialog.setTitle(t('mall.seckill.addProduct'))
             maDialog.open({ formType: 'add' })
           }"
         >
-          添加商品
+          {{ t('mall.seckill.addProduct') }}
         </el-button>
       </template>
       <template #toolbarLeft>
@@ -132,20 +134,20 @@ function goBack() {
           :disabled="selections.length < 1"
           @click="handleBatchDelete"
         >
-          批量移除
+          {{ t('mall.seckill.batchRemove') }}
         </el-button>
       </template>
       <template #empty>
-        <el-empty description="暂无商品">
+        <el-empty :description="t('mall.seckill.noProducts')">
           <el-button
             v-auth="['seckill:product:create']"
             type="primary"
             @click="() => {
-              maDialog.setTitle('添加商品')
+              maDialog.setTitle(t('mall.seckill.addProduct'))
               maDialog.open({ formType: 'add' })
             }"
           >
-            添加商品
+            {{ t('mall.seckill.addProduct') }}
           </el-button>
         </el-empty>
       </template>

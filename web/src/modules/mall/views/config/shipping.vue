@@ -2,12 +2,15 @@
   <div class="mine-layout config-setting-page">
     <SettingGroupForm
       group-key="shipping"
-      title="配送与物流"
-      description="快递、自提及第三方物流相关配置。"
+      :title="t('mall.config.shippingTitle')"
+      :description="t('mall.config.shippingDesc')"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import SettingGroupForm from '@/modules/system/components/SettingGroupForm.vue'
+
+const { t } = useI18n()
 </script>

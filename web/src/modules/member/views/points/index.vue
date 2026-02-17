@@ -5,7 +5,7 @@
 <template>
   <div class="member-wallet-page p-3">
     <el-card shadow="never" class="mb-4">
-      <el-form :model="filters" label-width="90px" inline>
+      <el-form :model="filters" label-width="100px" inline>
         <el-form-item :label="t('member.points.memberIdLabel')">
           <el-input v-model.number="filters.member_id" :placeholder="t('member.points.memberIdPlaceholder')" clearable @keyup.enter="loadLogs">
             <template #prefix><el-icon><User /></el-icon></template>

@@ -2,12 +2,15 @@
   <div class="mine-layout config-setting-page">
     <SettingGroupForm
       group-key="order"
-      title="订单与售后"
-      description="订单生命周期、风控及售后配置。"
+      :title="t('mall.config.orderTitle')"
+      :description="t('mall.config.orderDesc')"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import SettingGroupForm from '@/modules/system/components/SettingGroupForm.vue'
+
+const { t } = useI18n()
 </script>

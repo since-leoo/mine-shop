@@ -10,8 +10,10 @@
 import type { MaFormItem } from '@mineadmin/form'
 import type { CategoryVo } from '~/mall/api/category'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
+import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any): MaFormItem[] {
+  const { t } = useI18n()
   const treeData = ref<CategoryVo[]>([])
 
   if (formType === 'add') {
@@ -22,12 +24,12 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
 
   useHttp().get('/admin/product/category/tree', { params: { parent_id: 0 } }).then((res: any) => {
     treeData.value = res.data || []
-    treeData.value.unshift({ id: 0, name: '顶级分类' } as any)
+    treeData.value.unshift({ id: 0, name: t('mall.category.topLevel') } as any)
   })
 
   return [
     {
-      label: () => '上级分类',
+      label: () => t('mall.category.formParent'),
       prop: 'parent_id',
       render: () => (
         <el-tree-select
@@ -38,7 +40,7 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
           clearable={true}
           onChange={(val: number) => {
             if (val === model.id) {
-              msg.error('不能选择自己为上级')
+              msg.error(t('mall.category.formCannotSelfParent'))
               model.parent_id = 0
             }
           }}
@@ -46,47 +48,47 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
       ),
       renderProps: {
         class: 'w-full',
-        placeholder: '请选择上级分类',
+        placeholder: t('mall.category.formParentPlaceholder'),
       },
     },
     {
-      label: () => '分类名称',
+      label: () => t('mall.category.formName'),
       prop: 'name',
       render: 'input',
-      renderProps: { placeholder: '请输入分类名称' },
-      itemProps: { rules: [{ required: true, message: '请输入分类名称' }] },
+      renderProps: { placeholder: t('mall.category.formNamePlaceholder') },
+      itemProps: { rules: [{ required: true, message: t('mall.category.formNameRequired') }] },
     },
     {
-      label: () => '图标',
+      label: () => t('mall.category.formIcon'),
       prop: 'icon',
       render: 'input',
-      renderProps: { placeholder: '请输入图标链接' },
+      renderProps: { placeholder: t('mall.category.formIconPlaceholder') },
     },
     {
-      label: () => '分类图片',
+      label: () => t('mall.category.formImage'),
       prop: 'thumbnail',
       render: () => MaUploadImage,
-      itemProps: { help: '用于小程序分类宫格展示，建议 1:1 比例。' },
+      itemProps: { help: t('mall.category.formImageHelp') },
     },
     {
-      label: () => '描述',
+      label: () => t('mall.category.formDescription'),
       prop: 'description',
       render: 'input',
-      renderProps: { type: 'textarea', rows: 3, placeholder: '请输入描述' },
+      renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.category.formDescPlaceholder') },
     },
     {
-      label: () => '排序',
+      label: () => t('mall.category.formSort'),
       prop: 'sort',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => '状态',
+      label: () => t('mall.category.formStatus'),
       prop: 'status',
       render: () => (
         <el-radio-group>
-          <el-radio value="active">启用</el-radio>
-          <el-radio value="inactive">停用</el-radio>
+          <el-radio value="active">{t('mall.category.formEnabled')}</el-radio>
+          <el-radio value="inactive">{t('mall.category.formDisabled')}</el-radio>
         </el-radio-group>
       ),
     },

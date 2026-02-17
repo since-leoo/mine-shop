@@ -11,18 +11,11 @@ import type { SeckillSessionVo } from '~/mall/api/seckill'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { ElTag, ElSwitch, ElProgress } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { sessionRemove, sessionToggleStatus } from '~/mall/api/seckill'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
-
-const statusTextMap: Record<string, string> = {
-  pending: '待开始',
-  active: '进行中',
-  ended: '已结束',
-  cancelled: '已取消',
-  sold_out: '已售罄',
-}
 
 const statusTypeMap: Record<string, string> = {
   pending: 'info',
@@ -34,13 +27,22 @@ const statusTypeMap: Record<string, string> = {
 
 export default function getTableColumns(dialog: UseDialogExpose, router: any, tableRef: { value: MaProTableExpose | undefined }): MaProTableColumns[] {
   const msg = useMessage()
+  const { t } = useI18n()
+
+  const statusTextMap: Record<string, string> = {
+    pending: t('mall.activityStatus.pending'),
+    active: t('mall.activityStatus.active'),
+    ended: t('mall.activityStatus.ended'),
+    cancelled: t('mall.activityStatus.cancelled'),
+    sold_out: t('mall.activityStatus.soldOut'),
+  }
 
   return [
     { type: 'selection', showOverflowTooltip: false },
     { label: () => 'ID', prop: 'id', width: '80px' },
-    { label: () => '开始时间', prop: 'start_time', minWidth: '170px' },
-    { label: () => '结束时间', prop: 'end_time', minWidth: '170px' },
-    { label: () => '商品数', prop: 'products_count', minWidth: '100px',
+    { label: () => t('mall.seckill.startTime'), prop: 'start_time', minWidth: '170px' },
+    { label: () => t('mall.seckill.endTime'), prop: 'end_time', minWidth: '170px' },
+    { label: () => t('mall.seckill.productsCount'), prop: 'products_count', minWidth: '100px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => (
         <el-button
           type="primary"
@@ -50,11 +52,11 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             query: { session_id: row.id, activity_id: row.activity_id },
           })}
         >
-          {row.products_count ?? 0} 个商品
+          {row.products_count ?? 0} {t('mall.seckill.productsUnit')}
         </el-button>
       ),
     },
-    { label: () => '库存/售出', prop: 'quantity', minWidth: '180px',
+    { label: () => t('mall.seckill.stockSold'), prop: 'quantity', minWidth: '180px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => {
         const total = row.total_quantity || 0
         const sold = row.sold_quantity || 0
@@ -67,15 +69,15 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
         )
       },
     },
-    { label: () => '限购', prop: 'max_quantity_per_user', width: '80px' },
-    { label: () => '状态', prop: 'status', width: '100px',
+    { label: () => t('mall.seckill.purchaseLimit'), prop: 'max_quantity_per_user', width: '80px' },
+    { label: () => t('mall.common.status'), prop: 'status', width: '100px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => (
         <ElTag type={statusTypeMap[row.status || 'pending'] as any}>
           {statusTextMap[row.status || 'pending']}
         </ElTag>
       ),
     },
-    { label: () => '启用', prop: 'is_enabled', width: '80px',
+    { label: () => t('mall.common.enabled'), prop: 'is_enabled', width: '80px',
       cellRender: ({ row }: { row: SeckillSessionVo }) => (
         <ElSwitch
           modelValue={row.is_enabled}
@@ -83,17 +85,17 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
           onChange={async () => {
             const res = await sessionToggleStatus(row.id as number)
             if (res.code === ResultCode.SUCCESS) {
-              msg.success('状态切换成功')
+              msg.success(t('mall.seckill.statusToggleSuccess'))
               await tableRef.value?.refresh()
             }
           }}
         />
       ),
     },
-    { label: () => '排序', prop: 'sort_order', width: '80px' },
+    { label: () => t('mall.seckill.sortOrder'), prop: 'sort_order', width: '80px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('mall.seckill.operation'),
       width: '220px',
       operationConfigure: {
         type: 'tile',
@@ -102,7 +104,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'products',
             show: () => hasAuth('seckill:product:list'),
             icon: 'material-symbols:inventory-2',
-            text: () => '商品',
+            text: () => t('mall.seckill.products'),
             onClick: ({ row }: { row: SeckillSessionVo }) => {
               router.push({
                 path: '/mall/seckill/products',
@@ -114,9 +116,9 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'edit',
             show: () => hasAuth('seckill:session:update'),
             icon: 'material-symbols:edit',
-            text: () => '编辑',
+            text: () => t('mall.common.edit'),
             onClick: ({ row }: { row: SeckillSessionVo }) => {
-              dialog.setTitle('编辑场次')
+              dialog.setTitle(t('mall.seckill.editSession'))
               dialog.open({ formType: 'edit', data: row })
             },
           },
@@ -124,12 +126,12 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'del',
             show: () => hasAuth('seckill:session:delete'),
             icon: 'mdi:delete',
-            text: () => '删除',
+            text: () => t('mall.common.delete'),
             onClick: async ({ row }: { row: SeckillSessionVo }, proxy: MaProTableExpose) => {
-              msg.delConfirm('确定删除该场次吗？场次下的商品配置也会被删除。').then(async () => {
+              msg.delConfirm(t('mall.seckill.confirmDeleteSessionSingle')).then(async () => {
                 const response = await sessionRemove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {
-                  msg.success('删除成功')
+                  msg.success(t('mall.seckill.deleteSuccess'))
                   await proxy.refresh()
                 }
               })

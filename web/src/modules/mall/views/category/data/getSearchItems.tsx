@@ -8,21 +8,23 @@
  * @Link   https://github.com/mineadmin
  */
 import type { MaSearchItem } from '@mineadmin/search'
+import { useI18n } from 'vue-i18n'
 
 export default function getSearchItems(): MaSearchItem[] {
+  const { t } = useI18n()
   return [
     {
-      label: () => '分类名称',
+      label: () => t('mall.category.categoryName'),
       prop: 'name',
       render: 'input',
     },
     {
-      label: () => '状态',
+      label: () => t('mall.category.statusLabel'),
       prop: 'status',
       render: () => (
-        <el-select clearable placeholder="全部状态">
-          <el-option label="启用" value="active" />
-          <el-option label="停用" value="inactive" />
+        <el-select clearable placeholder={t('mall.allStatus')}>
+          <el-option label={t('mall.common.enabled')} value="active" />
+          <el-option label={t('mall.common.disabled')} value="inactive" />
         </el-select>
       ),
     },

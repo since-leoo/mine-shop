@@ -13,6 +13,7 @@ import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { ElImage, ElTag } from 'element-plus'
 import { h } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { remove } from '~/mall/api/brand'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
@@ -25,28 +26,29 @@ const statusTypeMap: Record<string, string> = {
 
 export default function getTableColumns(dialog: UseDialogExpose): MaProTableColumns[] {
   const msg = useMessage()
+  const { t } = useI18n()
 
   return [
     { type: 'selection', showOverflowTooltip: false },
     { type: 'index', width: '60px' },
-    { label: () => '品牌名称', prop: 'name', minWidth: '180px' },
-    { label: () => '品牌Logo', prop: 'logo', width: '120px',
+    { label: () => t('mall.brand.brandName'), prop: 'name', minWidth: '180px' },
+    { label: () => t('mall.brand.brandLogo'), prop: 'logo', width: '120px',
       cellRender: ({ row }: { row: BrandVo }) => row.logo
         ? h(ElImage, { src: row.logo, style: 'width: 40px; height: 40px', fit: 'cover' })
         : '-',
     },
-    { label: () => '状态', prop: 'status', width: '100px',
+    { label: () => t('mall.brand.statusLabel'), prop: 'status', width: '100px',
       cellRender: ({ row }: { row: BrandVo }) => (
         <ElTag type={statusTypeMap[row.status || 'inactive'] as any}>
-          {row.status === 'active' ? '启用' : '停用'}
+          {row.status === 'active' ? t('mall.common.enabled') : t('mall.common.disabled')}
         </ElTag>
       ),
     },
-    { label: () => '排序', prop: 'sort', width: '90px' },
-    { label: () => '更新时间', prop: 'updated_at', minWidth: '160px' },
+    { label: () => t('mall.brand.sortLabel'), prop: 'sort', width: '90px' },
+    { label: () => t('mall.brand.updateTime'), prop: 'updated_at', minWidth: '160px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('mall.brand.operation'),
       width: '200px',
       operationConfigure: {
         type: 'tile',
@@ -55,9 +57,9 @@ export default function getTableColumns(dialog: UseDialogExpose): MaProTableColu
             name: 'edit',
             show: () => hasAuth('product:brand:update'),
             icon: 'material-symbols:edit',
-            text: () => '编辑',
+            text: () => t('mall.common.edit'),
             onClick: ({ row }: { row: BrandVo }) => {
-              dialog.setTitle('编辑品牌')
+              dialog.setTitle(t('mall.brand.editBrand'))
               dialog.open({ formType: 'edit', data: row })
             },
           },
@@ -65,12 +67,12 @@ export default function getTableColumns(dialog: UseDialogExpose): MaProTableColu
             name: 'del',
             show: () => hasAuth('product:brand:delete'),
             icon: 'mdi:delete',
-            text: () => '删除',
+            text: () => t('mall.common.delete'),
             onClick: async ({ row }: { row: BrandVo }, proxy: MaProTableExpose) => {
-              msg.delConfirm('确定删除该品牌吗？').then(async () => {
+              msg.delConfirm(t('mall.brand.confirmDeleteSingle')).then(async () => {
                 const response = await remove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {
-                  msg.success('删除成功')
+                  msg.success(t('mall.brand.deleteSuccess'))
                   await proxy.refresh()
                 }
               })

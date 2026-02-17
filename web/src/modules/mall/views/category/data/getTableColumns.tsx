@@ -13,6 +13,7 @@ import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { ElTag } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { remove } from '~/mall/api/category'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
@@ -29,31 +30,32 @@ export default function getTableColumns(
   parentNameMap: Ref<Record<number, string>>,
 ): MaProTableColumns[] {
   const msg = useMessage()
+  const { t } = useI18n()
 
   return [
     { type: 'selection', showOverflowTooltip: false },
     { type: 'index', width: '60px' },
-    { label: () => '分类名称', prop: 'name', minWidth: '180px' },
-    { label: () => '上级分类', prop: 'parent_id', minWidth: '160px',
+    { label: () => t('mall.category.categoryName'), prop: 'name', minWidth: '180px' },
+    { label: () => t('mall.category.parentCategory'), prop: 'parent_id', minWidth: '160px',
       cellRender: ({ row }: { row: CategoryVo }) => {
         if (!row.parent_id) {
-          return '顶级分类'
+          return t('mall.category.topLevel')
         }
         return parentNameMap.value[row.parent_id] || `#${row.parent_id}`
       },
     },
-    { label: () => '状态', prop: 'status', width: '100px',
+    { label: () => t('mall.category.statusLabel'), prop: 'status', width: '100px',
       cellRender: ({ row }: { row: CategoryVo }) => (
         <ElTag type={statusTypeMap[row.status || 'inactive'] as any}>
-          {row.status === 'active' ? '启用' : '停用'}
+          {row.status === 'active' ? t('mall.common.enabled') : t('mall.common.disabled')}
         </ElTag>
       ),
     },
-    { label: () => '排序', prop: 'sort', width: '90px' },
-    { label: () => '更新时间', prop: 'updated_at', minWidth: '160px' },
+    { label: () => t('mall.category.sortLabel'), prop: 'sort', width: '90px' },
+    { label: () => t('mall.category.updateTime'), prop: 'updated_at', minWidth: '160px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('mall.category.operation'),
       width: '200px',
       operationConfigure: {
         type: 'tile',
@@ -62,9 +64,9 @@ export default function getTableColumns(
             name: 'edit',
             show: () => hasAuth('product:category:update'),
             icon: 'material-symbols:edit',
-            text: () => '编辑',
+            text: () => t('mall.common.edit'),
             onClick: ({ row }: { row: CategoryVo }) => {
-              dialog.setTitle('编辑分类')
+              dialog.setTitle(t('mall.category.editCategory'))
               dialog.open({ formType: 'edit', data: row })
             },
           },
@@ -72,12 +74,12 @@ export default function getTableColumns(
             name: 'del',
             show: () => hasAuth('product:category:delete'),
             icon: 'mdi:delete',
-            text: () => '删除',
+            text: () => t('mall.common.delete'),
             onClick: async ({ row }: { row: CategoryVo }, proxy: MaProTableExpose) => {
-              msg.delConfirm('确定删除该分类吗？').then(async () => {
+              msg.delConfirm(t('mall.category.confirmDeleteSingle')).then(async () => {
                 const response = await remove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {
-                  msg.success('删除成功')
+                  msg.success(t('mall.category.deleteSuccess'))
                   await proxy.refresh()
                 }
               })

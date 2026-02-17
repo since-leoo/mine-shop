@@ -12,6 +12,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
+import { useI18n } from 'vue-i18n'
 import { page, remove } from '~/mall/api/brand'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -23,6 +24,7 @@ import BrandForm from './form.vue'
 
 defineOptions({ name: 'mall:brand' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const formRef = ref()
 const selections = ref<any[]>([])
@@ -36,7 +38,7 @@ const maDialog: UseDialogExpose = useDialog({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.brand.operationSuccess')) : msg.error(res.message)
         maDialog.close()
         proTableRef.value.refresh()
       }).catch((err: any) => {
@@ -49,8 +51,8 @@ const maDialog: UseDialogExpose = useDialog({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 161,
   header: {
-    mainTitle: () => '品牌管理',
-    subTitle: () => '维护商品品牌信息',
+    mainTitle: () => t('mall.brand.title'),
+    subTitle: () => t('mall.brand.subtitle'),
   },
   tableOptions: {
     on: {
@@ -60,15 +62,16 @@ const options = ref<MaProTableOptions>({
   searchOptions: {
     fold: true,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
-      isFoldBtn: () => '展开',
-      notFoldBtn: () => '收起',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
+      isFoldBtn: () => t('mall.common.unfold'),
+      notFoldBtn: () => t('mall.common.fold'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: page },
 })
+
 
 const schema = ref<MaProTableSchema>({
   searchItems: getSearchItems(),
@@ -78,14 +81,14 @@ const schema = ref<MaProTableSchema>({
 function handleBatchDelete() {
   const ids = selections.value.map(item => item.id)
   if (ids.length < 1) {
-    msg.warning('请选择要删除的数据')
+    msg.warning(t('mall.brand.selectDeleteData'))
     return
   }
-  msg.delConfirm('确定删除选中的品牌吗？').then(async () => {
+  msg.delConfirm(t('mall.brand.confirmDeleteBrand')).then(async () => {
     const tasks = ids.map((id: number) => remove(id))
     const results = await Promise.all(tasks)
     if (results.every(item => item.code === ResultCode.SUCCESS)) {
-      msg.success('删除成功')
+      msg.success(t('mall.brand.deleteSuccess'))
       proTableRef.value.refresh()
     }
   })
@@ -100,11 +103,11 @@ function handleBatchDelete() {
           v-auth="['product:brand:create']"
           type="primary"
           @click="() => {
-            maDialog.setTitle('新增品牌')
+            maDialog.setTitle(t('mall.brand.addBrand'))
             maDialog.open({ formType: 'add' })
           }"
         >
-          新增品牌
+          {{ t('mall.brand.addBrand') }}
         </el-button>
       </template>
       <template #toolbarLeft>
@@ -115,7 +118,7 @@ function handleBatchDelete() {
           :disabled="selections.length < 1"
           @click="handleBatchDelete"
         >
-          批量删除
+          {{ t('mall.brand.batchDelete') }}
         </el-button>
       </template>
       <template #empty>
@@ -124,11 +127,11 @@ function handleBatchDelete() {
             v-auth="['product:brand:create']"
             type="primary"
             @click="() => {
-              maDialog.setTitle('新增品牌')
+              maDialog.setTitle(t('mall.brand.addBrand'))
               maDialog.open({ formType: 'add' })
             }"
           >
-            新增品牌
+            {{ t('mall.brand.addBrand') }}
           </el-button>
         </el-empty>
       </template>

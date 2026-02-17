@@ -12,17 +12,11 @@ import type { SeckillActivityVo } from '~/mall/api/seckill'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { ElTag, ElSwitch } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { activityRemove, activityToggleStatus } from '~/mall/api/seckill'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import hasAuth from '@/utils/permission/hasAuth.ts'
-
-const statusTextMap: Record<string, string> = {
-  pending: '待开始',
-  active: '进行中',
-  ended: '已结束',
-  cancelled: '已取消',
-}
 
 const statusTypeMap: Record<string, string> = {
   pending: 'info',
@@ -33,31 +27,39 @@ const statusTypeMap: Record<string, string> = {
 
 export default function getTableColumns(dialog: UseDialogExpose, router: any, tableRef: { value: MaProTableExpose | undefined }): MaProTableColumns[] {
   const msg = useMessage()
+  const { t } = useI18n()
+
+  const statusTextMap: Record<string, string> = {
+    pending: t('mall.activityStatus.pending'),
+    active: t('mall.activityStatus.active'),
+    ended: t('mall.activityStatus.ended'),
+    cancelled: t('mall.activityStatus.cancelled'),
+  }
 
   return [
     { type: 'selection', showOverflowTooltip: false },
     { label: () => 'ID', prop: 'id', width: '80px' },
-    { label: () => '活动标题', prop: 'title', minWidth: '200px' },
-    { label: () => '活动描述', prop: 'description', minWidth: '200px', showOverflowTooltip: true },
-    { label: () => '场次数', prop: 'sessions_count', width: '100px',
+    { label: () => t('mall.seckill.activityTitle'), prop: 'title', minWidth: '200px' },
+    { label: () => t('mall.seckill.activityDesc'), prop: 'description', minWidth: '200px', showOverflowTooltip: true },
+    { label: () => t('mall.seckill.sessionsCount'), prop: 'sessions_count', width: '100px',
       cellRender: ({ row }: { row: SeckillActivityVo }) => (
         <el-button
           type="primary"
           link
           onClick={() => router.push({ path: '/mall/seckill/sessions', query: { activity_id: row.id, activity_title: row.title } })}
         >
-          {row.sessions_count ?? 0} 个场次
+          {row.sessions_count ?? 0} {t('mall.seckill.sessionsUnit')}
         </el-button>
       ),
     },
-    { label: () => '状态', prop: 'status', width: '100px',
+    { label: () => t('mall.common.status'), prop: 'status', width: '100px',
       cellRender: ({ row }: { row: SeckillActivityVo }) => (
         <ElTag type={statusTypeMap[row.status || 'pending'] as any}>
           {statusTextMap[row.status || 'pending']}
         </ElTag>
       ),
     },
-    { label: () => '启用状态', prop: 'is_enabled', width: '100px',
+    { label: () => t('mall.seckill.enabledStatus'), prop: 'is_enabled', width: '100px',
       cellRender: ({ row }: { row: SeckillActivityVo }) => (
         <ElSwitch
           modelValue={row.is_enabled}
@@ -65,17 +67,17 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
           onChange={async () => {
             const res = await activityToggleStatus(row.id as number)
             if (res.code === ResultCode.SUCCESS) {
-              msg.success('状态切换成功')
+              msg.success(t('mall.seckill.statusToggleSuccess'))
               await tableRef.value?.refresh()
             }
           }}
         />
       ),
     },
-    { label: () => '创建时间', prop: 'created_at', width: '170px' },
+    { label: () => t('mall.seckill.createdAt'), prop: 'created_at', width: '170px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('mall.seckill.operation'),
       width: '200px',
       operationConfigure: {
         type: 'tile',
@@ -84,7 +86,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'sessions',
             show: () => hasAuth('seckill:session:list'),
             icon: 'material-symbols:schedule',
-            text: () => '场次',
+            text: () => t('mall.seckill.sessions'),
             onClick: ({ row }: { row: SeckillActivityVo }) => {
               router.push({ path: '/mall/seckill/sessions', query: { activity_id: row.id, activity_title: row.title } })
             },
@@ -93,9 +95,9 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'edit',
             show: () => hasAuth('seckill:activity:update'),
             icon: 'material-symbols:edit',
-            text: () => '编辑',
+            text: () => t('mall.common.edit'),
             onClick: ({ row }: { row: SeckillActivityVo }) => {
-              dialog.setTitle('编辑活动')
+              dialog.setTitle(t('mall.seckill.editActivity'))
               dialog.open({ formType: 'edit', data: row })
             },
           },
@@ -103,12 +105,12 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             name: 'del',
             show: () => hasAuth('seckill:activity:delete'),
             icon: 'mdi:delete',
-            text: () => '删除',
+            text: () => t('mall.common.delete'),
             onClick: async ({ row }: { row: SeckillActivityVo }, proxy: MaProTableExpose) => {
-              msg.delConfirm('确定删除该活动吗？删除前请确保活动下没有场次。').then(async () => {
+              msg.delConfirm(t('mall.seckill.confirmDeleteSingle')).then(async () => {
                 const response = await activityRemove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {
-                  msg.success('删除成功')
+                  msg.success(t('mall.seckill.deleteSuccess'))
                   await proxy.refresh()
                 }
               })

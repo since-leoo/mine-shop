@@ -11,6 +11,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { sessionPage, sessionRemove } from '~/mall/api/seckill'
 import getSearchItems from './data/getSearchItems.tsx'
@@ -23,10 +24,11 @@ import SessionForm from './form.vue'
 
 defineOptions({ name: 'mall:seckill:session' })
 
+const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const activityId = computed(() => Number(route.query.activity_id) || 0)
-const activityTitle = computed(() => route.query.activity_title as string || '未知活动')
+const activityTitle = computed(() => route.query.activity_title as string || t('mall.common.unknownActivity'))
 
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const formRef = ref()
@@ -41,7 +43,7 @@ const maDialog: UseDialogExpose = useDialog({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.seckill.operationSuccess')) : msg.error(res.message)
         maDialog.close()
         proTableRef.value.refresh()
       }).catch((err: any) => {
@@ -54,8 +56,8 @@ const maDialog: UseDialogExpose = useDialog({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 161,
   header: {
-    mainTitle: () => `场次管理 - ${activityTitle.value}`,
-    subTitle: () => '管理秒杀活动的时间场次',
+    mainTitle: () => t('mall.seckill.sessionTitle', { title: activityTitle.value }),
+    subTitle: () => t('mall.seckill.sessionSubtitle'),
   },
   tableOptions: {
     on: {
@@ -65,13 +67,13 @@ const options = ref<MaProTableOptions>({
   searchOptions: {
     fold: true,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
-      isFoldBtn: () => '展开',
-      notFoldBtn: () => '收起',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
+      isFoldBtn: () => t('mall.common.unfold'),
+      notFoldBtn: () => t('mall.common.fold'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: {
     api: (params: any) => sessionPage({ ...params, activity_id: activityId.value }),
   },
@@ -85,14 +87,14 @@ const schema = ref<MaProTableSchema>({
 function handleBatchDelete() {
   const ids = selections.value.map(item => item.id)
   if (ids.length < 1) {
-    msg.warning('请选择要删除的数据')
+    msg.warning(t('mall.seckill.selectDeleteData'))
     return
   }
-  msg.delConfirm('确定删除选中的场次吗？场次下的商品也会被删除。').then(async () => {
+  msg.delConfirm(t('mall.seckill.confirmDeleteSession')).then(async () => {
     const tasks = ids.map((id: number) => sessionRemove(id))
     const results = await Promise.all(tasks)
     if (results.every(item => item.code === ResultCode.SUCCESS)) {
-      msg.success('删除成功')
+      msg.success(t('mall.seckill.deleteSuccess'))
       proTableRef.value.refresh()
     }
   })
@@ -108,7 +110,7 @@ function goBack() {
     <div class="mb-3 mx-3">
       <el-button @click="goBack">
         <ma-svg-icon name="material-symbols:arrow-back" class="mr-1" />
-        返回活动列表
+        {{ t('mall.seckill.backToActivities') }}
       </el-button>
     </div>
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
@@ -117,11 +119,11 @@ function goBack() {
           v-auth="['seckill:session:create']"
           type="primary"
           @click="() => {
-            maDialog.setTitle('新增场次')
+            maDialog.setTitle(t('mall.seckill.addSession'))
             maDialog.open({ formType: 'add' })
           }"
         >
-          新增场次
+          {{ t('mall.seckill.addSession') }}
         </el-button>
       </template>
       <template #toolbarLeft>
@@ -132,20 +134,20 @@ function goBack() {
           :disabled="selections.length < 1"
           @click="handleBatchDelete"
         >
-          批量删除
+          {{ t('mall.seckill.batchDelete') }}
         </el-button>
       </template>
       <template #empty>
-        <el-empty description="暂无场次">
+        <el-empty :description="t('mall.seckill.noSessions')">
           <el-button
             v-auth="['seckill:session:create']"
             type="primary"
             @click="() => {
-              maDialog.setTitle('新增场次')
+              maDialog.setTitle(t('mall.seckill.addSession'))
               maDialog.open({ formType: 'add' })
             }"
           >
-            新增场次
+            {{ t('mall.seckill.addSession') }}
           </el-button>
         </el-empty>
       </template>

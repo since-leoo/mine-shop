@@ -12,6 +12,7 @@ import type { MaProTableColumns, MaProTableExpose } from '@mineadmin/pro-table'
 import type { CouponVo } from '~/mall/api/coupon'
 
 import { ElTag, ElSwitch } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { couponRemove, couponToggleStatus } from '~/mall/api/coupon'
 import { useMessage } from '@/hooks/useMessage.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
@@ -26,31 +27,32 @@ export default function getTableColumns(
   handleIssue: (row: CouponVo) => void,
 ): MaProTableColumns[] {
   const msg = useMessage()
+  const { t } = useI18n()
 
   return [
     { type: 'selection', width: '50px' },
-    { label: () => '编号', prop: 'id', width: '80px' },
-    { label: () => '优惠券名称', prop: 'name', minWidth: '160px' },
-    { label: () => '类型', prop: 'type', width: '90px',
+    { label: () => 'ID', prop: 'id', width: '80px' },
+    { label: () => t('mall.coupon.name'), prop: 'name', minWidth: '160px' },
+    { label: () => t('mall.coupon.typeLabel'), prop: 'type', width: '90px',
       cellRender: ({ row }: { row: CouponVo }) => (
         <ElTag type={row.type === 'fixed' ? 'success' : 'warning'}>
-          {row.type === 'fixed' ? '满减' : '折扣'}
+          {row.type === 'fixed' ? t('mall.coupon.typeFixed') : t('mall.coupon.typePercent')}
         </ElTag>
       ),
     },
-    { label: () => '优惠值', prop: 'value', width: '100px',
+    { label: () => t('mall.coupon.valueLabel'), prop: 'value', width: '100px',
       cellRender: ({ row }: { row: CouponVo }) => row.type === 'percent'
-        ? `${(row.value ?? 0) / 100}折`
+        ? `${(row.value ?? 0) / 100}x`
         : `¥${formatYuan(row.value)}`,
     },
-    { label: () => '最低消费', prop: 'min_amount', width: '110px',
+    { label: () => t('mall.coupon.minAmountLabel'), prop: 'min_amount', width: '110px',
       cellRender: ({ row }: { row: CouponVo }) => `¥${formatYuan(row.min_amount)}`,
     },
-    { label: () => '发放/总量', prop: 'total_quantity', width: '130px',
+    { label: () => t('mall.coupon.totalCountLabel'), prop: 'total_quantity', width: '130px',
       cellRender: ({ row }: { row: CouponVo }) => `${row.issued_quantity ?? 0} / ${row.total_quantity ?? 0}`,
     },
-    { label: () => '已使用', prop: 'used_quantity', width: '90px' },
-    { label: () => '状态', prop: 'status', width: '120px',
+    { label: () => t('mall.couponUser.used'), prop: 'used_quantity', width: '90px' },
+    { label: () => t('mall.coupon.statusLabel'), prop: 'status', width: '120px',
       cellRender: ({ row }: { row: CouponVo }) => (
         <ElSwitch
           modelValue={row.status === 'active'}
@@ -58,20 +60,20 @@ export default function getTableColumns(
           onChange={async () => {
             const res = await couponToggleStatus(row.id as number)
             if (res.code === ResultCode.SUCCESS) {
-              msg.success('状态切换成功')
+              msg.success(t('mall.operationSuccess'))
               await tableRef.value?.refresh()
             }
           }}
         />
       ),
     },
-    { label: () => '有效期', prop: 'start_time', minWidth: '220px',
-      cellRender: ({ row }: { row: CouponVo }) => `${row.start_time ?? '--'} 至 ${row.end_time ?? '--'}`,
+    { label: () => t('mall.coupon.validityLabel'), prop: 'start_time', minWidth: '220px',
+      cellRender: ({ row }: { row: CouponVo }) => `${row.start_time ?? '--'} ~ ${row.end_time ?? '--'}`,
     },
-    { label: () => '创建时间', prop: 'created_at', width: '170px' },
+    { label: () => t('crud.createTime'), prop: 'created_at', width: '170px' },
     {
       type: 'operation',
-      label: () => '操作',
+      label: () => t('crud.operation'),
       width: '260px',
       operationConfigure: {
         type: 'tile',
@@ -80,14 +82,14 @@ export default function getTableColumns(
             name: 'issue',
             show: () => hasAuth('coupon:issue'),
             icon: 'ph:gift',
-            text: () => '发放',
+            text: () => t('mall.coupon.issueAction'),
             onClick: ({ row }: { row: CouponVo }) => handleIssue(row),
           },
           {
             name: 'records',
             show: () => hasAuth('coupon:user:list'),
             icon: 'ph:users-three',
-            text: () => '领取记录',
+            text: () => t('mall.couponUser.recordTitle'),
             onClick: ({ row }: { row: CouponVo }) => {
               router.push({ path: '/mall/coupon/users', query: { coupon_id: row.id } })
             },
@@ -96,9 +98,9 @@ export default function getTableColumns(
             name: 'edit',
             show: () => hasAuth('coupon:update'),
             icon: 'material-symbols:edit-outline',
-            text: () => '编辑',
+            text: () => t('mall.common.edit'),
             onClick: ({ row }: { row: CouponVo }) => {
-              formDialog.setTitle('编辑优惠券')
+              formDialog.setTitle(t('mall.coupon.editCoupon'))
               formDialog.open({ formType: 'edit', data: row })
             },
           },
@@ -106,12 +108,12 @@ export default function getTableColumns(
             name: 'del',
             show: () => hasAuth('coupon:delete'),
             icon: 'mdi:delete',
-            text: () => '删除',
+            text: () => t('mall.common.delete'),
             onClick: async ({ row }: { row: CouponVo }, proxy: MaProTableExpose) => {
-              msg.delConfirm('确定删除该优惠券吗？').then(async () => {
+              msg.delConfirm(t('mall.coupon.confirmDelete')).then(async () => {
                 const res = await couponRemove(row.id as number)
                 if (res.code === ResultCode.SUCCESS) {
-                  msg.success('删除成功')
+                  msg.success(t('mall.common.deleteSuccess'))
                   await proxy.refresh()
                 }
               })

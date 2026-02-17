@@ -5,7 +5,7 @@
 <template>
   <div class="member-level-page p-3">
     <el-card shadow="never" class="mb-4">
-      <el-form :model="filters" label-width="90px" inline>
+      <el-form :model="filters" label-width="100px" inline>
         <el-form-item :label="t('member.levelConfig.keyword')">
           <el-input v-model="filters.keyword" :placeholder="t('member.levelConfig.levelName')" clearable @keyup.enter="handleSearch">
             <template #prefix><el-icon><Search /></el-icon></template>

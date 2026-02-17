@@ -11,6 +11,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { UseDrawerExpose } from '@/hooks/useDrawer.ts'
 
+import { useI18n } from 'vue-i18n'
 import { page, remove, stats } from '~/mall/api/product'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -22,6 +23,7 @@ import ProductForm from './form.vue'
 
 defineOptions({ name: 'mall:product' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const formRef = ref()
 const selections = ref<any[]>([])
@@ -44,7 +46,7 @@ const maDrawer: UseDrawerExpose = useDrawer({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.product.operationSuccess')) : msg.error(res.message)
         maDrawer.close()
         proTableRef.value.refresh()
         loadStats()
@@ -58,8 +60,8 @@ const maDrawer: UseDrawerExpose = useDrawer({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 161,
   header: {
-    mainTitle: () => '商品管理',
-    subTitle: () => '维护商品基础信息与SKU',
+    mainTitle: () => t('mall.product.title'),
+    subTitle: () => t('mall.product.subtitle'),
   },
   tableOptions: {
     on: {
@@ -69,13 +71,13 @@ const options = ref<MaProTableOptions>({
   searchOptions: {
     fold: true,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
-      isFoldBtn: () => '收起',
-      notFoldBtn: () => '展开',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
+      isFoldBtn: () => t('mall.common.fold'),
+      notFoldBtn: () => t('mall.common.unfold'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: page },
 })
 
@@ -97,14 +99,14 @@ async function loadStats() {
 function handleBatchDelete() {
   const ids = selections.value.map(item => item.id)
   if (ids.length < 1) {
-    msg.warning('请选择要删除的数据')
+    msg.warning(t('mall.product.selectDeleteData'))
     return
   }
-  msg.delConfirm('确定删除选中的商品吗？').then(async () => {
+  msg.delConfirm(t('mall.product.confirmDeleteProduct')).then(async () => {
     const tasks = ids.map((id: number) => remove(id))
     const results = await Promise.all(tasks)
     if (results.every(item => item.code === ResultCode.SUCCESS)) {
-      msg.success('删除成功')
+      msg.success(t('mall.product.deleteSuccess'))
       proTableRef.value.refresh()
       loadStats()
     }
@@ -123,7 +125,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-gray-500">商品总数</div>
+              <div class="text-xs text-gray-500">{{ t('mall.product.totalProducts') }}</div>
               <div class="mt-2 text-2xl font-semibold text-gray-800 dark-text-gray-100">{{ statsData.total }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark-bg-dark-4 dark-text-gray-100">
@@ -136,7 +138,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-emerald-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-emerald-600">上架数</div>
+              <div class="text-xs text-emerald-600">{{ t('mall.product.activeCount') }}</div>
               <div class="mt-2 text-2xl font-semibold text-emerald-700 dark-text-emerald-200">{{ statsData.active }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark-bg-dark-4 dark-text-emerald-200">
@@ -149,7 +151,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-amber-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-amber-600">草稿数</div>
+              <div class="text-xs text-amber-600">{{ t('mall.product.draftCount') }}</div>
               <div class="mt-2 text-2xl font-semibold text-amber-700 dark-text-amber-200">{{ statsData.draft }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark-bg-dark-4 dark-text-amber-200">
@@ -162,7 +164,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-gray-500">下架数</div>
+              <div class="text-xs text-gray-500">{{ t('mall.product.inactiveCount') }}</div>
               <div class="mt-2 text-2xl font-semibold text-gray-700 dark-text-gray-100">{{ statsData.inactive }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-gray-700 dark-bg-dark-4 dark-text-gray-100">
@@ -175,7 +177,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-rose-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-rose-600">售罄数</div>
+              <div class="text-xs text-rose-600">{{ t('mall.product.soldOutCount') }}</div>
               <div class="mt-2 text-2xl font-semibold text-rose-700 dark-text-rose-200">{{ statsData.sold_out }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-rose-100 text-rose-700 dark-bg-dark-4 dark-text-rose-200">
@@ -188,7 +190,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-indigo-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-indigo-600">库存预警</div>
+              <div class="text-xs text-indigo-600">{{ t('mall.product.warningStock') }}</div>
               <div class="mt-2 text-2xl font-semibold text-indigo-700 dark-text-indigo-200">{{ statsData.warning_stock }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-indigo-100 text-indigo-700 dark-bg-dark-4 dark-text-indigo-200">
@@ -204,11 +206,11 @@ onMounted(() => {
           v-auth="['product:product:create']"
           type="primary"
           @click="() => {
-            maDrawer.setTitle('新增商品')
+            maDrawer.setTitle(t('mall.product.addProduct'))
             maDrawer.open({ formType: 'add' })
           }"
         >
-          新增商品
+          {{ t('mall.product.addProduct') }}
         </el-button>
       </template>
       <template #toolbarLeft>
@@ -219,7 +221,7 @@ onMounted(() => {
           :disabled="selections.length < 1"
           @click="handleBatchDelete"
         >
-          批量删除
+          {{ t('mall.product.batchDelete') }}
         </el-button>
       </template>
       <template #empty>
@@ -228,11 +230,11 @@ onMounted(() => {
             v-auth="['product:product:create']"
             type="primary"
             @click="() => {
-              maDrawer.setTitle('新增商品')
+              maDrawer.setTitle(t('mall.product.addProduct'))
               maDrawer.open({ formType: 'add' })
             }"
           >
-            新增商品
+            {{ t('mall.product.addProduct') }}
           </el-button>
         </el-empty>
       </template>

@@ -275,6 +275,70 @@ mall:
   keyword: 关键词
   startDate: 开始日期
   endDate: 结束日期
+  brand:
+    title: 品牌管理
+    subtitle: 维护商品品牌信息
+    brandName: 品牌名称
+    brandLogo: 品牌Logo
+    addBrand: 新增品牌
+    editBrand: 编辑品牌
+    batchDelete: 批量删除
+    selectDeleteData: 请选择要删除的数据
+    confirmDeleteBrand: 确定删除选中的品牌吗？
+    confirmDeleteSingle: 确定删除该品牌吗？
+    deleteSuccess: 删除成功
+    operationSuccess: 操作成功
+    statusLabel: 状态
+    sortLabel: 排序
+    updateTime: 更新时间
+    operation: 操作
+    formName: 品牌名称
+    formNamePlaceholder: 请输入品牌名称
+    formNameRequired: 请输入品牌名称
+    formLogo: 品牌Logo
+    formWebsite: 官网
+    formWebsitePlaceholder: 请输入官网地址
+    formDescription: 描述
+    formDescPlaceholder: 请输入品牌描述
+    formSort: 排序
+    formStatus: 状态
+    formEnabled: 启用
+    formDisabled: 停用
+  category:
+    title: 分类管理
+    subtitle: 维护商品分类层级与状态
+    categoryName: 分类名称
+    parentCategory: 上级分类
+    topLevel: 顶级分类
+    allCategories: 全部分类
+    addCategory: 新增分类
+    editCategory: 编辑分类
+    batchDelete: 批量删除
+    selectDeleteData: 请选择要删除的数据
+    confirmDeleteCategory: 确定删除选中的分类吗？
+    confirmDeleteSingle: 确定删除该分类吗？
+    deleteSuccess: 删除成功
+    operationSuccess: 操作成功
+    statusLabel: 状态
+    sortLabel: 排序
+    updateTime: 更新时间
+    operation: 操作
+    formParent: 上级分类
+    formParentPlaceholder: 请选择上级分类
+    formCannotSelfParent: 不能选择自己为上级
+    formName: 分类名称
+    formNamePlaceholder: 请输入分类名称
+    formNameRequired: 请输入分类名称
+    formIcon: 图标
+    formIconPlaceholder: 请输入图标链接
+    formImage: 分类图片
+    formImageHelp: 用于小程序分类宫格展示，建议 1:1 比例。
+    formDescription: 描述
+    formDescPlaceholder: 请输入描述
+    formSort: 排序
+    formStatus: 状态
+    formEnabled: 启用
+    formDisabled: 停用
   product:
     status:
       draft: 草稿
@@ -321,6 +385,24 @@ mall:
       priceDisplay: 价格与展示
       attrSpec: 属性与规格
       descDetail: 简介与详情
+    title: 商品管理
+    subtitle: 维护商品基础信息与SKU
+    totalProducts: 商品总数
+    activeCount: 上架数
+    draftCount: 草稿数
+    inactiveCount: 下架数
+    soldOutCount: 售罄数
+    warningStock: 库存预警
+    addProduct: 新增商品
+    editProduct: 编辑商品
+    batchDelete: 批量删除
+    selectDeleteData: 请选择要删除的数据
+    confirmDeleteProduct: 确定删除选中的商品吗？
+    confirmDeleteSingle: 确定删除该商品吗？
+    deleteSuccess: 删除成功
+    operationSuccess: 操作成功
+    priceRange: 价格区间
+    isHotColumn: 是否热销
   order:
     totalOrders: 总订单数
     pendingPayment: 待付款
@@ -389,6 +471,49 @@ mall:
       sto: 申通快递
       ems: EMS
       jd: 京东物流
+    detailTitle: 订单详情
+    basicInfo: 基本信息
+    orderNoLabel: 订单号
+    orderStatusLabel: 订单状态
+    orderTimeLabel: 下单时间
+    payTimeLabel: 支付时间
+    shipTimeLabel: 发货时间
+    completeTimeLabel: 完成时间
+    buyerInfo: 买家信息
+    buyerNickname: 买家昵称
+    contactPhone: 联系电话
+    shippingAddress: 收货地址
+    receiverLabel: 收货人
+    receiver: 收货人
+    addressLabel: 收货地址
+    addressDetail: 详细地址
+    productInfoTitle: 商品信息
+    productColumn: 商品
+    productLabel: 商品
+    unitPrice: 单价
+    quantityColumn: 数量
+    subtotal: 小计
+    amountInfo: 金额信息
+    productTotal: 商品总额
+    totalAmount: 商品总额
+    shippingFee: 运费
+    discountAmount: 优惠金额
+    payAmount: 实付金额
+    remarkInfo: 备注信息
+    buyerRemark: 买家备注
+    sellerRemark: 卖家备注
+    reviewInfo: 评价信息
+    noReview: 暂无评价
+    reviewRating: 评分
+    reviewContentColumn: 评价内容
+    reviewContent: 评价内容
+    reviewStatusColumn: 状态
+    reviewStatus: 状态
+    adminReplyColumn: 管理员回复
+    adminReply: 管理员回复
+    reviewTimeColumn: 评价时间
+    reviewTime: 评价时间
+    closeButton: 关闭
   orderStatus:
     pending: 待付款
     paid: 已付款
@@ -401,6 +526,39 @@ mall:
     ended: 已结束
     cancelled: 已取消
     soldOut: 已售罄
+  seckillOrder:
+    title: 秒杀订单
+    subtitle: 以秒杀活动为维度查看秒杀订单情况
+    noData: 暂无秒杀订单数据
+    drawerTitle: "秒杀订单 - {title}"
+    activityName: 活动名称
+    statusColumn: 状态
+    enabledColumn: 启用
+    enabledLabel: 启用
+    sessionsCount: 场次数
+    buyerCount: 秒杀人数
+    totalAmount: 秒杀总金额
+    createdAt: 创建时间
+    viewOrders: 查看秒杀订单
+    memberColumn: 会员
+    memberLabel: 会员
+    phoneColumn: 手机号
+    phoneLabel: 手机号
+    sessionColumn: 场次
+    sessionLabel: 场次
+    quantityColumn: 数量
+    quantityLabel: 数量
+    seckillPrice: 秒杀价
+    paidAmount: 实付金额
+    orderStatusColumn: 状态
+    relatedOrder: 关联订单
+    seckillTime: 秒杀时间
+    operation: 操作
+    "yes": 是
+    "no": 否
+    orderPending: 待付款
+    orderPaid: 已付款
+    orderCancelled: 已取消
   coupon:
     name: 优惠券名称
     namePlaceholder: 请输入优惠券名称
@@ -451,6 +609,16 @@ mall:
     issueSuccess: 发放成功
     issueFailed: 发放失败
     issueMinOne: 请输入至少一个会员ID
+    title: 优惠券管理
+    subtitle: 配置并发放营销优惠券
+    totalCoupons: 优惠券总数
+    activeCount: 启用中
+    inactiveCount: 停用
+    addCoupon: 新增优惠券
+    issueLabel: "发放 {name}"
+    issueAction: 发放
+    editCoupon: 编辑优惠券
+    confirmDelete: 确定删除该优惠券吗？
   couponUser:
     unused: 未使用
     used: 已使用
@@ -473,6 +641,9 @@ mall:
     pending: 待审核
     approved: 已通过
     rejected: 已拒绝
+    statusPending: 待审核
+    statusApproved: 已通过
+    statusRejected: 已拒绝
     allRating: 全部评分
     star5: 5星
     star4: 4星
@@ -500,9 +671,92 @@ mall:
     confirmReply: 确认回复
     replySuccess: 回复成功
     replyEmpty: 请输入回复内容
+    productNameColumn: 商品名称
+    productName: 商品名称
+    userColumn: 用户
+    user: 用户
+    ratingColumn: 评分
+    rating: 评分
+    contentColumn: 评价内容
+    content: 评价内容
+    statusColumn: 状态
+    createdAtColumn: 创建时间
+    createdAt: 创建时间
+    operationColumn: 操作
+    operationLabel: 操作
+    anonymousUser: 匿名用户
+    anonymous: 匿名用户
+    confirmApprove: 确定通过该评价吗？
+    confirmReject: 确定拒绝该评价吗？
+    approveSuccess: 审核通过
+    rejectSuccess: 已拒绝
+    approveAction: 通过
+    approve: 通过
+    rejectAction: 拒绝
+    reject: 拒绝
+    replyAction: 回复
   groupBuy:
     searchActivity: 搜索活动名称
     activityName: 活动名称
+    confirmDeleteSingle: 确定删除该团购活动吗？
+    product: 商品
+    price: 价格
+    groupSize: 成团人数
+    people: 人
+    stockSales: 库存/销量
+    statusToggleSuccess: 状态切换成功
+    time: 时间
+    startLabel: "开始"
+    endLabel: "结束"
+    operation: 操作
+    title: 团购管理
+    subtitle: 维护团购活动与库存
+    totalActivities: 活动总数
+    enabled: 已启用
+    inProgress: 进行中
+    disabled: 已禁用
+    addGroupBuy: 新增团购
+    batchDelete: 批量删除
+    noGroupBuy: 暂无团购活动
+    selectDeleteData: 请选择要删除的数据
+    confirmDeleteGroupBuy: 确定删除选中的团购活动吗？
+    deleteSuccess: 删除成功
+    operationSuccess: 操作成功
+    editGroupBuy: 编辑团购
+    formTitle: 活动标题
+    formTitlePlaceholder: 请输入活动标题
+    formTitleRequired: 请输入活动标题
+    formProduct: 商品
+    formProductPlaceholder: 请选择商品
+    formProductRequired: 请选择商品
+    formSkuPlaceholder: 请选择SKU
+    formSkuRequired: 请选择SKU
+    formOriginalPrice: 原价（元）
+    formGroupPrice: 团购价（元）
+    formGroupPriceRequired: 请输入团购价
+    formGroupPriceExceed: 团购价不能高于原价
+    formMinPeople: 成团人数
+    formMaxPeople: 最大人数
+    formMaxPeopleRequired: 请输入最大人数
+    formMaxPeopleGteMin: 最大人数需大于或等于成团人数
+    formTimeLimit: 成团时限(小时)
+    formStock: 库存
+    formStartTime: 开始时间
+    formStartTimeRequired: 请选择开始时间
+    formStartBeforeEnd: 开始时间不能晚于结束时间
+    formEndTime: 结束时间
+    formEndTimeRequired: 请选择结束时间
+    formEndAfterStart: 结束时间需晚于开始时间
+    formEnabled: 启用
+    formRemark: 备注
+    formRemarkPlaceholder: 请输入备注
+    formInputRequired: "请输入{label}"
+    formMustBeNumber: "{label}必须为数字"
+    formMustBePositive: "{label}必须大于0"
+    formCannotBeNegative: "{label}不能小于0"
+    formCannotBeLessThan: "{label}不能小于{min}"
+    formCannotBeGreaterThan: "{label}不能大于{max}"
+    formMustBeInteger: "{label}必须为整数"
   groupBuyOrder:
     groupNo: 团号
     leader: 团长
@@ -517,7 +771,46 @@ mall:
     joinTime: 参团时间
     expireTime: 过期时间
     leaderTag: 团长
+    title: 拼团订单
+    subtitle: 以拼团活动为维度查看参团情况
+    noData: 暂无拼团订单数据
+    drawerTitle: "拼团订单 - {title}"
+    activityInfo: 活动信息
+    activityTime: 活动时间
+    startLabel: "开始: "
+    endLabel: "结束: "
+    grouping: 成团
+    opened: "开团: "
+    success: "成功: "
+    openGroups: "开团: "
+    successGroups: "成功: "
+    participants: 参团人数
+    groupBuyerCount: 团购人数
+    originalBuyerCount: 原价购买人数
+    originalBuyers: 原价购买
+    groupBuyerAmount: 团购总金额
+    groupAmount: 参团总金额
+    stockSales: 库存/销量
+    viewOrders: 查看拼团订单
+    operationLabel: 操作
   seckill:
+    confirmDeleteSingle: 确定删除该活动吗？
+    confirmDeleteSessionSingle: 确定删除该场次吗？场次下的商品配置也会被删除。
+    confirmRemoveSingle: 确定移除该商品吗？
+    createdAt: 创建时间
+    startTime: 开始时间
+    endTime: 结束时间
+    operation: 操作
+    productImage: 商品图片
+    productName: 商品名称
+    products: 商品
+    productsUnit: 个商品
+    purchaseLimit: 限购
+    sessions: 场次
+    sessionsUnit: 个场次
+    sold: 已售
+    stock: 库存
+    statusToggleSuccess: 状态切换成功
     statusPlaceholder: 请选择状态
     activityTitle: 活动标题
     activityTitlePlaceholder: 请输入活动标题
@@ -537,6 +830,73 @@ mall:
     startTimeRequired: 请选择开始时间
     endTimePlaceholder: 请选择结束时间
     endTimeRequired: 请选择结束时间
+    title: 秒杀活动管理
+    subtitle: 管理秒杀活动、场次和商品配置
+    totalActivities: 活动总数
+    enabledCount: 已启用
+    disabledCount: 已禁用
+    addActivity: 新增活动
+    batchDelete: 批量删除
+    noActivities: 暂无秒杀活动
+    selectDeleteData: 请选择要删除的数据
+    confirmDeleteActivity: 确定删除选中的活动吗？
+    deleteSuccess: 删除成功
+    operationSuccess: 操作成功
+    editActivity: 编辑活动
+    statusSwitchSuccess: 状态切换成功
+    sessionsCount: "{count} 个场次"
+    productsCount: "{count} 个商品"
+    sessionTitle: "场次管理 - {title}"
+    sessionSubtitle: 管理秒杀活动的时间场次
+    addSession: 新增场次
+    noSessions: 暂无场次
+    confirmDeleteSession: 确定删除选中的场次吗？场次下的商品也会被删除。
+    editSession: 编辑场次
+    confirmDeleteSingleSession: 确定删除该场次吗？场次下的商品配置也会被删除。
+    backToActivities: 返回活动列表
+    productConfig: 商品配置
+    productConfigSubtitle: 配置秒杀场次的商品和价格
+    addProduct: 添加商品
+    batchRemove: 批量移除
+    noProducts: 暂无商品
+    confirmRemoveProducts: 确定移除选中的商品吗？
+    editProductConfig: 编辑商品配置
+    confirmRemoveProduct: 确定移除该商品吗？
+    backToSessions: 返回场次列表
+    noImage: 暂无图片
+    seckillPrice: 秒杀价
+    originalPrice: 原价
+    stockLabel: 库存
+    soldLabel: 已售
+    limitLabel: 限购
+    enabledLabel: 启用
+    sortLabel: 排序
+    stockSold: 库存/售出
+    buyerCount: 秒杀人数
+    totalAmount: 秒杀总金额
+    viewOrders: 查看秒杀订单
+    yesLabel: 是
+    noLabel: 否
+    formSelectProduct: 选择商品
+    formSelectProductPlaceholder: 请选择商品
+    formSelectProductRequired: 请选择商品
+    formSelectSku: 选择SKU
+    formSelectSkuPlaceholder: 请先选择商品
+    formSelectSkuRequired: 请选择SKU
+    formOriginalPrice: 原价
+    formOriginalPricePlaceholder: 请输入原价
+    formOriginalPriceRequired: 请输入原价
+    formSeckillPrice: 秒杀价
+    formSeckillPricePlaceholder: 请输入秒杀价（需小于原价）
+    formSeckillPriceRequired: 请输入秒杀价
+    formStock: 库存数量
+    formStockPlaceholder: 请输入库存数量
+    formStockRequired: 请输入库存数量
+    formPerUserLimit: 每人限购
+    formPerUserLimitPlaceholder: 请输入每人限购数量
+    formSortOrder: 排序
+    formSortPlaceholder: 数值越小越靠前
+    formEnabledStatus: 启用状态
   common:
     enabled: 启用
     disabled: 禁用
@@ -545,9 +905,37 @@ mall:
     selectPlaceholder: 请选择
     status: 状态
     delete: 删除
+    operationSuccess: 操作成功
+    selectDeleteData: 请选择要删除的数据
+    deleteSuccess: 删除成功
+    batchDelete: 批量删除
+    edit: 编辑
+    search: 搜索
+    reset: 重置
+    unfold: 展开
+    fold: 收起
+    close: 关闭
+    unknownActivity: 未知活动
+    topLevel: 顶级分类
+    time: 时间
+    startLabel: "开始: "
+    endLabel: "结束: "
+    people: "{min}-{max}人"
   config:
     maxReached: 已达到最大配置数量
     resetDefault: 恢复默认
+    productTitle: 商品与库存
+    productDesc: 商品发布限制、库存安全以及内容控制。
+    orderTitle: 订单与售后
+    orderDesc: 订单生命周期、风控及售后配置。
+    paymentTitle: 支付与结算
+    paymentDesc: 支付方式及风控策略，满足微信/支付宝支付退款。
+    shippingTitle: 配送与物流
+    shippingDesc: 快递、自提及第三方物流相关配置。
+    memberTitle: 会员与营销
+    memberDesc: 会员成长、积分和营销策略。
+    contentTitle: 内容与合规
+    contentDesc: 协议、公告以及内容审核策略。
   productForm:
     basicInfo: 基本信息
     statusAndTags: 状态与标签
@@ -585,6 +973,7 @@ mall:
     noAttributes: 暂无属性，点击上方按钮添加。
     addSpec: 新增规格
     specName: 规格名
+    defaultSpecName: "规格{n}"
     specValue: 规格值
     specNamePlaceholder: 输入后回车
     specValuePlaceholder: 输入后回车
@@ -807,12 +1196,80 @@ member:
     memberUpdated: 会员已更新
     createFailed: 创建失败
     updateFailed: 更新失败
-    tagUpdated: 标签已更新
+    tagAssignSuccess: 标签已更新
     tagUpdateFailed: 更新标签失败
     memberBanned: 会员已禁用
     memberUnbanned: 已解除禁用
     loadFailed: 加载会员失败
     loadTagFailed: 加载标签失败
+    detailTitle: 会员详情
+    basicInfo: 基础信息
+    phoneLabel: 手机号
+    genderLabelDetail: 性别
+    birthdayLabel: 生日
+    regionLabelDetail: 地区
+    sourceChannel: 来源渠道
+    lastLoginLabel: 最近登录
+    growthValueDetail: 成长值
+    growthLabel: 成长值
+    remarkDetail: 备注
+    assetInfo: 资产信息
+    accountBalance: 账户余额
+    balanceLabel: 余额
+    frozenBalance: 冻结金额
+    frozenLabel: 冻结
+    totalRecharge: 累计充值
+    totalRechargeLabel: 累计充值
+    totalConsume: 累计消费
+    totalConsumeLabel: 累计消费
+    pointsBalance: 积分余额
+    pointsBalanceLabel: 积分
+    totalPoints: 累计积分
+    totalPointsLabel: 累计积分
+    tagsTitle: 标签
+    noTags: 尚未设置标签
+    addressTitle: 收货地址
+    defaultTag: 默认
+    loadDetailFailed: 加载会员详情失败
+    idLabel: "ID：{id}"
+    idAndRegister: "ID：{id} | 注册于 {date}"
+    registeredLabel: "注册于 {time}"
+    levelBronze: 青铜
+    levelSilver: 白银
+    levelGold: 黄金
+    levelDiamond: 钻石
+    statusActive: 正常
+    statusInactive: 未激活
+    statusBanned: 已禁用
+    sourceWechat: 微信公众号
+    sourceMiniProgram: 微信小程序
+    sourceH5: H5
+    sourceAdmin: 后台导入
+    tagManagerTitle: 标签管理
+    searchTagPlaceholder: 搜索标签名称
+    createTag: 新建标签
+    editTag: 编辑标签
+    tagName: 名称
+    tagColor: 颜色
+    tagStatus: 状态
+    tagSort: 排序
+    tagOperation: 操作
+    confirmDeleteTag: 确认删除该标签？
+    tagNameLabel: 名称
+    tagNamePlaceholder: 请输入标签名称
+    tagNameRequired: 请输入标签名称
+    tagColorLabel: 颜色
+    tagStatusLabel: 状态
+    tagStatusRequired: 请选择状态
+    tagSortLabel: 排序
+    tagDescLabel: 描述
+    tagDescPlaceholder: 可选，标签说明
+    tagCreated: 标签已创建
+    tagUpdated: 标签已更新
+    tagDeleted: 标签已删除
+    tagSaveFailed: 保存失败
+    tagDeleteFailed: 删除失败
+    tagLoadFailed: 加载标签失败
   points:
     sourceSystem: 系统
     sourceOrder: 订单

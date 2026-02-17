@@ -64,7 +64,7 @@ const options = ref<MaProTableOptions>({
       resetBtn: () => t('mall.reset'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: reviewPage },
 })
 

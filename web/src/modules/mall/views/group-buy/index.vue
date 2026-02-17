@@ -11,6 +11,7 @@ import type { MaProTableExpose, MaProTableOptions, MaProTableSchema } from '@min
 import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
+import { useI18n } from 'vue-i18n'
 import { page, remove, stats } from '~/mall/api/group-buy'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
@@ -22,6 +23,7 @@ import GroupBuyForm from './form.vue'
 
 defineOptions({ name: 'mall:group_buy' })
 
+const { t } = useI18n()
 const proTableRef = ref<MaProTableExpose>() as Ref<MaProTableExpose>
 const formRef = ref()
 const selections = ref<any[]>([])
@@ -36,7 +38,7 @@ const maDialog: UseDialogExpose = useDialog({
     elForm.validate().then(() => {
       const action = formType === 'add' ? formRef.value.add : formRef.value.edit
       action().then((res: any) => {
-        res.code === ResultCode.SUCCESS ? msg.success('操作成功') : msg.error(res.message)
+        res.code === ResultCode.SUCCESS ? msg.success(t('mall.groupBuy.operationSuccess')) : msg.error(res.message)
         maDialog.close()
         proTableRef.value.refresh()
         loadStats()
@@ -50,8 +52,8 @@ const maDialog: UseDialogExpose = useDialog({
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 161,
   header: {
-    mainTitle: () => '团购管理',
-    subTitle: () => '维护团购活动与库存',
+    mainTitle: () => t('mall.groupBuy.title'),
+    subTitle: () => t('mall.groupBuy.subtitle'),
   },
   tableOptions: {
     on: {
@@ -61,13 +63,13 @@ const options = ref<MaProTableOptions>({
   searchOptions: {
     fold: true,
     text: {
-      searchBtn: () => '搜索',
-      resetBtn: () => '重置',
-      isFoldBtn: () => '展开',
-      notFoldBtn: () => '收起',
+      searchBtn: () => t('mall.search'),
+      resetBtn: () => t('mall.reset'),
+      isFoldBtn: () => t('mall.common.unfold'),
+      notFoldBtn: () => t('mall.common.fold'),
     },
   },
-  searchFormOptions: { labelWidth: '90px' },
+  searchFormOptions: { labelWidth: '100px' },
   requestOptions: { api: page },
 })
 
@@ -89,14 +91,14 @@ async function loadStats() {
 function handleBatchDelete() {
   const ids = selections.value.map(item => item.id)
   if (ids.length < 1) {
-    msg.warning('请选择要删除的数据')
+    msg.warning(t('mall.groupBuy.selectDeleteData'))
     return
   }
-  msg.delConfirm('确定删除选中的团购活动吗？').then(async () => {
+  msg.delConfirm(t('mall.groupBuy.confirmDeleteGroupBuy')).then(async () => {
     const tasks = ids.map((id: number) => remove(id))
     const results = await Promise.all(tasks)
     if (results.every(item => item.code === ResultCode.SUCCESS)) {
-      msg.success('删除成功')
+      msg.success(t('mall.groupBuy.deleteSuccess'))
       proTableRef.value.refresh()
       loadStats()
     }
@@ -115,7 +117,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-gray-500">活动总数</div>
+              <div class="text-xs text-gray-500">{{ t('mall.groupBuy.totalActivities') }}</div>
               <div class="mt-2 text-2xl font-semibold text-gray-800 dark-text-gray-100">{{ statsData.total }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-slate-200 text-slate-700 dark-bg-dark-4 dark-text-gray-100">
@@ -128,7 +130,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-emerald-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-emerald-600">已启用</div>
+              <div class="text-xs text-emerald-600">{{ t('mall.groupBuy.enabled') }}</div>
               <div class="mt-2 text-2xl font-semibold text-emerald-700 dark-text-emerald-200">{{ statsData.enabled }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark-bg-dark-4 dark-text-emerald-200">
@@ -141,7 +143,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-blue-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-blue-600">进行中</div>
+              <div class="text-xs text-blue-600">{{ t('mall.groupBuy.inProgress') }}</div>
               <div class="mt-2 text-2xl font-semibold text-blue-700 dark-text-blue-200">{{ statsData.active }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark-bg-dark-4 dark-text-blue-200">
@@ -154,7 +156,7 @@ onMounted(() => {
         <el-card shadow="never" class="border-0">
           <div class="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 dark-bg-dark-7">
             <div>
-              <div class="text-xs text-gray-500">已禁用</div>
+              <div class="text-xs text-gray-500">{{ t('mall.groupBuy.disabled') }}</div>
               <div class="mt-2 text-2xl font-semibold text-gray-700 dark-text-gray-100">{{ statsData.disabled }}</div>
             </div>
             <div class="flex h-9 w-9 items-center justify-center rounded-full bg-gray-200 text-gray-700 dark-bg-dark-4 dark-text-gray-100">
@@ -170,11 +172,11 @@ onMounted(() => {
           v-auth="['promotion:group_buy:create']"
           type="primary"
           @click="() => {
-            maDialog.setTitle('新增团购')
+            maDialog.setTitle(t('mall.groupBuy.addGroupBuy'))
             maDialog.open({ formType: 'add' })
           }"
         >
-          新增团购
+          {{ t('mall.groupBuy.addGroupBuy') }}
         </el-button>
       </template>
       <template #toolbarLeft>
@@ -185,20 +187,20 @@ onMounted(() => {
           :disabled="selections.length < 1"
           @click="handleBatchDelete"
         >
-          批量删除
+          {{ t('mall.groupBuy.batchDelete') }}
         </el-button>
       </template>
       <template #empty>
-        <el-empty description="暂无团购活动">
+        <el-empty :description="t('mall.groupBuy.noGroupBuy')">
           <el-button
             v-auth="['promotion:group_buy:create']"
             type="primary"
             @click="() => {
-              maDialog.setTitle('新增团购')
+              maDialog.setTitle(t('mall.groupBuy.addGroupBuy'))
               maDialog.open({ formType: 'add' })
             }"
           >
-            新增团购
+            {{ t('mall.groupBuy.addGroupBuy') }}
           </el-button>
         </el-empty>
       </template>

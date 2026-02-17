@@ -2,15 +2,8 @@ import type { MaProTableColumns } from '@mineadmin/pro-table'
 import type { GroupBuyOrderSummaryVo } from '~/mall/api/group-buy-order'
 
 import { ElTag, ElImage, ElProgress, ElButton } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
-
-const statusTextMap: Record<string, string> = {
-  pending: '待开始',
-  active: '进行中',
-  ended: '已结束',
-  cancelled: '已取消',
-  sold_out: '已售罄',
-}
 
 const statusTypeMap: Record<string, string> = {
   pending: 'info',
@@ -21,10 +14,20 @@ const statusTypeMap: Record<string, string> = {
 }
 
 export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummaryVo) => void): MaProTableColumns[] {
+  const { t } = useI18n()
+
+  const statusTextMap: Record<string, string> = {
+    pending: t('mall.activityStatus.pending'),
+    active: t('mall.activityStatus.active'),
+    ended: t('mall.activityStatus.ended'),
+    cancelled: t('mall.activityStatus.cancelled'),
+    sold_out: t('mall.activityStatus.soldOut'),
+  }
+
   return [
     { label: () => 'ID', prop: 'id', width: '70px' },
     {
-      label: () => '活动信息',
+      label: () => t('mall.groupBuyOrder.activityInfo'),
       prop: 'title',
       minWidth: '220px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
@@ -38,7 +41,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       ),
     },
     {
-      label: () => '状态',
+      label: () => t('mall.common.status'),
       prop: 'status',
       width: '90px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
@@ -48,29 +51,29 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       ),
     },
     {
-      label: () => '活动时间',
+      label: () => t('mall.groupBuyOrder.activityTime'),
       prop: 'time',
       width: '180px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
         <div class="text-xs">
-          <div>开始: {row.start_time}</div>
-          <div>结束: {row.end_time}</div>
+          <div>{t('mall.groupBuyOrder.startLabel')}: {row.start_time}</div>
+          <div>{t('mall.groupBuyOrder.endLabel')}: {row.end_time}</div>
         </div>
       ),
     },
     {
-      label: () => '成团',
+      label: () => t('mall.groupBuyOrder.grouping'),
       prop: 'group_count',
       width: '100px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
         <div class="text-xs">
-          <div>开团: {row.group_count}</div>
-          <div class="text-green-600">成功: {row.success_group_count}</div>
+          <div>{t('mall.groupBuyOrder.opened')}: {row.group_count}</div>
+          <div class="text-green-600">{t('mall.groupBuyOrder.success')}: {row.success_group_count}</div>
         </div>
       ),
     },
     {
-      label: () => '参团人数',
+      label: () => t('mall.groupBuyOrder.groupBuyerCount'),
       prop: 'group_buyer_count',
       width: '90px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
@@ -78,7 +81,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       ),
     },
     {
-      label: () => '原价购买',
+      label: () => t('mall.groupBuyOrder.originalBuyerCount'),
       prop: 'original_buyer_count',
       width: '90px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
@@ -86,7 +89,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       ),
     },
     {
-      label: () => '参团总金额',
+      label: () => t('mall.groupBuyOrder.groupBuyerAmount'),
       prop: 'group_buyer_amount',
       width: '110px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
@@ -94,7 +97,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       ),
     },
     {
-      label: () => '库存/销量',
+      label: () => t('mall.groupBuyOrder.stockSales'),
       prop: 'quantity',
       width: '140px',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => {
@@ -110,13 +113,13 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       },
     },
     {
-      label: () => '操作',
+      label: () => t('mall.groupBuyOrder.operationLabel'),
       prop: 'action',
       width: '120px',
       fixed: 'right',
       cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
         <ElButton type="primary" link size="small" onClick={() => onViewOrders(row)}>
-          查看拼团订单
+          {t('mall.groupBuyOrder.viewOrders')}
         </ElButton>
       ),
     },
