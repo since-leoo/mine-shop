@@ -12,11 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Service;
 
-use Carbon\Carbon;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Collection\Collection;
-use Hyperf\Context\ApplicationContext;
-use Hyperf\DbConnection\Db;
 use App\Domain\Infrastructure\SystemMessage\Enum\MessageChannel;
 use App\Domain\Infrastructure\SystemMessage\Enum\MessageStatus;
 use App\Domain\Infrastructure\SystemMessage\Enum\MessageType;
@@ -24,16 +19,24 @@ use App\Domain\Infrastructure\SystemMessage\Enum\RecipientType;
 use App\Domain\Infrastructure\SystemMessage\Event\MessageSendFailed;
 use App\Domain\Infrastructure\SystemMessage\Event\MessageSent;
 use App\Domain\Infrastructure\SystemMessage\Job\SendMessageJob;
+use App\Domain\Infrastructure\SystemMessage\Repository\MessageRepository;
 use App\Infrastructure\Model\SystemMessage\Message;
 use App\Infrastructure\Model\SystemMessage\UserMessage;
-use App\Domain\Infrastructure\SystemMessage\Repository\MessageRepository;
+use Carbon\Carbon;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\Collection\Collection;
+use Hyperf\Context\ApplicationContext;
+use Hyperf\DbConnection\Db;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MessageService
 {
     protected MessageRepository $repository;
+
     protected NotificationService $notificationService;
+
     protected DriverFactory $queueDriverFactory;
+
     private ?EventDispatcherInterface $eventDispatcher = null;
 
     public function __construct(
@@ -67,10 +70,16 @@ class MessageService
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (! $message) { throw new \InvalidArgumentException("Message not found: {$messageId}"); }
-            if (! $message->canSend()) { throw new \InvalidArgumentException("Message cannot be sent: {$messageId}"); }
+            if (! $message) {
+                throw new \InvalidArgumentException("Message not found: {$messageId}");
+            }
+            if (! $message->canSend()) {
+                throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
+            }
             $recipients = $message->getRecipients();
-            if ($recipients->isEmpty()) { throw new \InvalidArgumentException("No recipients found for message: {$messageId}"); }
+            if ($recipients->isEmpty()) {
+                throw new \InvalidArgumentException("No recipients found for message: {$messageId}");
+            }
             Db::transaction(function () use ($message, $recipients) {
                 $message->markAsSending();
                 $this->createUserMessages($message, $recipients);
@@ -81,8 +90,12 @@ class MessageService
             logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
             return true;
         } catch (\Throwable $e) {
-            if (isset($message) && $message->isSending()) { $message->markAsFailed(); }
-            if (isset($message)) { $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage())); }
+            if (isset($message) && $message->isSending()) {
+                $message->markAsFailed();
+            }
+            if (isset($message)) {
+                $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage()));
+            }
             logger()->error('Failed to send message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
@@ -91,7 +104,9 @@ class MessageService
     public function schedule(int $messageId, Carbon $scheduledAt): bool
     {
         $message = $this->repository->findById($messageId);
-        if (! $message) { throw new \InvalidArgumentException("Message not found: {$messageId}"); }
+        if (! $message) {
+            throw new \InvalidArgumentException("Message not found: {$messageId}");
+        }
         return $message->update(['scheduled_at' => $scheduledAt, 'status' => MessageStatus::SCHEDULED->value]);
     }
 
@@ -108,7 +123,9 @@ class MessageService
     public function markAsRead(int $userId, int $messageId): bool
     {
         $userMessage = UserMessage::where('message_id', $messageId)->where('user_id', $userId)->first();
-        if (! $userMessage) { return false; }
+        if (! $userMessage) {
+            return false;
+        }
         return $userMessage->markAsRead();
     }
 
@@ -126,7 +143,9 @@ class MessageService
     public function deleteUserMessage(int $messageId, int $userId): bool
     {
         $userMessage = UserMessage::where('message_id', $messageId)->where('user_id', $userId)->first();
-        if (! $userMessage) { return false; }
+        if (! $userMessage) {
+            return false;
+        }
         return $userMessage->softDelete();
     }
 
@@ -159,10 +178,14 @@ class MessageService
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (! $message) { throw new \InvalidArgumentException("Message not found: {$messageId}"); }
+            if (! $message) {
+                throw new \InvalidArgumentException("Message not found: {$messageId}");
+            }
             $changes = [];
             foreach ($data as $key => $value) {
-                if ($message->{$key} !== $value) { $changes[$key] = ['old' => $message->{$key}, 'new' => $value]; }
+                if ($message->{$key} !== $value) {
+                    $changes[$key] = ['old' => $message->{$key}, 'new' => $value];
+                }
             }
             $message->update($data);
             logger()->info('Message updated', ['message_id' => $message->id, 'changes' => array_keys($changes)]);
@@ -177,7 +200,9 @@ class MessageService
     {
         try {
             $message = $this->repository->findById($messageId);
-            if (! $message) { return false; }
+            if (! $message) {
+                return false;
+            }
             $result = $message->delete();
             logger()->info('Message deleted', ['message_id' => $message->id]);
             return $result;
@@ -197,7 +222,10 @@ class MessageService
         $messages = Message::pendingSend()->get();
         $processed = 0;
         foreach ($messages as $message) {
-            try { $this->send($message->id); ++$processed; } catch (\Throwable $e) {
+            try {
+                $this->send($message->id);
+                ++$processed;
+            } catch (\Throwable $e) {
                 logger()->error('Failed to process scheduled message', ['message_id' => $message->id, 'error' => $e->getMessage()]);
             }
         }
@@ -214,7 +242,9 @@ class MessageService
         $retentionDays = config('system_message.message.retention_days', 90);
         $expiredDate = Carbon::now()->subDays($retentionDays);
         $expiredMessageIds = Message::where('created_at', '<', $expiredDate)->pluck('id')->toArray();
-        if (empty($expiredMessageIds)) { return 0; }
+        if (empty($expiredMessageIds)) {
+            return 0;
+        }
         UserMessage::whereIn('message_id', $expiredMessageIds)->delete();
         return Message::where('created_at', '<', $expiredDate)->forceDelete();
     }
@@ -223,15 +253,27 @@ class MessageService
     {
         $required = ['title', 'content'];
         foreach ($required as $field) {
-            if (empty($data[$field])) { throw new \InvalidArgumentException("Field {$field} is required"); }
+            if (empty($data[$field])) {
+                throw new \InvalidArgumentException("Field {$field} is required");
+            }
         }
         $maxTitleLength = config('system_message.message.max_title_length', 255);
-        if (mb_strlen($data['title']) > $maxTitleLength) { throw new \InvalidArgumentException("Title too long, max {$maxTitleLength} characters"); }
+        if (mb_strlen($data['title']) > $maxTitleLength) {
+            throw new \InvalidArgumentException("Title too long, max {$maxTitleLength} characters");
+        }
         $maxContentLength = config('system_message.message.max_content_length', 10000);
-        if (mb_strlen($data['content']) > $maxContentLength) { throw new \InvalidArgumentException("Content too long, max {$maxContentLength} characters"); }
-        if (isset($data['type']) && ! \in_array($data['type'], MessageType::values(), true)) { throw new \InvalidArgumentException("Invalid message type: {$data['type']}"); }
-        if (isset($data['recipient_type']) && ! \in_array($data['recipient_type'], RecipientType::values(), true)) { throw new \InvalidArgumentException("Invalid recipient type: {$data['recipient_type']}"); }
-        if (isset($data['priority']) && ($data['priority'] < 1 || $data['priority'] > 5)) { throw new \InvalidArgumentException('Priority must be between 1 and 5'); }
+        if (mb_strlen($data['content']) > $maxContentLength) {
+            throw new \InvalidArgumentException("Content too long, max {$maxContentLength} characters");
+        }
+        if (isset($data['type']) && ! \in_array($data['type'], MessageType::values(), true)) {
+            throw new \InvalidArgumentException("Invalid message type: {$data['type']}");
+        }
+        if (isset($data['recipient_type']) && ! \in_array($data['recipient_type'], RecipientType::values(), true)) {
+            throw new \InvalidArgumentException("Invalid recipient type: {$data['recipient_type']}");
+        }
+        if (isset($data['priority']) && ($data['priority'] < 1 || $data['priority'] > 5)) {
+            throw new \InvalidArgumentException('Priority must be between 1 and 5');
+        }
     }
 
     protected function setDefaultValues(array $data): array
@@ -253,14 +295,20 @@ class MessageService
         foreach ($recipients as $user) {
             $userMessages[] = ['user_id' => $user->id, 'message_id' => $message->id, 'is_read' => false, 'is_deleted' => false, 'created_at' => $now];
         }
-        if (! empty($userMessages)) { Db::table('user_messages')->insert($userMessages); }
+        if (! empty($userMessages)) {
+            Db::table('user_messages')->insert($userMessages);
+        }
     }
 
     protected function queueNotifications(Message $message, Collection $recipients): void
     {
         $channels = $message->channels ?? ['database'];
         $queueChannel = config('system_message.queue.channel', 'default');
-        try { $driver = $this->queueDriverFactory->get($queueChannel); } catch (\Throwable $e) { $driver = $this->queueDriverFactory->get('default'); }
+        try {
+            $driver = $this->queueDriverFactory->get($queueChannel);
+        } catch (\Throwable $e) {
+            $driver = $this->queueDriverFactory->get('default');
+        }
         foreach ($recipients as $user) {
             foreach ($channels as $channel) {
                 $job = new SendMessageJob($message->id, $user->id, $channel);

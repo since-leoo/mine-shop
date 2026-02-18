@@ -1,9 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Member\Repository\MemberLevelRepository;
 use App\Domain\Member\Service\DomainMemberLevelService;
 use App\Infrastructure\Exception\System\BusinessException;
 use Eris\Generators;
@@ -11,11 +21,13 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 1: 等级配置校验——序号唯一且成长值门槛严格递增
+ * Feature: member-vip-level, Property 1: 等级配置校验——序号唯一且成长值门槛严格递增.
  *
  * Validates: Requirements 1.2, 1.3, 1.5
+ * @internal
+ * @coversNothing
  */
-class DomainMemberLevelServiceValidateTest extends TestCase
+final class DomainMemberLevelServiceValidateTest extends TestCase
 {
     use TestTrait;
 
@@ -27,8 +39,8 @@ class DomainMemberLevelServiceValidateTest extends TestCase
 
         // validateLevelConfigs is a pure validation method that doesn't use any dependencies,
         // so we can safely create the service with mocked constructor args.
-        $repository = $this->createMock(\App\Domain\Member\Repository\MemberLevelRepository::class);
-        $mallSettingService = $this->createMock(\App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService::class);
+        $repository = $this->createMock(MemberLevelRepository::class);
+        $mallSettingService = $this->createMock(DomainMallSettingService::class);
 
         $this->service = new DomainMemberLevelService($repository, $mallSettingService);
     }
@@ -148,7 +160,7 @@ class DomainMemberLevelServiceValidateTest extends TestCase
                 $thrown = true;
             }
 
-            $this->assertTrue($thrown, sprintf(
+            $this->assertTrue($thrown, \sprintf(
                 'Expected BusinessException for non-increasing thresholds at level %d (value %d) <= level %d (value %d)',
                 $levels[$breakIdx]['level'],
                 $levels[$breakIdx]['growth_value_min'],
@@ -164,7 +176,7 @@ class DomainMemberLevelServiceValidateTest extends TestCase
     public function testEmptyConfigListShouldPass(): void
     {
         $this->service->validateLevelConfigs([]);
-        $this->assertTrue(true);
+        self::assertTrue(true);
     }
 
     /**

@@ -1,11 +1,24 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\Seckill;
 
+use App\Application\Admin\Seckill\AppSeckillActivityCommandService;
+use App\Application\Admin\Seckill\AppSeckillActivityQueryService;
+use App\Application\Admin\Seckill\Dto\SeckillActivityExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -16,9 +29,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Application\Admin\Seckill\AppSeckillActivityCommandService;
-use App\Application\Admin\Seckill\AppSeckillActivityQueryService;
-use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/seckill/activity')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -26,7 +37,7 @@ use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;
 #[Middleware(middleware: OperationMiddleware::class, priority: 98)]
 final class SeckillActivityController extends AbstractController
 {
-    public function __construct(private readonly AppSeckillActivityQueryService $queryService, private readonly AppSeckillActivityCommandService $commandService) {}
+    public function __construct(private readonly AppSeckillActivityQueryService $queryService, private readonly AppSeckillActivityCommandService $commandService, private readonly CurrentUser $currentUser) {}
 
     #[GetMapping(path: 'list')]
     #[Permission(code: 'seckill:activity:list')]
@@ -84,5 +95,19 @@ final class SeckillActivityController extends AbstractController
     {
         $this->commandService->toggleEnabled($id);
         return $this->success(null, '切换状态成功');
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'seckill:activity:list')]
+    public function export(SeckillActivityRequest $request): Result
+    {
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '秒杀活动导出',
+            dtoClass: SeckillActivityExportDto::class,
+            params: $request->validated(),
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

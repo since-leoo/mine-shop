@@ -1,14 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Infrastructure\Model\Seckill;
 
+use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\DbConnection\Model\Model;
-use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 
 /**
  * @property int $id

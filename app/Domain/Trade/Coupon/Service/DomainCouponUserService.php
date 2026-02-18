@@ -12,16 +12,16 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Service;
 
-use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\System\BusinessException;
-use App\Infrastructure\Model\Member\Member;
-use App\Interface\Common\ResultCode;
-use Carbon\Carbon;
 use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
 use App\Domain\Trade\Coupon\Mapper\CouponUserMapper;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\CouponUser;
+use App\Infrastructure\Model\Member\Member;
+use App\Interface\Common\ResultCode;
+use Carbon\Carbon;
 
 /**
  * 用户优惠券领域服务.

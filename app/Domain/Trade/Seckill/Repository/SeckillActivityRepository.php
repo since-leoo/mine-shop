@@ -1,14 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Repository;
 
-use App\Infrastructure\Abstract\IRepository;
-use Hyperf\Database\Model\Builder;
 use App\Domain\Trade\Seckill\Entity\SeckillActivityEntity;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
+use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
+use Hyperf\Database\Model\Builder;
 
 /**
  * @extends IRepository<SeckillActivity>
@@ -54,6 +62,18 @@ final class SeckillActivityRepository extends IRepository
             ->when(isset($params['is_enabled']), static fn (Builder $q) => $q->where('is_enabled', (bool) $params['is_enabled']))
             ->withCount('sessions')
             ->orderBy('id', 'desc');
+    }
+
+    /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery(), $params);
+
+        foreach ($query->cursor() as $activity) {
+            yield $activity;
+        }
     }
 
     public function getStatistics(): array

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Order\Entity;
 
@@ -14,28 +22,20 @@ use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use PHPUnit\Framework\TestCase;
 
-class OrderEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class OrderEntityTest extends TestCase
 {
-    private function makeOrder(string $status = 'pending', string $payStatus = 'pending'): OrderEntity
-    {
-        $order = new OrderEntity();
-        $order->setId(1);
-        $order->setOrderNo('ORD202603010001');
-        $order->setMemberId(100);
-        $order->setOrderType('normal');
-        $order->setStatus($status);
-        $order->setPayStatus($payStatus);
-        return $order;
-    }
-
     public function testBasicGettersSetters(): void
     {
         $order = $this->makeOrder();
-        $this->assertSame(1, $order->getId());
-        $this->assertSame('ORD202603010001', $order->getOrderNo());
-        $this->assertSame(100, $order->getMemberId());
-        $this->assertSame('normal', $order->getOrderType());
-        $this->assertSame('pending', $order->getStatus());
+        self::assertSame(1, $order->getId());
+        self::assertSame('ORD202603010001', $order->getOrderNo());
+        self::assertSame(100, $order->getMemberId());
+        self::assertSame('normal', $order->getOrderType());
+        self::assertSame('pending', $order->getStatus());
     }
 
     public function testAddItem(): void
@@ -45,7 +45,7 @@ class OrderEntityTest extends TestCase
         $item->setProductId(1);
         $item->setQuantity(2);
         $order->addItem($item);
-        $this->assertCount(1, $order->getItems());
+        self::assertCount(1, $order->getItems());
     }
 
     public function testSetAddress(): void
@@ -55,25 +55,25 @@ class OrderEntityTest extends TestCase
         $address->setProvince('浙江省');
         $address->setCity('杭州市');
         $order->setAddress($address);
-        $this->assertSame('浙江省', $order->getAddress()->getProvince());
+        self::assertSame('浙江省', $order->getAddress()->getProvince());
     }
 
     public function testExtras(): void
     {
         $order = $this->makeOrder();
         $order->setExtra('activity_id', 5);
-        $this->assertSame(5, $order->getExtra('activity_id'));
-        $this->assertNull($order->getExtra('nonexistent'));
-        $this->assertSame('default', $order->getExtra('nonexistent', 'default'));
+        self::assertSame(5, $order->getExtra('activity_id'));
+        self::assertNull($order->getExtra('nonexistent'));
+        self::assertSame('default', $order->getExtra('nonexistent', 'default'));
     }
 
     public function testMarkPaid(): void
     {
         $order = $this->makeOrder('pending', 'pending');
         $order->markPaid();
-        $this->assertSame(OrderStatus::PAID->value, $order->getStatus());
-        $this->assertSame(PaymentStatus::PAID->value, $order->getPayStatus());
-        $this->assertNotNull($order->getPayTime());
+        self::assertSame(OrderStatus::PAID->value, $order->getStatus());
+        self::assertSame(PaymentStatus::PAID->value, $order->getPayStatus());
+        self::assertNotNull($order->getPayTime());
     }
 
     public function testMarkPaidNotPendingThrows(): void
@@ -90,8 +90,8 @@ class OrderEntityTest extends TestCase
         $shipEntity->setPackages([['shipping_company' => '顺丰', 'shipping_no' => 'SF123']]);
         $order->setShipEntity($shipEntity);
         $order->ship();
-        $this->assertSame(OrderStatus::SHIPPED->value, $order->getStatus());
-        $this->assertSame(ShippingStatus::SHIPPED->value, $order->getShippingStatus());
+        self::assertSame(OrderStatus::SHIPPED->value, $order->getStatus());
+        self::assertSame(ShippingStatus::SHIPPED->value, $order->getShippingStatus());
     }
 
     public function testShipNotPaidThrows(): void
@@ -118,8 +118,8 @@ class OrderEntityTest extends TestCase
     {
         $order = $this->makeOrder('shipped');
         $order->complete();
-        $this->assertSame(OrderStatus::COMPLETED->value, $order->getStatus());
-        $this->assertSame(ShippingStatus::DELIVERED->value, $order->getShippingStatus());
+        self::assertSame(OrderStatus::COMPLETED->value, $order->getStatus());
+        self::assertSame(ShippingStatus::DELIVERED->value, $order->getShippingStatus());
     }
 
     public function testCompleteNotShippedThrows(): void
@@ -133,16 +133,16 @@ class OrderEntityTest extends TestCase
     {
         $order = $this->makeOrder('pending', 'pending');
         $order->cancel();
-        $this->assertSame(OrderStatus::CANCELLED->value, $order->getStatus());
-        $this->assertSame(PaymentStatus::CANCELLED->value, $order->getPayStatus());
+        self::assertSame(OrderStatus::CANCELLED->value, $order->getStatus());
+        self::assertSame(PaymentStatus::CANCELLED->value, $order->getPayStatus());
     }
 
     public function testCancelPaidOrder(): void
     {
         $order = $this->makeOrder('paid', 'paid');
         $order->cancel();
-        $this->assertSame(OrderStatus::CANCELLED->value, $order->getStatus());
-        $this->assertSame(PaymentStatus::PAID->value, $order->getPayStatus());
+        self::assertSame(OrderStatus::CANCELLED->value, $order->getStatus());
+        self::assertSame(PaymentStatus::PAID->value, $order->getPayStatus());
     }
 
     public function testCancelShippedThrows(): void
@@ -160,7 +160,7 @@ class OrderEntityTest extends TestCase
         $order->setPriceDetail($pv);
         // payAmount = 10000
         $order->verifyPrice(10000); // should not throw
-        $this->assertTrue(true);
+        self::assertTrue(true);
     }
 
     public function testVerifyPriceMismatchThrows(): void
@@ -183,34 +183,46 @@ class OrderEntityTest extends TestCase
         $order->addItem($item1);
         $order->addItem($item2);
         $order->syncPriceDetailFromItems();
-        $this->assertSame(8000, $order->getPriceDetail()->getGoodsAmount());
+        self::assertSame(8000, $order->getPriceDetail()->getGoodsAmount());
     }
 
     public function testCouponAmount(): void
     {
         $order = $this->makeOrder();
         $order->setCouponAmount(500);
-        $this->assertSame(500, $order->getCouponAmount());
+        self::assertSame(500, $order->getCouponAmount());
         $order->setAppliedCouponUserIds([1, 2]);
-        $this->assertSame([1, 2], $order->getAppliedCouponUserIds());
+        self::assertSame([1, 2], $order->getAppliedCouponUserIds());
     }
 
     public function testToArray(): void
     {
         $order = $this->makeOrder();
         $arr = $order->toArray();
-        $this->assertSame('ORD202603010001', $arr['order_no']);
-        $this->assertSame(100, $arr['member_id']);
-        $this->assertSame('normal', $arr['order_type']);
-        $this->assertSame('pending', $arr['status']);
+        self::assertSame('ORD202603010001', $arr['order_no']);
+        self::assertSame(100, $arr['member_id']);
+        self::assertSame('normal', $arr['order_type']);
+        self::assertSame('pending', $arr['status']);
     }
 
     public function testPackageCount(): void
     {
         $order = $this->makeOrder();
         $order->setPackageCount(3);
-        $this->assertSame(3, $order->getPackageCount());
+        self::assertSame(3, $order->getPackageCount());
         $order->setPackageCount(-1);
-        $this->assertSame(0, $order->getPackageCount());
+        self::assertSame(0, $order->getPackageCount());
+    }
+
+    private function makeOrder(string $status = 'pending', string $payStatus = 'pending'): OrderEntity
+    {
+        $order = new OrderEntity();
+        $order->setId(1);
+        $order->setOrderNo('ORD202603010001');
+        $order->setMemberId(100);
+        $order->setOrderType('normal');
+        $order->setStatus($status);
+        $order->setPayStatus($payStatus);
+        return $order;
     }
 }

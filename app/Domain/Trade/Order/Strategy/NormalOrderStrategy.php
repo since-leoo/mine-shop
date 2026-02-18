@@ -49,7 +49,8 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         }
 
         $skuIds = array_map(
-            static fn (OrderItemEntity $item) => $item->getSkuId(), $orderEntity->getItems()
+            static fn (OrderItemEntity $item) => $item->getSkuId(),
+            $orderEntity->getItems()
         );
 
         $snapshots = $this->snapshotService->getSkuSnapshots($skuIds);

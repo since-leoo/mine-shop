@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Repository;
 
+use App\Domain\Trade\Coupon\Entity\CouponEntity;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Model\Coupon\Coupon;
+use App\Infrastructure\Model\Coupon\CouponUser;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
 use Hyperf\Database\Model\Collection;
-use App\Domain\Trade\Coupon\Entity\CouponEntity;
-use App\Infrastructure\Model\Coupon\Coupon;
-use App\Infrastructure\Model\Coupon\CouponUser;
 
 /**
  * 优惠券仓储.
@@ -153,6 +153,23 @@ final class CouponRepository extends IRepository
             ->when(isset($params['end_time']), static fn (Builder $q) => $q->where('end_time', '<=', $params['end_time']))
             ->withCount(['users as issued_quantity']) // 统计每个优惠券的发放数量
             ->orderByDesc('id'); // 按ID降序排列
+    }
+
+    /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery(), $params);
+
+        foreach ($query->cursor() as $coupon) {
+            $data = $coupon->toArray();
+            // 面值/折扣需要根据类型计算显示值
+            $data['value_display'] = $coupon->type === 'percent'
+                ? ($coupon->value / 10) . '折'
+                : '¥' . number_format(($coupon->value ?? 0) / 100, 2);
+            yield $data;
+        }
     }
 
     private function buildAvailableQuery(array $filters = []): Builder

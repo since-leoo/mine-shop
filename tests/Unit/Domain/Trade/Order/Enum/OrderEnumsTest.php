@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Order\Enum;
 
@@ -10,47 +18,51 @@ use App\Domain\Trade\Order\Enum\ShippingStatus;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use PHPUnit\Framework\TestCase;
 
-class OrderEnumsTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class OrderEnumsTest extends TestCase
 {
     public function testOrderStatusValues(): void
     {
         $values = OrderStatus::values();
-        $this->assertContains('pending', $values);
-        $this->assertContains('paid', $values);
-        $this->assertContains('shipped', $values);
-        $this->assertContains('completed', $values);
-        $this->assertContains('cancelled', $values);
+        self::assertContains('pending', $values);
+        self::assertContains('paid', $values);
+        self::assertContains('shipped', $values);
+        self::assertContains('completed', $values);
+        self::assertContains('cancelled', $values);
     }
 
     public function testPaymentStatusValues(): void
     {
         $values = PaymentStatus::values();
-        $this->assertContains('pending', $values);
-        $this->assertContains('paid', $values);
-        $this->assertContains('failed', $values);
-        $this->assertContains('cancelled', $values);
+        self::assertContains('pending', $values);
+        self::assertContains('paid', $values);
+        self::assertContains('failed', $values);
+        self::assertContains('cancelled', $values);
     }
 
     public function testShippingStatusValues(): void
     {
         $values = ShippingStatus::values();
-        $this->assertContains('pending', $values);
-        $this->assertContains('shipped', $values);
-        $this->assertContains('delivered', $values);
+        self::assertContains('pending', $values);
+        self::assertContains('shipped', $values);
+        self::assertContains('delivered', $values);
     }
 
     public function testSeckillStatusCases(): void
     {
-        $this->assertSame('active', SeckillStatus::ACTIVE->value);
-        $this->assertSame('pending', SeckillStatus::PENDING->value);
-        $this->assertSame('ended', SeckillStatus::ENDED->value);
-        $this->assertSame('sold_out', SeckillStatus::SOLD_OUT->value);
-        $this->assertSame('cancelled', SeckillStatus::CANCELLED->value);
+        self::assertSame('active', SeckillStatus::ACTIVE->value);
+        self::assertSame('pending', SeckillStatus::PENDING->value);
+        self::assertSame('ended', SeckillStatus::ENDED->value);
+        self::assertSame('sold_out', SeckillStatus::SOLD_OUT->value);
+        self::assertSame('cancelled', SeckillStatus::CANCELLED->value);
     }
 
     public function testSeckillStatusFromString(): void
     {
-        $this->assertSame(SeckillStatus::ACTIVE, SeckillStatus::from('active'));
-        $this->assertSame(SeckillStatus::PENDING, SeckillStatus::from('pending'));
+        self::assertSame(SeckillStatus::ACTIVE, SeckillStatus::from('active'));
+        self::assertSame(SeckillStatus::PENDING, SeckillStatus::from('pending'));
     }
 }

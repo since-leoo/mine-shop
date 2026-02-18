@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Application\Api\GroupBuy;
 
-use App\Domain\Trade\GroupBuy\Api\Query\DomainApiGroupBuyListService;
 use App\Domain\Trade\GroupBuy\Api\Query\DomainApiGroupBuyGroupsService;
+use App\Domain\Trade\GroupBuy\Api\Query\DomainApiGroupBuyListService;
 use App\Domain\Trade\GroupBuy\Api\Query\DomainApiGroupBuyProductDetailService;
 
 final class AppApiGroupBuyProductQueryService

@@ -1,10 +1,17 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Service;
 
-use App\Infrastructure\Abstract\IService;
 use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Trade\Seckill\Entity\SeckillActivityEntity;
 use App\Domain\Trade\Seckill\Event\SeckillActivityCreatedEvent;
@@ -15,6 +22,7 @@ use App\Domain\Trade\Seckill\Event\SeckillActivityUpdatedEvent;
 use App\Domain\Trade\Seckill\Mapper\SeckillActivityMapper;
 use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 use Psr\EventDispatcher\EventDispatcherInterface;
 

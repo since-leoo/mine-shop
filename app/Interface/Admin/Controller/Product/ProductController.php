@@ -14,10 +14,12 @@ namespace App\Interface\Admin\Controller\Product;
 
 use App\Application\Admin\Catalog\AppProductCommandService;
 use App\Application\Admin\Catalog\AppProductQueryService;
+use App\Application\Admin\Catalog\Dto\ProductExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Product\ProductRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -29,6 +31,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Mine\Access\Attribute\Permission;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/product/product')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -38,7 +41,8 @@ final class ProductController extends AbstractController
 {
     public function __construct(
         private readonly AppProductQueryService $queryService,
-        private readonly AppProductCommandService $commandService
+        private readonly AppProductCommandService $commandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -117,5 +121,22 @@ final class ProductController extends AbstractController
 
         $this->commandService->updateSort($sortData);
         return $this->success(null, '更新排序成功');
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'product:product:list')]
+    public function export(): Result
+    {
+        $filters = $this->getRequestData();
+        unset($filters['page'], $filters['page_size']);
+
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '商品导出',
+            dtoClass: ProductExportDto::class,
+            params: $filters,
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

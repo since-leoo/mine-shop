@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Catalog\Product\ValueObject;
 
@@ -8,19 +16,23 @@ use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
 use App\Domain\Catalog\Product\ValueObject\PriceRangeVo;
 use PHPUnit\Framework\TestCase;
 
-class PriceRangeVoTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class PriceRangeVoTest extends TestCase
 {
     public function testValid(): void
     {
         $vo = new PriceRangeVo(1000, 5000);
-        $this->assertSame(1000, $vo->minPrice);
-        $this->assertSame(5000, $vo->maxPrice);
+        self::assertSame(1000, $vo->minPrice);
+        self::assertSame(5000, $vo->maxPrice);
     }
 
     public function testEqualPrices(): void
     {
         $vo = new PriceRangeVo(3000, 3000);
-        $this->assertSame(3000, $vo->minPrice);
+        self::assertSame(3000, $vo->minPrice);
     }
 
     public function testMinGreaterThanMaxThrows(): void
@@ -45,15 +57,15 @@ class PriceRangeVoTest extends TestCase
         $sku3->setSalePrice(3000);
 
         $vo = PriceRangeVo::fromSkus([$sku1, $sku2, $sku3]);
-        $this->assertSame(1000, $vo->minPrice);
-        $this->assertSame(5000, $vo->maxPrice);
+        self::assertSame(1000, $vo->minPrice);
+        self::assertSame(5000, $vo->maxPrice);
     }
 
     public function testFromSkusEmpty(): void
     {
         $vo = PriceRangeVo::fromSkus([]);
-        $this->assertSame(0, $vo->minPrice);
-        $this->assertSame(0, $vo->maxPrice);
+        self::assertSame(0, $vo->minPrice);
+        self::assertSame(0, $vo->maxPrice);
     }
 
     public function testEquals(): void
@@ -61,7 +73,7 @@ class PriceRangeVoTest extends TestCase
         $vo1 = new PriceRangeVo(1000, 5000);
         $vo2 = new PriceRangeVo(1000, 5000);
         $vo3 = new PriceRangeVo(1000, 6000);
-        $this->assertTrue($vo1->equals($vo2));
-        $this->assertFalse($vo1->equals($vo3));
+        self::assertTrue($vo1->equals($vo2));
+        self::assertFalse($vo1->equals($vo3));
     }
 }

@@ -1,18 +1,26 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Api\Controller\V1\Seckill;
 
+use App\Application\Api\Seckill\AppApiSeckillProductQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Api\Transformer\Seckill\SeckillProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
-use App\Application\Api\Seckill\AppApiSeckillProductQueryService;
-use App\Interface\Api\Transformer\Seckill\SeckillProductTransformer;
 
 #[Controller(prefix: '/api/v1/seckill/products')]
 final class SeckillProductController extends AbstractController
@@ -29,7 +37,7 @@ final class SeckillProductController extends AbstractController
     #[GetMapping(path: '')]
     public function index(): Result
     {
-        $limit = (int) ($this->request->query('limit', 20));
+        $limit = (int) $this->request->query('limit', 20);
         $data = $this->queryService->getPromotionList($limit);
 
         return $this->success($data);

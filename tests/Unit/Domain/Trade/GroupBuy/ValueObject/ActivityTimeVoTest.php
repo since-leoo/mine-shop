@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\GroupBuy\ValueObject;
 
@@ -8,13 +16,17 @@ use App\Domain\Trade\GroupBuy\ValueObject\ActivityTimeVo;
 use Carbon\Carbon;
 use PHPUnit\Framework\TestCase;
 
-class ActivityTimeVoTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ActivityTimeVoTest extends TestCase
 {
     public function testValid(): void
     {
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertSame('2026-03-01 00:00:00', $vo->getStartTime());
-        $this->assertSame('2026-03-10 00:00:00', $vo->getEndTime());
+        self::assertSame('2026-03-01 00:00:00', $vo->getStartTime());
+        self::assertSame('2026-03-10 00:00:00', $vo->getEndTime());
     }
 
     public function testDurationExceeds30DaysThrows(): void
@@ -27,7 +39,7 @@ class ActivityTimeVoTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-03-05 12:00:00'));
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertTrue($vo->isActive());
+        self::assertTrue($vo->isActive());
         Carbon::setTestNow();
     }
 
@@ -35,7 +47,7 @@ class ActivityTimeVoTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-02-28 00:00:00'));
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertTrue($vo->isPending());
+        self::assertTrue($vo->isPending());
         Carbon::setTestNow();
     }
 
@@ -43,7 +55,7 @@ class ActivityTimeVoTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-03-11 00:00:00'));
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertTrue($vo->isEnded());
+        self::assertTrue($vo->isEnded());
         Carbon::setTestNow();
     }
 
@@ -51,7 +63,7 @@ class ActivityTimeVoTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-03-09 23:59:00'));
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertSame(60, $vo->getRemainingSeconds());
+        self::assertSame(60, $vo->getRemainingSeconds());
         Carbon::setTestNow();
     }
 
@@ -59,7 +71,7 @@ class ActivityTimeVoTest extends TestCase
     {
         Carbon::setTestNow(Carbon::parse('2026-03-11 00:00:00'));
         $vo = new ActivityTimeVo('2026-03-01 00:00:00', '2026-03-10 00:00:00');
-        $this->assertSame(0, $vo->getRemainingSeconds());
+        self::assertSame(0, $vo->getRemainingSeconds());
         Carbon::setTestNow();
     }
 }

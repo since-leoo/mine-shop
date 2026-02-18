@@ -1,12 +1,20 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Api\Transformer\Seckill;
 
-use App\Interface\Api\Transformer\ProductTransformer;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 use App\Infrastructure\Model\Seckill\SeckillSession;
+use App\Interface\Api\Transformer\ProductTransformer;
 
 final class SeckillProductTransformer
 {

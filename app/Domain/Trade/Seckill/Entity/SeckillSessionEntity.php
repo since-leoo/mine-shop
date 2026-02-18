@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Entity;
 
-use Carbon\Carbon;
 use App\Domain\Trade\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\ValueObject\ProductStock;
 use App\Domain\Trade\Seckill\ValueObject\SessionPeriod;
 use App\Domain\Trade\Seckill\ValueObject\SessionRules;
+use Carbon\Carbon;
 
 final class SeckillSessionEntity
 {

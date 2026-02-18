@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Dto\GroupBuy;
 
-use Hyperf\DTO\Annotation\Validation\Required;
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
+use Hyperf\DTO\Annotation\Validation\Required;
 
 class GroupBuyDto implements GroupBuyCreateInput, GroupBuyUpdateInput
 {

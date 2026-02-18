@@ -1,15 +1,26 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Request\SystemMessage;
 
-use Hyperf\Validation\Request\FormRequest;
 use App\Infrastructure\Model\SystemMessage\MessageTemplate;
+use Hyperf\Validation\Request\FormRequest;
 
 class UpdateTemplateRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -43,8 +54,12 @@ class UpdateTemplateRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $data = $validator->getData();
-            if (isset($data['title'])) { $this->validateTemplateSyntax($validator, $data['title'], 'title'); }
-            if (isset($data['content'])) { $this->validateTemplateSyntax($validator, $data['content'], 'content'); }
+            if (isset($data['title'])) {
+                $this->validateTemplateSyntax($validator, $data['title'], 'title');
+            }
+            if (isset($data['content'])) {
+                $this->validateTemplateSyntax($validator, $data['content'], 'content');
+            }
             if ((isset($data['title']) || isset($data['content'])) && isset($data['variables'])) {
                 $title = $data['title'] ?? '';
                 $content = $data['content'] ?? '';
@@ -59,8 +74,12 @@ class UpdateTemplateRequest extends FormRequest
                 $allVariables = array_unique(array_merge($this->extractVariables($title), $this->extractVariables($content)));
                 $missingVariables = array_diff($allVariables, $data['variables']);
                 $extraVariables = array_diff($data['variables'], $allVariables);
-                if (! empty($missingVariables)) { $validator->errors()->add('variables', '缺少模板变量: ' . implode(', ', $missingVariables)); }
-                if (! empty($extraVariables)) { $validator->errors()->add('variables', '多余的模板变量: ' . implode(', ', $extraVariables)); }
+                if (! empty($missingVariables)) {
+                    $validator->errors()->add('variables', '缺少模板变量: ' . implode(', ', $missingVariables));
+                }
+                if (! empty($extraVariables)) {
+                    $validator->errors()->add('variables', '多余的模板变量: ' . implode(', ', $extraVariables));
+                }
             }
         });
     }
@@ -71,10 +90,16 @@ class UpdateTemplateRequest extends FormRequest
             preg_match_all('/\{\{([^}]+)\}\}/', $template, $matches);
             foreach ($matches[1] as $variable) {
                 $variable = trim($variable);
-                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) { $validator->errors()->add($field, "无效的变量名: {$variable}"); }
+                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
+                    $validator->errors()->add($field, "无效的变量名: {$variable}");
+                }
             }
-            if (mb_substr_count($template, '{{') !== mb_substr_count($template, '}}')) { $validator->errors()->add($field, '模板语法错误: 括号不匹配'); }
-        } catch (\Throwable $e) { $validator->errors()->add($field, '模板语法错误: ' . $e->getMessage()); }
+            if (mb_substr_count($template, '{{') !== mb_substr_count($template, '}}')) {
+                $validator->errors()->add($field, '模板语法错误: 括号不匹配');
+            }
+        } catch (\Throwable $e) {
+            $validator->errors()->add($field, '模板语法错误: ' . $e->getMessage());
+        }
     }
 
     protected function extractVariables(string $template): array

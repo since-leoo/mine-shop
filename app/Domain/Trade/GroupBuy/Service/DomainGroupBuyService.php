@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Service;
 
-use App\Infrastructure\Abstract\IService;
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\Trade\GroupBuy\Mapper\GroupBuyMapper;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
 final class DomainGroupBuyService extends IService

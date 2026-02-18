@@ -106,6 +106,30 @@ final class DomainApiReviewQueryService extends IService
     }
 
     /**
+     * 昵称脱敏处理.
+     *
+     * 规则：保留首尾字符，中间用 *** 替代
+     * 例如："张三丰" → "张***丰"，"张三" → "张***三"，单字符 "张" → "张***"
+     */
+    public static function desensitizeNickname(string $nickname): string
+    {
+        $len = mb_strlen($nickname);
+
+        if ($len <= 0) {
+            return '匿名用户';
+        }
+
+        if ($len === 1) {
+            return $nickname . '***';
+        }
+
+        $first = mb_substr($nickname, 0, 1);
+        $last = mb_substr($nickname, -1, 1);
+
+        return $first . '***' . $last;
+    }
+
+    /**
      * 格式化评价数据，处理匿名昵称脱敏.
      */
     private function formatReview(Review $review): array
@@ -129,29 +153,5 @@ final class DomainApiReviewQueryService extends IService
             'reply_time' => $review->reply_time?->toDateTimeString(),
             'created_at' => $review->created_at?->toDateTimeString(),
         ];
-    }
-
-    /**
-     * 昵称脱敏处理.
-     *
-     * 规则：保留首尾字符，中间用 *** 替代
-     * 例如："张三丰" → "张***丰"，"张三" → "张***三"，单字符 "张" → "张***"
-     */
-    public static function desensitizeNickname(string $nickname): string
-    {
-        $len = mb_strlen($nickname);
-
-        if ($len <= 0) {
-            return '匿名用户';
-        }
-
-        if ($len === 1) {
-            return $nickname . '***';
-        }
-
-        $first = mb_substr($nickname, 0, 1);
-        $last = mb_substr($nickname, -1, 1);
-
-        return $first . '***' . $last;
     }
 }

@@ -1,11 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\Seckill;
 
+use App\Application\Admin\Seckill\AppSeckillProductCommandService;
+use App\Application\Admin\Seckill\AppSeckillProductQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\Seckill\SeckillProductRequest;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -16,9 +27,6 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Application\Admin\Seckill\AppSeckillProductCommandService;
-use App\Application\Admin\Seckill\AppSeckillProductQueryService;
-use App\Interface\Admin\Request\Seckill\SeckillProductRequest;
 
 #[Controller(prefix: '/admin/seckill/product')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]

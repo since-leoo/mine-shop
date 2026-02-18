@@ -145,4 +145,16 @@ final class ProductRepository extends IRepository
             ->when(isset($params['sales_max']) && $params['sales_max'] !== '', static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
             ->with(['category', 'brand', 'skus']);
     }
+
+    /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery()->with(['category', 'brand']), $params);
+
+        foreach ($query->cursor() as $product) {
+            yield $product;
+        }
+    }
 }

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Permission\Entity;
 
@@ -8,55 +16,52 @@ use App\Domain\Auth\Enum\Status;
 use App\Domain\Permission\Entity\UserEntity;
 use PHPUnit\Framework\TestCase;
 
-class UserEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class UserEntityTest extends TestCase
 {
-    private function makeUser(Status $status = Status::Normal): UserEntity
-    {
-        $entity = new UserEntity();
-        $entity->setId(1)->setUsername('admin')->setNickname('管理员')->setStatus($status);
-        return $entity;
-    }
-
     public function testBasicProperties(): void
     {
         $user = $this->makeUser();
-        $this->assertSame(1, $user->getId());
-        $this->assertSame('admin', $user->getUsername());
-        $this->assertSame('管理员', $user->getNickname());
-        $this->assertSame(Status::Normal, $user->getStatus());
+        self::assertSame(1, $user->getId());
+        self::assertSame('admin', $user->getUsername());
+        self::assertSame('管理员', $user->getNickname());
+        self::assertSame(Status::Normal, $user->getStatus());
     }
 
     public function testActivateDisable(): void
     {
         $user = $this->makeUser();
         $user->disable();
-        $this->assertSame(Status::DISABLE, $user->getStatus());
+        self::assertSame(Status::DISABLE, $user->getStatus());
         $user->activate();
-        $this->assertSame(Status::Normal, $user->getStatus());
+        self::assertSame(Status::Normal, $user->getStatus());
     }
 
     public function testVerifyPassword(): void
     {
         $user = $this->makeUser();
-        $user->setPassword(password_hash('secret123', PASSWORD_BCRYPT));
-        $this->assertTrue($user->verifyPassword('secret123'));
-        $this->assertFalse($user->verifyPassword('wrong'));
+        $user->setPassword(password_hash('secret123', \PASSWORD_BCRYPT));
+        self::assertTrue($user->verifyPassword('secret123'));
+        self::assertFalse($user->verifyPassword('wrong'));
     }
 
     public function testGrantRoles(): void
     {
         $user = $this->makeUser();
         $result = $user->grantRoles([1, 2, 3]);
-        $this->assertTrue($result->success);
-        $this->assertSame([1, 2, 3], $result->roleIds);
+        self::assertTrue($result->success);
+        self::assertSame([1, 2, 3], $result->roleIds);
     }
 
     public function testGrantRolesEmpty(): void
     {
         $user = $this->makeUser();
         $result = $user->grantRoles([]);
-        $this->assertTrue($result->success);
-        $this->assertTrue($result->shouldSync);
+        self::assertTrue($result->success);
+        self::assertTrue($result->shouldSync);
     }
 
     public function testGrantRolesDisabledThrows(): void
@@ -69,18 +74,18 @@ class UserEntityTest extends TestCase
     public function testCanGrantRoles(): void
     {
         $user = $this->makeUser(Status::Normal);
-        $this->assertTrue($user->canGrantRoles());
+        self::assertTrue($user->canGrantRoles());
 
         $disabled = $this->makeUser(Status::DISABLE);
-        $this->assertFalse($disabled->canGrantRoles());
+        self::assertFalse($disabled->canGrantRoles());
     }
 
     public function testResetPassword(): void
     {
         $user = $this->makeUser();
         $result = $user->resetPasswordWithValidation('newpass');
-        $this->assertTrue($result->success);
-        $this->assertTrue($result->needsSave);
+        self::assertTrue($result->success);
+        self::assertTrue($result->needsSave);
     }
 
     public function testResetPasswordDisabledThrows(): void
@@ -93,17 +98,24 @@ class UserEntityTest extends TestCase
     public function testDepartmentSync(): void
     {
         $user = $this->makeUser();
-        $this->assertFalse($user->shouldSyncDepartments());
+        self::assertFalse($user->shouldSyncDepartments());
         $user->setDepartmentIds([1, 2]);
-        $this->assertTrue($user->shouldSyncDepartments());
-        $this->assertSame([1, 2], $user->getDepartmentIds());
+        self::assertTrue($user->shouldSyncDepartments());
+        self::assertSame([1, 2], $user->getDepartmentIds());
     }
 
     public function testPositionSync(): void
     {
         $user = $this->makeUser();
-        $this->assertFalse($user->shouldSyncPositions());
+        self::assertFalse($user->shouldSyncPositions());
         $user->setPositionIds([3, 4]);
-        $this->assertTrue($user->shouldSyncPositions());
+        self::assertTrue($user->shouldSyncPositions());
+    }
+
+    private function makeUser(Status $status = Status::Normal): UserEntity
+    {
+        $entity = new UserEntity();
+        $entity->setId(1)->setUsername('admin')->setNickname('管理员')->setStatus($status);
+        return $entity;
     }
 }

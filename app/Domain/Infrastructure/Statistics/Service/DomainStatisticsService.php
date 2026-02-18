@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Infrastructure\Statistics\Service;
 
@@ -8,7 +16,6 @@ use App\Domain\Infrastructure\Statistics\Repository\StatisticsRepository;
 use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
-use App\Infrastructure\Model\Order\OrderItem;
 use App\Infrastructure\Model\Product\Product;
 use Carbon\Carbon;
 
@@ -284,7 +291,7 @@ final class DomainStatisticsService
             ['label' => '100-200元', 'min' => 10000, 'max' => 20000],
             ['label' => '200-500元', 'min' => 20000, 'max' => 50000],
             ['label' => '500-1000元', 'min' => 50000, 'max' => 100000],
-            ['label' => '1000元以上', 'min' => 100000, 'max' => PHP_INT_MAX],
+            ['label' => '1000元以上', 'min' => 100000, 'max' => \PHP_INT_MAX],
         ];
 
         $result = [];

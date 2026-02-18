@@ -13,12 +13,12 @@ declare(strict_types=1);
 namespace App\Domain\Trade\GroupBuy\Strategy;
 
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
-use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
-use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyOrderService;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
+use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use Psr\Container\ContainerInterface;
 
 final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface

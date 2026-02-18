@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -13,145 +21,19 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 3: 成长值与等级匹配
+ * Feature: member-vip-level, Property 3: 成长值与等级匹配.
  *
  * Validates: Requirements 2.3, 2.4
  *
  * For any growth value and level config list, matchLevelByGrowthValue(growthValue)
  * must return the level with the highest level number among all active levels
  * where growth_value_min <= growthValue.
+ * @internal
+ * @coversNothing
  */
-class DomainMemberLevelServiceMatchTest extends TestCase
+final class DomainMemberLevelServiceMatchTest extends TestCase
 {
     use TestTrait;
-
-    /**
-     * Create a simple value object that behaves like MemberLevel for property access.
-     * We use stdClass-like objects stored in an array and the fake builder returns them.
-     *
-     * @return array{level: int, growth_value_min: int, status: string, name: string, mock: MemberLevel}
-     */
-    private function makeLevelData(int $levelNumber, int $growthValueMin): array
-    {
-        return [
-            'level' => $levelNumber,
-            'growth_value_min' => $growthValueMin,
-            'status' => 'active',
-            'name' => 'VIP' . $levelNumber,
-        ];
-    }
-
-    /**
-     * Build a DomainMemberLevelService whose matchLevelByGrowthValue query chain
-     * is backed by the given in-memory level data.
-     *
-     * @param array<int, array{level: int, growth_value_min: int, status: string, name: string}> $levelData
-     */
-    private function buildServiceWithLevels(array $levelData): DomainMemberLevelService
-    {
-        $testCase = $this;
-
-        // Anonymous class that simulates the query builder chain
-        $fakeBuilder = new class($levelData, $testCase) {
-            private array $levels;
-            private ?int $maxGrowthValue = null;
-            private TestCase $testCase;
-
-            public function __construct(array $levels, TestCase $testCase)
-            {
-                $this->levels = $levels;
-                $this->testCase = $testCase;
-            }
-
-            public function where(...$args): self
-            {
-                if (count($args) === 3 && $args[0] === 'growth_value_min' && $args[1] === '<=') {
-                    $this->maxGrowthValue = (int) $args[2];
-                }
-                return $this;
-            }
-
-            public function orderByDesc(string $column): self
-            {
-                return $this;
-            }
-
-            public function first(): ?MemberLevel
-            {
-                $matching = array_filter($this->levels, function (array $l) {
-                    return $l['growth_value_min'] <= $this->maxGrowthValue;
-                });
-
-                if (empty($matching)) {
-                    return null;
-                }
-
-                // Sort by level descending, return first (simulates ORDER BY level DESC LIMIT 1)
-                usort($matching, fn (array $a, array $b) => $b['level'] <=> $a['level']);
-                $top = $matching[0];
-
-                // Use a MemberLevel mock with __get configured to return our data
-                $levelMock = $this->testCase->getMockBuilder(MemberLevel::class)
-                    ->disableOriginalConstructor()
-                    ->onlyMethods(['getAttribute'])
-                    ->getMock();
-
-                $attrs = $top;
-                $levelMock->method('getAttribute')
-                    ->willReturnCallback(function (string $key) use ($attrs) {
-                        return $attrs[$key] ?? null;
-                    });
-
-                return $levelMock;
-            }
-        };
-
-        $model = $this->createMock(MemberLevel::class);
-        $model->method('newQuery')->willReturn($fakeBuilder);
-
-        $repository = $this->createMock(MemberLevelRepository::class);
-        $repository->method('getModel')->willReturn($model);
-
-        $mallSettingService = $this->createMock(DomainMallSettingService::class);
-
-        return new DomainMemberLevelService($repository, $mallSettingService);
-    }
-
-    /**
-     * Independently compute the expected level number for a given growth value.
-     *
-     * @param array<int, array{level: int, growth_value_min: int}> $levels
-     */
-    private function computeExpectedLevelNumber(array $levels, int $growthValue): ?int
-    {
-        $qualifying = array_filter($levels, fn (array $l) => $l['growth_value_min'] <= $growthValue);
-
-        if (empty($qualifying)) {
-            return null;
-        }
-
-        usort($qualifying, fn (array $a, array $b) => $b['level'] <=> $a['level']);
-        return $qualifying[0]['level'];
-    }
-
-    /**
-     * Generate a valid level data list: unique sequential level numbers,
-     * strictly increasing growth_value_min starting from 0.
-     *
-     * @return array<int, array{level: int, growth_value_min: int, status: string, name: string}>
-     */
-    private function generateValidLevels(int $count): array
-    {
-        $levels = [];
-        $currentMin = 0;
-
-        for ($i = 0; $i < $count; ++$i) {
-            $levels[] = $this->makeLevelData($i + 1, $currentMin);
-            $currentMin += random_int(1, 5000);
-        }
-
-        return $levels;
-    }
 
     /**
      * Property 3 (core): For any growth value and a valid level config list,
@@ -178,7 +60,7 @@ class DomainMemberLevelServiceMatchTest extends TestCase
             $this->assertSame(
                 $expectedLevelNum,
                 $result->level,
-                sprintf(
+                \sprintf(
                     'For growthValue=%d with %d levels, expected level %d but got level %d',
                     $growthValue,
                     $count,
@@ -201,7 +83,7 @@ class DomainMemberLevelServiceMatchTest extends TestCase
             Generators::choose(2, 8),  // number of levels
             Generators::choose(0, 7),  // index of level whose threshold to use
         )->then(function (int $count, int $targetIdx) {
-            $targetIdx = $targetIdx % $count;
+            $targetIdx %= $count;
             $levels = $this->generateValidLevels($count);
             $growthValue = $levels[$targetIdx]['growth_value_min'];
 
@@ -215,7 +97,7 @@ class DomainMemberLevelServiceMatchTest extends TestCase
             $this->assertGreaterThanOrEqual(
                 $levels[$targetIdx]['level'],
                 $result->level,
-                sprintf(
+                \sprintf(
                     'For growthValue=%d (exact threshold of level %d), matched level %d should be >= %d',
                     $growthValue,
                     $levels[$targetIdx]['level'],
@@ -253,7 +135,7 @@ class DomainMemberLevelServiceMatchTest extends TestCase
             $this->assertGreaterThanOrEqual(
                 $lowResult->level,
                 $highResult->level,
-                sprintf(
+                \sprintf(
                     'Upgrade: growthValue %d -> level %d, growthValue %d -> level %d (should be >=)',
                     $lowGrowth,
                     $lowResult->level,
@@ -290,7 +172,7 @@ class DomainMemberLevelServiceMatchTest extends TestCase
                 $this->assertLessThanOrEqual(
                     $highResult->level,
                     $lowResult->level,
-                    sprintf(
+                    \sprintf(
                         'Downgrade: growthValue %d -> level %d, growthValue %d -> level %d (should be <=)',
                         $highGrowth,
                         $highResult->level,
@@ -300,5 +182,135 @@ class DomainMemberLevelServiceMatchTest extends TestCase
                 );
             }
         });
+    }
+
+    /**
+     * Create a simple value object that behaves like MemberLevel for property access.
+     * We use stdClass-like objects stored in an array and the fake builder returns them.
+     *
+     * @return array{level: int, growth_value_min: int, status: string, name: string, mock: MemberLevel}
+     */
+    private function makeLevelData(int $levelNumber, int $growthValueMin): array
+    {
+        return [
+            'level' => $levelNumber,
+            'growth_value_min' => $growthValueMin,
+            'status' => 'active',
+            'name' => 'VIP' . $levelNumber,
+        ];
+    }
+
+    /**
+     * Build a DomainMemberLevelService whose matchLevelByGrowthValue query chain
+     * is backed by the given in-memory level data.
+     *
+     * @param array<int, array{level: int, growth_value_min: int, status: string, name: string}> $levelData
+     */
+    private function buildServiceWithLevels(array $levelData): DomainMemberLevelService
+    {
+        $testCase = $this;
+
+        // Anonymous class that simulates the query builder chain
+        $fakeBuilder = new class($levelData, $testCase) {
+            private array $levels;
+
+            private ?int $maxGrowthValue = null;
+
+            private TestCase $testCase;
+
+            public function __construct(array $levels, TestCase $testCase)
+            {
+                $this->levels = $levels;
+                $this->testCase = $testCase;
+            }
+
+            public function where(...$args): self
+            {
+                if (\count($args) === 3 && $args[0] === 'growth_value_min' && $args[1] === '<=') {
+                    $this->maxGrowthValue = (int) $args[2];
+                }
+                return $this;
+            }
+
+            public function orderByDesc(string $column): self
+            {
+                return $this;
+            }
+
+            public function first(): ?MemberLevel
+            {
+                $matching = array_filter($this->levels, function (array $l) {
+                    return $l['growth_value_min'] <= $this->maxGrowthValue;
+                });
+
+                if (empty($matching)) {
+                    return null;
+                }
+
+                // Sort by level descending, return first (simulates ORDER BY level DESC LIMIT 1)
+                usort($matching, static fn (array $a, array $b) => $b['level'] <=> $a['level']);
+                $top = $matching[0];
+
+                // Use a MemberLevel mock with __get configured to return our data
+                $levelMock = $this->testCase->getMockBuilder(MemberLevel::class)
+                    ->disableOriginalConstructor()
+                    ->onlyMethods(['getAttribute'])
+                    ->getMock();
+
+                $attrs = $top;
+                $levelMock->method('getAttribute')
+                    ->willReturnCallback(static function (string $key) use ($attrs) {
+                        return $attrs[$key] ?? null;
+                    });
+
+                return $levelMock;
+            }
+        };
+
+        $model = $this->createMock(MemberLevel::class);
+        $model->method('newQuery')->willReturn($fakeBuilder);
+
+        $repository = $this->createMock(MemberLevelRepository::class);
+        $repository->method('getModel')->willReturn($model);
+
+        $mallSettingService = $this->createMock(DomainMallSettingService::class);
+
+        return new DomainMemberLevelService($repository, $mallSettingService);
+    }
+
+    /**
+     * Independently compute the expected level number for a given growth value.
+     *
+     * @param array<int, array{level: int, growth_value_min: int}> $levels
+     */
+    private function computeExpectedLevelNumber(array $levels, int $growthValue): ?int
+    {
+        $qualifying = array_filter($levels, static fn (array $l) => $l['growth_value_min'] <= $growthValue);
+
+        if (empty($qualifying)) {
+            return null;
+        }
+
+        usort($qualifying, static fn (array $a, array $b) => $b['level'] <=> $a['level']);
+        return $qualifying[0]['level'];
+    }
+
+    /**
+     * Generate a valid level data list: unique sequential level numbers,
+     * strictly increasing growth_value_min starting from 0.
+     *
+     * @return array<int, array{level: int, growth_value_min: int, status: string, name: string}>
+     */
+    private function generateValidLevels(int $count): array
+    {
+        $levels = [];
+        $currentMin = 0;
+
+        for ($i = 0; $i < $count; ++$i) {
+            $levels[] = $this->makeLevelData($i + 1, $currentMin);
+            $currentMin += random_int(1, 5000);
+        }
+
+        return $levels;
     }
 }

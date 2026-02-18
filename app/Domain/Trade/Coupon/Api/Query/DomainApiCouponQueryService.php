@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Api\Query;
 
-use App\Infrastructure\Abstract\IService;
-use Hyperf\Database\Model\Collection;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Coupon\Coupon;
+use Hyperf\Database\Model\Collection;
 
 /**
  * 面向 API 场景的优惠券查询领域服务.

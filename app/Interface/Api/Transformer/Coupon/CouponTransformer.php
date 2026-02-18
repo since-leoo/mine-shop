@@ -66,6 +66,22 @@ final class CouponTransformer
         ];
     }
 
+    public function transformDetail(Coupon $coupon, int $receivedQuantity = 0): array
+    {
+        $payload = $this->basePayload($coupon, $receivedQuantity);
+        $payload['title'] = (string) ($coupon->name ?? '');
+        $payload['value'] = $this->resolveValue($coupon);
+        $payload['base'] = $this->toCent($coupon->min_amount);
+        $payload['desc'] = $this->buildLabel($coupon);
+        $payload['currency'] = '¥';
+        $payload['time_limit'] = $this->formatTimeLimit($coupon);
+        $payload['use_notes'] = (string) ($coupon->description ?? '');
+        $payload['store_adapt'] = '商城通用';
+        $payload['status'] = $this->resolveStatus($coupon);
+
+        return $payload;
+    }
+
     private function mapMemberCouponStatus(string $status): string
     {
         return match ($status) {
@@ -100,25 +116,9 @@ final class CouponTransformer
         if (! $start || ! $end) {
             return '';
         }
-        $startDate = \is_string($start) ? substr($start, 0, 10) : '';
-        $endDate = \is_string($end) ? substr($end, 0, 10) : '';
+        $startDate = \is_string($start) ? mb_substr($start, 0, 10) : '';
+        $endDate = \is_string($end) ? mb_substr($end, 0, 10) : '';
         return str_replace('-', '.', $startDate) . '-' . str_replace('-', '.', $endDate);
-    }
-
-    public function transformDetail(Coupon $coupon, int $receivedQuantity = 0): array
-    {
-        $payload = $this->basePayload($coupon, $receivedQuantity);
-        $payload['title'] = (string) ($coupon->name ?? '');
-        $payload['value'] = $this->resolveValue($coupon);
-        $payload['base'] = $this->toCent($coupon->min_amount);
-        $payload['desc'] = $this->buildLabel($coupon);
-        $payload['currency'] = '¥';
-        $payload['time_limit'] = $this->formatTimeLimit($coupon);
-        $payload['use_notes'] = (string) ($coupon->description ?? '');
-        $payload['store_adapt'] = '商城通用';
-        $payload['status'] = $this->resolveStatus($coupon);
-
-        return $payload;
     }
 
     /**

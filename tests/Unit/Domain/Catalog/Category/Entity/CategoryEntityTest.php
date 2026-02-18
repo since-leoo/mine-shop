@@ -1,22 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Catalog\Category\Entity;
 
 use App\Domain\Catalog\Category\Entity\CategoryEntity;
 use PHPUnit\Framework\TestCase;
 
-class CategoryEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class CategoryEntityTest extends TestCase
 {
     public function testBasicProperties(): void
     {
         $entity = new CategoryEntity();
         $entity->setId(1)->setName('电子产品')->setParentId(0)->setLevel(1)->setSort(10);
-        $this->assertSame(1, $entity->getId());
-        $this->assertSame('电子产品', $entity->getName());
-        $this->assertSame(0, $entity->getParentId());
-        $this->assertSame(1, $entity->getLevel());
+        self::assertSame(1, $entity->getId());
+        self::assertSame('电子产品', $entity->getName());
+        self::assertSame(0, $entity->getParentId());
+        self::assertSame(1, $entity->getLevel());
     }
 
     public function testEmptyNameThrows(): void
@@ -41,21 +53,21 @@ class CategoryEntityTest extends TestCase
     {
         $entity = new CategoryEntity();
         $entity->setName('Root')->setParentId(0);
-        $this->assertTrue($entity->isRoot());
+        self::assertTrue($entity->isRoot());
 
         $entity->setParentId(1);
-        $this->assertFalse($entity->isRoot());
+        self::assertFalse($entity->isRoot());
     }
 
     public function testActivateDeactivate(): void
     {
         $entity = new CategoryEntity();
         $entity->setName('Test');
-        $this->assertTrue($entity->isActive());
+        self::assertTrue($entity->isActive());
         $entity->deactivate();
-        $this->assertFalse($entity->isActive());
+        self::assertFalse($entity->isActive());
         $entity->activate();
-        $this->assertTrue($entity->isActive());
+        self::assertTrue($entity->isActive());
     }
 
     public function testInvalidStatusThrows(): void
@@ -70,7 +82,7 @@ class CategoryEntityTest extends TestCase
     {
         $entity = new CategoryEntity();
         $entity->setName('Test')->setSort(-5);
-        $this->assertSame(0, $entity->getSort());
+        self::assertSame(0, $entity->getSort());
     }
 
     public function testToArray(): void
@@ -78,8 +90,8 @@ class CategoryEntityTest extends TestCase
         $entity = new CategoryEntity();
         $entity->setName('服装')->setParentId(0)->setLevel(1)->setSort(5);
         $arr = $entity->toArray();
-        $this->assertSame('服装', $arr['name']);
-        $this->assertSame(0, $arr['parent_id']);
-        $this->assertSame(1, $arr['level']);
+        self::assertSame('服装', $arr['name']);
+        self::assertSame(0, $arr['parent_id']);
+        self::assertSame(1, $arr['level']);
     }
 }

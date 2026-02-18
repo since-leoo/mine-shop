@@ -15,10 +15,10 @@ namespace App\Application\Api\Member;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Member\Api\Query\DomainApiMemberQueryService;
 use App\Domain\Member\Service\DomainMemberReferralService;
+use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponUserQueryService;
 use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
-use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponUserQueryService;
 
 final class AppApiMemberCenterQueryService
 {

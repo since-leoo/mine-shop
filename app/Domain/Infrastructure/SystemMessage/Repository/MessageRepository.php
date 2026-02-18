@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Repository;
 
-use Carbon\Carbon;
-use Hyperf\Collection\Collection;
-use Hyperf\Database\Model\Builder;
 use App\Domain\Infrastructure\SystemMessage\Enum\MessageStatus;
 use App\Infrastructure\Model\SystemMessage\Message;
 use App\Infrastructure\Model\SystemMessage\UserMessage;
+use Carbon\Carbon;
+use Hyperf\Collection\Collection;
+use Hyperf\Database\Model\Builder;
 
 class MessageRepository
 {
@@ -126,28 +126,52 @@ class MessageRepository
 
     protected function applyFilters(Builder $query, array $filters): void
     {
-        if (! empty($filters['type'])) { $query->where('type', $filters['type']); }
-        if (! empty($filters['status'])) { $query->where('status', $filters['status']); }
-        if (! empty($filters['sender_id'])) { $query->where('sender_id', $filters['sender_id']); }
-        if (! empty($filters['recipient_type'])) { $query->where('recipient_type', $filters['recipient_type']); }
-        if (! empty($filters['priority'])) { $query->where('priority', $filters['priority']); }
-        if (! empty($filters['date_from'])) { $query->where('created_at', '>=', $filters['date_from']); }
-        if (! empty($filters['date_to'])) { $query->where('created_at', '<=', $filters['date_to']); }
-        if (! empty($filters['scheduled_from'])) { $query->where('scheduled_at', '>=', $filters['scheduled_from']); }
-        if (! empty($filters['scheduled_to'])) { $query->where('scheduled_at', '<=', $filters['scheduled_to']); }
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+        if (! empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+        if (! empty($filters['sender_id'])) {
+            $query->where('sender_id', $filters['sender_id']);
+        }
+        if (! empty($filters['recipient_type'])) {
+            $query->where('recipient_type', $filters['recipient_type']);
+        }
+        if (! empty($filters['priority'])) {
+            $query->where('priority', $filters['priority']);
+        }
+        if (! empty($filters['date_from'])) {
+            $query->where('created_at', '>=', $filters['date_from']);
+        }
+        if (! empty($filters['date_to'])) {
+            $query->where('created_at', '<=', $filters['date_to']);
+        }
+        if (! empty($filters['scheduled_from'])) {
+            $query->where('scheduled_at', '>=', $filters['scheduled_from']);
+        }
+        if (! empty($filters['scheduled_to'])) {
+            $query->where('scheduled_at', '<=', $filters['scheduled_to']);
+        }
     }
 
     protected function applyUserMessageFilters(Builder $query, array $filters): void
     {
-        if (isset($filters['is_read'])) { $query->where('is_read', $filters['is_read']); }
+        if (isset($filters['is_read'])) {
+            $query->where('is_read', $filters['is_read']);
+        }
         if (! empty($filters['type'])) {
             $query->whereHas('message', static function ($q) use ($filters) { $q->where('type', $filters['type']); });
         }
         if (! empty($filters['priority'])) {
             $query->whereHas('message', static function ($q) use ($filters) { $q->where('priority', $filters['priority']); });
         }
-        if (! empty($filters['date_from'])) { $query->where('created_at', '>=', $filters['date_from']); }
-        if (! empty($filters['date_to'])) { $query->where('created_at', '<=', $filters['date_to']); }
+        if (! empty($filters['date_from'])) {
+            $query->where('created_at', '>=', $filters['date_from']);
+        }
+        if (! empty($filters['date_to'])) {
+            $query->where('created_at', '<=', $filters['date_to']);
+        }
         if (! empty($filters['keyword'])) {
             $query->whereHas('message', static function ($q) use ($filters) {
                 $q->where(static function ($subQ) use ($filters) {

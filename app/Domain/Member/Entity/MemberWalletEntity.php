@@ -71,6 +71,7 @@ final class MemberWalletEntity
             changeAmount: $this->changeBalance
         );
     }
+
     /**
      * 增加积分/余额（通用加款行为）.
      *
@@ -108,7 +109,6 @@ final class MemberWalletEntity
 
         return $actualDeduction;
     }
-
 
     public function setId(int $id): void
     {

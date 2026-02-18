@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Service;
 
-use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\System\BusinessException;
-use App\Interface\Common\ResultCode;
 use App\Domain\Trade\Coupon\Contract\CouponInput;
 use App\Domain\Trade\Coupon\Entity\CouponEntity;
 use App\Domain\Trade\Coupon\Mapper\CouponMapper;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\Coupon;
+use App\Interface\Common\ResultCode;
 
 /**
  * 优惠券领域服务.

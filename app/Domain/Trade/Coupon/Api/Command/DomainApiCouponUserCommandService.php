@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Api\Command;
 
-use App\Infrastructure\Abstract\IService;
-use Carbon\Carbon;
 use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
 use App\Domain\Trade\Coupon\Service\DomainCouponService;
+use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Coupon\CouponUser;
+use Carbon\Carbon;
 
 final class DomainApiCouponUserCommandService extends IService
 {

@@ -1,22 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Shipping\Entity;
 
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use PHPUnit\Framework\TestCase;
 
-class ShippingTemplateEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ShippingTemplateEntityTest extends TestCase
 {
     public function testConstructorDefaults(): void
     {
         $entity = new ShippingTemplateEntity();
-        $this->assertSame(0, $entity->getId());
-        $this->assertNull($entity->getName());
-        $this->assertNull($entity->getChargeType());
-        $this->assertFalse($entity->getIsDefault());
-        $this->assertSame('active', $entity->getStatus());
+        self::assertSame(0, $entity->getId());
+        self::assertNull($entity->getName());
+        self::assertNull($entity->getChargeType());
+        self::assertFalse($entity->getIsDefault());
+        self::assertSame('active', $entity->getStatus());
     }
 
     public function testSettersChaining(): void
@@ -28,10 +40,10 @@ class ShippingTemplateEntityTest extends TestCase
             ->setIsDefault(true)
             ->setStatus('active');
 
-        $this->assertSame(1, $entity->getId());
-        $this->assertSame('标准运费模板', $entity->getName());
-        $this->assertSame('weight', $entity->getChargeType());
-        $this->assertTrue($entity->getIsDefault());
+        self::assertSame(1, $entity->getId());
+        self::assertSame('标准运费模板', $entity->getName());
+        self::assertSame('weight', $entity->getChargeType());
+        self::assertTrue($entity->getIsDefault());
     }
 
     public function testRules(): void
@@ -41,7 +53,7 @@ class ShippingTemplateEntityTest extends TestCase
             ['region_ids' => ['浙江省'], 'first_unit' => 1, 'first_price' => 800, 'additional_unit' => 1, 'additional_price' => 200],
         ];
         $entity->setRules($rules);
-        $this->assertSame($rules, $entity->getRules());
+        self::assertSame($rules, $entity->getRules());
     }
 
     public function testFreeRules(): void
@@ -51,7 +63,7 @@ class ShippingTemplateEntityTest extends TestCase
             ['region_ids' => ['上海市'], 'free_amount' => 9900],
         ];
         $entity->setFreeRules($freeRules);
-        $this->assertSame($freeRules, $entity->getFreeRules());
+        self::assertSame($freeRules, $entity->getFreeRules());
     }
 
     public function testToArray(): void
@@ -59,9 +71,9 @@ class ShippingTemplateEntityTest extends TestCase
         $entity = new ShippingTemplateEntity();
         $entity->setName('模板A')->setChargeType('quantity')->setStatus('active');
         $arr = $entity->toArray();
-        $this->assertSame('模板A', $arr['name']);
-        $this->assertSame('quantity', $arr['charge_type']);
-        $this->assertSame('active', $arr['status']);
+        self::assertSame('模板A', $arr['name']);
+        self::assertSame('quantity', $arr['charge_type']);
+        self::assertSame('active', $arr['status']);
     }
 
     public function testToArrayFiltersNull(): void
@@ -69,8 +81,8 @@ class ShippingTemplateEntityTest extends TestCase
         $entity = new ShippingTemplateEntity();
         $entity->setName('模板B');
         $arr = $entity->toArray();
-        $this->assertArrayHasKey('name', $arr);
+        self::assertArrayHasKey('name', $arr);
         // charge_type is null, should be filtered
-        $this->assertArrayNotHasKey('charge_type', $arr);
+        self::assertArrayNotHasKey('charge_type', $arr);
     }
 }

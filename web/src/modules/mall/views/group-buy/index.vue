@@ -12,7 +12,7 @@ import type { Ref } from 'vue'
 import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { useI18n } from 'vue-i18n'
-import { page, remove, stats } from '~/mall/api/group-buy'
+import { page, remove, stats, groupBuyExport } from '~/mall/api/group-buy'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import useDialog from '@/hooks/useDialog.ts'
@@ -105,6 +105,17 @@ function handleBatchDelete() {
   })
 }
 
+async function handleExport() {
+  try {
+    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const res = await groupBuyExport(searchParams)
+    msg.success(res.message || '导出任务已创建')
+  }
+  catch (err: any) {
+    msg.alertError(err)
+  }
+}
+
 onMounted(() => {
   loadStats()
 })
@@ -188,6 +199,10 @@ onMounted(() => {
           @click="handleBatchDelete"
         >
           {{ t('mall.groupBuy.batchDelete') }}
+        </el-button>
+        <el-button plain @click="handleExport">
+          <template #icon><ma-svg-icon name="ph:download-simple" size="14" /></template>
+          {{ t('mall.export') }}
         </el-button>
       </template>
       <template #empty>

@@ -36,13 +36,19 @@ use Hyperf\DbConnection\Model\Model;
 class MessageDeliveryLog extends Model
 {
     public const CHANNEL_WEBSOCKET = 'websocket';
+
     public const CHANNEL_EMAIL = 'email';
+
     public const CHANNEL_SMS = 'sms';
+
     public const CHANNEL_MINIAPP = 'miniapp';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_SENT = 'sent';
+
     public const STATUS_DELIVERED = 'delivered';
+
     public const STATUS_FAILED = 'failed';
 
     protected ?string $table = 'message_delivery_logs';

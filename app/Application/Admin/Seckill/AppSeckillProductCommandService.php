@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Application\Admin\Seckill;
 
-use Hyperf\DbConnection\Db;
-use Hyperf\DTO\Mapper;
 use App\Domain\Trade\Seckill\Contract\SeckillProductInput;
 use App\Domain\Trade\Seckill\Service\DomainSeckillProductService;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 use App\Interface\Admin\Dto\Seckill\SeckillProductDto;
+use Hyperf\DbConnection\Db;
+use Hyperf\DTO\Mapper;
 
 final class AppSeckillProductCommandService
 {

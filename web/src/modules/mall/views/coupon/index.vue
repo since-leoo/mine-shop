@@ -13,7 +13,7 @@ import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 import type { CouponVo } from '~/mall/api/coupon'
 
 import { useI18n } from 'vue-i18n'
-import { couponPage, couponStats } from '~/mall/api/coupon'
+import { couponPage, couponStats, couponExport } from '~/mall/api/coupon'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import useDialog from '@/hooks/useDialog.ts'
@@ -108,6 +108,17 @@ function handleAdd() {
   formDialog.open({ formType: 'add', data: {} })
 }
 
+async function handleExport() {
+  try {
+    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const res = await couponExport(searchParams)
+    msg.success(res.message || '导出任务已创建')
+  }
+  catch (err: any) {
+    msg.alertError(err)
+  }
+}
+
 onMounted(() => {
   loadStats()
 })
@@ -155,6 +166,10 @@ onMounted(() => {
       <template #actions>
         <el-button v-auth="['coupon:create']" type="primary" @click="handleAdd">
           {{ t('mall.coupon.addCoupon') }}
+        </el-button>
+        <el-button plain @click="handleExport">
+          <template #icon><ma-svg-icon name="ph:download-simple" size="14" /></template>
+          {{ t('mall.export') }}
         </el-button>
       </template>
     </MaProTable>

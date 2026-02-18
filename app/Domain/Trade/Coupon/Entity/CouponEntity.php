@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Entity;
 
-use Carbon\Carbon;
 use App\Domain\Trade\Coupon\Contract\CouponInput;
+use Carbon\Carbon;
 
 /**
  * 优惠券实体.

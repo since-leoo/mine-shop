@@ -247,6 +247,30 @@ final class OrderRepository extends IRepository
     }
 
     /**
+     * 导出数据提供者（含商品明细展开，每个订单商品一行）.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery()->with(['member', 'items', 'address']), $params);
+
+        foreach ($query->cursor() as $order) {
+            $orderData = $order->toArray();
+            $items = $order->items;
+
+            if ($items->isEmpty()) {
+                // 无商品明细时输出一行订单信息
+                yield $orderData;
+                continue;
+            }
+
+            // 每个商品明细展开为一行，合并订单级字段
+            foreach ($items as $item) {
+                yield array_merge($orderData, $item->toArray());
+            }
+        }
+    }
+
+    /**
      * 根据状态字符串应用对应的 scope.
      */
     private function applyStatusScope(Builder $query, string $status): Builder

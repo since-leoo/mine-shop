@@ -900,6 +900,35 @@ member:
     deleted: 已刪除
     deleteFailed: 刪除失敗
     loadFailed: 載入失敗
+export:
+  title: 下載中心
+  subtitle: 管理匯出任務和下載檔案
+  taskName: 任務名稱
+  exportFormat: 匯出格式
+  status: 狀態
+  progress: 進度
+  fileSize: 檔案大小
+  createdAt: 建立時間
+  completedAt: 完成時間
+  download: 下載
+  delete: 刪除
+  retry: 重試
+  confirmDelete: 確定刪除此匯出記錄？
+  deleteSuccess: 刪除成功
+  statusPending: 待處理
+  statusProcessing: 處理中
+  statusSuccess: 成功
+  statusFailed: 失敗
+  statusExpired: 已過期
+  allStatus: 全部狀態
+  startDate: 開始日期
+  endDate: 結束日期
+  timeRange: 時間範圍
+  errorMessage: 異常資訊
+  retryCount: 重試次數
+exportMenu:
+  exportCenter: 匯出中心
+  downloadCenter: 下載中心
 plugin:
   systemMessage:
     title: 消息管理

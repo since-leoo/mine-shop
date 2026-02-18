@@ -12,8 +12,13 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\GroupBuy;
 
+use App\Application\Admin\GroupBuy\AppGroupBuyCommandService;
+use App\Application\Admin\GroupBuy\AppGroupBuyQueryService;
+use App\Application\Admin\GroupBuy\Dto\GroupBuyExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -24,9 +29,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Application\Admin\GroupBuy\AppGroupBuyCommandService;
-use App\Application\Admin\GroupBuy\AppGroupBuyQueryService;
-use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/group-buy')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -36,7 +39,8 @@ final class GroupBuyController extends AbstractController
 {
     public function __construct(
         private readonly AppGroupBuyQueryService $queryService,
-        private readonly AppGroupBuyCommandService $commandService
+        private readonly AppGroupBuyCommandService $commandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -97,5 +101,19 @@ final class GroupBuyController extends AbstractController
     {
         $act = $this->commandService->toggleStatus($id);
         return $act ? $this->success(null, '切换状态成功') : $this->error('切换状态失败');
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'promotion:group_buy:list')]
+    public function export(GroupBuyRequest $request): Result
+    {
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '团购活动导出',
+            dtoClass: GroupBuyExportDto::class,
+            params: $request->validated(),
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

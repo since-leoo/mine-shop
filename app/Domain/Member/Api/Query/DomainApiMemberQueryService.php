@@ -21,7 +21,6 @@ use App\Interface\Common\ResultCode;
 /**
  * 面向 API 场景的会员查询领域服务.
  */
-
 final class DomainApiMemberQueryService extends IService
 {
     public function __construct(
@@ -44,7 +43,7 @@ final class DomainApiMemberQueryService extends IService
      *
      * 返回当前等级名称、图标、成长值、升级所需成长值、权益列表.
      *
-     * @return array{level_name: string, level_icon: string|null, growth_value: int, next_level_gap: int, privileges: array}
+     * @return array{level_name: string, level_icon: null|string, growth_value: int, next_level_gap: int, privileges: array}
      */
     public function getVipInfo(int $memberId): array
     {
@@ -78,4 +77,3 @@ final class DomainApiMemberQueryService extends IService
         ];
     }
 }
-

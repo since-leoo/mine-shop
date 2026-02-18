@@ -1,10 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\SystemMessage;
 
+use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\SystemMessage\CreateMessageRequest;
+use App\Interface\Admin\Request\SystemMessage\UpdateMessageRequest;
+use App\Interface\Common\Controller\SystemMessageAbstractController;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Carbon\Carbon;
@@ -16,10 +28,6 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Interface\Common\Controller\SystemMessageAbstractController;
-use App\Interface\Admin\Request\SystemMessage\CreateMessageRequest;
-use App\Interface\Admin\Request\SystemMessage\UpdateMessageRequest;
-use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
 
 #[Controller(prefix: 'admin/system-message')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -50,7 +58,9 @@ class MessageController extends SystemMessageAbstractController
     public function read(int $id): Result
     {
         $message = $this->messageService->getRepository()->findById($id);
-        if (! $message) { return $this->error('消息不存在', 404); }
+        if (! $message) {
+            return $this->error('消息不存在', 404);
+        }
         return $this->success($message);
     }
 
@@ -78,10 +88,21 @@ class MessageController extends SystemMessageAbstractController
     public function delete(): Result
     {
         $ids = $this->request->input('ids', []);
-        if (empty($ids)) { return $this->error('请选择要删除的消息'); }
-        $deleted = 0; $failed = 0;
+        if (empty($ids)) {
+            return $this->error('请选择要删除的消息');
+        }
+        $deleted = 0;
+        $failed = 0;
         foreach ((array) $ids as $id) {
-            try { if ($this->messageService->delete($id)) { ++$deleted; } else { ++$failed; } } catch (\Throwable $e) { ++$failed; }
+            try {
+                if ($this->messageService->delete($id)) {
+                    ++$deleted;
+                } else {
+                    ++$failed;
+                }
+            } catch (\Throwable $e) {
+                ++$failed;
+            }
         }
         return $this->success(['deleted' => $deleted, 'failed' => $failed], '删除操作完成');
     }
@@ -91,8 +112,15 @@ class MessageController extends SystemMessageAbstractController
     public function send(): Result
     {
         $id = $this->request->input('id');
-        if (! $id) { return $this->error('消息ID不能为空'); }
-        try { $result = $this->messageService->send($id); return $this->success(['result' => $result], '消息发送成功'); } catch (\Throwable $e) { return $this->error('消息发送失败：' . $e->getMessage()); }
+        if (! $id) {
+            return $this->error('消息ID不能为空');
+        }
+        try {
+            $result = $this->messageService->send($id);
+            return $this->success(['result' => $result], '消息发送成功');
+        } catch (\Throwable $e) {
+            return $this->error('消息发送失败：' . $e->getMessage());
+        }
     }
 
     #[PostMapping('schedule')]
@@ -101,8 +129,15 @@ class MessageController extends SystemMessageAbstractController
     {
         $id = $this->request->input('id');
         $scheduledAt = $this->request->input('scheduled_at');
-        if (! $id || ! $scheduledAt) { return $this->error('消息ID和调度时间不能为空'); }
-        try { $result = $this->messageService->schedule($id, Carbon::parse($scheduledAt)); return $this->success(['result' => $result], '消息调度成功'); } catch (\Throwable $e) { return $this->error('消息调度失败：' . $e->getMessage()); }
+        if (! $id || ! $scheduledAt) {
+            return $this->error('消息ID和调度时间不能为空');
+        }
+        try {
+            $result = $this->messageService->schedule($id, Carbon::parse($scheduledAt));
+            return $this->success(['result' => $result], '消息调度成功');
+        } catch (\Throwable $e) {
+            return $this->error('消息调度失败：' . $e->getMessage());
+        }
     }
 
     #[PostMapping('batchSend')]
@@ -110,9 +145,22 @@ class MessageController extends SystemMessageAbstractController
     public function batchSend(): Result
     {
         $ids = $this->request->input('ids', []);
-        if (empty($ids) || ! \is_array($ids)) { return $this->error('请选择要发送的消息'); }
-        $sent = 0; $failed = 0;
-        foreach ($ids as $id) { try { if ($this->messageService->send($id)) { ++$sent; } else { ++$failed; } } catch (\Throwable $e) { ++$failed; } }
+        if (empty($ids) || ! \is_array($ids)) {
+            return $this->error('请选择要发送的消息');
+        }
+        $sent = 0;
+        $failed = 0;
+        foreach ($ids as $id) {
+            try {
+                if ($this->messageService->send($id)) {
+                    ++$sent;
+                } else {
+                    ++$failed;
+                }
+            } catch (\Throwable $e) {
+                ++$failed;
+            }
+        }
         return $this->success(['sent' => $sent, 'failed' => $failed], '批量发送完成');
     }
 
@@ -121,7 +169,9 @@ class MessageController extends SystemMessageAbstractController
     public function search(): Result
     {
         $keyword = $this->request->input('keyword', '');
-        if (empty($keyword)) { return $this->error('搜索关键词不能为空'); }
+        if (empty($keyword)) {
+            return $this->error('搜索关键词不能为空');
+        }
         $filters = ['type' => $this->request->input('type'), 'status' => $this->request->input('status')];
         $page = (int) $this->request->input('page', 1);
         $pageSize = (int) $this->request->input('page_size', 20);
@@ -131,7 +181,10 @@ class MessageController extends SystemMessageAbstractController
 
     #[GetMapping('statistics')]
     #[Permission(code: 'system-message:statistics')]
-    public function statistics(): Result { return $this->success($this->messageService->getStatistics()); }
+    public function statistics(): Result
+    {
+        return $this->success($this->messageService->getStatistics());
+    }
 
     #[GetMapping('popular')]
     #[Permission(code: 'system-message:index')]

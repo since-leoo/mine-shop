@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Listener;
 
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Context\ApplicationContext;
-use Hyperf\Event\Annotation\Listener;
-use Hyperf\Event\Contract\ListenerInterface;
 use App\Domain\Infrastructure\SystemMessage\Event\SendMessageEvent;
 use App\Domain\Infrastructure\SystemMessage\Event\TemplateMessageEvent;
 use App\Domain\Infrastructure\SystemMessage\Job\ProcessMessageEventJob;
 use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\Context\ApplicationContext;
+use Hyperf\Event\Annotation\Listener;
+use Hyperf\Event\Contract\ListenerInterface;
 
 /**
  * 发送消息事件监听器.

@@ -12,15 +12,15 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1\GroupBuy;
 
+use App\Application\Api\GroupBuy\AppApiGroupBuyProductQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Api\Transformer\GroupBuy\GroupBuyProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
-use App\Application\Api\GroupBuy\AppApiGroupBuyProductQueryService;
-use App\Interface\Api\Transformer\GroupBuy\GroupBuyProductTransformer;
 
 #[Controller(prefix: '/api/v1/group-buy/products')]
 final class GroupBuyProductController extends AbstractController
@@ -37,7 +37,7 @@ final class GroupBuyProductController extends AbstractController
     #[GetMapping(path: '')]
     public function index(): Result
     {
-        $limit = (int) ($this->request->query('limit', 20));
+        $limit = (int) $this->request->query('limit', 20);
         $data = $this->queryService->getPromotionList($limit);
 
         return $this->success($data);
@@ -49,7 +49,7 @@ final class GroupBuyProductController extends AbstractController
     #[GetMapping(path: '{activityId}/groups')]
     public function groups(int $activityId): Result
     {
-        $limit = (int) ($this->request->query('limit', 10));
+        $limit = (int) $this->request->query('limit', 10);
         $list = $this->queryService->getOngoingGroups($activityId, $limit);
 
         return $this->success(['list' => $list]);

@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Listener;
 
+use App\Domain\Infrastructure\SystemMessage\Facade\SystemMessage;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Event\OrderCancelledEvent;
 use App\Domain\Trade\Order\Event\OrderShippedEvent;
 use Hyperf\Event\Contract\ListenerInterface;
-use App\Domain\Infrastructure\SystemMessage\Facade\SystemMessage;
 
 final class OrderStatusNotifyListener implements ListenerInterface
 {

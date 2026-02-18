@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Repository;
 
+use App\Infrastructure\Model\SystemMessage\MessageTemplate;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
-use App\Infrastructure\Model\SystemMessage\MessageTemplate;
 
 class TemplateRepository
 {
@@ -75,17 +75,31 @@ class TemplateRepository
     public function getActiveTemplates(?string $type = null): Collection
     {
         $query = MessageTemplate::where('is_active', true);
-        if ($type) { $query->where('type', $type); }
+        if ($type) {
+            $query->where('type', $type);
+        }
         return $query->orderBy('name')->get();
     }
 
     protected function applyFilters(Builder $query, array $filters): void
     {
-        if (! empty($filters['type'])) { $query->where('type', $filters['type']); }
-        if (! empty($filters['category'])) { $query->where('category', $filters['category']); }
-        if (isset($filters['is_active'])) { $query->where('is_active', $filters['is_active']); }
-        if (! empty($filters['created_by'])) { $query->where('created_by', $filters['created_by']); }
-        if (! empty($filters['date_from'])) { $query->where('created_at', '>=', $filters['date_from']); }
-        if (! empty($filters['date_to'])) { $query->where('created_at', '<=', $filters['date_to']); }
+        if (! empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+        if (! empty($filters['category'])) {
+            $query->where('category', $filters['category']);
+        }
+        if (isset($filters['is_active'])) {
+            $query->where('is_active', $filters['is_active']);
+        }
+        if (! empty($filters['created_by'])) {
+            $query->where('created_by', $filters['created_by']);
+        }
+        if (! empty($filters['date_from'])) {
+            $query->where('created_at', '>=', $filters['date_from']);
+        }
+        if (! empty($filters['date_to'])) {
+            $query->where('created_at', '<=', $filters['date_to']);
+        }
     }
 }

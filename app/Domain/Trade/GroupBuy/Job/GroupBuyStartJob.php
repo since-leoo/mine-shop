@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Job;
 
-use Hyperf\AsyncQueue\Job;
-use Hyperf\Context\ApplicationContext;
 use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\GroupBuy\Service\GroupBuyCacheService;
+use Hyperf\AsyncQueue\Job;
+use Hyperf\Context\ApplicationContext;
 use Psr\Log\LoggerInterface;
 
 class GroupBuyStartJob extends Job

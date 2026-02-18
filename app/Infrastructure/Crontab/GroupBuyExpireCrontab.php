@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Crontab;
 
-use Hyperf\Crontab\Annotation\Crontab;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyLifecycleService;
+use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
 #[Crontab(

@@ -43,3 +43,7 @@ export function summaryPage(params: Record<string, any>): Promise<ResponseStruct
 export function ordersByActivity(activityId: number, params: Record<string, any>): Promise<ResponseStruct<PageList<GroupBuyOrderDetailVo>>> {
   return useHttp().get(`/admin/group-buy-order/${activityId}/orders`, { params })
 }
+
+export function groupBuyOrderExport(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post('/admin/group-buy-order/export', params)
+}

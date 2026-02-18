@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\Shipping;
 
+use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
+use App\Interface\Admin\Dto\Shipping\ShippingTemplateDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;
-use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
-use App\Interface\Admin\Dto\Shipping\ShippingTemplateDto;
 
 class ShippingTemplateRequest extends BaseRequest
 {

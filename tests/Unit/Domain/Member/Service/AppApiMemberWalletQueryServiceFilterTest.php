@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -11,79 +19,21 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 13: 流水记录过滤正确性
+ * Feature: member-vip-level, Property 13: 流水记录过滤正确性.
  *
  * Validates: Requirements 10.1
  *
  * For any member ID and wallet type (balance or points), all records returned
  * by the transaction query API must have member_id equal to the requested
  * member ID and wallet_type equal to the requested wallet type.
+ * @internal
+ * @coversNothing
  */
-class AppApiMemberWalletQueryServiceFilterTest extends TestCase
+final class AppApiMemberWalletQueryServiceFilterTest extends TestCase
 {
     use TestTrait;
 
     private const WALLET_TYPES = ['balance', 'points'];
-
-    /**
-     * Generate a pool of transaction records with various member_ids and wallet_types.
-     *
-     * @return array<int, array{member_id: int, wallet_type: string, id: int, amount: int, type: string}>
-     */
-    private function generateTransactionPool(int $count, array $memberIds): array
-    {
-        $records = [];
-        for ($i = 0; $i < $count; ++$i) {
-            $records[] = [
-                'id' => $i + 1,
-                'member_id' => $memberIds[array_rand($memberIds)],
-                'wallet_type' => self::WALLET_TYPES[array_rand(self::WALLET_TYPES)],
-                'type' => 'income',
-                'amount' => random_int(1, 10000),
-                'balance_before' => random_int(0, 50000),
-                'balance_after' => random_int(0, 50000),
-                'source' => 'test',
-                'created_at' => date('Y-m-d H:i:s'),
-            ];
-        }
-        return $records;
-    }
-
-    /**
-     * Build the service with a mocked repository that simulates real filtering
-     * behavior via handleSearch.
-     *
-     * The mock repository's page() method applies the same where-clause logic
-     * as the real handleSearch: filtering by member_id and wallet_type.
-     *
-     * @param array $allRecords Pool of all transaction records
-     */
-    private function buildService(array $allRecords): AppApiMemberWalletQueryService
-    {
-        $repository = $this->createMock(MemberWalletTransactionRepository::class);
-
-        $repository->method('page')
-            ->willReturnCallback(function (array $params, ?int $page, ?int $pageSize) use ($allRecords): array {
-                $filtered = $allRecords;
-
-                // Simulate handleSearch filtering logic
-                if (! empty($params['member_id'])) {
-                    $filtered = array_filter($filtered, static fn (array $r) => $r['member_id'] === (int) $params['member_id']);
-                }
-                if (! empty($params['wallet_type'])) {
-                    $filtered = array_filter($filtered, static fn (array $r) => $r['wallet_type'] === $params['wallet_type']);
-                }
-
-                $filtered = array_values($filtered);
-
-                return [
-                    'list' => $filtered,
-                    'total' => count($filtered),
-                ];
-            });
-
-        return new AppApiMemberWalletQueryService($repository);
-    }
 
     /**
      * Property 13 (core): For any member ID and wallet type, all returned records
@@ -117,7 +67,7 @@ class AppApiMemberWalletQueryServiceFilterTest extends TestCase
                 $this->assertSame(
                     $targetMemberId,
                     $record['member_id'],
-                    sprintf(
+                    \sprintf(
                         'Record at index %d has member_id=%d, expected %d',
                         $index,
                         $record['member_id'],
@@ -128,7 +78,7 @@ class AppApiMemberWalletQueryServiceFilterTest extends TestCase
                 $this->assertSame(
                     $targetWalletType,
                     $record['wallet_type'],
-                    sprintf(
+                    \sprintf(
                         'Record at index %d has wallet_type=%s, expected %s',
                         $index,
                         $record['wallet_type'],
@@ -163,12 +113,12 @@ class AppApiMemberWalletQueryServiceFilterTest extends TestCase
             $result = $service->transactions($targetMemberId, $targetWalletType, 1, 100);
 
             // Count expected matches from the pool
-            $expectedCount = count(array_filter($allRecords, static fn (array $r) => $r['member_id'] === $targetMemberId && $r['wallet_type'] === $targetWalletType));
+            $expectedCount = \count(array_filter($allRecords, static fn (array $r) => $r['member_id'] === $targetMemberId && $r['wallet_type'] === $targetWalletType));
 
             $this->assertSame(
                 $expectedCount,
                 $result['total'],
-                sprintf(
+                \sprintf(
                     'Expected %d records for member_id=%d, wallet_type=%s, got %d',
                     $expectedCount,
                     $targetMemberId,
@@ -248,5 +198,65 @@ class AppApiMemberWalletQueryServiceFilterTest extends TestCase
             $this->assertSame(0, $result['total']);
             $this->assertEmpty($result['list']);
         });
+    }
+
+    /**
+     * Generate a pool of transaction records with various member_ids and wallet_types.
+     *
+     * @return array<int, array{member_id: int, wallet_type: string, id: int, amount: int, type: string}>
+     */
+    private function generateTransactionPool(int $count, array $memberIds): array
+    {
+        $records = [];
+        for ($i = 0; $i < $count; ++$i) {
+            $records[] = [
+                'id' => $i + 1,
+                'member_id' => $memberIds[array_rand($memberIds)],
+                'wallet_type' => self::WALLET_TYPES[array_rand(self::WALLET_TYPES)],
+                'type' => 'income',
+                'amount' => random_int(1, 10000),
+                'balance_before' => random_int(0, 50000),
+                'balance_after' => random_int(0, 50000),
+                'source' => 'test',
+                'created_at' => date('Y-m-d H:i:s'),
+            ];
+        }
+        return $records;
+    }
+
+    /**
+     * Build the service with a mocked repository that simulates real filtering
+     * behavior via handleSearch.
+     *
+     * The mock repository's page() method applies the same where-clause logic
+     * as the real handleSearch: filtering by member_id and wallet_type.
+     *
+     * @param array $allRecords Pool of all transaction records
+     */
+    private function buildService(array $allRecords): AppApiMemberWalletQueryService
+    {
+        $repository = $this->createMock(MemberWalletTransactionRepository::class);
+
+        $repository->method('page')
+            ->willReturnCallback(static function (array $params, ?int $page, ?int $pageSize) use ($allRecords): array {
+                $filtered = $allRecords;
+
+                // Simulate handleSearch filtering logic
+                if (! empty($params['member_id'])) {
+                    $filtered = array_filter($filtered, static fn (array $r) => $r['member_id'] === (int) $params['member_id']);
+                }
+                if (! empty($params['wallet_type'])) {
+                    $filtered = array_filter($filtered, static fn (array $r) => $r['wallet_type'] === $params['wallet_type']);
+                }
+
+                $filtered = array_values($filtered);
+
+                return [
+                    'list' => $filtered,
+                    'total' => \count($filtered),
+                ];
+            });
+
+        return new AppApiMemberWalletQueryService($repository);
     }
 }

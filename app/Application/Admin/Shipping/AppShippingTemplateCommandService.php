@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Shipping;
 
-use Hyperf\DbConnection\Db;
 use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Domain\Trade\Shipping\Service\DomainShippingTemplateService;
+use Hyperf\DbConnection\Db;
 
 /**
  * 运费模板命令服务：处理所有写操作.

@@ -274,7 +274,7 @@ class Member extends Model
     private static function generateUniqueInviteCode(): string
     {
         do {
-            $code = strtoupper(substr(md5(uniqid((string) mt_rand(), true)), 0, 8));
+            $code = mb_strtoupper(mb_substr(md5(uniqid((string) mt_rand(), true)), 0, 8));
         } while (self::where('invite_code', $code)->exists());
 
         return $code;

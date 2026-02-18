@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Api\Query;
 
-use App\Infrastructure\Abstract\IService;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
+use App\Infrastructure\Abstract\IService;
 
 /**
  * 面向 API 场景的用户优惠券查询领域服务.

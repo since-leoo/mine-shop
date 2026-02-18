@@ -23,7 +23,6 @@ use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Db;
 use Psr\Container\ContainerInterface;
-use Psr\Log\LoggerInterface;
 
 class OrderCreateJob extends Job
 {
@@ -73,10 +72,9 @@ class OrderCreateJob extends Job
                 'trade_no' => $this->tradeNo,
                 'order_type' => $this->orderType,
             ]);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             var_dump($e->getFile(), $e->getLine(), $e->getMessage());
         }
-
     }
 
     /**

@@ -1,16 +1,24 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Repository;
 
+use App\Domain\Trade\Seckill\Entity\SeckillProductEntity;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
+use App\Infrastructure\Model\Seckill\SeckillProduct;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
-use App\Domain\Trade\Seckill\Entity\SeckillProductEntity;
-use App\Infrastructure\Model\Seckill\SeckillProduct;
 
 /**
  * @extends IRepository<SeckillProduct>

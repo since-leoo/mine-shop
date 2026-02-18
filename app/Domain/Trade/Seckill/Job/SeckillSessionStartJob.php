@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Job;
 
-use Hyperf\AsyncQueue\Job;
-use Hyperf\Context\ApplicationContext;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\Service\DomainSeckillActivityService;
 use App\Domain\Trade\Seckill\Service\DomainSeckillSessionService;
 use App\Domain\Trade\Seckill\Service\SeckillCacheService;
+use Hyperf\AsyncQueue\Job;
+use Hyperf\Context\ApplicationContext;
 use Psr\Log\LoggerInterface;
 
 class SeckillSessionStartJob extends Job

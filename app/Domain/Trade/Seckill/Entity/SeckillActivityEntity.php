@@ -1,13 +1,21 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Entity;
 
-use Carbon\Carbon;
 use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\ValueObject\ActivityRules;
+use Carbon\Carbon;
 
 final class SeckillActivityEntity
 {

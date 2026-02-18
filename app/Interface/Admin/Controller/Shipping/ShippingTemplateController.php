@@ -12,8 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Controller\Shipping;
 
+use App\Application\Admin\Shipping\AppShippingTemplateCommandService;
+use App\Application\Admin\Shipping\AppShippingTemplateQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\Shipping\ShippingTemplateRequest;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -24,9 +27,6 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Application\Admin\Shipping\AppShippingTemplateCommandService;
-use App\Application\Admin\Shipping\AppShippingTemplateQueryService;
-use App\Interface\Admin\Request\Shipping\ShippingTemplateRequest;
 
 #[Controller(prefix: '/admin/shipping/templates')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]

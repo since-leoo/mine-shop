@@ -120,3 +120,7 @@ export function stats(): Promise<ResponseStruct<{
 }>> {
   return useHttp().get('/admin/product/product/stats')
 }
+
+export function exportProduct(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post('/admin/product/product/export', params)
+}

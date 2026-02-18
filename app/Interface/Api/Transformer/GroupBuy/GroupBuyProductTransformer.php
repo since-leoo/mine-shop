@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Transformer\GroupBuy;
 
-use App\Interface\Api\Transformer\ProductTransformer;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
+use App\Interface\Api\Transformer\ProductTransformer;
 
 final class GroupBuyProductTransformer
 {

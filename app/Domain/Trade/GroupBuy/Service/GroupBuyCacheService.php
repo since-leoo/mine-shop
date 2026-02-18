@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Service;
 
-use App\Infrastructure\Abstract\ICache;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
+use App\Infrastructure\Abstract\ICache;
 
 final class GroupBuyCacheService
 {

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Seckill\Entity;
 
@@ -8,65 +16,75 @@ use App\Domain\Trade\Seckill\Entity\SeckillActivityEntity;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use PHPUnit\Framework\TestCase;
 
-class SeckillActivityEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class SeckillActivityEntityTest extends TestCase
 {
     public function testReconstitute(): void
     {
         $entity = SeckillActivityEntity::reconstitute(
-            1, '秒杀活动', '描述', 'pending', true, null, '备注'
+            1,
+            '秒杀活动',
+            '描述',
+            'pending',
+            true,
+            null,
+            '备注'
         );
-        $this->assertSame(1, $entity->getId());
-        $this->assertSame('秒杀活动', $entity->getTitle());
-        $this->assertSame('描述', $entity->getDescription());
-        $this->assertSame(SeckillStatus::PENDING, $entity->getStatus());
-        $this->assertTrue($entity->isEnabled());
-        $this->assertSame('备注', $entity->getRemark());
+        self::assertSame(1, $entity->getId());
+        self::assertSame('秒杀活动', $entity->getTitle());
+        self::assertSame('描述', $entity->getDescription());
+        self::assertSame(SeckillStatus::PENDING, $entity->getStatus());
+        self::assertTrue($entity->isEnabled());
+        self::assertSame('备注', $entity->getRemark());
     }
 
     public function testToggleEnabled(): void
     {
         $entity = SeckillActivityEntity::reconstitute(1, 'Test', null, 'pending', true, null, null);
         $entity->toggleEnabled();
-        $this->assertFalse($entity->isEnabled());
+        self::assertFalse($entity->isEnabled());
         $entity->toggleEnabled();
-        $this->assertTrue($entity->isEnabled());
+        self::assertTrue($entity->isEnabled());
     }
 
     public function testCanBeEnabled(): void
     {
         $pending = SeckillActivityEntity::reconstitute(1, 'T', null, 'pending', true, null, null);
-        $this->assertTrue($pending->canBeEnabled());
+        self::assertTrue($pending->canBeEnabled());
 
         $cancelled = SeckillActivityEntity::reconstitute(2, 'T', null, 'cancelled', false, null, null);
-        $this->assertFalse($cancelled->canBeEnabled());
+        self::assertFalse($cancelled->canBeEnabled());
 
         $ended = SeckillActivityEntity::reconstitute(3, 'T', null, 'ended', false, null, null);
-        $this->assertFalse($ended->canBeEnabled());
+        self::assertFalse($ended->canBeEnabled());
     }
 
     public function testCanBeEdited(): void
     {
         $pending = SeckillActivityEntity::reconstitute(1, 'T', null, 'pending', true, null, null);
-        $this->assertTrue($pending->canBeEdited());
+        self::assertTrue($pending->canBeEdited());
 
         $active = SeckillActivityEntity::reconstitute(2, 'T', null, 'active', true, null, null);
-        $this->assertFalse($active->canBeEdited());
+        self::assertFalse($active->canBeEdited());
     }
 
     public function testCanBeDeleted(): void
     {
         $pending = SeckillActivityEntity::reconstitute(1, 'T', null, 'pending', true, null, null);
-        $this->assertTrue($pending->canBeDeleted());
+        self::assertTrue($pending->canBeDeleted());
 
         $active = SeckillActivityEntity::reconstitute(2, 'T', null, 'active', true, null, null);
-        $this->assertFalse($active->canBeDeleted());
+        self::assertFalse($active->canBeDeleted());
     }
 
     public function testStart(): void
     {
         $entity = SeckillActivityEntity::reconstitute(1, 'T', null, 'pending', true, null, null);
         $entity->start();
-        $this->assertSame(SeckillStatus::ACTIVE, $entity->getStatus());
+        self::assertSame(SeckillStatus::ACTIVE, $entity->getStatus());
     }
 
     public function testStartNotPendingThrows(): void
@@ -87,7 +105,7 @@ class SeckillActivityEntityTest extends TestCase
     {
         $entity = SeckillActivityEntity::reconstitute(1, 'T', null, 'active', true, null, null);
         $entity->end();
-        $this->assertSame(SeckillStatus::ENDED, $entity->getStatus());
+        self::assertSame(SeckillStatus::ENDED, $entity->getStatus());
     }
 
     public function testEndAlreadyEndedThrows(): void
@@ -101,8 +119,8 @@ class SeckillActivityEntityTest extends TestCase
     {
         $entity = SeckillActivityEntity::reconstitute(1, 'T', null, 'pending', true, null, null);
         $entity->cancel();
-        $this->assertSame(SeckillStatus::CANCELLED, $entity->getStatus());
-        $this->assertFalse($entity->isEnabled());
+        self::assertSame(SeckillStatus::CANCELLED, $entity->getStatus());
+        self::assertFalse($entity->isEnabled());
     }
 
     public function testCancelEndedThrows(): void
@@ -116,8 +134,8 @@ class SeckillActivityEntityTest extends TestCase
     {
         $entity = SeckillActivityEntity::reconstitute(1, '活动', '描述', 'pending', true, null, null);
         $arr = $entity->toArray();
-        $this->assertSame('活动', $arr['title']);
-        $this->assertSame('pending', $arr['status']);
-        $this->assertTrue($arr['is_enabled']);
+        self::assertSame('活动', $arr['title']);
+        self::assertSame('pending', $arr['status']);
+        self::assertTrue($arr['is_enabled']);
     }
 }

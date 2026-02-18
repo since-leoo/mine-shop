@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Job;
 
+use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
-use App\Domain\Infrastructure\SystemMessage\Service\MessageService;
 
 /**
  * 处理消息事件的队列任务

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Request\SystemMessage;
 
@@ -8,7 +16,10 @@ use Hyperf\Validation\Request\FormRequest;
 
 class UpdatePreferenceRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -52,18 +63,36 @@ class UpdatePreferenceRequest extends FormRequest
         $validator->after(function ($validator) {
             $data = $validator->getData();
             if (isset($data['do_not_disturb_start'], $data['do_not_disturb_end'])) {
-                if (! $this->isValidTimeFormat($data['do_not_disturb_start'])) { $validator->errors()->add('do_not_disturb_start', '免打扰开始时间格式不正确'); }
-                if (! $this->isValidTimeFormat($data['do_not_disturb_end'])) { $validator->errors()->add('do_not_disturb_end', '免打扰结束时间格式不正确'); }
+                if (! $this->isValidTimeFormat($data['do_not_disturb_start'])) {
+                    $validator->errors()->add('do_not_disturb_start', '免打扰开始时间格式不正确');
+                }
+                if (! $this->isValidTimeFormat($data['do_not_disturb_end'])) {
+                    $validator->errors()->add('do_not_disturb_end', '免打扰结束时间格式不正确');
+                }
             }
             if (isset($data['channel_preferences'])) {
                 $hasEnabled = false;
-                foreach ($data['channel_preferences'] as $enabled) { if ($enabled) { $hasEnabled = true; break; } }
-                if (! $hasEnabled) { $validator->errors()->add('channel_preferences', '至少需要启用一个通知渠道'); }
+                foreach ($data['channel_preferences'] as $enabled) {
+                    if ($enabled) {
+                        $hasEnabled = true;
+                        break;
+                    }
+                }
+                if (! $hasEnabled) {
+                    $validator->errors()->add('channel_preferences', '至少需要启用一个通知渠道');
+                }
             }
             if (isset($data['type_preferences'])) {
                 $hasEnabled = false;
-                foreach ($data['type_preferences'] as $enabled) { if ($enabled) { $hasEnabled = true; break; } }
-                if (! $hasEnabled) { $validator->errors()->add('type_preferences', '至少需要启用一个消息类型'); }
+                foreach ($data['type_preferences'] as $enabled) {
+                    if ($enabled) {
+                        $hasEnabled = true;
+                        break;
+                    }
+                }
+                if (! $hasEnabled) {
+                    $validator->errors()->add('type_preferences', '至少需要启用一个消息类型');
+                }
             }
         });
     }

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Trade\GroupBuy\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
-use Hyperf\Database\Model\Builder;
 use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
+use Carbon\Carbon;
+use Hyperf\Database\Model\Builder;
 
 /**
  * @extends IRepository<GroupBuyOrder>
@@ -32,6 +33,18 @@ final class GroupBuyOrderRepository extends IRepository
             ->orderBy('id', 'desc');
     }
 
+    /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery()->with(['groupBuy', 'member']), $params);
+
+        foreach ($query->cursor() as $order) {
+            yield $order;
+        }
+    }
+
     public function findByOrderId(int $orderId): ?GroupBuyOrder
     {
         return GroupBuyOrder::where('order_id', $orderId)->first();
@@ -45,6 +58,6 @@ final class GroupBuyOrderRepository extends IRepository
         return (bool) $this->getQuery()
             ->where('order_id', $orderId)
             ->where('status', 'pending')
-            ->update(['status' => 'paid', 'pay_time' => \Carbon\Carbon::now()]);
+            ->update(['status' => 'paid', 'pay_time' => Carbon::now()]);
     }
 }

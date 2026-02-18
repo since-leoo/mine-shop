@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Job;
 
+use App\Domain\Infrastructure\SystemMessage\Service\NotificationService;
+use App\Infrastructure\Model\SystemMessage\Message;
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
-use App\Infrastructure\Model\SystemMessage\Message;
-use App\Domain\Infrastructure\SystemMessage\Service\NotificationService;
 use Psr\Log\LoggerInterface;
 
 class SendMessageJob extends Job

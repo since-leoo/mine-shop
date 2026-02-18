@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -16,7 +24,7 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 9: 消费返积分计算公式
+ * Feature: member-vip-level, Property 9: 消费返积分计算公式.
  *
  * Validates: Requirements 5.2, 5.4, 6.2
  *
@@ -24,40 +32,12 @@ use PHPUnit\Framework\TestCase;
  * the result must equal floor(payAmountCents / 100 * pointsRatio * pointRate).
  * Additionally: result is always non-negative, result is always an integer (floor),
  * and result is 0 when payAmountCents is 0.
+ * @internal
+ * @coversNothing
  */
-class DomainMemberPointsServicePurchasePointsTest extends TestCase
+final class DomainMemberPointsServicePurchasePointsTest extends TestCase
 {
     use TestTrait;
-
-    private function buildService(int $pointsRatio): DomainMemberPointsService
-    {
-        $walletService = $this->createMock(DomainMemberWalletService::class);
-        $mallSettingService = $this->createMock(DomainMallSettingService::class);
-        $memberRepository = $this->createMock(MemberRepository::class);
-        $levelRepository = $this->createMock(MemberLevelRepository::class);
-        $transactionRepository = $this->createMock(MemberWalletTransactionRepository::class);
-
-        $memberSetting = new MemberSetting(
-            enableGrowth: true,
-            registerPoints: 100,
-            signInReward: 5,
-            inviteReward: 50,
-            pointsExpireMonths: 24,
-            vipLevels: [],
-            defaultLevel: 1,
-            pointsRatio: $pointsRatio,
-        );
-
-        $mallSettingService->method('member')->willReturn($memberSetting);
-
-        return new DomainMemberPointsService(
-            $walletService,
-            $mallSettingService,
-            $memberRepository,
-            $levelRepository,
-            $transactionRepository,
-        );
-    }
 
     /**
      * Property 9: For any payAmountCents, pointsRatio and pointRate,
@@ -81,7 +61,7 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
             $this->assertSame(
                 $expected,
                 $result,
-                sprintf(
+                \sprintf(
                     'Formula mismatch: payAmountCents=%d, pointsRatio=%d, pointRate=%.1f → expected=%d, got=%d',
                     $payAmountCents,
                     $pointsRatio,
@@ -113,7 +93,7 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
             $this->assertGreaterThanOrEqual(
                 0,
                 $result,
-                sprintf(
+                \sprintf(
                     'Result must be non-negative: payAmountCents=%d, pointsRatio=%d, pointRate=%.1f → got=%d',
                     $payAmountCents,
                     $pointsRatio,
@@ -150,7 +130,7 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
             $this->assertLessThanOrEqual(
                 $continuousValue,
                 (float) $result,
-                sprintf(
+                \sprintf(
                     'Floored result (%d) must not exceed continuous value (%.4f)',
                     $result,
                     $continuousValue,
@@ -161,7 +141,7 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
             $this->assertGreaterThan(
                 $continuousValue - 1.0,
                 (float) $result,
-                sprintf(
+                \sprintf(
                     'Floored result (%d) must be within 1 of continuous value (%.4f)',
                     $result,
                     $continuousValue,
@@ -190,7 +170,7 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
             $this->assertSame(
                 0,
                 $result,
-                sprintf(
+                \sprintf(
                     'Zero payAmountCents must yield 0 points: pointsRatio=%d, pointRate=%.1f → got=%d',
                     $pointsRatio,
                     $pointRate,
@@ -198,5 +178,35 @@ class DomainMemberPointsServicePurchasePointsTest extends TestCase
                 ),
             );
         });
+    }
+
+    private function buildService(int $pointsRatio): DomainMemberPointsService
+    {
+        $walletService = $this->createMock(DomainMemberWalletService::class);
+        $mallSettingService = $this->createMock(DomainMallSettingService::class);
+        $memberRepository = $this->createMock(MemberRepository::class);
+        $levelRepository = $this->createMock(MemberLevelRepository::class);
+        $transactionRepository = $this->createMock(MemberWalletTransactionRepository::class);
+
+        $memberSetting = new MemberSetting(
+            enableGrowth: true,
+            registerPoints: 100,
+            signInReward: 5,
+            inviteReward: 50,
+            pointsExpireMonths: 24,
+            vipLevels: [],
+            defaultLevel: 1,
+            pointsRatio: $pointsRatio,
+        );
+
+        $mallSettingService->method('member')->willReturn($memberSetting);
+
+        return new DomainMemberPointsService(
+            $walletService,
+            $mallSettingService,
+            $memberRepository,
+            $levelRepository,
+            $transactionRepository,
+        );
     }
 }

@@ -13,7 +13,7 @@ import type { UseDialogExpose } from '@/hooks/useDialog.ts'
 
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import { activityPage, activityRemove, activityStats } from '~/mall/api/seckill'
+import { activityPage, activityRemove, activityStats, activityExport } from '~/mall/api/seckill'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import useDialog from '@/hooks/useDialog.ts'
@@ -107,6 +107,17 @@ function handleBatchDelete() {
   })
 }
 
+async function handleExport() {
+  try {
+    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const res = await activityExport(searchParams)
+    msg.success(res.message || '导出任务已创建')
+  }
+  catch (err: any) {
+    msg.alertError(err)
+  }
+}
+
 onMounted(() => {
   loadStats()
 })
@@ -177,6 +188,10 @@ onMounted(() => {
           @click="handleBatchDelete"
         >
           {{ t('mall.seckill.batchDelete') }}
+        </el-button>
+        <el-button plain @click="handleExport">
+          <template #icon><ma-svg-icon name="ph:download-simple" size="14" /></template>
+          {{ t('mall.export') }}
         </el-button>
       </template>
       <template #empty>

@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Request\GroupBuy;
 
+use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
+use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
+use App\Interface\Admin\Dto\GroupBuy\GroupBuyDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
-use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
-use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
-use App\Interface\Admin\Dto\GroupBuy\GroupBuyDto;
 
 class GroupBuyRequest extends BaseRequest
 {

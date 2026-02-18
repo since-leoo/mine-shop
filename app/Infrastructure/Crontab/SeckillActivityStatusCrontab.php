@@ -1,12 +1,17 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Infrastructure\Crontab;
 
-use Carbon\Carbon;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Crontab\Annotation\Crontab;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\Job\SeckillSessionStartJob;
 use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
@@ -14,6 +19,9 @@ use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Domain\Trade\Seckill\Service\DomainSeckillActivityService;
 use App\Domain\Trade\Seckill\Service\DomainSeckillSessionService;
 use App\Domain\Trade\Seckill\Service\SeckillCacheService;
+use Carbon\Carbon;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
 #[Crontab(name: 'seckill-activity-status', rule: '* *\/10 * * * *', callback: 'execute', memo: '秒杀活动状态自动推进', enable: true)]

@@ -139,6 +139,8 @@ export const memberApi = {
   updateStatus: (id: number, status: string) => http.put(`${memberBaseUrl}/${id}/status`, { status }),
 
   syncTags: (id: number, tags: number[]) => http.put(`${memberBaseUrl}/${id}/tags`, { tags }),
+
+  export: (params?: Record<string, any>) => http.post<{ task_id: number, status: string }>(`${memberBaseUrl}/export`, params),
 }
 
 export interface MemberTagPayload {

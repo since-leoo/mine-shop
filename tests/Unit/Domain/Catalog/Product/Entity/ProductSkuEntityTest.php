@@ -1,58 +1,54 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Catalog\Product\Entity;
 
 use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
 use PHPUnit\Framework\TestCase;
 
-class ProductSkuEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ProductSkuEntityTest extends TestCase
 {
-    private function makeSku(): ProductSkuEntity
-    {
-        $sku = new ProductSkuEntity();
-        $sku->setId(1);
-        $sku->setSkuCode('SKU-001');
-        $sku->setSkuName('红色 L');
-        $sku->setCostPrice(5000);
-        $sku->setMarketPrice(12000);
-        $sku->setSalePrice(9900);
-        $sku->setStock(100);
-        $sku->setWarningStock(10);
-        $sku->setWeight(0.5);
-        $sku->setStatus('active');
-        return $sku;
-    }
-
     public function testBasicProperties(): void
     {
         $sku = $this->makeSku();
-        $this->assertSame(1, $sku->getId());
-        $this->assertSame('SKU-001', $sku->getSkuCode());
-        $this->assertSame('红色 L', $sku->getSkuName());
-        $this->assertSame(9900, $sku->getSalePrice());
-        $this->assertSame(100, $sku->getStock());
+        self::assertSame(1, $sku->getId());
+        self::assertSame('SKU-001', $sku->getSkuCode());
+        self::assertSame('红色 L', $sku->getSkuName());
+        self::assertSame(9900, $sku->getSalePrice());
+        self::assertSame(100, $sku->getStock());
     }
 
     public function testIsActive(): void
     {
         $sku = $this->makeSku();
-        $this->assertTrue($sku->isActive());
+        self::assertTrue($sku->isActive());
         $sku->markInactive();
-        $this->assertFalse($sku->isActive());
+        self::assertFalse($sku->isActive());
         $sku->markActive();
-        $this->assertTrue($sku->isActive());
+        self::assertTrue($sku->isActive());
     }
 
     public function testIsLowStock(): void
     {
         $sku = $this->makeSku(); // stock=100, warningStock=10
-        $this->assertFalse($sku->isLowStock());
+        self::assertFalse($sku->isLowStock());
         $sku->setStock(10);
-        $this->assertTrue($sku->isLowStock());
+        self::assertTrue($sku->isLowStock());
         $sku->setStock(5);
-        $this->assertTrue($sku->isLowStock());
+        self::assertTrue($sku->isLowStock());
     }
 
     public function testIsLowStockNoWarning(): void
@@ -60,21 +56,21 @@ class ProductSkuEntityTest extends TestCase
         $sku = $this->makeSku();
         $sku->setWarningStock(0);
         $sku->setStock(1);
-        $this->assertFalse($sku->isLowStock());
+        self::assertFalse($sku->isLowStock());
     }
 
     public function testIncreaseStock(): void
     {
         $sku = $this->makeSku();
         $sku->increaseStock(50);
-        $this->assertSame(150, $sku->getStock());
+        self::assertSame(150, $sku->getStock());
     }
 
     public function testDecreaseStock(): void
     {
         $sku = $this->makeSku();
         $sku->decreaseStock(30);
-        $this->assertSame(70, $sku->getStock());
+        self::assertSame(70, $sku->getStock());
     }
 
     public function testDecreaseStockBelowZeroThrows(): void
@@ -88,7 +84,7 @@ class ProductSkuEntityTest extends TestCase
     {
         $sku = $this->makeSku();
         $sku->ensureStockAvailable(50); // should not throw
-        $this->assertTrue(true);
+        self::assertTrue(true);
     }
 
     public function testEnsureStockAvailableInsufficientThrows(): void
@@ -109,9 +105,25 @@ class ProductSkuEntityTest extends TestCase
     {
         $sku = $this->makeSku();
         $arr = $sku->toArray();
-        $this->assertSame(1, $arr['id']);
-        $this->assertSame('SKU-001', $arr['sku_code']);
-        $this->assertSame(9900, $arr['sale_price']);
-        $this->assertSame(100, $arr['stock']);
+        self::assertSame(1, $arr['id']);
+        self::assertSame('SKU-001', $arr['sku_code']);
+        self::assertSame(9900, $arr['sale_price']);
+        self::assertSame(100, $arr['stock']);
+    }
+
+    private function makeSku(): ProductSkuEntity
+    {
+        $sku = new ProductSkuEntity();
+        $sku->setId(1);
+        $sku->setSkuCode('SKU-001');
+        $sku->setSkuName('红色 L');
+        $sku->setCostPrice(5000);
+        $sku->setMarketPrice(12000);
+        $sku->setSalePrice(9900);
+        $sku->setStock(100);
+        $sku->setWarningStock(10);
+        $sku->setWeight(0.5);
+        $sku->setStatus('active');
+        return $sku;
     }
 }

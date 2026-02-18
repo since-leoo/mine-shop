@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Crontab;
 
-use Carbon\Carbon;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\Crontab\Annotation\Crontab;
 use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
 use App\Domain\Trade\GroupBuy\Job\GroupBuyStartJob;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\GroupBuy\Service\GroupBuyCacheService;
+use Carbon\Carbon;
+use Hyperf\AsyncQueue\Driver\DriverFactory;
+use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
 #[Crontab(

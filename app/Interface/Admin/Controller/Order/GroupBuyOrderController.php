@@ -1,20 +1,32 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\Order;
 
+use App\Application\Admin\GroupBuy\Dto\GroupBuyOrderExportDto;
 use App\Application\Admin\Trade\AppGroupBuyOrderQueryService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
+use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 use Mine\Access\Attribute\Permission;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/group-buy-order')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -25,6 +37,7 @@ final class GroupBuyOrderController extends AbstractController
     public function __construct(
         private readonly AppGroupBuyOrderQueryService $queryService,
         private readonly RequestInterface $request,
+        private readonly CurrentUser $currentUser,
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -49,5 +62,22 @@ final class GroupBuyOrderController extends AbstractController
         $filters = array_intersect_key($params, array_flip(['status', 'group_no']));
 
         return $this->success($this->queryService->ordersByActivity($activityId, $filters, $page, $pageSize));
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'promotion:group_buy_order:list')]
+    public function export(): Result
+    {
+        $params = $this->request->all();
+        unset($params['page'], $params['page_size']);
+
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '拼团订单导出',
+            dtoClass: GroupBuyOrderExportDto::class,
+            params: $params,
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

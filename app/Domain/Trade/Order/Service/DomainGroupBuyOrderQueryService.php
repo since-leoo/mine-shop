@@ -1,13 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Order\Service;
 
-use App\Infrastructure\Model\Order\OrderItem;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
 use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
+use App\Infrastructure\Model\Order\OrderItem;
+use Hyperf\DbConnection\Db;
 
 final class DomainGroupBuyOrderQueryService
 {
@@ -121,11 +130,11 @@ final class DomainGroupBuyOrderQueryService
         }
 
         $rows = OrderItem::whereIn('sku_id', $skuIds)
-            ->whereHas('order', function ($q) {
+            ->whereHas('order', static function ($q) {
                 $q->where('order_type', 'group_buy')
                     ->where('status', '!=', 'cancelled')
-                    ->whereNotExists(function ($sub) {
-                        $sub->select(\Hyperf\DbConnection\Db::raw(1))
+                    ->whereNotExists(static function ($sub) {
+                        $sub->select(Db::raw(1))
                             ->from('group_buy_orders')
                             ->whereColumn('group_buy_orders.order_id', 'orders.id');
                     });

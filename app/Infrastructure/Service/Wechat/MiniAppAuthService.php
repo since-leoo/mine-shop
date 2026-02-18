@@ -53,7 +53,7 @@ final class MiniAppAuthService
         $savePath = $options['save_path'] ?? '/uploadfile/wechat/mini/qrcode/';
         $dir = BASE_PATH . '/public' . $savePath;
         if (! is_dir($dir)) {
-            mkdir($dir, 0755, true);
+            mkdir($dir, 0o755, true);
         }
 
         try {

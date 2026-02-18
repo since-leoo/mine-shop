@@ -1,19 +1,31 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\GroupBuy\ValueObject;
 
 use App\Domain\Trade\GroupBuy\ValueObject\GroupPeopleVo;
 use PHPUnit\Framework\TestCase;
 
-class GroupPeopleVoTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class GroupPeopleVoTest extends TestCase
 {
     public function testValid(): void
     {
         $vo = new GroupPeopleVo(2, 10);
-        $this->assertSame(2, $vo->getMinPeople());
-        $this->assertSame(10, $vo->getMaxPeople());
+        self::assertSame(2, $vo->getMinPeople());
+        self::assertSame(10, $vo->getMaxPeople());
     }
 
     public function testMaxLessThanMinThrows(): void
@@ -25,16 +37,16 @@ class GroupPeopleVoTest extends TestCase
     public function testEqualIsAllowed(): void
     {
         $vo = new GroupPeopleVo(5, 5);
-        $this->assertSame(5, $vo->getMinPeople());
+        self::assertSame(5, $vo->getMinPeople());
     }
 
     public function testCanFormGroup(): void
     {
         $vo = new GroupPeopleVo(2, 10);
-        $this->assertFalse($vo->canFormGroup(1));
-        $this->assertTrue($vo->canFormGroup(2));
-        $this->assertTrue($vo->canFormGroup(5));
-        $this->assertTrue($vo->canFormGroup(10));
-        $this->assertFalse($vo->canFormGroup(11));
+        self::assertFalse($vo->canFormGroup(1));
+        self::assertTrue($vo->canFormGroup(2));
+        self::assertTrue($vo->canFormGroup(5));
+        self::assertTrue($vo->canFormGroup(10));
+        self::assertFalse($vo->canFormGroup(11));
     }
 }

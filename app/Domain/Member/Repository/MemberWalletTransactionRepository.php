@@ -46,6 +46,7 @@ final class MemberWalletTransactionRepository extends IRepository
             })
             ->orderByDesc('id');
     }
+
     /**
      * 检查指定会员是否已存在某来源的流水记录.
      *
@@ -61,5 +62,4 @@ final class MemberWalletTransactionRepository extends IRepository
             ->where('source', $source)
             ->exists();
     }
-
 }

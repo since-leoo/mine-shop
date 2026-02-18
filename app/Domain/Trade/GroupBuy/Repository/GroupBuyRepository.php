@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Repository;
 
+use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Model\GroupBuy\GroupBuy;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
-use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
-use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
 /**
  * @extends IRepository<GroupBuy>
@@ -36,6 +36,18 @@ final class GroupBuyRepository extends IRepository
             ->with(['product:id,name,main_image', 'sku:id,product_id,sku_name,sale_price'])
             ->orderBy('sort_order', 'asc')
             ->orderBy('id', 'desc');
+    }
+
+    /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery()->with(['product']), $params);
+
+        foreach ($query->cursor() as $item) {
+            yield $item;
+        }
     }
 
     public function getStatistics(): array

@@ -1,12 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Infrastructure\Statistics\Repository;
 
 use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
-use App\Infrastructure\Model\Order\OrderItem;
 use App\Infrastructure\Model\Order\OrderPayment;
 use App\Infrastructure\Model\Statistics\StatDailyCategories;
 use App\Infrastructure\Model\Statistics\StatDailyMemberLevels;
@@ -24,14 +31,6 @@ use Hyperf\DbConnection\Db;
  */
 final class StatisticsRepository
 {
-    /**
-     * 获取数据库表前缀.
-     */
-    private function prefix(): string
-    {
-        return (string) config('databases.default.prefix', '');
-    }
-
     // ═══════════════════════════════════════════════════════
     //  聚合写入（定时任务调用）
     // ═══════════════════════════════════════════════════════
@@ -486,5 +485,13 @@ final class StatisticsRepository
             ->orderBy('date')
             ->get()
             ->toArray();
+    }
+
+    /**
+     * 获取数据库表前缀.
+     */
+    private function prefix(): string
+    {
+        return (string) config('databases.default.prefix', '');
     }
 }

@@ -77,6 +77,10 @@
               <template #icon><el-icon><Collection /></el-icon></template>
               {{ t('member.list.tagManager') }}
             </el-button>
+            <el-button @click="handleExport">
+              <template #icon><el-icon><Download /></el-icon></template>
+              {{ t('mall.export') }}
+            </el-button>
           </el-col>
         </el-row>
       </el-form>
@@ -324,7 +328,7 @@ import { useI18n } from 'vue-i18n'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
 import dayjs from 'dayjs'
-import { Check, Collection, EditPen, Lock, Plus, Refresh, Search, View } from '@element-plus/icons-vue'
+import { Check, Collection, EditPen, Lock, Plus, Refresh, Search, View, Download } from '@element-plus/icons-vue'
 import TagManager from './tag-manager.vue'
 import MemberDetail from './detail.vue'
 import { useGeo } from '@/hooks/useGeo.ts'
@@ -483,6 +487,16 @@ const handleDateChange = (range: [string, string] | null) => {
     filters.created_end = ''
   }
   handleSearch()
+}
+
+const handleExport = async () => {
+  try {
+    const res = await memberApi.export(buildParams())
+    ElMessage.success(res.message || '导出任务已创建')
+  }
+  catch (error: any) {
+    ElMessage.error(error?.message || '导出失败')
+  }
 }
 
 const handleSizeChange = (size: number) => {

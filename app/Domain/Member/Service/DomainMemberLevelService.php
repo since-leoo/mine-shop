@@ -78,18 +78,18 @@ final class DomainMemberLevelService extends IService
 
         // 校验序号唯一性
         $levelNumbers = array_column($levels, 'level');
-        if (count($levelNumbers) !== count(array_unique($levelNumbers))) {
+        if (\count($levelNumbers) !== \count(array_unique($levelNumbers))) {
             throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '等级序号不能重复');
         }
 
         // 按序号升序排序后校验成长值门槛严格递增
         usort($levels, static fn (array $a, array $b) => $a['level'] <=> $b['level']);
 
-        for ($i = 1, $count = count($levels); $i < $count; ++$i) {
+        for ($i = 1, $count = \count($levels); $i < $count; ++$i) {
             if ($levels[$i]['growth_value_min'] <= $levels[$i - 1]['growth_value_min']) {
                 throw new BusinessException(
                     ResultCode::UNPROCESSABLE_ENTITY,
-                    sprintf(
+                    \sprintf(
                         '等级 %d 的成长值门槛必须大于等级 %d 的成长值门槛',
                         $levels[$i]['level'],
                         $levels[$i - 1]['level'],

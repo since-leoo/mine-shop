@@ -1,22 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Catalog\Brand\Entity;
 
 use App\Domain\Catalog\Brand\Entity\BrandEntity;
 use PHPUnit\Framework\TestCase;
 
-class BrandEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class BrandEntityTest extends TestCase
 {
     public function testBasicProperties(): void
     {
         $entity = new BrandEntity();
         $entity->setId(1)->setName('Nike')->setLogo('nike.png')->setSort(10);
-        $this->assertSame(1, $entity->getId());
-        $this->assertSame('Nike', $entity->getName());
-        $this->assertSame('nike.png', $entity->getLogo());
-        $this->assertSame(10, $entity->getSort());
+        self::assertSame(1, $entity->getId());
+        self::assertSame('Nike', $entity->getName());
+        self::assertSame('nike.png', $entity->getLogo());
+        self::assertSame(10, $entity->getSort());
     }
 
     public function testEmptyNameThrows(): void
@@ -30,11 +42,11 @@ class BrandEntityTest extends TestCase
     {
         $entity = new BrandEntity();
         $entity->setName('Test');
-        $this->assertTrue($entity->isActive());
+        self::assertTrue($entity->isActive());
         $entity->deactivate();
-        $this->assertFalse($entity->isActive());
+        self::assertFalse($entity->isActive());
         $entity->activate();
-        $this->assertTrue($entity->isActive());
+        self::assertTrue($entity->isActive());
     }
 
     public function testInvalidStatusThrows(): void
@@ -49,15 +61,15 @@ class BrandEntityTest extends TestCase
     {
         $entity = new BrandEntity();
         $entity->setName('Test')->setSort(-5);
-        $this->assertSame(0, $entity->getSort());
+        self::assertSame(0, $entity->getSort());
     }
 
     public function testNeedsSort(): void
     {
         $entity = new BrandEntity();
-        $this->assertTrue($entity->needsSort());
+        self::assertTrue($entity->needsSort());
         $entity->setName('Test')->setSort(5);
-        $this->assertFalse($entity->needsSort());
+        self::assertFalse($entity->needsSort());
     }
 
     public function testToArray(): void
@@ -65,8 +77,8 @@ class BrandEntityTest extends TestCase
         $entity = new BrandEntity();
         $entity->setName('Adidas')->setSort(5)->setStatus('active');
         $arr = $entity->toArray();
-        $this->assertSame('Adidas', $arr['name']);
-        $this->assertSame(5, $arr['sort']);
-        $this->assertSame('active', $arr['status']);
+        self::assertSame('Adidas', $arr['name']);
+        self::assertSame(5, $arr['sort']);
+        self::assertSame('active', $arr['status']);
     }
 }

@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Repository;
 
+use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
-use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
-use App\Infrastructure\Model\Coupon\CouponUser;
 
 /**
  * 用户优惠券仓储.

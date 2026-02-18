@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Shipping;
 
-use App\Infrastructure\Exception\System\BusinessException;
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Domain\Trade\Shipping\Service\DomainShippingTemplateService;
+use App\Infrastructure\Exception\System\BusinessException;
 
 /**
  * 运费模板查询服务：处理所有读操作.

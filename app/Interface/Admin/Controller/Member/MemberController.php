@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Member;
 
 use App\Application\Admin\Member\AppMemberCommandService;
 use App\Application\Admin\Member\AppMemberQueryService;
+use App\Application\Admin\Member\Dto\MemberExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Member\MemberRequest;
@@ -27,6 +28,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/member/member')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -110,5 +112,19 @@ final class MemberController extends AbstractController
         $tags = \is_array($payload['tags'] ?? null) ? $payload['tags'] : [];
         $this->commandService->syncTags($id, $tags);
         return $this->success([], '会员标签已更新');
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'member:member:list')]
+    public function export(MemberRequest $request): Result
+    {
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '会员导出',
+            dtoClass: MemberExportDto::class,
+            params: $request->validated(),
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

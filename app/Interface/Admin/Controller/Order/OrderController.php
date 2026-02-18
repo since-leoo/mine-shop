@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Order;
 
 use App\Application\Admin\Trade\AppOrderCommandService;
 use App\Application\Admin\Trade\AppOrderQueryService;
+use App\Application\Admin\Trade\Dto\OrderExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\OrderRequest;
@@ -27,6 +28,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/order/order')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -106,9 +108,13 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:list')]
     public function export(OrderRequest $request): Result
     {
-        return $this->success([
-            'message' => '导出功能开发中，已接收请求。',
-            'filters' => $request->validated(),
-        ]);
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '订单导出',
+            dtoClass: OrderExportDto::class,
+            params: $request->validated(),
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

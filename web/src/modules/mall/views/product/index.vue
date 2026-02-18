@@ -12,7 +12,7 @@ import type { Ref } from 'vue'
 import type { UseDrawerExpose } from '@/hooks/useDrawer.ts'
 
 import { useI18n } from 'vue-i18n'
-import { page, remove, stats } from '~/mall/api/product'
+import { page, remove, stats, exportProduct } from '~/mall/api/product'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import useDrawer from '@/hooks/useDrawer.ts'
@@ -111,6 +111,17 @@ function handleBatchDelete() {
       loadStats()
     }
   })
+}
+
+async function handleExport() {
+  try {
+    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const res = await exportProduct(searchParams)
+    msg.success(res.message || '导出任务已创建')
+  }
+  catch (err: any) {
+    msg.alertError(err)
+  }
 }
 
 onMounted(() => {
@@ -222,6 +233,10 @@ onMounted(() => {
           @click="handleBatchDelete"
         >
           {{ t('mall.product.batchDelete') }}
+        </el-button>
+        <el-button plain @click="handleExport">
+          <template #icon><ma-svg-icon name="ph:download-simple" size="14" /></template>
+          {{ t('mall.export') }}
         </el-button>
       </template>
       <template #empty>

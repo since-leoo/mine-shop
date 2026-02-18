@@ -41,12 +41,17 @@ class MessageTemplate extends Model
     use SoftDeletes;
 
     public const TYPE_SYSTEM = 'system';
+
     public const TYPE_ANNOUNCEMENT = 'announcement';
+
     public const TYPE_ALERT = 'alert';
+
     public const TYPE_REMINDER = 'reminder';
 
     public const FORMAT_TEXT = 'text';
+
     public const FORMAT_HTML = 'html';
+
     public const FORMAT_MARKDOWN = 'markdown';
 
     protected ?string $table = 'message_templates';

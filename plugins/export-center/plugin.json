@@ -1,0 +1,15 @@
+{
+    "name": "since/export-center",
+    "version": "1.0.0",
+    "description": "导出中心插件，提供统一的异步数据导出、下载中心和系统消息通知功能",
+    "author": "since",
+    "namespace": "Plugin\\ExportCenter",
+    "priority": 10,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {
+        "phpoffice/phpspreadsheet": "^2.0"
+    },
+    "rollback_on_uninstall": false,
+    "configProvider": "Plugin\\ExportCenter\\ConfigProvider"
+}

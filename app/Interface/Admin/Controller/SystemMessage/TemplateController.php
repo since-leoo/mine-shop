@@ -1,10 +1,22 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Controller\SystemMessage;
 
+use App\Domain\Infrastructure\SystemMessage\Service\TemplateService;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Admin\Request\SystemMessage\CreateTemplateRequest;
+use App\Interface\Admin\Request\SystemMessage\UpdateTemplateRequest;
+use App\Interface\Common\Controller\SystemMessageAbstractController;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\Di\Annotation\Inject;
@@ -15,10 +27,6 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
-use App\Interface\Common\Controller\SystemMessageAbstractController;
-use App\Interface\Admin\Request\SystemMessage\CreateTemplateRequest;
-use App\Interface\Admin\Request\SystemMessage\UpdateTemplateRequest;
-use App\Domain\Infrastructure\SystemMessage\Service\TemplateService;
 
 #[Controller(prefix: 'admin/system-message/template')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -47,7 +55,9 @@ class TemplateController extends SystemMessageAbstractController
     public function read(int $id): Result
     {
         $template = $this->templateService->getById($id);
-        if (! $template) { return $this->error('模板不存在', 404); }
+        if (! $template) {
+            return $this->error('模板不存在', 404);
+        }
         return $this->success($template);
     }
 
@@ -64,7 +74,11 @@ class TemplateController extends SystemMessageAbstractController
     #[Permission(code: 'system-message-template:update')]
     public function update(int $id, UpdateTemplateRequest $request): Result
     {
-        try { return $this->success($this->templateService->update($id, $request->validated()), '模板更新成功'); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        try {
+            return $this->success($this->templateService->update($id, $request->validated()), '模板更新成功');
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[DeleteMapping('delete')]
@@ -72,51 +86,90 @@ class TemplateController extends SystemMessageAbstractController
     public function delete(): Result
     {
         $ids = $this->request->input('ids', []);
-        if (empty($ids)) { return $this->error('请选择要删除的模板'); }
-        try { $deleted = $this->templateService->batchDelete((array) $ids); return $this->success(['deleted' => $deleted, 'failed' => \count((array) $ids) - $deleted], '删除操作完成'); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage()); }
+        if (empty($ids)) {
+            return $this->error('请选择要删除的模板');
+        }
+        try {
+            $deleted = $this->templateService->batchDelete((array) $ids);
+            return $this->success(['deleted' => $deleted, 'failed' => \count((array) $ids) - $deleted], '删除操作完成');
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage());
+        }
     }
 
     #[PostMapping('preview')]
     #[Permission(code: 'system-message-template:read')]
     public function preview(): Result
     {
-        $id = $this->request->input('id'); $variables = $this->request->input('variables', []);
-        if (! $id) { return $this->error('模板ID不能为空'); }
-        try { return $this->success($this->templateService->preview($id, $variables)); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        $id = $this->request->input('id');
+        $variables = $this->request->input('variables', []);
+        if (! $id) {
+            return $this->error('模板ID不能为空');
+        }
+        try {
+            return $this->success($this->templateService->preview($id, $variables));
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[PostMapping('render')]
     #[Permission(code: 'system-message-template:read')]
     public function render(): Result
     {
-        $id = $this->request->input('id'); $variables = $this->request->input('variables', []);
-        if (! $id) { return $this->error('模板ID不能为空'); }
-        try { return $this->success($this->templateService->render($id, $variables)); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        $id = $this->request->input('id');
+        $variables = $this->request->input('variables', []);
+        if (! $id) {
+            return $this->error('模板ID不能为空');
+        }
+        try {
+            return $this->success($this->templateService->render($id, $variables));
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[PostMapping('validateVariables')]
     #[Permission(code: 'system-message-template:read')]
     public function validateVariables(): Result
     {
-        $id = $this->request->input('id'); $variables = $this->request->input('variables', []);
-        if (! $id) { return $this->error('模板ID不能为空'); }
-        try { return $this->success($this->templateService->validateVariables($id, $variables)); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        $id = $this->request->input('id');
+        $variables = $this->request->input('variables', []);
+        if (! $id) {
+            return $this->error('模板ID不能为空');
+        }
+        try {
+            return $this->success($this->templateService->validateVariables($id, $variables));
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[GetMapping('getVariables/{id}')]
     #[Permission(code: 'system-message-template:read')]
     public function getVariables(int $id): Result
     {
-        try { return $this->success($this->templateService->getVariables($id)); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        try {
+            return $this->success($this->templateService->getVariables($id));
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[PostMapping('copy')]
     #[Permission(code: 'system-message-template:save')]
     public function copy(): Result
     {
-        $id = $this->request->input('id'); $newName = $this->request->input('name');
-        if (! $id) { return $this->error('模板ID不能为空'); }
-        try { return $this->success($this->templateService->duplicate($id, $newName), '模板复制成功'); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        $id = $this->request->input('id');
+        $newName = $this->request->input('name');
+        if (! $id) {
+            return $this->error('模板ID不能为空');
+        }
+        try {
+            return $this->success($this->templateService->duplicate($id, $newName), '模板复制成功');
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[PutMapping('changeStatus')]
@@ -124,8 +177,14 @@ class TemplateController extends SystemMessageAbstractController
     public function changeStatus(): Result
     {
         $id = $this->request->input('id');
-        if (! $id) { return $this->error('模板ID不能为空'); }
-        try { return $this->success(['result' => $this->templateService->toggleActive($id)], '状态更新成功'); } catch (\InvalidArgumentException $e) { return $this->error($e->getMessage(), 404); }
+        if (! $id) {
+            return $this->error('模板ID不能为空');
+        }
+        try {
+            return $this->success(['result' => $this->templateService->toggleActive($id)], '状态更新成功');
+        } catch (\InvalidArgumentException $e) {
+            return $this->error($e->getMessage(), 404);
+        }
     }
 
     #[GetMapping('search')]
@@ -133,29 +192,42 @@ class TemplateController extends SystemMessageAbstractController
     public function search(): Result
     {
         $keyword = $this->request->input('keyword', '');
-        if (empty($keyword)) { return $this->error('搜索关键词不能为空'); }
+        if (empty($keyword)) {
+            return $this->error('搜索关键词不能为空');
+        }
         $filters = array_filter(['type' => $this->request->input('type'), 'category' => $this->request->input('category'), 'is_active' => $this->request->input('is_active')], static fn ($v) => $v !== null && $v !== '');
         return $this->success($this->templateService->search($keyword, $filters, (int) $this->request->input('page', 1), (int) $this->request->input('page_size', 20)));
     }
 
     #[GetMapping('categories')]
     #[Permission(code: 'system-message-template:index')]
-    public function getCategories(): Result { return $this->success($this->templateService->getCategories()); }
+    public function getCategories(): Result
+    {
+        return $this->success($this->templateService->getCategories());
+    }
 
     #[GetMapping('active')]
     #[Permission(code: 'system-message-template:index')]
-    public function getActiveTemplates(): Result { return $this->success($this->templateService->getActiveTemplates($this->request->input('type'))); }
+    public function getActiveTemplates(): Result
+    {
+        return $this->success($this->templateService->getActiveTemplates($this->request->input('type')));
+    }
 
     #[PostMapping('import')]
     #[Permission(code: 'system-message-template:import')]
     public function import(): Result
     {
         $templates = $this->request->input('templates', []);
-        if (empty($templates) || ! \is_array($templates)) { return $this->error('模板数据不能为空'); }
+        if (empty($templates) || ! \is_array($templates)) {
+            return $this->error('模板数据不能为空');
+        }
         return $this->success($this->templateService->import($templates), '导入完成');
     }
 
     #[PostMapping('export')]
     #[Permission(code: 'system-message-template:export')]
-    public function export(): Result { return $this->success($this->templateService->export($this->request->input('ids', []))); }
+    public function export(): Result
+    {
+        return $this->success($this->templateService->export($this->request->input('ids', [])));
+    }
 }

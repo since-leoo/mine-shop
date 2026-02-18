@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Infrastructure\SystemMessage\Template;
 
@@ -19,9 +27,28 @@ class SystemNotification extends AbstractMessageTemplate
         protected int $priority = 3
     ) {}
 
-    public function getTitle(): string { return $this->title; }
-    public function getContent(): string { return $this->content; }
-    public function getType(): MessageType { return MessageType::SYSTEM; }
-    public function getPriority(): int { return $this->priority; }
-    protected function recipients(): array { return $this->userIds; }
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    public function getType(): MessageType
+    {
+        return MessageType::SYSTEM;
+    }
+
+    public function getPriority(): int
+    {
+        return $this->priority;
+    }
+
+    protected function recipients(): array
+    {
+        return $this->userIds;
+    }
 }

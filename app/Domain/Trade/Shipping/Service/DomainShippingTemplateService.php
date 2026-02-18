@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Shipping\Service;
 
-use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\System\BusinessException;
-use App\Interface\Common\ResultCode;
 use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Domain\Trade\Shipping\Mapper\ShippingTemplateMapper;
 use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Shipping\ShippingTemplate;
+use App\Interface\Common\ResultCode;
 
 /**
  * 运费模板领域服务：封装运费模板相关的核心业务逻辑.

@@ -1,15 +1,23 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Request\Seckill;
 
+use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
+use App\Interface\Admin\Dto\Seckill\SeckillActivityDto;
 use App\Interface\Common\Request\BaseRequest;
 use App\Interface\Common\Request\Traits\NoAuthorizeTrait;
 use Hyperf\DTO\Mapper;
 use Hyperf\Validation\Rule;
-use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
-use App\Interface\Admin\Dto\Seckill\SeckillActivityDto;
 
 class SeckillActivityRequest extends BaseRequest
 {

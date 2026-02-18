@@ -1,13 +1,21 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Application\Admin\Seckill;
 
-use Hyperf\DbConnection\Db;
 use App\Domain\Trade\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Trade\Seckill\Service\DomainSeckillSessionService;
 use App\Infrastructure\Model\Seckill\SeckillSession;
+use Hyperf\DbConnection\Db;
 
 final class AppSeckillSessionCommandService
 {

@@ -12,14 +12,15 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Service;
 
-use Carbon\Carbon;
-use Hyperf\Context\ApplicationContext;
 use App\Domain\Infrastructure\SystemMessage\Event\NotificationFailed;
 use App\Domain\Infrastructure\SystemMessage\Event\NotificationSent;
+use App\Domain\Infrastructure\SystemMessage\Repository\UserPreferenceRepository;
+use App\Infrastructure\Model\Permission\User;
 use App\Infrastructure\Model\SystemMessage\Message;
 use App\Infrastructure\Model\SystemMessage\MessageDeliveryLog;
 use App\Infrastructure\Model\SystemMessage\UserNotificationPreference;
-use App\Domain\Infrastructure\SystemMessage\Repository\UserPreferenceRepository;
+use Carbon\Carbon;
+use Hyperf\Context\ApplicationContext;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class NotificationService
@@ -62,7 +63,11 @@ class NotificationService
         foreach ($userIds as $userId) {
             try {
                 $sent = $this->send($message, $userId, $channel);
-                if ($sent) { ++$results['success']; } else { ++$results['skipped']; }
+                if ($sent) {
+                    ++$results['success'];
+                } else {
+                    ++$results['skipped'];
+                }
                 $results['details'][$userId] = $sent ? 'sent' : 'skipped';
             } catch (\Throwable $e) {
                 ++$results['failed'];
@@ -142,7 +147,10 @@ class NotificationService
         };
     }
 
-    protected function sendDatabaseNotification(Message $message, int $userId): bool { return true; }
+    protected function sendDatabaseNotification(Message $message, int $userId): bool
+    {
+        return true;
+    }
 
     protected function sendRealtimeNotification(Message $message, int $userId, string $channel): bool
     {
@@ -153,7 +161,9 @@ class NotificationService
     protected function sendEmailNotification(Message $message, int $userId): bool
     {
         $user = $this->getUserById($userId);
-        if (! $user || empty($user->email)) { return false; }
+        if (! $user || empty($user->email)) {
+            return false;
+        }
         logger()->info('Email notification skipped (mail service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
@@ -161,7 +171,9 @@ class NotificationService
     protected function sendSmsNotification(Message $message, int $userId): bool
     {
         $user = $this->getUserById($userId);
-        if (! $user || empty($user->phone)) { return false; }
+        if (! $user || empty($user->phone)) {
+            return false;
+        }
         logger()->info('SMS notification skipped (sms service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
         return false;
     }
@@ -181,18 +193,28 @@ class NotificationService
     protected function shouldSendNotification(Message $message, int $userId, string $channel): bool
     {
         $preference = $this->preferenceRepository->getUserPreference($userId);
-        if (! $preference) { return $this->getDefaultChannelSetting($channel); }
-        if (! $preference->getChannelSetting($channel)) { return false; }
-        if (! $preference->getTypeSetting($message->type)) { return false; }
+        if (! $preference) {
+            return $this->getDefaultChannelSetting($channel);
+        }
+        if (! $preference->getChannelSetting($channel)) {
+            return false;
+        }
+        if (! $preference->getTypeSetting($message->type)) {
+            return false;
+        }
         $minPriority = $preference->min_priority ?? 1;
-        if ($message->priority < $minPriority) { return false; }
+        if ($message->priority < $minPriority) {
+            return false;
+        }
         return true;
     }
 
     protected function isInDoNotDisturbTime(int $userId): bool
     {
         $preference = $this->preferenceRepository->getUserPreference($userId);
-        if (! $preference || ! $preference->do_not_disturb_enabled) { return false; }
+        if (! $preference || ! $preference->do_not_disturb_enabled) {
+            return false;
+        }
         $now = Carbon::now();
         $startTime = Carbon::createFromTimeString($preference->do_not_disturb_start ?? '22:00:00');
         $endTime = Carbon::createFromTimeString($preference->do_not_disturb_end ?? '08:00:00');
@@ -221,7 +243,9 @@ class NotificationService
     {
         $maxLength = config('system_message.sms.max_length', 70);
         $content = $message->title;
-        if (mb_strlen($content) > $maxLength) { $content = mb_substr($content, 0, $maxLength - 3) . '...'; }
+        if (mb_strlen($content) > $maxLength) {
+            $content = mb_substr($content, 0, $maxLength - 3) . '...';
+        }
         return $content;
     }
 
@@ -229,7 +253,9 @@ class NotificationService
     {
         $maxLength = config('system_message.push.max_length', 100);
         $content = strip_tags($message->content);
-        if (mb_strlen($content) > $maxLength) { $content = mb_substr($content, 0, $maxLength - 3) . '...'; }
+        if (mb_strlen($content) > $maxLength) {
+            $content = mb_substr($content, 0, $maxLength - 3) . '...';
+        }
         return $content;
     }
 
@@ -241,7 +267,7 @@ class NotificationService
 
     protected function getUserById(int $userId)
     {
-        return \App\Infrastructure\Model\Permission\User::find($userId);
+        return User::find($userId);
     }
 
     private function getEventDispatcher(): EventDispatcherInterface

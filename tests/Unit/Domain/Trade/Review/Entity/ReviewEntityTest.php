@@ -1,44 +1,41 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Review\Entity;
 
 use App\Domain\Trade\Review\Entity\ReviewEntity;
 use PHPUnit\Framework\TestCase;
 
-class ReviewEntityTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ReviewEntityTest extends TestCase
 {
-    private function makeEntity(string $status = 'pending'): ReviewEntity
-    {
-        $entity = new ReviewEntity();
-        $entity->setId(1);
-        $entity->setOrderId(100);
-        $entity->setOrderItemId(200);
-        $entity->setProductId(300);
-        $entity->setSkuId(400);
-        $entity->setMemberId(500);
-        $entity->setRating(5);
-        $entity->setContent('很好的商品');
-        $entity->setStatus($status);
-        return $entity;
-    }
-
     public function testBasicProperties(): void
     {
         $entity = $this->makeEntity();
-        $this->assertSame(1, $entity->getId());
-        $this->assertSame(100, $entity->getOrderId());
-        $this->assertSame(5, $entity->getRating());
-        $this->assertSame('很好的商品', $entity->getContent());
-        $this->assertSame('pending', $entity->getStatus());
+        self::assertSame(1, $entity->getId());
+        self::assertSame(100, $entity->getOrderId());
+        self::assertSame(5, $entity->getRating());
+        self::assertSame('很好的商品', $entity->getContent());
+        self::assertSame('pending', $entity->getStatus());
     }
 
     public function testApprove(): void
     {
         $entity = $this->makeEntity('pending');
         $entity->approve();
-        $this->assertSame('approved', $entity->getStatus());
+        self::assertSame('approved', $entity->getStatus());
     }
 
     public function testApproveNotPendingThrows(): void
@@ -52,7 +49,7 @@ class ReviewEntityTest extends TestCase
     {
         $entity = $this->makeEntity('pending');
         $entity->reject();
-        $this->assertSame('rejected', $entity->getStatus());
+        self::assertSame('rejected', $entity->getStatus());
     }
 
     public function testRejectNotPendingThrows(): void
@@ -66,31 +63,46 @@ class ReviewEntityTest extends TestCase
     {
         $entity = $this->makeEntity();
         $entity->reply('感谢您的评价');
-        $this->assertSame('感谢您的评价', $entity->getAdminReply());
-        $this->assertNotNull($entity->getReplyTime());
+        self::assertSame('感谢您的评价', $entity->getAdminReply());
+        self::assertNotNull($entity->getReplyTime());
     }
 
     public function testImages(): void
     {
         $entity = $this->makeEntity();
         $entity->setImages(['img1.jpg', 'img2.jpg']);
-        $this->assertSame(['img1.jpg', 'img2.jpg'], $entity->getImages());
+        self::assertSame(['img1.jpg', 'img2.jpg'], $entity->getImages());
     }
 
     public function testIsAnonymous(): void
     {
         $entity = $this->makeEntity();
         $entity->setIsAnonymous(true);
-        $this->assertTrue($entity->getIsAnonymous());
+        self::assertTrue($entity->getIsAnonymous());
     }
 
     public function testToArray(): void
     {
         $entity = $this->makeEntity();
         $arr = $entity->toArray();
-        $this->assertSame(100, $arr['order_id']);
-        $this->assertSame(5, $arr['rating']);
-        $this->assertSame('很好的商品', $arr['content']);
-        $this->assertSame('pending', $arr['status']);
+        self::assertSame(100, $arr['order_id']);
+        self::assertSame(5, $arr['rating']);
+        self::assertSame('很好的商品', $arr['content']);
+        self::assertSame('pending', $arr['status']);
+    }
+
+    private function makeEntity(string $status = 'pending'): ReviewEntity
+    {
+        $entity = new ReviewEntity();
+        $entity->setId(1);
+        $entity->setOrderId(100);
+        $entity->setOrderItemId(200);
+        $entity->setProductId(300);
+        $entity->setSkuId(400);
+        $entity->setMemberId(500);
+        $entity->setRating(5);
+        $entity->setContent('很好的商品');
+        $entity->setStatus($status);
+        return $entity;
     }
 }

@@ -34,3 +34,7 @@ export function summaryPage(params: Record<string, any>): Promise<ResponseStruct
 export function ordersByActivity(activityId: number, params: Record<string, any>): Promise<ResponseStruct<PageList<SeckillOrderDetailVo>>> {
   return useHttp().get(`/admin/seckill-order/${activityId}/orders`, { params })
 }
+
+export function seckillOrderExport(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post('/admin/seckill-order/export', params)
+}

@@ -1,15 +1,26 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Admin\Request\SystemMessage;
 
-use Hyperf\Validation\Request\FormRequest;
 use App\Infrastructure\Model\SystemMessage\MessageTemplate;
+use Hyperf\Validation\Request\FormRequest;
 
 class CreateTemplateRequest extends FormRequest
 {
-    public function authorize(): bool { return true; }
+    public function authorize(): bool
+    {
+        return true;
+    }
 
     public function rules(): array
     {
@@ -56,8 +67,12 @@ class CreateTemplateRequest extends FormRequest
             } else {
                 $missingVariables = array_diff($allVariables, $data['variables']);
                 $extraVariables = array_diff($data['variables'], $allVariables);
-                if (! empty($missingVariables)) { $validator->errors()->add('variables', '缺少模板变量: ' . implode(', ', $missingVariables)); }
-                if (! empty($extraVariables)) { $validator->errors()->add('variables', '多余的模板变量: ' . implode(', ', $extraVariables)); }
+                if (! empty($missingVariables)) {
+                    $validator->errors()->add('variables', '缺少模板变量: ' . implode(', ', $missingVariables));
+                }
+                if (! empty($extraVariables)) {
+                    $validator->errors()->add('variables', '多余的模板变量: ' . implode(', ', $extraVariables));
+                }
             }
         });
     }
@@ -69,12 +84,18 @@ class CreateTemplateRequest extends FormRequest
             preg_match_all($pattern, $template, $matches);
             foreach ($matches[1] as $variable) {
                 $variable = trim($variable);
-                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) { $validator->errors()->add($field, "无效的变量名: {$variable}"); }
+                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
+                    $validator->errors()->add($field, "无效的变量名: {$variable}");
+                }
             }
             $openCount = mb_substr_count($template, '{{');
             $closeCount = mb_substr_count($template, '}}');
-            if ($openCount !== $closeCount) { $validator->errors()->add($field, '模板语法错误: 括号不匹配'); }
-        } catch (\Throwable $e) { $validator->errors()->add($field, '模板语法错误: ' . $e->getMessage()); }
+            if ($openCount !== $closeCount) {
+                $validator->errors()->add($field, '模板语法错误: 括号不匹配');
+            }
+        } catch (\Throwable $e) {
+            $validator->errors()->add($field, '模板语法错误: ' . $e->getMessage());
+        }
     }
 
     protected function extractVariables(string $template): array

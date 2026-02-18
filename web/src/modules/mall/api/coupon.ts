@@ -110,3 +110,7 @@ export function couponUserMarkUsed(id: number): Promise<ResponseStruct<null>> {
 export function couponUserMarkExpired(id: number): Promise<ResponseStruct<null>> {
   return useHttp().put(`${couponUserBase}/${id}/mark-expired`)
 }
+
+export function couponExport(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post(`${couponBase}/export`, params)
+}

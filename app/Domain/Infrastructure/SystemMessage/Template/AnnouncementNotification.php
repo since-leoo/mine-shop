@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Infrastructure\SystemMessage\Template;
 
@@ -19,16 +27,32 @@ class AnnouncementNotification extends AbstractMessageTemplate
         protected bool $sendEmail = false
     ) {}
 
-    public function getTitle(): string { return $this->title; }
-    public function getContent(): string { return $this->content; }
-    public function getType(): MessageType { return MessageType::ANNOUNCEMENT; }
+    public function getTitle(): string
+    {
+        return $this->title;
+    }
+
+    public function getContent(): string
+    {
+        return $this->content;
+    }
+
+    public function getType(): MessageType
+    {
+        return MessageType::ANNOUNCEMENT;
+    }
 
     public function getChannels(): array
     {
         $channels = [MessageChannel::SOCKETIO];
-        if ($this->sendEmail) { $channels[] = MessageChannel::EMAIL; }
+        if ($this->sendEmail) {
+            $channels[] = MessageChannel::EMAIL;
+        }
         return $channels;
     }
 
-    public function getPriority(): int { return 4; }
+    public function getPriority(): int
+    {
+        return 4;
+    }
 }

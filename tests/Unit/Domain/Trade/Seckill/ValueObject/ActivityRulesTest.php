@@ -1,22 +1,34 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Trade\Seckill\ValueObject;
 
 use App\Domain\Trade\Seckill\ValueObject\ActivityRules;
 use PHPUnit\Framework\TestCase;
 
-class ActivityRulesTest extends TestCase
+/**
+ * @internal
+ * @coversNothing
+ */
+final class ActivityRulesTest extends TestCase
 {
     public function testDefaultRules(): void
     {
         $rules = ActivityRules::default();
-        $this->assertSame(1, $rules->getMaxQuantityPerUser());
-        $this->assertSame(1, $rules->getMinPurchaseQuantity());
-        $this->assertFalse($rules->isRequireMemberLevel());
-        $this->assertFalse($rules->isAllowRefund());
-        $this->assertSame(24, $rules->getRefundDeadlineHours());
+        self::assertSame(1, $rules->getMaxQuantityPerUser());
+        self::assertSame(1, $rules->getMinPurchaseQuantity());
+        self::assertFalse($rules->isRequireMemberLevel());
+        self::assertFalse($rules->isAllowRefund());
+        self::assertSame(24, $rules->getRefundDeadlineHours());
     }
 
     public function testCustomRules(): void
@@ -29,12 +41,12 @@ class ActivityRulesTest extends TestCase
             'allow_refund' => true,
             'refund_deadline_hours' => 48,
         ]);
-        $this->assertSame(5, $rules->getMaxQuantityPerUser());
-        $this->assertSame(2, $rules->getMinPurchaseQuantity());
-        $this->assertTrue($rules->isRequireMemberLevel());
-        $this->assertSame(3, $rules->getRequiredMemberLevelId());
-        $this->assertTrue($rules->isAllowRefund());
-        $this->assertSame(48, $rules->getRefundDeadlineHours());
+        self::assertSame(5, $rules->getMaxQuantityPerUser());
+        self::assertSame(2, $rules->getMinPurchaseQuantity());
+        self::assertTrue($rules->isRequireMemberLevel());
+        self::assertSame(3, $rules->getRequiredMemberLevelId());
+        self::assertTrue($rules->isAllowRefund());
+        self::assertSame(48, $rules->getRefundDeadlineHours());
     }
 
     public function testMinCannotExceedMax(): void
@@ -52,9 +64,9 @@ class ActivityRulesTest extends TestCase
     public function testCanUserPurchase(): void
     {
         $rules = new ActivityRules(['max_quantity_per_user' => 3, 'min_purchase_quantity' => 1]);
-        $this->assertTrue($rules->canUserPurchase(2));
-        $this->assertFalse($rules->canUserPurchase(4));
-        $this->assertFalse($rules->canUserPurchase(0));
+        self::assertTrue($rules->canUserPurchase(2));
+        self::assertFalse($rules->canUserPurchase(4));
+        self::assertFalse($rules->canUserPurchase(0));
     }
 
     public function testCanUserPurchaseWithMemberLevel(): void
@@ -65,16 +77,16 @@ class ActivityRulesTest extends TestCase
             'require_member_level' => true,
             'required_member_level_id' => 3,
         ]);
-        $this->assertTrue($rules->canUserPurchase(2, 3));
-        $this->assertFalse($rules->canUserPurchase(2, 1));
+        self::assertTrue($rules->canUserPurchase(2, 3));
+        self::assertFalse($rules->canUserPurchase(2, 1));
     }
 
     public function testToArray(): void
     {
         $rules = ActivityRules::default();
         $arr = $rules->toArray();
-        $this->assertArrayHasKey('max_quantity_per_user', $arr);
-        $this->assertArrayHasKey('min_purchase_quantity', $arr);
-        $this->assertArrayHasKey('allow_refund', $arr);
+        self::assertArrayHasKey('max_quantity_per_user', $arr);
+        self::assertArrayHasKey('min_purchase_quantity', $arr);
+        self::assertArrayHasKey('allow_refund', $arr);
     }
 }

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Domain\Trade\Seckill\Strategy;
 
@@ -8,12 +16,12 @@ use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
-use Carbon\Carbon;
 use App\Domain\Trade\Seckill\Entity\SeckillProductEntity;
 use App\Domain\Trade\Seckill\Repository\SeckillOrderRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Domain\Trade\Seckill\Service\SeckillCacheService;
+use Carbon\Carbon;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;

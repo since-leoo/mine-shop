@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -14,7 +22,7 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 11: 下一等级差值计算
+ * Feature: member-vip-level, Property 11: 下一等级差值计算.
  *
  * Validates: Requirements 7.3
  *
@@ -22,132 +30,12 @@ use PHPUnit\Framework\TestCase;
  * if there's a higher level, the returned gap must equal
  * next_level.growth_value_min - current_growth_value;
  * if already at max level, gap = 0.
+ * @internal
+ * @coversNothing
  */
-class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
+final class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
 {
     use TestTrait;
-
-    /**
-     * Generate a valid list of level configs with strictly increasing growth_value_min.
-     * Level 1 always starts at growth_value_min = 0.
-     *
-     * @return array<int, array{level: int, growth_value_min: int, name: string, icon: string|null, privileges: array}>
-     */
-    private function generateValidLevels(int $count): array
-    {
-        $levels = [];
-        $currentMin = 0;
-
-        for ($i = 0; $i < $count; ++$i) {
-            $levels[] = [
-                'level' => $i + 1,
-                'growth_value_min' => $currentMin,
-                'name' => 'VIP' . ($i + 1),
-                'icon' => null,
-                'privileges' => [],
-            ];
-            $currentMin += random_int(100, 5000);
-        }
-
-        return $levels;
-    }
-
-    /**
-     * Create a MemberLevel mock from level data.
-     */
-    private function makeLevelMock(array $data): MemberLevel
-    {
-        $mock = $this->getMockBuilder(MemberLevel::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getAttribute'])
-            ->getMock();
-
-        $mock->method('getAttribute')
-            ->willReturnCallback(fn (string $key) => $data[$key] ?? null);
-
-        return $mock;
-    }
-
-    /**
-     * Create a Member mock with the given growth value.
-     */
-    private function makeMemberMock(int $id, int $growthValue): Member
-    {
-        $mock = $this->getMockBuilder(Member::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getAttribute'])
-            ->getMock();
-
-        $mock->method('getAttribute')
-            ->willReturnCallback(fn (string $key) => match ($key) {
-                'id' => $id,
-                'growth_value' => $growthValue,
-                default => null,
-            });
-
-        return $mock;
-    }
-
-    /**
-     * Independently compute the expected matched level number for a growth value.
-     * Returns the highest level number where growth_value_min <= growthValue.
-     */
-    private function computeMatchedLevel(array $levels, int $growthValue): array
-    {
-        $qualifying = array_filter($levels, fn (array $l) => $l['growth_value_min'] <= $growthValue);
-        usort($qualifying, fn (array $a, array $b) => $b['level'] <=> $a['level']);
-        return $qualifying[0];
-    }
-
-    /**
-     * Independently compute the expected next level gap.
-     */
-    private function computeExpectedGap(array $levels, int $growthValue): int
-    {
-        $currentLevel = $this->computeMatchedLevel($levels, $growthValue);
-
-        // Find the first level with a higher level number
-        $sortedLevels = $levels;
-        usort($sortedLevels, fn (array $a, array $b) => $a['level'] <=> $b['level']);
-
-        foreach ($sortedLevels as $level) {
-            if ($level['level'] > $currentLevel['level']) {
-                return max($level['growth_value_min'] - $growthValue, 0);
-            }
-        }
-
-        // Already at max level
-        return 0;
-    }
-
-    /**
-     * Build the service with mocked dependencies for the given levels and growth value.
-     */
-    private function buildService(array $levelData, int $memberId, int $growthValue): DomainApiMemberQueryService
-    {
-        $testCase = $this;
-
-        // Compute the matched level for matchLevelByGrowthValue
-        $matchedLevelData = $this->computeMatchedLevel($levelData, $growthValue);
-        $matchedLevelMock = $this->makeLevelMock($matchedLevelData);
-
-        // Build active level mocks for getActiveLevels
-        $sortedLevels = $levelData;
-        usort($sortedLevels, fn (array $a, array $b) => $a['level'] <=> $b['level']);
-        $activeLevelMocks = array_map(fn (array $l) => $this->makeLevelMock($l), $sortedLevels);
-
-        $memberRepository = $this->createMock(MemberRepository::class);
-        $memberRepository->method('findById')
-            ->willReturn($this->makeMemberMock($memberId, $growthValue));
-
-        $levelService = $this->createMock(DomainMemberLevelService::class);
-        $levelService->method('matchLevelByGrowthValue')
-            ->willReturn($matchedLevelMock);
-        $levelService->method('getActiveLevels')
-            ->willReturn($activeLevelMocks);
-
-        return new DomainApiMemberQueryService($memberRepository, $levelService);
-    }
 
     /**
      * Property 11 (core): For any growth value and level config list,
@@ -171,7 +59,7 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
             $this->assertSame(
                 $expectedGap,
                 $result['next_level_gap'],
-                sprintf(
+                \sprintf(
                     'Gap mismatch: growthValue=%d, levels=%d, expected=%d, got=%d',
                     $growthValue,
                     $count,
@@ -204,7 +92,7 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
             $this->assertSame(
                 0,
                 $result['next_level_gap'],
-                sprintf(
+                \sprintf(
                     'Max level gap must be 0: growthValue=%d (max threshold=%d), got=%d',
                     $growthValue,
                     $maxThreshold,
@@ -233,7 +121,7 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
             $this->assertGreaterThanOrEqual(
                 0,
                 $result['next_level_gap'],
-                sprintf(
+                \sprintf(
                     'Gap must be non-negative: growthValue=%d, got=%d',
                     $growthValue,
                     $result['next_level_gap'],
@@ -255,7 +143,7 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
             Generators::choose(0, 6),  // index of level to test (not the last one)
         )->then(function (int $count, int $targetIdx) {
             // Ensure targetIdx is not the last level
-            $targetIdx = $targetIdx % ($count - 1);
+            $targetIdx %= ($count - 1);
             $levels = $this->generateValidLevels($count);
             $growthValue = $levels[$targetIdx]['growth_value_min'];
 
@@ -267,7 +155,7 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
             $this->assertSame(
                 $expectedGap,
                 $result['next_level_gap'],
-                sprintf(
+                \sprintf(
                     'At exact threshold of level %d (growth=%d), gap to next level should be %d, got %d',
                     $levels[$targetIdx]['level'],
                     $growthValue,
@@ -276,5 +164,127 @@ class DomainApiMemberQueryServiceNextLevelGapTest extends TestCase
                 ),
             );
         });
+    }
+
+    /**
+     * Generate a valid list of level configs with strictly increasing growth_value_min.
+     * Level 1 always starts at growth_value_min = 0.
+     *
+     * @return array<int, array{level: int, growth_value_min: int, name: string, icon: null|string, privileges: array}>
+     */
+    private function generateValidLevels(int $count): array
+    {
+        $levels = [];
+        $currentMin = 0;
+
+        for ($i = 0; $i < $count; ++$i) {
+            $levels[] = [
+                'level' => $i + 1,
+                'growth_value_min' => $currentMin,
+                'name' => 'VIP' . ($i + 1),
+                'icon' => null,
+                'privileges' => [],
+            ];
+            $currentMin += random_int(100, 5000);
+        }
+
+        return $levels;
+    }
+
+    /**
+     * Create a MemberLevel mock from level data.
+     */
+    private function makeLevelMock(array $data): MemberLevel
+    {
+        $mock = $this->getMockBuilder(MemberLevel::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getAttribute'])
+            ->getMock();
+
+        $mock->method('getAttribute')
+            ->willReturnCallback(static fn (string $key) => $data[$key] ?? null);
+
+        return $mock;
+    }
+
+    /**
+     * Create a Member mock with the given growth value.
+     */
+    private function makeMemberMock(int $id, int $growthValue): Member
+    {
+        $mock = $this->getMockBuilder(Member::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getAttribute'])
+            ->getMock();
+
+        $mock->method('getAttribute')
+            ->willReturnCallback(static fn (string $key) => match ($key) {
+                'id' => $id,
+                'growth_value' => $growthValue,
+                default => null,
+            });
+
+        return $mock;
+    }
+
+    /**
+     * Independently compute the expected matched level number for a growth value.
+     * Returns the highest level number where growth_value_min <= growthValue.
+     */
+    private function computeMatchedLevel(array $levels, int $growthValue): array
+    {
+        $qualifying = array_filter($levels, static fn (array $l) => $l['growth_value_min'] <= $growthValue);
+        usort($qualifying, static fn (array $a, array $b) => $b['level'] <=> $a['level']);
+        return $qualifying[0];
+    }
+
+    /**
+     * Independently compute the expected next level gap.
+     */
+    private function computeExpectedGap(array $levels, int $growthValue): int
+    {
+        $currentLevel = $this->computeMatchedLevel($levels, $growthValue);
+
+        // Find the first level with a higher level number
+        $sortedLevels = $levels;
+        usort($sortedLevels, static fn (array $a, array $b) => $a['level'] <=> $b['level']);
+
+        foreach ($sortedLevels as $level) {
+            if ($level['level'] > $currentLevel['level']) {
+                return max($level['growth_value_min'] - $growthValue, 0);
+            }
+        }
+
+        // Already at max level
+        return 0;
+    }
+
+    /**
+     * Build the service with mocked dependencies for the given levels and growth value.
+     */
+    private function buildService(array $levelData, int $memberId, int $growthValue): DomainApiMemberQueryService
+    {
+        $testCase = $this;
+
+        // Compute the matched level for matchLevelByGrowthValue
+        $matchedLevelData = $this->computeMatchedLevel($levelData, $growthValue);
+        $matchedLevelMock = $this->makeLevelMock($matchedLevelData);
+
+        // Build active level mocks for getActiveLevels
+        $sortedLevels = $levelData;
+        usort($sortedLevels, static fn (array $a, array $b) => $a['level'] <=> $b['level']);
+        $activeLevelMocks = array_map(fn (array $l) => $this->makeLevelMock($l), $sortedLevels);
+
+        $memberRepository = $this->createMock(MemberRepository::class);
+        $memberRepository->method('findById')
+            ->willReturn($this->makeMemberMock($memberId, $growthValue));
+
+        $levelService = $this->createMock(DomainMemberLevelService::class);
+        $levelService->method('matchLevelByGrowthValue')
+            ->willReturn($matchedLevelMock);
+        $levelService->method('getActiveLevels')
+            ->willReturn($activeLevelMocks);
+
+        return new DomainApiMemberQueryService($memberRepository, $levelService);
     }
 }

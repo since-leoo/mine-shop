@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -11,27 +19,19 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 5: 积分余额非负不变量
+ * Feature: member-vip-level, Property 5: 积分余额非负不变量.
  *
  * Validates: Requirements 3.3, 3.5
  *
  * For any points wallet and any sequence of operations (grant, deduct),
  * the balance must be a non-negative integer at all times.
  * When a deduction amount exceeds the current balance, the operation must be rejected.
+ * @internal
+ * @coversNothing
  */
-class DomainMemberPointsServiceBalanceInvariantTest extends TestCase
+final class DomainMemberPointsServiceBalanceInvariantTest extends TestCase
 {
     use TestTrait;
-
-    private function makeWalletEntity(int $initialBalance = 0): MemberWalletEntity
-    {
-        $entity = new MemberWalletEntity();
-        $entity->setMemberId(1);
-        $entity->setType('points');
-        $entity->setBalance($initialBalance);
-        $entity->setId(1);
-        return $entity;
-    }
 
     /**
      * Property 5: After any sequence of add/deduct operations (where deductions
@@ -73,7 +73,7 @@ class DomainMemberPointsServiceBalanceInvariantTest extends TestCase
                 $this->assertGreaterThanOrEqual(
                     0,
                     $wallet->getBalance(),
-                    sprintf(
+                    \sprintf(
                         'Balance went negative! balance=%d after operation=%d',
                         $wallet->getBalance(),
                         $amount,
@@ -97,7 +97,7 @@ class DomainMemberPointsServiceBalanceInvariantTest extends TestCase
         $this->forAll(
             Generators::choose(0, 10000),  // current balance
             Generators::choose(1, 10000),  // deduction amount (positive, will be negated)
-        )->when(function (int $balance, int $deduction) {
+        )->when(static function (int $balance, int $deduction) {
             return $deduction > $balance;
         })->then(function (int $balance, int $deduction) {
             $wallet = $this->makeWalletEntity($balance);
@@ -164,5 +164,15 @@ class DomainMemberPointsServiceBalanceInvariantTest extends TestCase
             );
             $this->assertGreaterThanOrEqual(0, $wallet->getBalance());
         });
+    }
+
+    private function makeWalletEntity(int $initialBalance = 0): MemberWalletEntity
+    {
+        $entity = new MemberWalletEntity();
+        $entity->setMemberId(1);
+        $entity->setType('points');
+        $entity->setBalance($initialBalance);
+        $entity->setId(1);
+        return $entity;
     }
 }

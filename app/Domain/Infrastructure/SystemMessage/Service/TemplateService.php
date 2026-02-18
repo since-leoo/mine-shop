@@ -12,17 +12,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\SystemMessage\Service;
 
-use Hyperf\Collection\Collection;
 use App\Domain\Infrastructure\SystemMessage\Event\TemplateCreated;
 use App\Domain\Infrastructure\SystemMessage\Event\TemplateDeleted;
 use App\Domain\Infrastructure\SystemMessage\Event\TemplateUpdated;
-use App\Infrastructure\Model\SystemMessage\MessageTemplate;
 use App\Domain\Infrastructure\SystemMessage\Repository\TemplateRepository;
+use App\Infrastructure\Model\SystemMessage\MessageTemplate;
+use Hyperf\Collection\Collection;
+use Hyperf\Context\ApplicationContext;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class TemplateService
 {
     protected TemplateRepository $repository;
+
     private ?EventDispatcherInterface $eventDispatcher = null;
 
     public function __construct(TemplateRepository $repository)
@@ -49,14 +51,20 @@ class TemplateService
     {
         try {
             $template = $this->repository->findById($templateId);
-            if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+            if (! $template) {
+                throw new \InvalidArgumentException("Template not found: {$templateId}");
+            }
             $this->validateTemplateData($data, $template);
             $changes = [];
             foreach ($data as $key => $value) {
-                if ($template->{$key} !== $value) { $changes[$key] = ['old' => $template->{$key}, 'new' => $value]; }
+                if ($template->{$key} !== $value) {
+                    $changes[$key] = ['old' => $template->{$key}, 'new' => $value];
+                }
             }
             $template->update($data);
-            if (! empty($changes)) { $this->getEventDispatcher()->dispatch(new TemplateUpdated($template, $changes)); }
+            if (! empty($changes)) {
+                $this->getEventDispatcher()->dispatch(new TemplateUpdated($template, $changes));
+            }
             logger()->info('Template updated', ['template_id' => $template->id, 'changes' => array_keys($changes)]);
             return $template;
         } catch (\Throwable $e) {
@@ -69,8 +77,12 @@ class TemplateService
     {
         try {
             $template = $this->repository->findById($templateId);
-            if (! $template) { return false; }
-            if ($template->messages()->exists()) { throw new \InvalidArgumentException('Cannot delete template that is being used by messages'); }
+            if (! $template) {
+                return false;
+            }
+            if ($template->messages()->exists()) {
+                throw new \InvalidArgumentException('Cannot delete template that is being used by messages');
+            }
             $result = $template->delete();
             $this->getEventDispatcher()->dispatch(new TemplateDeleted($template));
             logger()->info('Template deleted', ['template_id' => $template->id]);
@@ -81,22 +93,41 @@ class TemplateService
         }
     }
 
-    public function getById(int $templateId): ?MessageTemplate { return $this->repository->findById($templateId); }
-    public function list(array $filters = [], int $page = 1, int $pageSize = 20): array { return $this->repository->list($filters, $page, $pageSize); }
-    public function search(string $keyword, array $filters = [], int $page = 1, int $pageSize = 20): array { return $this->repository->search($keyword, $filters, $page, $pageSize); }
-    public function getCategories(): array { return $this->repository->getCategories(); }
+    public function getById(int $templateId): ?MessageTemplate
+    {
+        return $this->repository->findById($templateId);
+    }
+
+    public function list(array $filters = [], int $page = 1, int $pageSize = 20): array
+    {
+        return $this->repository->list($filters, $page, $pageSize);
+    }
+
+    public function search(string $keyword, array $filters = [], int $page = 1, int $pageSize = 20): array
+    {
+        return $this->repository->search($keyword, $filters, $page, $pageSize);
+    }
+
+    public function getCategories(): array
+    {
+        return $this->repository->getCategories();
+    }
 
     public function render(int $templateId, array $variables = []): array
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         return $template->render($variables);
     }
 
     public function preview(int $templateId, array $variables = []): array
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         $rendered = $template->render($variables);
         return ['template' => $template->toArray(), 'variables' => $variables, 'rendered' => $rendered, 'preview_html' => $this->generatePreviewHtml($rendered)];
     }
@@ -104,21 +135,27 @@ class TemplateService
     public function validateVariables(int $templateId, array $variables): array
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         return $template->validateVariables($variables);
     }
 
     public function getVariables(int $templateId): array
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         return $template->getVariables();
     }
 
     public function duplicate(int $templateId, ?string $newName = null): MessageTemplate
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         $data = $template->toArray();
         unset($data['id'], $data['created_at'], $data['updated_at']);
         $data['name'] = $newName ?: $template->name . ' (Copy)';
@@ -129,18 +166,27 @@ class TemplateService
     public function toggleActive(int $templateId): bool
     {
         $template = $this->getById($templateId);
-        if (! $template) { throw new \InvalidArgumentException("Template not found: {$templateId}"); }
+        if (! $template) {
+            throw new \InvalidArgumentException("Template not found: {$templateId}");
+        }
         $template->is_active = ! $template->is_active;
         return $template->save();
     }
 
-    public function getActiveTemplates(?string $type = null): Collection { return $this->repository->getActiveTemplates($type); }
+    public function getActiveTemplates(?string $type = null): Collection
+    {
+        return $this->repository->getActiveTemplates($type);
+    }
 
     public function batchDelete(array $templateIds): int
     {
         $deleted = 0;
         foreach ($templateIds as $templateId) {
-            try { if ($this->delete($templateId)) { ++$deleted; } } catch (\Throwable $e) {
+            try {
+                if ($this->delete($templateId)) {
+                    ++$deleted;
+                }
+            } catch (\Throwable $e) {
                 logger()->warning('Failed to delete template in batch', ['template_id' => $templateId, 'error' => $e->getMessage()]);
             }
         }
@@ -151,7 +197,10 @@ class TemplateService
     {
         $results = ['success' => 0, 'failed' => 0, 'errors' => []];
         foreach ($templates as $index => $templateData) {
-            try { $this->create($templateData); ++$results['success']; } catch (\Throwable $e) {
+            try {
+                $this->create($templateData);
+                ++$results['success'];
+            } catch (\Throwable $e) {
                 ++$results['failed'];
                 $results['errors'][] = ['index' => $index, 'data' => $templateData, 'error' => $e->getMessage()];
             }
@@ -161,7 +210,11 @@ class TemplateService
 
     public function export(array $templateIds = []): array
     {
-        if (empty($templateIds)) { $templates = MessageTemplate::all(); } else { $templates = MessageTemplate::whereIn('id', $templateIds)->get(); }
+        if (empty($templateIds)) {
+            $templates = MessageTemplate::all();
+        } else {
+            $templates = MessageTemplate::whereIn('id', $templateIds)->get();
+        }
         return $templates->map(static function ($template) {
             $data = $template->toArray();
             unset($data['id'], $data['created_at'], $data['updated_at']);
@@ -172,13 +225,25 @@ class TemplateService
     protected function validateTemplateData(array $data, ?MessageTemplate $template = null): void
     {
         $required = ['name', 'title', 'content'];
-        foreach ($required as $field) { if (empty($data[$field])) { throw new \InvalidArgumentException("Field {$field} is required"); } }
+        foreach ($required as $field) {
+            if (empty($data[$field])) {
+                throw new \InvalidArgumentException("Field {$field} is required");
+            }
+        }
         $maxNameLength = config('system_message.template.max_name_length', 100);
-        if (mb_strlen($data['name']) > $maxNameLength) { throw new \InvalidArgumentException("Name too long, max {$maxNameLength} characters"); }
+        if (mb_strlen($data['name']) > $maxNameLength) {
+            throw new \InvalidArgumentException("Name too long, max {$maxNameLength} characters");
+        }
         $query = MessageTemplate::where('name', $data['name']);
-        if ($template) { $query->where('id', '!=', $template->id); }
-        if ($query->exists()) { throw new \InvalidArgumentException("Template name already exists: {$data['name']}"); }
-        if (isset($data['type']) && ! \in_array($data['type'], array_keys(MessageTemplate::getTypes()), true)) { throw new \InvalidArgumentException("Invalid template type: {$data['type']}"); }
+        if ($template) {
+            $query->where('id', '!=', $template->id);
+        }
+        if ($query->exists()) {
+            throw new \InvalidArgumentException("Template name already exists: {$data['name']}");
+        }
+        if (isset($data['type']) && ! \in_array($data['type'], array_keys(MessageTemplate::getTypes()), true)) {
+            throw new \InvalidArgumentException("Invalid template type: {$data['type']}");
+        }
         $this->validateTemplateSyntax($data['title'], 'title');
         $this->validateTemplateSyntax($data['content'], 'content');
     }
@@ -190,9 +255,13 @@ class TemplateService
             preg_match_all($pattern, $template, $matches);
             foreach ($matches[1] as $variable) {
                 $variable = trim($variable);
-                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) { throw new \InvalidArgumentException("Invalid variable name in {$field}: {$variable}"); }
+                if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
+                    throw new \InvalidArgumentException("Invalid variable name in {$field}: {$variable}");
+                }
             }
-        } catch (\Throwable $e) { throw new \InvalidArgumentException("Invalid template syntax in {$field}: " . $e->getMessage()); }
+        } catch (\Throwable $e) {
+            throw new \InvalidArgumentException("Invalid template syntax in {$field}: " . $e->getMessage());
+        }
     }
 
     protected function setDefaultValues(array $data): array
@@ -211,7 +280,7 @@ class TemplateService
     private function getEventDispatcher(): EventDispatcherInterface
     {
         if ($this->eventDispatcher === null) {
-            $this->eventDispatcher = \Hyperf\Context\ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
+            $this->eventDispatcher = ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
         }
         return $this->eventDispatcher;
     }

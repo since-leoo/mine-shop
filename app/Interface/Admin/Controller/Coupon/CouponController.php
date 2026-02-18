@@ -15,10 +15,12 @@ namespace App\Interface\Admin\Controller\Coupon;
 use App\Application\Admin\Coupon\AppCouponCommandService;
 use App\Application\Admin\Coupon\AppCouponQueryService;
 use App\Application\Admin\Coupon\AppCouponUserCommandService;
+use App\Application\Admin\Coupon\Dto\CouponExportDto;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Coupon\CouponIssueRequest;
 use App\Interface\Admin\Request\Coupon\CouponRequest;
+use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
 use App\Interface\Common\Result;
@@ -29,6 +31,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\ExportCenter\Service\ExportService;
 
 #[Controller(prefix: '/admin/coupon')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -39,7 +42,8 @@ final class CouponController extends AbstractController
     public function __construct(
         private readonly AppCouponQueryService $queryService,
         private readonly AppCouponCommandService $commandService,
-        private readonly AppCouponUserCommandService $couponUserCommandService
+        private readonly AppCouponUserCommandService $couponUserCommandService,
+        private readonly CurrentUser $currentUser
     ) {}
 
     #[GetMapping(path: 'list')]
@@ -108,5 +112,19 @@ final class CouponController extends AbstractController
             array_map(static fn ($item) => $item->toArray(), $result),
             '发放成功'
         );
+    }
+
+    #[PostMapping(path: 'export')]
+    #[Permission(code: 'coupon:list')]
+    public function export(CouponRequest $request): Result
+    {
+        $task = di(ExportService::class)->export(
+            userId: $this->currentUser->id(),
+            taskName: '优惠券导出',
+            dtoClass: CouponExportDto::class,
+            params: $request->validated(),
+        );
+
+        return $this->success(['task_id' => $task->id, 'status' => $task->status]);
     }
 }

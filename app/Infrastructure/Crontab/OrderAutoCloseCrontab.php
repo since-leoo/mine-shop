@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Crontab;
 
+use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderStockService;
+use App\Domain\Trade\Seckill\Repository\SeckillOrderRepository;
 use App\Infrastructure\Model\Order\Order;
 use Hyperf\Crontab\Annotation\Crontab;
 use Hyperf\DbConnection\Db;
-use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
-use App\Domain\Trade\Seckill\Repository\SeckillOrderRepository;
 use Psr\Log\LoggerInterface;
 
 /**

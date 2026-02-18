@@ -185,3 +185,7 @@ export function productRemove(id: number): Promise<ResponseStruct<null>> {
 export function productToggleStatus(id: number): Promise<ResponseStruct<null>> {
   return useHttp().put(`${productBase}/${id}/toggle-status`)
 }
+
+export function activityExport(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post(`${activityBase}/export`, params)
+}

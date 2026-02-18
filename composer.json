@@ -66,6 +66,7 @@
     "mineadmin/support": "~3.0",
     "mineadmin/upload": "~3.0",
     "overtrue/flysystem-qiniu": "^3.2",
+    "phpoffice/phpspreadsheet": "^2.0",
     "since-leoo/hyperf-plugin": "^1.0",
     "tangwei/dto": "*",
     "w7corp/easywechat": "^6.5",
@@ -95,7 +96,8 @@
   },
   "autoload": {
     "psr-4": {
-      "App\\": "app/"
+      "App\\": "app/",
+      "Plugin\\ExportCenter\\": "plugins/export-center/src/"
     },
     "files": [
       "./helper/helper.php"

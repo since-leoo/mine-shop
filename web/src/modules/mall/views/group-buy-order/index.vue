@@ -4,10 +4,11 @@ import type { Ref } from 'vue'
 import type { GroupBuyOrderSummaryVo } from '~/mall/api/group-buy-order'
 
 import { useI18n } from 'vue-i18n'
-import { summaryPage, ordersByActivity } from '~/mall/api/group-buy-order'
+import { summaryPage, ordersByActivity, groupBuyOrderExport } from '~/mall/api/group-buy-order'
 import getSearchItems from './data/getSearchItems.tsx'
 import getTableColumns from './data/getTableColumns.tsx'
 import getOrderColumns from './data/getOrderColumns.tsx'
+import { ElMessage } from 'element-plus'
 
 defineOptions({ name: 'mall:group_buy_order' })
 
@@ -79,11 +80,28 @@ const schema = ref<MaProTableSchema>({
 })
 
 const orderColumns = getOrderColumns()
+
+async function handleExport() {
+  try {
+    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const res = await groupBuyOrderExport(searchParams)
+    ElMessage.success(res.message || '导出任务已创建')
+  }
+  catch (err: any) {
+    ElMessage.error(err?.message || '导出失败')
+  }
+}
 </script>
 
 <template>
   <div class="mine-layout pt-3">
     <MaProTable ref="proTableRef" :options="options" :schema="schema">
+      <template #actions>
+        <el-button plain @click="handleExport">
+          <template #icon><ma-svg-icon name="ph:download-simple" size="14" /></template>
+          {{ t('mall.export') }}
+        </el-button>
+      </template>
       <template #empty>
         <el-empty :description="t('mall.groupBuyOrder.noData')" />
       </template>

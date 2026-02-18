@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Service;
 
-use App\Domain\Trade\Order\Contract\CouponServiceInterface;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
+use App\Domain\Trade\Order\Contract\CouponServiceInterface;
 
 /**
  * 优惠券服务适配器：实现主应用定义的接口.

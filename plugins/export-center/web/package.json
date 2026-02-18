@@ -1,0 +1,18 @@
+{
+  "name": "@since/export-center",
+  "version": "1.0.0",
+  "description": "MineAdmin 导出中心插件前端组件",
+  "main": "index.ts",
+  "scripts": {
+    "build": "echo 'Plugin build completed'",
+    "dev": "echo 'Plugin development mode'"
+  },
+  "keywords": [
+    "mineadmin",
+    "plugin",
+    "export-center",
+    "download"
+  ],
+  "author": "Since",
+  "license": "Apache-2.0"
+}

@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
@@ -14,79 +22,19 @@ use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Feature: member-vip-level, Property 4: 成长值变动日志完整性
+ * Feature: member-vip-level, Property 4: 成长值变动日志完整性.
  *
  * Validates: Requirements 2.5
  *
  * For any growth value change operation (add or deduct), the system must create a log record
  * in member_growth_logs where after_value == before_value + change_amount, and the member's
  * growth_value is updated to match after_value.
+ * @internal
+ * @coversNothing
  */
-class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
+final class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
 {
     use TestTrait;
-
-    private function makeMemberMock(int $id, int $growthValue): Member
-    {
-        $member = $this->getMockBuilder(Member::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getAttribute'])
-            ->getMock();
-
-        $attrs = [
-            'id' => $id,
-            'growth_value' => $growthValue,
-            'level_id' => 1,
-            'level' => 'VIP1',
-        ];
-
-        $member->method('getAttribute')
-            ->willReturnCallback(fn (string $key) => $attrs[$key] ?? null);
-
-        return $member;
-    }
-
-    /**
-     * Build the service with mocks that capture log and update data.
-     *
-     * @return array{service: DomainMemberGrowthService, getLog: callable, getUpdate: callable}
-     */
-    private function buildServiceWithCapture(int $memberId, int $initialGrowth): array
-    {
-        $capturedLog = null;
-        $capturedUpdate = null;
-
-        $memberRepository = $this->createMock(MemberRepository::class);
-        $growthLogRepository = $this->createMock(MemberGrowthLogRepository::class);
-        $levelService = $this->createMock(DomainMemberLevelService::class);
-
-        $memberRepository->method('findById')
-            ->willReturn($this->makeMemberMock($memberId, $initialGrowth));
-
-        $memberRepository->method('updateById')
-            ->willReturnCallback(function (int $id, array $data) use (&$capturedUpdate): bool {
-                $capturedUpdate = $data;
-                return true;
-            });
-
-        $growthLogRepository->method('create')
-            ->willReturnCallback(function (array $data) use (&$capturedLog): mixed {
-                $capturedLog = $data;
-                return null;
-            });
-
-        $service = new DomainMemberGrowthService(
-            $memberRepository,
-            $growthLogRepository,
-            $levelService,
-        );
-
-        return [
-            'service' => $service,
-            'getLog' => static function () use (&$capturedLog) { return $capturedLog; },
-            'getUpdate' => static function () use (&$capturedUpdate) { return $capturedUpdate; },
-        ];
-    }
 
     /**
      * Property 4 (addGrowthValue): For any positive amount added to any non-negative
@@ -115,7 +63,7 @@ class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             $this->assertSame(
                 $log['before_value'] + $log['change_amount'],
                 $log['after_value'],
-                sprintf(
+                \sprintf(
                     'Log integrity violated: before=%d + change=%d != after=%d',
                     $log['before_value'],
                     $log['change_amount'],
@@ -128,7 +76,7 @@ class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             $this->assertSame(
                 $log['after_value'],
                 $update['growth_value'],
-                sprintf(
+                \sprintf(
                     'Member growth_value (%d) does not match log after_value (%d)',
                     $update['growth_value'],
                     $log['after_value'],
@@ -165,7 +113,7 @@ class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             $this->assertSame(
                 $log['before_value'] + $log['change_amount'],
                 $log['after_value'],
-                sprintf(
+                \sprintf(
                     'Log integrity violated: before=%d + change=%d != after=%d',
                     $log['before_value'],
                     $log['change_amount'],
@@ -178,7 +126,7 @@ class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             $this->assertSame(
                 $log['after_value'],
                 $update['growth_value'],
-                sprintf(
+                \sprintf(
                     'Member growth_value (%d) does not match log after_value (%d)',
                     $update['growth_value'],
                     $log['after_value'],
@@ -192,5 +140,67 @@ class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
                 'Growth value must never go below zero',
             );
         });
+    }
+
+    private function makeMemberMock(int $id, int $growthValue): Member
+    {
+        $member = $this->getMockBuilder(Member::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getAttribute'])
+            ->getMock();
+
+        $attrs = [
+            'id' => $id,
+            'growth_value' => $growthValue,
+            'level_id' => 1,
+            'level' => 'VIP1',
+        ];
+
+        $member->method('getAttribute')
+            ->willReturnCallback(static fn (string $key) => $attrs[$key] ?? null);
+
+        return $member;
+    }
+
+    /**
+     * Build the service with mocks that capture log and update data.
+     *
+     * @return array{service: DomainMemberGrowthService, getLog: callable, getUpdate: callable}
+     */
+    private function buildServiceWithCapture(int $memberId, int $initialGrowth): array
+    {
+        $capturedLog = null;
+        $capturedUpdate = null;
+
+        $memberRepository = $this->createMock(MemberRepository::class);
+        $growthLogRepository = $this->createMock(MemberGrowthLogRepository::class);
+        $levelService = $this->createMock(DomainMemberLevelService::class);
+
+        $memberRepository->method('findById')
+            ->willReturn($this->makeMemberMock($memberId, $initialGrowth));
+
+        $memberRepository->method('updateById')
+            ->willReturnCallback(static function (int $id, array $data) use (&$capturedUpdate): bool {
+                $capturedUpdate = $data;
+                return true;
+            });
+
+        $growthLogRepository->method('create')
+            ->willReturnCallback(static function (array $data) use (&$capturedLog): mixed {
+                $capturedLog = $data;
+                return null;
+            });
+
+        $service = new DomainMemberGrowthService(
+            $memberRepository,
+            $growthLogRepository,
+            $levelService,
+        );
+
+        return [
+            'service' => $service,
+            'getLog' => static function () use (&$capturedLog) { return $capturedLog; },
+            'getUpdate' => static function () use (&$capturedUpdate) { return $capturedUpdate; },
+        ];
     }
 }

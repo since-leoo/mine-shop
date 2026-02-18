@@ -195,6 +195,18 @@ final class MemberRepository extends IRepository
     }
 
     /**
+     * 导出数据提供者.
+     */
+    public function getExportData(array $params): iterable
+    {
+        $query = $this->perQuery($this->getQuery(), $params);
+
+        foreach ($query->cursor() as $member) {
+            yield $member;
+        }
+    }
+
+    /**
      * @return array{
      *     labels: string[],
      *     new_members: int[],

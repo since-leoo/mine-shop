@@ -12,6 +12,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Model\SystemMessage;
 
+use App\Domain\Infrastructure\SystemMessage\Enum\MessageChannel;
+use App\Domain\Infrastructure\SystemMessage\Enum\MessageStatus;
+use App\Domain\Infrastructure\SystemMessage\Enum\MessageType;
+use App\Domain\Infrastructure\SystemMessage\Enum\RecipientType;
 use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
@@ -19,10 +23,6 @@ use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\Database\Model\SoftDeletes;
 use Hyperf\DbConnection\Model\Model;
-use App\Domain\Infrastructure\SystemMessage\Enum\MessageChannel;
-use App\Domain\Infrastructure\SystemMessage\Enum\MessageStatus;
-use App\Domain\Infrastructure\SystemMessage\Enum\MessageType;
-use App\Domain\Infrastructure\SystemMessage\Enum\RecipientType;
 
 /**
  * @property int $id 消息ID，主键
@@ -114,7 +114,7 @@ class Message extends Model
         return $this->hasMany(MessageDeliveryLog::class, 'message_id', 'id');
     }
 
-    public function getRecipients(): \Hyperf\Collection\Collection
+    public function getRecipients(): Collection
     {
         switch ($this->recipient_type) {
             case RecipientType::ALL->value:

@@ -75,3 +75,7 @@ export function toggleStatus(id: number): Promise<ResponseStruct<any>> {
 export function stats(): Promise<ResponseStruct<any>> {
   return useHttp().get('/admin/group-buy/stats')
 }
+
+export function groupBuyExport(params?: Record<string, any>): Promise<ResponseStruct<{ task_id: number, status: string }>> {
+  return useHttp().post('/admin/group-buy/export', params)
+}

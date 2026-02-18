@@ -56,8 +56,8 @@ final class ReviewController extends AbstractController
     #[GetMapping(path: 'product/{id}')]
     public function productReviews(int $id): Result
     {
-        $page = (int) ($this->request->query('page', 1));
-        $pageSize = (int) ($this->request->query('page_size', 10));
+        $page = (int) $this->request->query('page', 1);
+        $pageSize = (int) $this->request->query('page_size', 10);
         $filters = [];
 
         if ($this->request->has('rating_level')) {
@@ -89,7 +89,7 @@ final class ReviewController extends AbstractController
     #[GetMapping(path: 'product/{id}/summary')]
     public function productSummary(int $id): Result
     {
-        $limit = (int) ($this->request->query('limit', 3));
+        $limit = (int) $this->request->query('limit', 3);
         $summary = $this->queryService->getProductSummary($id, $limit);
 
         return $this->success($summary);
