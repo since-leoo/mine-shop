@@ -22,7 +22,7 @@ use App\Infrastructure\Abstract\IService;
 final class DomainAttachmentService extends IService
 {
     public function __construct(
-        private readonly AttachmentRepository $repository,
+        protected readonly AttachmentRepository $repository,
     ) {}
 
     public function findEntity(int $id): ?AttachmentEntity
