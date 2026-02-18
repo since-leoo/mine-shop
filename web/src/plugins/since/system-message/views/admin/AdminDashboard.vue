@@ -169,7 +169,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMessageStore } from '../../store/message'
+import { messageAdminApi } from '../../api/message'
 import { ElMessage } from 'element-plus'
 import { Message, Promotion, Bell, User } from '@element-plus/icons-vue'
 import type { Message as MessageType } from '../../api/message'
@@ -182,7 +182,6 @@ defineOptions({
 })
 
 const router = useRouter()
-const messageStore = useMessageStore()
 
 // 响应式数据
 const loading = ref(false)
@@ -282,29 +281,39 @@ const viewMessage = (msg: MessageType) => {
 // 加载统计数据
 const loadStatistics = async () => {
   try {
-    // 模拟数据，实际应该从 API 获取
-    // 当没有数据时，统计值为0，图表仍然会显示
+    const res = await messageAdminApi.getStatistics()
+    const data = res.data ?? res as any
+
+    const msgStats = data?.messages ?? {}
+    const userMsgStats = data?.user_messages ?? {}
+
     statistics.value = {
-      total_messages: 0,
-      today_sent: 0,
-      unread_count: 0,
-      active_users: 0
+      total_messages: msgStats.total ?? 0,
+      today_sent: msgStats.sent ?? 0,
+      unread_count: userMsgStats.unread ?? 0,
+      active_users: userMsgStats.total ?? 0
     }
-    
-    // 趋势数据 - 即使没有数据也生成日期
-    trendData.value = {
-      dates: Array.from({ length: 7 }, (_, i) => dayjs().subtract(6 - i, 'day').format('MM-DD')),
-      values: Array(7).fill(0)
+
+    // 趋势数据 — 从 recent 字段（date => count）构建
+    const recent: Record<string, number> = msgStats.recent ?? {}
+    const dates: string[] = []
+    const values: number[] = []
+    for (let i = 6; i >= 0; i--) {
+      const d = dayjs().subtract(i, 'day')
+      dates.push(d.format('MM-DD'))
+      values.push(recent[d.format('YYYY-MM-DD')] ?? 0)
     }
-    
-    // 类型分布数据 - 初始化为0
-    typeDistribution.value = [
-      { name: '系统消息', value: 0 },
-      { name: '公告', value: 0 },
-      { name: '警报', value: 0 },
-      { name: '提醒', value: 0 },
-      { name: '营销', value: 0 }
-    ]
+    trendData.value = { dates, values }
+
+    // 类型分布数据
+    const byType: Record<string, number> = msgStats.by_type ?? {}
+    const typeMap: Record<string, string> = {
+      system: '系统消息', announcement: '公告', alert: '警报', reminder: '提醒', marketing: '营销'
+    }
+    typeDistribution.value = Object.entries(typeMap).map(([key, name]) => ({
+      name,
+      value: byType[key] ?? 0
+    }))
   } catch (error) {
     console.error('Failed to load statistics:', error)
   }
@@ -313,11 +322,12 @@ const loadStatistics = async () => {
 // 加载最近消息
 const loadRecentMessages = async () => {
   try {
-    // 模拟数据，实际应该从 API 获取
-    // 当没有数据时返回空数组
-    recentMessages.value = []
+    const res = await messageAdminApi.getRecent(7, 5)
+    const list = res.data ?? res as any
+    recentMessages.value = Array.isArray(list) ? list : []
   } catch (error) {
     console.error('Failed to load recent messages:', error)
+    recentMessages.value = []
   }
 }
 

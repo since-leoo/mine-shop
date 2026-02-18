@@ -139,8 +139,8 @@ function renderOrderTypePie() {
 
 function renderRegionBar() {
   const regions = data.value?.region_ranking ?? []
-  const names = regions.length ? regions.slice(0, 15).map((d: any) => d.region || t('dashboard.payMethod.unknown')).reverse() : [t('dashboard.chart.noData')]
-  const values = regions.length ? regions.slice(0, 15).map((d: any) => Number(((d.sales_amount || 0) / 100).toFixed(2))).reverse() : [0]
+  const names = regions.length ? regions.slice(0, 15).map((d: any) => d.province || t('dashboard.payMethod.unknown')).reverse() : [t('dashboard.chart.noData')]
+  const values = regions.length ? regions.slice(0, 15).map((d: any) => Number(((d.order_amount || 0) / 100).toFixed(2))).reverse() : [0]
   regionBarChart?.setOption({
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: (p: any) => `${p[0]?.name}: ¥${p[0]?.value}` },
     grid: { left: '3%', right: '8%', top: 10, bottom: 10, containLabel: true },
