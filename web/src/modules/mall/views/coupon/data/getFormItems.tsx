@@ -10,10 +10,8 @@
 import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { CouponVo } from '~/mall/api/coupon'
-import { useI18n } from 'vue-i18n'
 
-export default function getFormItems(model: CouponVo): MaFormItem[] {
-  const { t } = useI18n()
+export default function getFormItems(model: CouponVo, t: (key: string) => string): MaFormItem[] {
 
   if (!model.status) {
     model.status = 'active'

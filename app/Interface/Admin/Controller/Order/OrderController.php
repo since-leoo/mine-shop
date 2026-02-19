@@ -46,13 +46,9 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:list')]
     public function list(OrderRequest $request): Result
     {
-        try {
-            $filters = $request->validated();
-            $data = $this->queryService->page($filters, $this->getCurrentPage(), $this->getPageSize());
-            return $this->success($data);
-        } catch (\Throwable $e) {
-            return $this->error('获取订单列表失败');
-        }
+        $filters = $request->validated();
+        $data = $this->queryService->page($filters, $this->getCurrentPage(), $this->getPageSize());
+        return $this->success($data);
     }
 
     #[GetMapping(path: 'stats')]
@@ -91,17 +87,13 @@ final class OrderController extends AbstractController
     #[Permission(code: 'order:order:update')]
     public function cancel(int $id, OrderRequest $request): Result
     {
-        try {
-            $dto = $request->toCancelDto(
-                $id,
-                $this->currentUser->id(),
-                $this->currentUser->user()?->username ?? '管理员'
-            );
-            $order = $this->commandService->cancel($dto);
-            return $this->success($order, '订单已取消');
-        } catch (\Exception $e) {
-            return $this->error('取消订单失败');
-        }
+        $dto = $request->toCancelDto(
+            $id,
+            $this->currentUser->id(),
+            $this->currentUser->user()?->username ?? '管理员'
+        );
+        $order = $this->commandService->cancel($dto);
+        return $this->success($order, '订单已取消');
     }
 
     #[PostMapping(path: 'export')]

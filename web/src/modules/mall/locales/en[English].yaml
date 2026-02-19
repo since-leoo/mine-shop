@@ -1,83 +1,83 @@
 mallMenu:
   mall:
-    index: Mall Management
-    productManage: Product Center
-    orderManage: Order Center
-    activity: Campaign Management
-    category: Category Management
-    categoryList: Category List
-    categoryRead: Category Detail
-    categoryCreate: Create Category
-    categoryUpdate: Update Category
-    categoryDelete: Delete Category
-    brand: Brand Management
-    brandList: Brand List
-    brandRead: Brand Detail
-    brandCreate: Create Brand
-    brandUpdate: Update Brand
-    brandDelete: Delete Brand
-    product: Product Management
-    productList: Product List
-    productRead: Product Detail
-    productCreate: Create Product
-    productUpdate: Update Product
-    productDelete: Delete Product
-    seckill: Flash Sale Campaigns
-    seckillSession: Session Management
-    seckillProduct: Product Configuration
-    seckillActivityList: Activity List
-    seckillActivityRead: Activity Detail
-    seckillActivityCreate: Create Activity
-    seckillActivityUpdate: Update Activity
-    seckillActivityDelete: Delete Activity
-    seckillSessionList: Session List
-    seckillSessionRead: Session Detail
-    seckillSessionCreate: Create Session
-    seckillSessionUpdate: Update Session
-    seckillSessionDelete: Delete Session
-    seckillProductList: Product List
-    seckillProductRead: Product Detail
-    seckillProductCreate: Add Product
-    seckillProductUpdate: Update Product
-    seckillProductDelete: Remove Product
+    index: Mall
+    productManage: Products
+    orderManage: Orders
+    activity: Campaigns
+    category: Categories
+    categoryList: List
+    categoryRead: Detail
+    categoryCreate: Create
+    categoryUpdate: Update
+    categoryDelete: Delete
+    brand: Brands
+    brandList: List
+    brandRead: Detail
+    brandCreate: Create
+    brandUpdate: Update
+    brandDelete: Delete
+    product: Products
+    productList: List
+    productRead: Detail
+    productCreate: Create
+    productUpdate: Update
+    productDelete: Delete
+    seckill: Flash Sale
+    seckillSession: Sessions
+    seckillProduct: Products
+    seckillActivityList: List
+    seckillActivityRead: Detail
+    seckillActivityCreate: Create
+    seckillActivityUpdate: Update
+    seckillActivityDelete: Delete
+    seckillSessionList: List
+    seckillSessionRead: Detail
+    seckillSessionCreate: Create
+    seckillSessionUpdate: Update
+    seckillSessionDelete: Delete
+    seckillProductList: List
+    seckillProductRead: Detail
+    seckillProductCreate: Add
+    seckillProductUpdate: Update
+    seckillProductDelete: Remove
     coupon: Coupons
-    couponList: Coupon List
-    couponRead: Coupon Detail
-    couponCreate: Create Coupon
-    couponUpdate: Update Coupon
-    couponDelete: Delete Coupon
-    couponIssue: Issue Coupon
-    couponUser: Redemption Records
-    couponUserList: Coupon User List
-    couponUserUpdate: Update Coupon Records
-    groupBuy: Group Buy Campaigns
-    groupBuyList: Group Buy List
-    groupBuyRead: Group Buy Detail
-    groupBuyCreate: Create Group Buy
-    groupBuyUpdate: Update Group Buy
-    groupBuyDelete: Delete Group Buy
-    order: Order Management
-    orderList: Order List
-    orderRead: Order Detail
-    orderCreate: Create Order
-    orderUpdate: Update Order
-    groupBuyOrder: Group Buy Orders
-    groupBuyOrderList: Group Buy Order List
-    seckillOrder: Flash Sale Orders
-    seckillOrderList: Flash Sale Order List
-    review: Review Management
-    reviewList: Review List
-    reviewRead: Review Detail
-    reviewApprove: Approve Review
-    reviewReject: Reject Review
-    reviewReply: Reply Review
-    config: Mall Settings
-    productSetting: Product & Inventory
-    orderSetting: Orders & After-sales
-    paymentSetting: Payment & Settlement
-    shippingSetting: Shipping & Logistics
-    memberSetting: Member & Marketing
-    contentSetting: Content & Compliance
-    setting: System Settings
-    settingList: View Settings
-    settingUpdate: Update Settings
+    couponList: List
+    couponRead: Detail
+    couponCreate: Create
+    couponUpdate: Update
+    couponDelete: Delete
+    couponIssue: Issue
+    couponUser: Records
+    couponUserList: List
+    couponUserUpdate: Update
+    groupBuy: Group Buy
+    groupBuyList: List
+    groupBuyRead: Detail
+    groupBuyCreate: Create
+    groupBuyUpdate: Update
+    groupBuyDelete: Delete
+    order: Orders
+    orderList: List
+    orderRead: Detail
+    orderCreate: Create
+    orderUpdate: Update
+    groupBuyOrder: Group Orders
+    groupBuyOrderList: List
+    seckillOrder: Flash Orders
+    seckillOrderList: List
+    review: Reviews
+    reviewList: List
+    reviewRead: Detail
+    reviewApprove: Approve
+    reviewReject: Reject
+    reviewReply: Reply
+    config: Settings
+    productSetting: Product
+    orderSetting: Order
+    paymentSetting: Payment
+    shippingSetting: Shipping
+    memberSetting: Member
+    contentSetting: Content
+    setting: System
+    settingList: View
+    settingUpdate: Update

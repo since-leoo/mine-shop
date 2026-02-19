@@ -23,19 +23,33 @@ use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
 /**
+ * 会员仓储.
+ *
+ * 负责会员数据的持久化操作，包括增删改查、统计分析等。
+ * 支持会员标签、钱包、等级等关联数据的加载。
+ *
  * @extends IRepository<Member>
  */
 final class MemberRepository extends IRepository
 {
     public function __construct(protected readonly Member $model) {}
 
+    /**
+     * 处理列表项，加载关联数据.
+     *
+     * @param Collection $items 会员集合
+     * @return Collection 加载关联后的会员集合
+     */
     public function handleItems(Collection $items): Collection
     {
         return $items->map(static fn (Member $member) => $member->loads('wallet', 'pointsWallet', 'tags', 'levelDefinition'));
     }
 
     /**
-     * @return array<string, int>
+     * 获取会员统计数据.
+     *
+     * @param array $filters 筛选条件
+     * @return array<string, int> 统计数据（总数、今日新增、活跃、沉睡、封禁）
      */
     public function stats(array $filters = []): array
     {
@@ -63,7 +77,12 @@ final class MemberRepository extends IRepository
     }
 
     /**
-     * @return array<string, mixed>
+     * 获取会员概览数据.
+     *
+     * 包含趋势图、来源分布、地区分布、等级分布等数据。
+     *
+     * @param array $filters 筛选条件，支持 trend_days 指定趋势天数（3-30）
+     * @return array<string, mixed> 概览数据
      */
     public function overview(array $filters = []): array
     {
@@ -192,18 +211,6 @@ final class MemberRepository extends IRepository
             ->when(! empty($params['last_login_start']), static fn (Builder $q) => $q->whereDate('last_login_at', '>=', $params['last_login_start']))
             ->when(! empty($params['last_login_end']), static fn (Builder $q) => $q->whereDate('last_login_at', '<=', $params['last_login_end']))
             ->orderByDesc('id');
-    }
-
-    /**
-     * 导出数据提供者.
-     */
-    public function getExportData(array $params): iterable
-    {
-        $query = $this->perQuery($this->getQuery(), $params);
-
-        foreach ($query->cursor() as $member) {
-            yield $member;
-        }
     }
 
     /**

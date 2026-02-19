@@ -3,216 +3,216 @@ baseUserManage:
   username: Username
   nickname: Nickname
   phone: Phone
-  dept: Department
+  dept: Dept
   post: Position
   email: Email
   password: Password
-  userType: User type
+  userType: Type
   role: Role
   signed: Signed
-  mainTitle: User Rule
-  subTitle: Provide users with the functions of adding, editing, and deleting
+  mainTitle: Users
+  subTitle: User management
   dataScope: Data Scope
-  setRole: Set role
-  setDataScope: Set data scope
-  setRoleSuccess: The role was set successfully
-  initPassword: Init password
-  setPassword: Whether to reset the password to 123456?
-  setPasswordSuccess: The password was reset successfully
+  setRole: Set Role
+  setDataScope: Set Scope
+  setRoleSuccess: Role set
+  initPassword: Init Password
+  setPassword: Reset to 123456?
+  setPasswordSuccess: Password reset
 baseRoleManage:
-  mainTitle: Role Rule
-  subTitle: Provide user roles and permission settings
-  name: Role name
-  code: Role code
-  permission: Permission Menu
-  setPermission: Set permission
+  mainTitle: Roles
+  subTitle: Role and permission settings
+  name: Name
+  code: Code
+  permission: Permissions
+  setPermission: Set Permission
 baseMenuManage:
-  addError: This operation has already been performed. Please click the left menu to try again.
-  deleteChildren: The current menu has child menus. Please delete the child first.
+  addError: Already performed. Click left menu to retry.
+  deleteChildren: Has child menus. Delete children first.
   addTopMenu: Add Top Menu
-  parentMenu: Parent Menu
-  name: Menu Name
-  code: Menu Code
-  url: Menu Route
-  icon: Menu Icon
-  type: Menu Type
+  parentMenu: Parent
+  name: Name
+  code: Code
+  url: Route
+  icon: Icon
+  type: Type
   route: Route
-  view: View Address
+  view: View
   link: Link/iFrame
   activeName: Active Name
-  redirect: Route Redirect
-  i18n: Internationalization
-  sort: Sort Order
+  redirect: Redirect
+  i18n: i18n
+  sort: Sort
   isEnabled: Enabled
   isHidden: Hidden
   isCache: Cached
   isCopyright: Copyright
   isBreadcrumb: Breadcrumb
-  isAffix: Tab Is Fixed
-  remark: Remarks
-  baseInfo: Basic Info
-  frontAuth: Frontend Auth
-  otherInfo: Other Info
+  isAffix: Fixed Tab
+  remark: Remark
+  baseInfo: Basic
+  frontAuth: Auth
+  otherInfo: Other
   typeItem:
     M: Menu
     B: Button
-    L: External Link
+    L: Link
     I: iFrame
   BtnPermission:
-    label: Button Permission
-    name: Button Name
-    code: Button Code
-    i18n: Button Internationalization
-    noBtn: No Button Menu?
-    add: Add One
+    label: Buttons
+    name: Name
+    code: Code
+    i18n: i18n
+    noBtn: No buttons?
+    add: Add
   placeholder:
-    name: Please enter the menu name
-    code: Please enter the menu code, which must be unique globally
-    parentMenu: Please select the parent menu, or leave it blank for a top-level menu
-    activeName: Please enter the menu code, which is used to highlight the specified menu when the page is accessed
-    route: Page access address, starting with "/"
-    view: View address, please point to a file in the views directory under the module or plugin
-    link: Please enter the third-party URL
-    redirect: Use vue-router to redirect to another route address, starting with "/"
-    i18n: Menu title internationalization
-    remark: Remarks/Notes
-    btnName: Please enter the button name
-    btnCode: Please enter the button code
-    btnI18n: Please enter the button i18n
+    name: Menu name
+    code: Unique code
+    parentMenu: Parent (empty = top)
+    activeName: Active menu code
+    route: Path starting with "/"
+    view: View file path
+    link: Third-party URL
+    redirect: Redirect path
+    i18n: i18n key
+    remark: Remark
+    btnName: Button name
+    btnCode: Button code
+    btnI18n: Button i18n
 baseRole:
-  name: Role Name
-  code: Role Code
+  name: Name
+  code: Code
   remark: Remark
-  permission: Permission Menu
+  permission: Permissions
   placeholder:
-    name: Please enter role name
-    code: Please enter role code, must be unique globally
-    remark: Remarks
+    name: Role name
+    code: Unique code
+    remark: Remark
 basePermission:
-  name: Permission Name
-  code: Permission Code
+  name: Name
+  code: Code
   remark: Remark
   placeholder:
-    name: Please enter permission name
-    code: Please enter permission code, must be unique globally
-    remark: Remarks
+    name: Permission name
+    code: Unique code
+    remark: Remark
 baseDict:
-  name: Dictionary Name
-  code: Dictionary Code
+  name: Name
+  code: Code
   remark: Remark
   placeholder:
-    name: Please enter dictionary name
-    code: Please enter dictionary code, must be unique globally
-    remark: Remarks
+    name: Dictionary name
+    code: Unique code
+    remark: Remark
 baseDictItem:
-  name: Dictionary Item Name
-  code: Dictionary Item Code
+  name: Name
+  code: Code
   remark: Remark
   placeholder:
-    name: Please enter dictionary item name
-    code: Please enter dictionary item code, must be unique globally
+    name: Item name
+    code: Unique code
 baseLoginLog:
-  title: User Login log
+  title: Login Log
   username: Username
-  ip: Login IP
+  ip: IP
   browser: Browser
   status: Status
   message: Message
-  login_time: Login Time
+  login_time: Time
 baseOperationLog:
-  title: User Operation log
+  title: Operation Log
   username: Username
-  method: Request Method
+  method: Method
   router: Router
-  service_name: Service Name
-  ip: Request IP
-  created_at: Creation Time
-  updated_at: Update Time
+  service_name: Service
+  ip: IP
+  created_at: Created
+  updated_at: Updated
 baseDepartment:
-  name: Department Name
-  created_at: Creation Time
-  updated_at: Update Time
-  leaderCount: Leader Count
-  positionsCount: Position Count
-  usersCount: User Count
-  parentDepartment: Parent Department
+  name: Name
+  created_at: Created
+  updated_at: Updated
+  leaderCount: Leaders
+  positionsCount: Positions
+  usersCount: Users
+  parentDepartment: Parent
   page:
-    mainTitle: Department Management
-    subTitle: Manage departments, positions, and department leaders.
+    mainTitle: Departments
+    subTitle: Manage departments and positions
     setLeader: Set Leader
     previewUser: View Users
-    managePost: Manage Positions
+    managePost: Positions
   placeholder:
-    name: Please enter department name
-    parentDepartment: Please select parent department
+    name: Department name
+    parentDepartment: Parent department
   error:
-    selfNotParent: Cannot select self as parent department, data has been restored
+    selfNotParent: Cannot select self as parent
 basePost:
-  name: Post Name
-  belongPost: Belongs to Position
-  belongDept: Belongs to Department
-  created_at: Creation Time
-  updated_at: Update Time
-  dataScope: Data Permissions
-  selectDept: Selected Departments
-  callFunc: Function Call Name
+  name: Name
+  belongPost: Position
+  belongDept: Department
+  created_at: Created
+  updated_at: Updated
+  dataScope: Data Scope
+  selectDept: Departments
+  callFunc: Function
   placeholder:
-    name: Please enter position name
+    name: Position name
 baseDeptLeader:
   belongDept: Department
   username: Username
   nickname: Nickname
-  user_id: Select User
+  user_id: User
   placeholder:
-    user_id: Please select a user to set as leader
+    user_id: Select user
 baseMenu:
   permission:
     index: Permission
     user: User
-    userList: User list
-    userSave: User save
-    userUpdate: User updated
-    userDelete: User delete
-    userPassword: Init user password
-    getUserRole: Get user role
-    setUserRole: Set user role
+    userList: List
+    userSave: Save
+    userUpdate: Update
+    userDelete: Delete
+    userPassword: Init Password
+    getUserRole: Get Role
+    setUserRole: Set Role
     role: Role
-    roleList: Role list
-    roleSave: Role save
-    roleUpdate: Role updated
-    roleDelete: Role delete
-    getRolePermission: Get role permission
-    setRolePermission: Set role permission
+    roleList: List
+    roleSave: Save
+    roleUpdate: Update
+    roleDelete: Delete
+    getRolePermission: Get Permission
+    setRolePermission: Set Permission
     menu: Menu
-    menuList: Menu list
-    menuSave: Menu save
-    menuUpdate: Menu updated
-    menuDelete: Menu delete
+    menuList: List
+    menuSave: Save
+    menuUpdate: Update
+    menuDelete: Delete
     department: Department
-    departmentList: Department list
-    departmentCreate: Add department
-    departmentSave: Edit department
-    departmentDelete: Delete department
-    positionList: Post list
-    positionCreate: Add post
-    positionSave: Edit post
-    positionDelete: Delete post
-    positionDataScope: Set post data scope
-    leaderList: Department leader list
-    leaderCreate: Add department leader
-    leaderSave: Edit department leader
-    leaderDelete: Delete department leader
+    departmentList: List
+    departmentCreate: Add
+    departmentSave: Edit
+    departmentDelete: Delete
+    positionList: List
+    positionCreate: Add
+    positionSave: Edit
+    positionDelete: Delete
+    positionDataScope: Set Scope
+    leaderList: List
+    leaderCreate: Add
+    leaderSave: Edit
+    leaderDelete: Delete
   log:
-    index: Log Management
+    index: Logs
     userLoginLog: Login Log
     operationLog: Operation Log
-    userLoginLogList: User Login Log List
-    userOperationLog: User Operation Log List
-    userLoginLogDelete: User Login Log Delete
-    userOperationLogDelete: User Operation Log Delete
+    userLoginLogList: List
+    userOperationLog: List
+    userLoginLogDelete: Delete
+    userOperationLogDelete: Delete
   dataCenter:
     index: Data Center
-    attachment: Attachment
-    attachmentList: Attachment List
-    attachmentUpload: Attachment Upload
-    attachmentDelete: Attachment Delete
+    attachment: Attachments
+    attachmentList: List
+    attachmentUpload: Upload
+    attachmentDelete: Delete

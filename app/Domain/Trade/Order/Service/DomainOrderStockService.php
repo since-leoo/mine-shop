@@ -17,8 +17,22 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\ICache;
 use Hyperf\Stringable\Str;
 
+/**
+ * 订单库存领域服务.
+ *
+ * 负责商品库存的预扣、回滚和分布式锁管理。
+ * 使用 Redis Hash 存储库存，Lua 脚本保证原子性扣减。
+ *
+ * 支持三种库存类型：
+ * - 普通商品库存：product:stock
+ * - 秒杀库存：seckill:stock:{sessionId}
+ * - 团购库存：groupbuy:stock:{groupBuyId}
+ */
 final class DomainOrderStockService
 {
+    /**
+     * 普通商品库存 Hash Key.
+     */
     public const STOCK_HASH_KEY = 'product:stock';
 
     /**
@@ -31,6 +45,15 @@ final class DomainOrderStockService
      */
     public const GROUP_BUY_STOCK_PREFIX = 'groupbuy:stock';
 
+    /**
+     * Lua 原子扣库存脚本.
+     *
+     * 流程：
+     * 1. 遍历所有 SKU，检查库存是否充足
+     * 2. 如果任一 SKU 库存不足，返回 0
+     * 3. 所有检查通过后，批量扣减库存
+     * 4. 返回 1 表示成功
+     */
     private const DEDUCT_SCRIPT = <<<'LUA'
         local stockKey = KEYS[1]
         for i = 1, #ARGV, 2 do
@@ -49,6 +72,11 @@ final class DomainOrderStockService
         return 1
         LUA;
 
+    /**
+     * @param DomainMallSettingService $mallSettingService 商城配置服务
+     * @param int $lockTtl 分布式锁过期时间（毫秒）
+     * @param int $lockRetry 获取锁的重试次数
+     */
     public function __construct(
         private readonly DomainMallSettingService $mallSettingService,
         private readonly int $lockTtl = 3000,
@@ -56,8 +84,15 @@ final class DomainOrderStockService
     ) {}
 
     /**
-     * @param array<int, array<string, mixed>> $items
-     * @return array<string, string>
+     * 获取商品库存分布式锁.
+     *
+     * 为每个 SKU 获取独立的分布式锁，防止并发扣减导致超卖。
+     * 使用 Redis SET NX PX 实现，支持自动过期和重试。
+     *
+     * @param array<int, array<string, mixed>> $items 商品列表，每项包含 sku_id 和 quantity
+     * @param string $stockHashKey 库存 Hash Key
+     * @return array<string, string> 锁映射表，key 为锁名，value 为锁令牌
+     * @throws \RuntimeException 获取锁失败时抛出
      */
     public function acquireLocks(array $items, string $stockHashKey = self::STOCK_HASH_KEY): array
     {
@@ -84,7 +119,11 @@ final class DomainOrderStockService
     }
 
     /**
-     * @param array<string, string> $locks
+     * 释放商品库存分布式锁.
+     *
+     * 使用 Lua 脚本保证原子性：只有持有正确令牌的客户端才能释放锁。
+     *
+     * @param array<string, string> $locks 锁映射表，key 为锁名，value 为锁令牌
      */
     public function releaseLocks(array $locks): void
     {
@@ -105,7 +144,14 @@ final class DomainOrderStockService
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
+     * 预扣库存（原子操作）.
+     *
+     * 使用 Lua 脚本在 Redis 中原子性地检查并扣减库存。
+     * 如果任一 SKU 库存不足，整个操作失败，不会部分扣减。
+     *
+     * @param array<int, array<string, mixed>> $items 商品列表，每项包含 sku_id 和 quantity
+     * @param string $stockHashKey 库存 Hash Key
+     * @throws \RuntimeException 库存不足或商品不存在时抛出
      */
     public function reserve(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
@@ -132,7 +178,13 @@ final class DomainOrderStockService
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
+     * 回滚库存.
+     *
+     * 订单取消或支付超时时调用，将预扣的库存返还。
+     * 使用 HINCRBY 命令逐个增加库存。
+     *
+     * @param array<int, array<string, mixed>> $items 商品列表，每项包含 sku_id 和 quantity
+     * @param string $stockHashKey 库存 Hash Key
      */
     public function rollback(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
@@ -159,8 +211,13 @@ final class DomainOrderStockService
     }
 
     /**
-     * @param array<int, array<string, mixed>> $items
-     * @return array<int, int>
+     * 标准化商品列表.
+     *
+     * 将商品数组转换为 skuId => quantity 的映射，
+     * 同时合并相同 SKU 的数量，过滤无效数据。
+     *
+     * @param array<int, array<string, mixed>> $items 原始商品列表
+     * @return array<int, int> SKU ID 到数量的映射
      */
     private function normalizeItems(array $items): array
     {
@@ -176,13 +233,22 @@ final class DomainOrderStockService
         return $result;
     }
 
+    /**
+     * 获取 Redis 缓存实例.
+     */
     private function redis(): ICache
     {
         return di(ICache::class);
     }
 
     /**
-     * @param array<int, int> $deducted
+     * 触发库存预警事件.
+     *
+     * 扣减库存后检查剩余库存，如果低于预警阈值则触发事件。
+     * 仅对普通商品库存生效，秒杀/团购库存不触发预警。
+     *
+     * @param array<int, int> $deducted 已扣减的 SKU 和数量
+     * @param string $stockHashKey 库存 Hash Key
      */
     private function triggerStockWarnings(array $deducted, string $stockHashKey = self::STOCK_HASH_KEY): void
     {

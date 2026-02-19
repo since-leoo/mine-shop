@@ -135,7 +135,10 @@ function renderOrderTypePie() {
   })
 }
 
-function onDateChange() {
+function onDateChange(val: [string, string] | null) {
+  if (!val) {
+    dateRange.value = ['', '']
+  }
   fetchData().then(() => nextTick(() => renderCharts()))
 }
 

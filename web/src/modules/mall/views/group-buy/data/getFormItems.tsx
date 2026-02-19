@@ -10,7 +10,6 @@ import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { ProductVo } from '~/mall/api/product'
 import type { GroupBuyVo } from '~/mall/api/group-buy'
-import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
@@ -18,8 +17,8 @@ export default function getFormItems(
   productOptions: Ref<ProductVo[]>,
   skuOptions: Ref<{ id: number; label: string }[]>,
   onProductChange: (productId?: number) => void,
+  t: (key: string) => string,
 ): MaFormItem[] {
-  const { t } = useI18n()
 
   const numberRule = (
     label: string,

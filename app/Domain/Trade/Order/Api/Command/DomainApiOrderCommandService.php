@@ -48,7 +48,14 @@ final class DomainApiOrderCommandService extends IService
     ) {}
 
     /**
-     * 获取订单实体（公共方法，委托给 OrderService）.
+     * 获取订单实体.
+     *
+     * 委托给 OrderService 获取订单实体，支持按 ID 或订单号查询。
+     *
+     * @param int $id 订单 ID（可选）
+     * @param string $orderNo 订单号（可选）
+     * @return OrderEntity 订单实体
+     * @throws \RuntimeException 订单不存在时抛出
      */
     public function getEntity(int $id = 0, string $orderNo = ''): OrderEntity
     {
@@ -57,6 +64,12 @@ final class DomainApiOrderCommandService extends IService
 
     /**
      * 预览订单.
+     *
+     * 根据用户选择的商品和地址，计算订单金额、运费、优惠等信息。
+     * 不会实际创建订单，仅用于展示结算页面。
+     *
+     * @param OrderPreviewInput $input 预览输入参数
+     * @return OrderEntity 包含计算结果的订单实体
      */
     public function preview(OrderPreviewInput $input): OrderEntity
     {
@@ -66,8 +79,15 @@ final class DomainApiOrderCommandService extends IService
     /**
      * 提交订单（异步）.
      *
-     * 同步阶段：校验 + 算价 + Lua 原子扣库存 + 投递队列。
-     * 返回带 tradeNo 的 Entity（status=processing），前端轮询结果。
+     * 采用异步下单模式，流程如下：
+     * 1. 同步阶段：校验参数 → 计算价格 → Lua 原子扣库存
+     * 2. 异步阶段：投递 Job 到队列 → 异步入库
+     *
+     * 前端通过轮询 getSubmitResult 获取最终结果。
+     *
+     * @param OrderSubmitInput $input 提交输入参数
+     * @return OrderEntity 包含 tradeNo 的订单实体（status=processing）
+     * @throws \RuntimeException 库存不足或参数校验失败时抛出
      */
     public function submit(OrderSubmitInput $input): OrderEntity
     {
@@ -105,6 +125,11 @@ final class DomainApiOrderCommandService extends IService
 
     /**
      * 取消订单.
+     *
+     * 将订单状态更新为已取消，需要在外部处理库存回滚。
+     *
+     * @param OrderEntity $entity 订单实体
+     * @return OrderEntity 更新后的订单实体
      */
     public function cancel(OrderEntity $entity): OrderEntity
     {
@@ -115,6 +140,11 @@ final class DomainApiOrderCommandService extends IService
 
     /**
      * 确认收货.
+     *
+     * 将订单状态更新为已完成，触发后续的积分、佣金等结算流程。
+     *
+     * @param OrderEntity $entity 订单实体
+     * @return OrderEntity 更新后的订单实体
      */
     public function confirmReceipt(OrderEntity $entity): OrderEntity
     {
@@ -127,7 +157,12 @@ final class DomainApiOrderCommandService extends IService
     /**
      * 查询异步下单结果.
      *
-     * @return array{status: string, error: string}
+     * 前端轮询此接口获取订单创建状态。
+     *
+     * @param string $tradeNo 订单号
+     * @return array{status: string, error: string} 状态信息
+     *         - status: processing（处理中）、created（成功）、failed（失败）
+     *         - error: 失败原因（仅 failed 状态有值）
      */
     public function getSubmitResult(string $tradeNo): array
     {
@@ -135,7 +170,18 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 公共订单构建流程：构建实体 → 策略校验 → 构建草稿 → 运费 → 优惠券.
+     * 构建订单实体.
+     *
+     * 统一的订单构建流程：
+     * 1. 从输入参数构建实体
+     * 2. 根据订单类型获取策略（普通/秒杀/团购）
+     * 3. 策略校验（库存、限购等）
+     * 4. 构建订单草稿（商品信息、价格）
+     * 5. 计算运费
+     * 6. 应用优惠券
+     *
+     * @param OrderPreviewInput|OrderSubmitInput $input 输入参数
+     * @return OrderEntity 构建完成的订单实体
      */
     private function buildOrder(OrderPreviewInput|OrderSubmitInput $input): OrderEntity
     {
@@ -150,7 +196,10 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 从 Input 构建 Entity.
+     * 从输入参数构建订单实体.
+     *
+     * @param OrderPreviewInput $input 输入参数
+     * @return OrderEntity 初始化后的订单实体
      */
     private function buildEntityFromInput(OrderPreviewInput $input): OrderEntity
     {
@@ -165,11 +214,15 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 计算并设置订单运费.
-     */
-
-    /**
-     * 解析用户地址：优先使用直接传入的地址，其次按 ID 查询，最后使用默认地址.
+     * 解析用户收货地址.
+     *
+     * 地址解析优先级：
+     * 1. 直接传入的地址信息（user_address）
+     * 2. 按地址 ID 查询
+     * 3. 使用用户默认地址
+     *
+     * @param OrderPreviewInput $input 输入参数
+     * @return OrderAddressValue|null 地址值对象，无地址时返回 null
      */
     private function resolveAddress(OrderPreviewInput $input): ?OrderAddressValue
     {
@@ -185,7 +238,13 @@ final class DomainApiOrderCommandService extends IService
     }
 
     /**
-     * 构建 Entity 快照（供异步 Job 重建上下文）.
+     * 构建订单快照.
+     *
+     * 将订单实体序列化为数组，供异步 Job 重建上下文使用。
+     * 过滤掉非标量的 extras 字段，避免序列化问题。
+     *
+     * @param OrderEntity $entity 订单实体
+     * @return array 订单快照数据
      */
     private function buildSnapshot(OrderEntity $entity): array
     {

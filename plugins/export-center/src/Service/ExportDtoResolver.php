@@ -18,6 +18,11 @@ use Plugin\ExportCenter\Annotation\ExportSheet;
 class ExportDtoResolver
 {
     /**
+     * 内存缓存，避免同一请求内重复反射解析.
+     */
+    private array $cache = [];
+
+    /**
      * 解析 DTO 类上的 ExportColumn 和 ExportSheet 注解，生成列元数据。
      *
      * @param string $dtoClass DTO 类的完整类名
@@ -37,6 +42,18 @@ class ExportDtoResolver
      * @throws \InvalidArgumentException 当 DTO 类不包含任何 ExportColumn 注解时
      */
     public function resolve(string $dtoClass): array
+    {
+        if (isset($this->cache[$dtoClass])) {
+            return $this->cache[$dtoClass];
+        }
+
+        return $this->cache[$dtoClass] = $this->doResolve($dtoClass);
+    }
+
+    /**
+     * 实际解析逻辑.
+     */
+    private function doResolve(string $dtoClass): array
     {
         $refClass = new \ReflectionClass($dtoClass);
 

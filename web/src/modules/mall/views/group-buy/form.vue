@@ -16,8 +16,11 @@ import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import { centsToYuan, yuanToCents } from '@/utils/price'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:group-buy:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null } = defineProps<{
   formType: 'add' | 'edit'
@@ -56,7 +59,7 @@ useForm('groupBuyForm').then(async (form: MaFormExpose) => {
     await loadSkus(model.value.product_id as number)
   }
   await loadProducts()
-  form.setItems(getFormItems(formType, model.value, productOptions, skuOptions, loadSkus))
+  form.setItems(getFormItems(formType, model.value, productOptions, skuOptions, loadSkus, t))
   form.setOptions({ labelWidth: '110px' })
 })
 

@@ -91,6 +91,19 @@ final class ExportService
      */
     public function processExportTask(int $taskId): void
     {
+        try {
+            $this->doProcessExportTask($taskId);
+        } catch (\Throwable $e) {
+            $this->markTaskFailed($taskId, $e->getMessage());
+            throw $e;
+        }
+    }
+
+    /**
+     * 实际处理导出任务逻辑.
+     */
+    private function doProcessExportTask(int $taskId): void
+    {
         $task = ExportTask::find($taskId);
         if (! $task) {
             throw new \RuntimeException("导出任务不存在: {$taskId}");
@@ -189,7 +202,8 @@ final class ExportService
     {
         $this->cache->set("export:progress:{$taskId}", $progress, 3600);
 
-        if ($progress % 10 === 0) {
+        // 只在关键节点更新数据库，减少写入频率
+        if (\in_array($progress, [0, 25, 50, 75, 100], true)) {
             ExportTask::where('id', $taskId)->update(['progress' => $progress]);
         }
     }
@@ -245,6 +259,11 @@ final class ExportService
 
         if ($task->user_id !== $userId) {
             throw new \RuntimeException('无权限删除此任务');
+        }
+
+        // 不允许删除正在处理的任务
+        if ($task->status === ExportStatus::PROCESSING->value) {
+            throw new \RuntimeException('正在处理的任务无法删除');
         }
 
         return (bool) $task->delete();
@@ -322,6 +341,11 @@ final class ExportService
 
         if (! $task->file_path) {
             throw new \RuntimeException('文件不存在或已过期');
+        }
+
+        // 检查文件是否已过期
+        if ($task->expired_at && Carbon::parse($task->expired_at)->isPast()) {
+            throw new \RuntimeException('文件已过期，请重新导出');
         }
 
         ExportDownloadLog::create([

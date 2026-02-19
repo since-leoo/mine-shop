@@ -142,25 +142,25 @@ crud:
   searchFold: Fold
   searchUnFold: Unfold
   selection: Selection
-  operation: Operation
-  createSuccess: The creation is successful
-  updateSuccess: The update was successful
-  delMessage: Whether to delete the selected data?
-  delDataMessage: Whether or not to delete the data?
-  delNoData: Select at least one row of data
-  delSuccess: The deletion is successful
+  operation: Action
+  createSuccess: Created
+  updateSuccess: Updated
+  delMessage: Delete selected?
+  delDataMessage: Delete this data?
+  delNoData: Select at least one row
+  delSuccess: Deleted
   status: Status
   remark: Remark
   sort: Sort
-  createTime: Creation time
-  updateTime: Updated time
-  exportMessage: Whether to confirm the export data?
-  importMessage: Whether to confirm the import data?
-  confirmTitle: System prompts
-  confirmMessage: OK to do %{msg}?
-  noPermission: There is no permission to access or use this feature
-  userNotAllow: This feature is not accessible or available to current users
-  superAdminNoEdit: SuperAdmin not allow edit
+  createTime: Created
+  updateTime: Updated
+  exportMessage: Confirm export?
+  importMessage: Confirm import?
+  confirmTitle: Confirm
+  confirmMessage: Confirm %{msg}?
+  noPermission: No permission
+  userNotAllow: Not accessible
+  superAdminNoEdit: SuperAdmin not editable
 form:
   pleaseInput: Please input {msg}
   pleaseSelect: Please select {msg}
@@ -170,9 +170,9 @@ resource:
   imageUpload: Image Upload
   fileUpload: File Upload
 dashboard:
-  mallAnalysis: Mall Data Analysis
-  workbench: Operations Workbench
-  statisticsReport: Statistics Report
+  mallAnalysis: Analysis
+  workbench: Workbench
+  statisticsReport: Report
   dateRange:
     to: to
     start: Start
@@ -180,60 +180,60 @@ dashboard:
   summary:
     totalSales: Sales
     totalSalesAll: Total Sales
-    paidOrders: Paid Orders
-    paidOrdersShort: Paid Orders
-    visitorsToday: Visitors (Today)
-    totalMembers: Total Members
-    newMembers: New Users
-    newMembersShort: New Members
-    avgOrderAmount: Avg. Order
-    payingMembers: Paying Members
-    conversionRate: Conversion Rate
-    refundAmount: Refund Amount
-    discountTotal: Discount Total
-    refundRate: Refund Rate
+    paidOrders: Paid
+    paidOrdersShort: Paid
+    visitorsToday: Visitors
+    totalMembers: Members
+    newMembers: New
+    newMembersShort: New
+    avgOrderAmount: Avg Order
+    payingMembers: Paying
+    conversionRate: CVR
+    refundAmount: Refund
+    discountTotal: Discount
+    refundRate: Refund %
     refundCount: '{count} refunds'
     qoq: QoQ
   chart:
     salesTrend: Sales Trend
     membersTrend: Members Trend
-    paymentDistribution: Payment Distribution
-    orderTypeDistribution: Order Type Distribution
-    productSalesRanking: Product Sales Ranking
-    categorySalesRanking: Category Sales Ranking
-    regionSalesRanking: Regional Sales Ranking
-    memberLevelDistribution: Member Level Distribution
-    orderAmountDistribution: Order Amount Distribution
+    paymentDistribution: Payment
+    orderTypeDistribution: Order Type
+    productSalesRanking: Product Ranking
+    categorySalesRanking: Category Ranking
+    regionSalesRanking: Region Ranking
+    memberLevelDistribution: Member Level
+    orderAmountDistribution: Order Amount
     salesAmountYuan: Sales (¥)
-    orderCount: Order Count
+    orderCount: Orders
     salesAmount: Sales
-    newMember: New Members
-    activeMember: Active Members
+    newMember: New
+    activeMember: Active
     noData: No data
     unitOrder: orders
     unitPerson: members
   payMethod:
-    wechat: WeChat Pay
+    wechat: WeChat
     alipay: Alipay
     balance: Balance
     unknown: Unknown
   orderType:
-    normal: Normal Order
-    seckill: Flash Sale Order
-    groupBuy: Group Buy Order
+    normal: Normal
+    seckill: Flash Sale
+    groupBuy: Group Buy
   ranking:
-    productSalesTop10: Product Sales Top 10
-    categorySalesTop10: Category Sales Top 10
-    productSalesDetailTop10: Product Sales Detail Top 10
-    categorySalesDetailTop10: Category Sales Detail Top 10
-    productSalesTop20: Product Sales Top 20
-    categorySalesTop20: Category Sales Top 20
+    productSalesTop10: Product Top 10
+    categorySalesTop10: Category Top 10
+    productSalesDetailTop10: Product Detail Top 10
+    categorySalesDetailTop10: Category Detail Top 10
+    productSalesTop20: Product Top 20
+    categorySalesTop20: Category Top 20
   table:
     index: '#'
-    productName: Product Name
+    productName: Product
     categoryName: Category Name
     salesCount: Sales
-    salesAmount: Sales Amount
+    salesAmount: Amount
 mall:
   search: Search
   reset: Reset
@@ -291,7 +291,7 @@ mall:
   category:
     title: Category Management
     subtitle: Manage product category hierarchy and status
-    categoryName: Category Name
+    categoryName: Name
     parentCategory: Parent Category
     topLevel: Top Level
     allCategories: All Categories
@@ -310,7 +310,7 @@ mall:
     formParent: Parent Category
     formParentPlaceholder: Select parent category
     formCannotSelfParent: Cannot select self as parent
-    formName: Category Name
+    formName: CategoryName
     formNamePlaceholder: Enter category name
     formNameRequired: Please enter category name
     formIcon: Icon
@@ -329,136 +329,136 @@ mall:
       active: On Sale
       inactive: Off Shelf
       soldOut: Sold Out
-    isRecommend: Recommended
-    notRecommend: Not Recommended
+    isRecommend: Recommend
+    notRecommend: Not Recommend
     isHot: Hot
     notHot: Not Hot
     isNew: New
     notNew: Not New
-    allStatus: All Status
+    allStatus: All
     all: All
-    productCode: Product Code
-    autoGenerate: Auto Generated
-    productName: Product Name
+    productCode: Code
+    autoGenerate: Auto
+    productName: Name
     subTitle: Subtitle
-    subTitlePlaceholder: Enter subtitle (optional)
+    subTitlePlaceholder: Subtitle (optional)
     category: Category
     brand: Brand
-    freightType: Freight Type
-    freightDefault: System Default
-    freightFree: Free Shipping
+    freightType: Freight
+    freightDefault: Default
+    freightFree: Free
     freightFlat: Flat Rate
-    freightTemplate: Freight Template
+    freightTemplate: Template
     keyword: Keyword
-    keywordPlaceholder: Product name/code
+    keywordPlaceholder: Name/Code
     statusText: Status
-    isRecommendLabel: Recommended
-    isHotLabel: Hot Sale
-    isNewLabel: New Arrival
+    isRecommendLabel: Recommend
+    isHotLabel: Hot
+    isNewLabel: New
     minPrice: Min Price
     maxPrice: Max Price
     salesMin: Min Sales
     salesMax: Max Sales
-    allCategory: All Categories
-    allBrand: All Brands
-    defaultSpec: Default Spec
-    moreItems: +{count} items
+    allCategory: All
+    allBrand: All
+    defaultSpec: Default
+    moreItems: +{count}
     itemUnit: items
     steps:
-      basicInfo: Basic Info
-      priceDisplay: Price & Display
-      attrSpec: Attributes & Specs
-      descDetail: Description & Details
-    title: Product Management
-    subtitle: Manage product information and SKUs
+      basicInfo: Basic
+      priceDisplay: Price
+      attrSpec: Specs
+      descDetail: Detail
+    title: Products
+    subtitle: Manage products and SKUs
     totalProducts: Total
     activeCount: On Sale
-    draftCount: Drafts
+    draftCount: Draft
     inactiveCount: Off Shelf
     soldOutCount: Sold Out
     warningStock: Low Stock
-    addProduct: New Product
-    editProduct: Edit Product
-    batchDelete: Batch Delete
-    selectDeleteData: Please select data to delete
-    confirmDeleteProduct: Are you sure to delete selected products?
-    confirmDeleteSingle: Are you sure to delete this product?
+    addProduct: New
+    editProduct: Edit
+    batchDelete: Delete
+    selectDeleteData: Select data
+    confirmDeleteProduct: Delete selected?
+    confirmDeleteSingle: Delete this product?
     deleteSuccess: Deleted
-    operationSuccess: Operation successful
-    priceRange: Price Range
-    isHotColumn: Hot Sale
+    operationSuccess: Success
+    priceRange: Price
+    isHotColumn: Hot
   order:
-    totalOrders: Total Orders
-    pendingPayment: Pending Payment
+    totalOrders: Total
+    pendingPayment: Pending
     paid: Paid
     shipped: Shipped
     orderNo: Order No.
-    orderNoPlaceholder: Enter order number
+    orderNoPlaceholder: Order number
     payNo: Pay No.
-    payNoPlaceholder: Enter transaction number
+    payNoPlaceholder: Transaction number
     memberId: User ID
-    memberIdPlaceholder: Enter user ID
+    memberIdPlaceholder: User ID
     phone: Phone
-    phonePlaceholder: Enter phone number
+    phonePlaceholder: Phone number
     productNameLabel: Product
-    productNamePlaceholder: Enter product name
+    productNamePlaceholder: Product name
     orderStatus: Status
     payStatus: Pay Status
     orderTime: Order Time
-    orderList: Order List
+    orderList: Orders
     index: '#'
     user: User
-    productInfo: Product Info
+    productInfo: Product
     quantity: Qty
     paidAmount: Paid
     shippingStatus: Shipping
-    operation: Operation
+    operation: Action
     ship: Ship
     cancelOrder: Cancel
-    cancelConfirm: Are you sure to cancel this order?
+    cancelConfirm: Cancel this order?
     shipDialog: Ship Order
-    expressCompany: Express Company
-    expressCompanyPlaceholder: Select express company
+    expressCompany: Express
+    expressCompanyPlaceholder: Select express
     expressNo: Tracking No.
-    expressNoPlaceholder: Enter tracking number
-    expressNoLength: Tracking number must be 5-50 characters
+    expressNoPlaceholder: Tracking number
+    expressNoLength: 5-50 characters
     remark: Remark
-    remarkPlaceholder: Optional shipping remark
-    confirmShip: Confirm Shipment
-    shipSuccess: Shipped successfully
-    shipFailed: Shipment failed
-    cancelSuccess: Order cancelled
+    remarkPlaceholder: Optional remark
+    confirmShip: Confirm
+    shipSuccess: Shipped
+    shipFailed: Ship failed
+    cancelSuccess: Cancelled
     cancelFailed: Cancel failed
-    exportTriggered: Export task triggered
+    exportTriggered: Export started
     exportFailed: Export failed
-    loadFailed: Failed to load orders
-    loadStatsFailed: Failed to load statistics
-    statusPending: Pending Payment
+    loadFailed: Load failed
+    loadStatsFailed: Stats load failed
+    statusPending: Pending
     statusPaid: Paid
     statusShipped: Shipped
     statusCompleted: Completed
     statusCancelled: Cancelled
     payPending: Pending
     payPaid: Paid
-    payFailed: Payment Failed
+    payFailed: Failed
     payCancelled: Cancelled
     payRefunded: Refunded
     shipPending: Pending
-    shipPartial: Partially Shipped
+    shipPartial: Partial
     shipShipped: Shipped
     shipDelivered: Delivered
     express:
       sf: SF Express
-      yto: YTO Express
-      zto: ZTO Express
-      yd: Yunda Express
-      sto: STO Express
+      yto: YTO
+      zto: ZTO
+      yd: Yunda
+      sto: STO
       ems: EMS
-      jd: JD Logistics
+      jd: JD
     detailTitle: Order Detail
     basicInfo: Basic Info
     orderNoLabel: Order No.
-    orderStatusLabel: Order Status
+    orderStatusLabel: Status
     orderTimeLabel: Order Time
     payTimeLabel: Pay Time
     shipTimeLabel: Ship Time
@@ -466,37 +466,37 @@ mall:
     buyerInfo: Buyer Info
     buyerNickname: Buyer
     contactPhone: Phone
-    shippingAddress: Shipping Address
+    shippingAddress: Address
     receiverLabel: Receiver
     receiver: Receiver
     addressLabel: Address
-    addressDetail: Address Detail
-    productInfoTitle: Product Info
+    addressDetail: Address
+    productInfoTitle: Products
     productColumn: Product
     productLabel: Product
-    unitPrice: Unit Price
+    unitPrice: Price
     quantityColumn: Qty
     subtotal: Subtotal
-    amountInfo: Amount Info
+    amountInfo: Amount
     productTotal: Product Total
-    totalAmount: Product Total
-    shippingFee: Shipping Fee
+    totalAmount: Total
+    shippingFee: Shipping
     discountAmount: Discount
-    payAmount: Paid Amount
-    remarkInfo: Remark Info
-    buyerRemark: Buyer Remark
-    sellerRemark: Seller Remark
-    reviewInfo: Review Info
+    payAmount: Paid
+    remarkInfo: Remark
+    buyerRemark: Buyer
+    sellerRemark: Seller
+    reviewInfo: Review
     noReview: No reviews
     reviewRating: Rating
     reviewContentColumn: Content
     reviewContent: Content
     reviewStatusColumn: Status
     reviewStatus: Status
-    adminReplyColumn: Admin Reply
-    adminReply: Admin Reply
-    reviewTimeColumn: Review Time
-    reviewTime: Review Time
+    adminReplyColumn: Reply
+    adminReply: Reply
+    reviewTimeColumn: Time
+    reviewTime: Time
     closeButton: Close
   orderStatus:
     pending: Pending Payment
@@ -511,19 +511,19 @@ mall:
     cancelled: Cancelled
     soldOut: Sold Out
   seckillOrder:
-    title: Flash Sale Orders
-    subtitle: View flash sale orders by activity
-    noData: No flash sale order data
-    drawerTitle: "Flash Orders - {title}"
-    activityName: Activity Name
+    title: Flash Orders
+    subtitle: View flash sale orders
+    noData: No data
+    drawerTitle: "Orders - {title}"
+    activityName: Activity
     statusColumn: Status
     enabledColumn: Enabled
     enabledLabel: Enabled
     sessionsCount: Sessions
     buyerCount: Buyers
-    totalAmount: Total Amount
-    createdAt: Created At
-    viewOrders: View Orders
+    totalAmount: Amount
+    createdAt: Created
+    viewOrders: View
     memberColumn: Member
     memberLabel: Member
     phoneColumn: Phone
@@ -532,45 +532,45 @@ mall:
     sessionLabel: Session
     quantityColumn: Qty
     quantityLabel: Qty
-    seckillPrice: Flash Price
+    seckillPrice: Price
     paidAmount: Paid
     orderStatusColumn: Status
-    relatedOrder: Related Order
-    seckillTime: Flash Time
-    operation: Operation
+    relatedOrder: Order
+    seckillTime: Time
+    operation: Action
     "yes": "Yes"
     "no": "No"
-    orderPending: Pending Payment
+    orderPending: Pending
     orderPaid: Paid
     orderCancelled: Cancelled
   coupon:
-    name: Coupon Name
+    name: Name
     namePlaceholder: Enter coupon name
     nameRequired: Please enter coupon name
     type: Type
     typePlaceholder: Select type
-    typeRequired: Please select coupon type
-    typeFixed: Fixed Discount
-    typePercent: Percentage Off
-    typeLabel: Discount Type
-    valueLabel: Discount Value
-    valuePlaceholderPercent: e.g. 8.5 means 85% off
-    valuePlaceholderFixed: Enter discount amount (¥)
-    valueRequired: Please enter discount value
-    valueMustBeNumber: Discount value must be a number
-    percentRange: Discount must be between 0.1-9.9 (e.g. 8.5 means 85% off)
-    amountPositive: Discount amount must be greater than 0
-    minAmountLabel: Min. Order Amount (¥)
-    minAmountMustBeNumber: Min. amount must be a number
-    minAmountNonNegative: Min. amount cannot be negative
-    totalCountLabel: Total Quantity
-    totalCountRequired: Please enter total quantity
-    totalCountPositiveInt: Total quantity must be a positive integer
-    totalCountPositive: Total quantity must be greater than 0
-    perLimitLabel: Per-User Limit
-    perLimitPositiveInt: Per-user limit must be a positive integer
-    validityLabel: Validity Period
-    startBeforeEnd: Start time cannot be later than end time
+    typeRequired: Please select type
+    typeFixed: Fixed
+    typePercent: Percent
+    typeLabel: Type
+    valueLabel: Value
+    valuePlaceholderPercent: e.g. 8.5 = 85% off
+    valuePlaceholderFixed: Amount (¥)
+    valueRequired: Please enter value
+    valueMustBeNumber: Must be a number
+    percentRange: 0.1-9.9 (8.5 = 85% off)
+    amountPositive: Must be > 0
+    minAmountLabel: Min Order (¥)
+    minAmountMustBeNumber: Must be a number
+    minAmountNonNegative: Cannot be negative
+    totalCountLabel: Quantity
+    totalCountRequired: Please enter quantity
+    totalCountPositiveInt: Must be positive integer
+    totalCountPositive: Must be > 0
+    perLimitLabel: Per User
+    perLimitPositiveInt: Must be positive integer
+    validityLabel: Validity
+    startBeforeEnd: Start must be before end
     statusLabel: Status
     descriptionLabel: Description
     searchLabel: Keyword
@@ -578,85 +578,85 @@ mall:
     statusActive: Active
     statusInactive: Inactive
     statusPlaceholder: Select status
-    minAmountPlaceholder: Enter minimum amount
-    totalCountPlaceholder: Enter total count
-    perLimitPlaceholder: Enter per-user limit (leave empty for unlimited)
-    validityRequired: Please select validity period
+    minAmountPlaceholder: Min amount
+    totalCountPlaceholder: Total count
+    perLimitPlaceholder: Limit (empty = unlimited)
+    validityRequired: Please select validity
     descriptionPlaceholder: Enter description
-    searchNamePlaceholder: Search by name
-    memberIdsLabel: Member ID List
+    searchNamePlaceholder: Search name
+    memberIdsLabel: Member IDs
     memberIdsRequired: Please enter member IDs
-    memberIdsPlaceholder: Enter member IDs, separated by commas
-    expireLabel: Custom Expiry Time
-    expirePlaceholder: Leave empty to use coupon end time
-    issueTip: It is recommended to export IDs from the member list for batch issuance, separated by commas.
-    issueSuccess: Issued successfully
+    memberIdsPlaceholder: IDs, comma separated
+    expireLabel: Expiry Time
+    expirePlaceholder: Empty = coupon end time
+    issueTip: Export IDs from member list, comma separated.
+    issueSuccess: Issued
     issueFailed: Issue failed
-    issueMinOne: Please enter at least one member ID
-    title: Coupon Management
-    subtitle: Configure and issue marketing coupons
-    totalCoupons: Total Coupons
+    issueMinOne: Enter at least one ID
+    title: Coupons
+    subtitle: Configure and issue coupons
+    totalCoupons: Total
     activeCount: Active
     inactiveCount: Inactive
-    addCoupon: New Coupon
+    addCoupon: New
     issueLabel: "Issue {name}"
     issueAction: Issue
-    editCoupon: Edit Coupon
-    confirmDelete: Are you sure to delete this coupon?
+    editCoupon: Edit
+    confirmDelete: Delete this coupon?
   couponUser:
     unused: Unused
     used: Used
     expired: Expired
     statusPlaceholder: Select
-    recordTitle: Coupon Records
-    recordSubtitle: View user coupon usage
+    recordTitle: Records
+    recordSubtitle: View coupon usage
     keywordLabel: Keyword
-    keywordPlaceholder: Enter nickname or phone
+    keywordPlaceholder: Nickname or phone
     memberColumn: Member
     couponColumn: Coupon
     statusColumn: Status
-    receivedAt: Received At
-    usedAt: Used At
-    expireAt: Expires At
-    markUsed: Mark as Used
-    markExpired: Mark as Expired
+    receivedAt: Received
+    usedAt: Used
+    expireAt: Expires
+    markUsed: Mark Used
+    markExpired: Mark Expired
   review:
-    allStatus: All Status
-    pending: Pending Review
+    allStatus: All
+    pending: Pending
     approved: Approved
     rejected: Rejected
-    statusPending: Pending Review
+    statusPending: Pending
     statusApproved: Approved
     statusRejected: Rejected
-    allRating: All Ratings
+    allRating: All
     star5: 5 Stars
     star4: 4 Stars
     star3: 3 Stars
     star2: 2 Stars
     star1: 1 Star
-    searchProduct: Search product name
-    startDate: Start Date
-    endDate: End Date
-    replyPlaceholder: Enter reply content
+    searchProduct: Product name
+    startDate: Start
+    endDate: End
+    replyPlaceholder: Enter reply
     statusLabel: Status
     ratingLabel: Rating
-    createdAtLabel: Created At
-    pageTitle: Review Management
-    pageSubtitle: View, audit and reply to product reviews
-    totalReviews: Total Reviews
-    pendingReview: Pending Review
-    newToday: New Today
-    avgRating: Average Rating
-    emptyData: No review data
+    createdAtLabel: Created
+    pageTitle: Reviews
+    pageSubtitle: View and reply to reviews
+    totalReviews: Total
+    pendingReview: Pending
+    newToday: Today
+    avgRating: Avg Rating
+    emptyData: No data
     viewReply: View Reply
-    replyReview: Reply to Review
-    reviewContent: "Review Content:"
+    replyReview: Reply
+    reviewContent: "Content:"
     cancelReply: Cancel
-    confirmReply: Confirm Reply
-    replySuccess: Reply successful
-    replyEmpty: Please enter reply content
-    productNameColumn: Product Name
-    productName: Product Name
+    confirmReply: Confirm
+    replySuccess: Replied
+    replyEmpty: Enter reply
+    productNameColumn: Product
+    productName: Product
     userColumn: User
     user: User
     ratingColumn: Rating
@@ -664,14 +664,14 @@ mall:
     contentColumn: Content
     content: Content
     statusColumn: Status
-    createdAtColumn: Created At
-    createdAt: Created At
-    operationColumn: Operation
-    operationLabel: Operation
+    createdAtColumn: Created
+    createdAt: Created
+    operationColumn: Action
+    operationLabel: Action
     anonymousUser: Anonymous
     anonymous: Anonymous
-    confirmApprove: Are you sure to approve this review?
-    confirmReject: Are you sure to reject this review?
+    confirmApprove: Approve this review?
+    confirmReject: Reject this review?
     approveSuccess: Approved
     rejectSuccess: Rejected
     approveAction: Approve
@@ -680,87 +680,87 @@ mall:
     reject: Reject
     replyAction: Reply
   groupBuy:
-    searchActivity: Search activity name
-    activityName: Activity Name
-    confirmDeleteSingle: Are you sure to delete this group buy?
+    searchActivity: Activity name
+    activityName: Name
+    confirmDeleteSingle: Delete this group buy?
     product: Product
     price: Price
-    groupSize: Group Size
-    people: " people"
+    groupSize: Size
+    people: " ppl"
     stockSales: Stock/Sales
-    statusToggleSuccess: Status switched
+    statusToggleSuccess: Status changed
     time: Time
     startLabel: "Start"
     endLabel: "End"
-    operation: Operation
+    operation: Action
     title: Group Buy
-    subtitle: Manage group buy campaigns and inventory
+    subtitle: Manage group buy campaigns
     totalActivities: Total
     enabled: Enabled
-    inProgress: In Progress
+    inProgress: Active
     disabled: Disabled
-    addGroupBuy: New Group Buy
-    batchDelete: Batch Delete
-    noGroupBuy: No group buy campaigns
-    selectDeleteData: Please select data to delete
-    confirmDeleteGroupBuy: Are you sure to delete selected group buy campaigns?
+    addGroupBuy: New
+    batchDelete: Delete
+    noGroupBuy: No data
+    selectDeleteData: Select data to delete
+    confirmDeleteGroupBuy: Delete selected?
     deleteSuccess: Deleted
-    operationSuccess: Operation successful
-    editGroupBuy: Edit Group Buy
-    formTitle: Activity Title
-    formTitlePlaceholder: Enter activity title
-    formTitleRequired: Please enter activity title
+    operationSuccess: Success
+    editGroupBuy: Edit
+    formTitle: Title
+    formTitlePlaceholder: Enter title
+    formTitleRequired: Please enter title
     formProduct: Product
-    formProductPlaceholder: Select a product
-    formProductRequired: Please select a product
-    formSkuPlaceholder: Select a SKU
-    formSkuRequired: Please select a SKU
-    formOriginalPrice: "Original Price (¥)"
-    formGroupPrice: "Group Price (¥)"
-    formGroupPriceRequired: Please enter group price
-    formGroupPriceExceed: Group price cannot exceed original price
-    formMinPeople: Min Group Size
-    formMaxPeople: Max Group Size
-    formMaxPeopleRequired: Please enter max group size
-    formMaxPeopleGteMin: Max must be >= min group size
-    formTimeLimit: "Time Limit (hours)"
+    formProductPlaceholder: Select product
+    formProductRequired: Please select product
+    formSkuPlaceholder: Select SKU
+    formSkuRequired: Please select SKU
+    formOriginalPrice: "Original (¥)"
+    formGroupPrice: "Group (¥)"
+    formGroupPriceRequired: Enter group price
+    formGroupPriceExceed: Cannot exceed original
+    formMinPeople: Min Size
+    formMaxPeople: Max Size
+    formMaxPeopleRequired: Enter max size
+    formMaxPeopleGteMin: Max must be >= min
+    formTimeLimit: "Limit (hrs)"
     formStock: Stock
-    formStartTime: Start Time
-    formStartTimeRequired: Please select start time
-    formStartBeforeEnd: Start time cannot be later than end time
-    formEndTime: End Time
-    formEndTimeRequired: Please select end time
-    formEndAfterStart: End time must be later than start time
+    formStartTime: Start
+    formStartTimeRequired: Select start time
+    formStartBeforeEnd: Start must be before end
+    formEndTime: End
+    formEndTimeRequired: Select end time
+    formEndAfterStart: End must be after start
     formEnabled: Enabled
     formRemark: Remark
     formRemarkPlaceholder: Enter remark
-    formInputRequired: "Please enter {label}"
-    formMustBeNumber: "{label} must be a number"
-    formMustBePositive: "{label} must be greater than 0"
-    formCannotBeNegative: "{label} cannot be negative"
-    formCannotBeLessThan: "{label} cannot be less than {min}"
-    formCannotBeGreaterThan: "{label} cannot be greater than {max}"
-    formMustBeInteger: "{label} must be an integer"
+    formInputRequired: "Enter {label}"
+    formMustBeNumber: "{label} must be number"
+    formMustBePositive: "{label} must be > 0"
+    formCannotBeNegative: "{label} cannot be < 0"
+    formCannotBeLessThan: "{label} cannot be < {min}"
+    formCannotBeGreaterThan: "{label} cannot be > {max}"
+    formMustBeInteger: "{label} must be integer"
   groupBuyOrder:
     groupNo: Group No.
     leader: Leader
     member: Member
     memberName: Member
     phone: Phone
-    quantity: Quantity
-    groupPrice: Group Price
-    paidAmount: Paid Amount
-    groupStatus: Group Status
-    relatedOrder: Related Order
-    joinTime: Join Time
-    expireTime: Expire Time
+    quantity: Qty
+    groupPrice: Price
+    paidAmount: Paid
+    groupStatus: Status
+    relatedOrder: Order
+    joinTime: Joined
+    expireTime: Expires
     leaderTag: Leader
-    title: Group Buy Orders
-    subtitle: View group buy participation by activity
-    noData: No group buy order data
-    drawerTitle: "Group Buy Orders - {title}"
-    activityInfo: Activity Info
-    activityTime: Activity Time
+    title: Group Orders
+    subtitle: View group buy orders
+    noData: No data
+    drawerTitle: "Orders - {title}"
+    activityInfo: Activity
+    activityTime: Time
     startLabel: "Start: "
     endLabel: "End: "
     grouping: Grouping
@@ -769,87 +769,87 @@ mall:
     openGroups: "Open: "
     successGroups: "Success: "
     participants: Participants
-    groupBuyerCount: Group Buyers
-    originalBuyerCount: Original Buyers
-    originalBuyers: Original Price
-    groupBuyerAmount: Group Amount
-    groupAmount: Group Amount
+    groupBuyerCount: Buyers
+    originalBuyerCount: Original
+    originalBuyers: Original
+    groupBuyerAmount: Amount
+    groupAmount: Amount
     stockSales: Stock/Sales
-    viewOrders: View Orders
-    operationLabel: Operation
+    viewOrders: View
+    operationLabel: Action
   seckill:
-    confirmDeleteSingle: Are you sure to delete this activity?
-    confirmDeleteSessionSingle: Are you sure to delete this session? Products in it will also be deleted.
-    confirmRemoveSingle: Are you sure to remove this product?
-    createdAt: Created At
-    startTime: Start Time
-    endTime: End Time
-    operation: Operation
-    productImage: Product Image
-    productName: Product Name
+    confirmDeleteSingle: Delete this activity?
+    confirmDeleteSessionSingle: Delete this session?
+    confirmRemoveSingle: Remove this product?
+    createdAt: Created
+    startTime: Start
+    endTime: End
+    operation: Action
+    productImage: Image
+    productName: Product
     products: Products
-    productsUnit: products
+    productsUnit: items
     purchaseLimit: Limit
     sessions: Sessions
     sessionsUnit: sessions
     sold: Sold
     stock: Stock
-    statusToggleSuccess: Status switched
-    statusPlaceholder: Select status
-    activityTitle: Activity Title
-    activityTitlePlaceholder: Enter activity title
-    activityTitleRequired: Please enter activity title
-    activityDesc: Activity Description
-    activityDescPlaceholder: Enter activity description
-    activityStatus: Activity Status
-    enabledStatus: Enabled Status
+    statusToggleSuccess: Status changed
+    statusPlaceholder: Select
+    activityTitle: Title
+    activityTitlePlaceholder: Enter title
+    activityTitleRequired: Please enter title
+    activityDesc: Description
+    activityDescPlaceholder: Enter description
+    activityStatus: Status
+    enabledStatus: Enabled
     remarkLabel: Remark
     remarkPlaceholder: Enter remark
-    sessionStatus: Session Status
-    perUserLimit: Per-User Limit
-    perUserLimitPlaceholder: Enter per-user limit
-    sortOrder: Sort Order
-    sortOrderPlaceholder: Lower value = higher priority
-    startTimePlaceholder: Select start time
-    startTimeRequired: Please select start time
-    endTimePlaceholder: Select end time
-    endTimeRequired: Please select end time
-    title: Flash Sale Management
-    subtitle: Manage flash sale activities, sessions and products
+    sessionStatus: Status
+    perUserLimit: Limit
+    perUserLimitPlaceholder: Per-user limit
+    sortOrder: Sort
+    sortOrderPlaceholder: Lower = higher
+    startTimePlaceholder: Select start
+    startTimeRequired: Select start time
+    endTimePlaceholder: Select end
+    endTimeRequired: Select end time
+    title: Flash Sale
+    subtitle: Manage flash sale activities
     totalActivities: Total
     enabledCount: Enabled
     disabledCount: Disabled
-    addActivity: New Activity
-    batchDelete: Batch Delete
-    noActivities: No flash sale activities
-    selectDeleteData: Please select data to delete
-    confirmDeleteActivity: Are you sure to delete selected activities?
+    addActivity: New
+    batchDelete: Delete
+    noActivities: No data
+    selectDeleteData: Select data to delete
+    confirmDeleteActivity: Delete selected?
     deleteSuccess: Deleted
-    operationSuccess: Operation successful
-    editActivity: Edit Activity
-    statusSwitchSuccess: Status switched
+    operationSuccess: Success
+    editActivity: Edit
+    statusSwitchSuccess: Status changed
     sessionsCount: "{count} sessions"
-    productsCount: "{count} products"
+    productsCount: "{count} items"
     sessionTitle: "Sessions - {title}"
-    sessionSubtitle: Manage flash sale time sessions
-    addSession: New Session
+    sessionSubtitle: Manage time sessions
+    addSession: New
     noSessions: No sessions
-    confirmDeleteSession: Are you sure to delete selected sessions? Products in sessions will also be deleted.
-    editSession: Edit Session
-    confirmDeleteSingleSession: Are you sure to delete this session? Products in it will also be deleted.
-    backToActivities: Back to Activities
-    productConfig: Product Config
-    productConfigSubtitle: Configure flash sale session products and prices
-    addProduct: Add Product
-    batchRemove: Batch Remove
+    confirmDeleteSession: Delete selected sessions?
+    editSession: Edit
+    confirmDeleteSingleSession: Delete this session?
+    backToActivities: Back
+    productConfig: Products
+    productConfigSubtitle: Configure products and prices
+    addProduct: Add
+    batchRemove: Remove
     noProducts: No products
-    confirmRemoveProducts: Are you sure to remove selected products?
-    editProductConfig: Edit Product Config
-    confirmRemoveProduct: Are you sure to remove this product?
-    backToSessions: Back to Sessions
+    confirmRemoveProducts: Remove selected?
+    editProductConfig: Edit
+    confirmRemoveProduct: Remove this product?
+    backToSessions: Back
     noImage: No image
     seckillPrice: Flash Price
-    originalPrice: Original Price
+    originalPrice: Original
     stockLabel: Stock
     soldLabel: Sold
     limitLabel: Limit
@@ -857,29 +857,29 @@ mall:
     sortLabel: Sort
     stockSold: Stock/Sold
     buyerCount: Buyers
-    totalAmount: Total Amount
-    viewOrders: View Flash Orders
+    totalAmount: Amount
+    viewOrders: View
     yesLabel: "Yes"
     noLabel: "No"
-    formSelectProduct: Select Product
-    formSelectProductPlaceholder: Select a product
-    formSelectProductRequired: Please select a product
-    formSelectSku: Select SKU
+    formSelectProduct: Product
+    formSelectProductPlaceholder: Select product
+    formSelectProductRequired: Select product
+    formSelectSku: SKU
     formSelectSkuPlaceholder: Select product first
-    formSelectSkuRequired: Please select a SKU
-    formOriginalPrice: Original Price
-    formOriginalPricePlaceholder: Enter original price
-    formOriginalPriceRequired: Please enter original price
+    formSelectSkuRequired: Select SKU
+    formOriginalPrice: Original
+    formOriginalPricePlaceholder: Original price
+    formOriginalPriceRequired: Enter original price
     formSeckillPrice: Flash Price
-    formSeckillPricePlaceholder: Enter flash price (must be less than original)
-    formSeckillPriceRequired: Please enter flash price
+    formSeckillPricePlaceholder: Flash price
+    formSeckillPriceRequired: Enter flash price
     formStock: Stock
-    formStockPlaceholder: Enter stock quantity
-    formStockRequired: Please enter stock quantity
-    formPerUserLimit: Per-User Limit
-    formPerUserLimitPlaceholder: Enter per-user limit
+    formStockPlaceholder: Stock quantity
+    formStockRequired: Enter stock
+    formPerUserLimit: Limit
+    formPerUserLimitPlaceholder: Per-user limit
     formSortOrder: Sort
-    formSortPlaceholder: Lower value = higher priority
+    formSortPlaceholder: Lower = higher
     formEnabledStatus: Enabled
   common:
     enabled: Enabled
@@ -906,20 +906,20 @@ mall:
     endLabel: "End: "
     people: "{min}-{max} people"
   config:
-    maxReached: Maximum configuration count reached
-    resetDefault: Reset to Default
-    productTitle: Product & Inventory
-    productDesc: Product publishing limits, inventory safety and content control.
-    orderTitle: Orders & After-sales
-    orderDesc: Order lifecycle, risk control and after-sales configuration.
-    paymentTitle: Payment & Settlement
-    paymentDesc: Payment methods and risk control for WeChat/Alipay payment and refund.
-    shippingTitle: Shipping & Logistics
-    shippingDesc: Express, self-pickup and third-party logistics configuration.
-    memberTitle: Member & Marketing
-    memberDesc: Member growth, points and marketing strategies.
-    contentTitle: Content & Compliance
-    contentDesc: Agreements, announcements and content review policies.
+    maxReached: Max reached
+    resetDefault: Reset
+    productTitle: Product
+    productDesc: Product and inventory settings
+    orderTitle: Order
+    orderDesc: Order and after-sales settings
+    paymentTitle: Payment
+    paymentDesc: Payment and refund settings
+    shippingTitle: Shipping
+    shippingDesc: Logistics settings
+    memberTitle: Member
+    memberDesc: Member and marketing settings
+    contentTitle: Content
+    contentDesc: Content and compliance settings
   productForm:
     basicInfo: Basic Info
     statusAndTags: Status & Tags
@@ -1054,170 +1054,170 @@ member:
     inactive: Inactive
     banned: Banned
   source:
-    wechat: WeChat Official
-    miniProgram: WeChat Mini Program
+    wechat: WeChat
+    miniProgram: Mini Program
     h5: H5
-    admin: Admin Import
+    admin: Admin
   overview:
-    title: Member Dashboard
-    subtitle: Aligned with dashboard/analysis style, replaceable with real-time metrics
-    totalMembers: Total Members
-    newToday: New Today
+    title: Members
+    subtitle: Member dashboard
+    totalMembers: Total
+    newToday: Today
     active30d: 30-Day Active
-    sleeping30d: Sleeping Members
+    sleeping30d: Sleeping
     vsLastWeek: vs last week
     realtime: Real-time
     kpiOps: Ops KPI
     needRecall: Need recall
-    todoRecall: Sleeping Member Recall
-    todoRecallDesc: Push growth task coupon packs to users inactive for 30 days
-    todoLevel: Member Level Review
-    todoLevelDesc: Review LV3-LV4 conditions, fine-tune with GMV
-    todoPoints: Points Rule Tracking
-    todoPointsDesc: Complete frontend exposure after wallet merge
+    todoRecall: Recall Task
+    todoRecallDesc: Push coupons to inactive users
+    todoLevel: Level Review
+    todoLevelDesc: Review LV3-LV4 conditions
+    todoPoints: Points Tracking
+    todoPointsDesc: Complete frontend exposure
     today: Today
     tomorrow: Tomorrow
     thisWeek: This Week
     priorityHigh: High
     priorityMedium: Medium
     priorityLow: Low
-    growthTrend: Member Growth Trend
-    growthTrendDesc: Combine new and active curves to quickly assess acquisition and retention
-    regionBreakdown: Regional Distribution
-    regionBreakdownDesc: Member province distribution for identifying key markets
-    regionTotal: Total members
-    todoTitle: Operations Todo
-    todoDesc: Focus on high-priority tasks for daily standups
+    growthTrend: Growth Trend
+    growthTrendDesc: New and active curves
+    regionBreakdown: Region
+    regionBreakdownDesc: Province distribution
+    regionTotal: Total
+    todoTitle: Todo
+    todoDesc: High-priority tasks
     owner: Owner
     deadline: Deadline
-    levelStructure: Level Structure
-    levelStructureDesc: Real-time member level distribution from mall_members.level
-    behaviorInsight: Behavior Insights
-    behaviorInsightDesc: Can be replaced with funnel or custom charts
+    levelStructure: Level
+    levelStructureDesc: Level distribution
+    behaviorInsight: Behavior
+    behaviorInsightDesc: Conversion insights
     scenarioColumn: Scenario
-    conversionColumn: Conversion Rate
+    conversionColumn: CVR
     remarkColumn: Remark
-    scenarioFirstOrder: First Order Guide
-    scenarioFirstOrderRemark: Keep new user coupon + free shipping combo
-    scenarioRepurchase: Repurchase Incentive
-    scenarioRepurchaseRemark: Combine wallet balance with personalized benefits push
-    scenarioRecall: Sleeping Recall
-    scenarioRecallRemark: Recommend SMS + mini program live streaming
-    recentMembers: Recent Members
-    recentMembersDesc: Card-style list consistent with analysis page for quick profile view
+    scenarioFirstOrder: First Order
+    scenarioFirstOrderRemark: New user coupon
+    scenarioRepurchase: Repurchase
+    scenarioRepurchaseRemark: Wallet + benefits
+    scenarioRecall: Recall
+    scenarioRecallRemark: SMS + live streaming
+    recentMembers: Recent
+    recentMembersDesc: Recent members
     nickname: Nickname
     phoneColumn: Phone
     levelColumn: Level
-    registeredAt: Registered At
+    registeredAt: Registered
     statusColumn: Status
     unnamed: Unnamed
-    loadFailed: Failed to load member overview
-    newMemberLegend: New Members
-    activeMemberLegend: Active Members
+    loadFailed: Load failed
+    newMemberLegend: New
+    activeMemberLegend: Active
   list:
     keyword: Keyword
-    keywordPlaceholder: Nickname / Phone / OpenID
+    keywordPlaceholder: Nickname/Phone/OpenID
     statusLabel: Status
     levelLabel: Level
     sourceLabel: Source
     tagLabel: Tag
-    registeredAt: Registered At
+    registeredAt: Registered
     search: Search
     reset: Reset
-    tagManager: Tag Manager
-    memberList: Member List
-    createMember: New Member
+    tagManager: Tags
+    memberList: Members
+    createMember: New
     refresh: Refresh
     memberColumn: Member
-    noNickname: No nickname set
+    noNickname: No nickname
     phoneColumn: Phone
     tagColumn: Tags
     levelColumn: Level
-    growthValue: Growth Value
+    growthValue: Growth
     balanceColumn: Balance
     pointsColumn: Points
     orderCount: Orders
-    totalSpent: Total Spent
+    totalSpent: Spent
     lastLogin: Last Login
     noLogin: Never
     statusColumn: Status
     sourceColumn: Source
-    registeredAtColumn: Registered At
-    operation: Operation
+    registeredAtColumn: Registered
+    operation: Action
     detail: Detail
     edit: Edit
-    assignTag: Assign Tag
+    assignTag: Tag
     unban: Unban
     ban: Ban
-    banConfirm: Are you sure to ban this member?
-    unbanConfirm: Are you sure to unban this member?
-    editTitle: Edit Member
-    createTitle: New Member
+    banConfirm: Ban this member?
+    unbanConfirm: Unban this member?
+    editTitle: Edit
+    createTitle: New
     nicknameLabel: Nickname
-    nicknamePlaceholder: Enter nickname
-    nicknameRequired: Please enter nickname
-    phonePlaceholder: Enter phone number
+    nicknamePlaceholder: Nickname
+    nicknameRequired: Enter nickname
+    phonePlaceholder: Phone
     genderLabel: Gender
-    genderPlaceholder: Select gender
+    genderPlaceholder: Select
     genderUnknown: Unknown
     genderMale: Male
     genderFemale: Female
-    growthValueLabel: Growth Value
-    statusRequired: Please select status
+    growthValueLabel: Growth
+    statusRequired: Select status
     regionLabel: Region
     remarkLabel: Remark
-    remarkPlaceholder: Optional admin remark
+    remarkPlaceholder: Remark
     cancel: Cancel
     save: Save
     create: Create
-    tagDrawerTitle: Member Tags
+    tagDrawerTitle: Tags
     tagMember: Member
-    selectTag: Select Tags
+    selectTag: Tags
     selectTagPlaceholder: Select tags
     tagEnabled: Active
     tagDisabled: Inactive
-    memberCreated: Member created
-    memberUpdated: Member updated
+    memberCreated: Created
+    memberUpdated: Updated
     createFailed: Create failed
     updateFailed: Update failed
     tagAssignSuccess: Tags updated
-    tagUpdateFailed: Failed to update tags
-    memberBanned: Member banned
-    memberUnbanned: Member unbanned
-    loadFailed: Failed to load members
-    loadTagFailed: Failed to load tags
-    detailTitle: Member Detail
-    basicInfo: Basic Info
+    tagUpdateFailed: Update failed
+    memberBanned: Banned
+    memberUnbanned: Unbanned
+    loadFailed: Load failed
+    loadTagFailed: Load failed
+    detailTitle: Detail
+    basicInfo: Basic
     phoneLabel: Phone
     genderLabelDetail: Gender
     birthdayLabel: Birthday
     regionLabelDetail: Region
     sourceChannel: Source
     lastLoginLabel: Last Login
-    growthValueDetail: Growth Value
-    growthLabel: Growth Value
+    growthValueDetail: Growth
+    growthLabel: Growth
     remarkDetail: Remark
-    assetInfo: Asset Info
+    assetInfo: Assets
     accountBalance: Balance
     balanceLabel: Balance
     frozenBalance: Frozen
     frozenLabel: Frozen
-    totalRecharge: Total Recharge
-    totalRechargeLabel: Total Recharge
-    totalConsume: Total Consume
-    totalConsumeLabel: Total Consume
+    totalRecharge: Recharge
+    totalRechargeLabel: Recharge
+    totalConsume: Consume
+    totalConsumeLabel: Consume
     pointsBalance: Points
     pointsBalanceLabel: Points
     totalPoints: Total Points
-    totalPointsLabel: Total Points
+    totalPointsLabel: Total
     tagsTitle: Tags
-    noTags: No tags set
+    noTags: No tags
     addressTitle: Addresses
     defaultTag: Default
-    loadDetailFailed: Failed to load member detail
+    loadDetailFailed: Load failed
     idLabel: "ID: {id}"
-    idAndRegister: "ID: {id} | Registered: {date}"
-    registeredLabel: "Registered at {time}"
+    idAndRegister: "ID: {id} | {date}"
+    registeredLabel: "Registered: {time}"
     levelBronze: Bronze
     levelSilver: Silver
     levelGold: Gold
@@ -1225,151 +1225,151 @@ member:
     statusActive: Active
     statusInactive: Inactive
     statusBanned: Banned
-    sourceWechat: WeChat Official
-    sourceMiniProgram: WeChat Mini Program
+    sourceWechat: WeChat
+    sourceMiniProgram: Mini Program
     sourceH5: H5
-    sourceAdmin: Admin Import
-    tagManagerTitle: Tag Manager
-    searchTagPlaceholder: Search tag name
-    createTag: New Tag
-    editTag: Edit Tag
+    sourceAdmin: Admin
+    tagManagerTitle: Tags
+    searchTagPlaceholder: Search tag
+    createTag: New
+    editTag: Edit
     tagName: Name
     tagColor: Color
     tagStatus: Status
     tagSort: Sort
-    tagOperation: Operation
-    confirmDeleteTag: Are you sure to delete this tag?
+    tagOperation: Action
+    confirmDeleteTag: Delete this tag?
     tagNameLabel: Name
-    tagNamePlaceholder: Enter tag name
-    tagNameRequired: Please enter tag name
+    tagNamePlaceholder: Tag name
+    tagNameRequired: Enter name
     tagColorLabel: Color
     tagStatusLabel: Status
-    tagStatusRequired: Please select status
+    tagStatusRequired: Select status
     tagSortLabel: Sort
     tagDescLabel: Description
-    tagDescPlaceholder: Optional, tag description
-    tagCreated: Tag created
-    tagUpdated: Tag updated
-    tagDeleted: Tag deleted
+    tagDescPlaceholder: Description
+    tagCreated: Created
+    tagUpdated: Updated
+    tagDeleted: Deleted
     tagSaveFailed: Save failed
     tagDeleteFailed: Delete failed
-    tagLoadFailed: Failed to load tags
+    tagLoadFailed: Load failed
   points:
     sourceSystem: System
     sourceOrder: Order
     sourceManual: Manual
     memberIdLabel: Member ID
-    memberIdPlaceholder: Enter member ID
-    walletType: Wallet Type
-    balanceWallet: Balance Wallet
-    pointsWallet: Points Wallet
+    memberIdPlaceholder: Member ID
+    walletType: Wallet
+    balanceWallet: Balance
+    pointsWallet: Points
     sourceLabel: Source
-    operatorType: Operator Type
+    operatorType: Operator
     operatorSystem: System
     operatorAdmin: Admin
     operatorMember: Member
-    timeRange: Time Range
+    timeRange: Time
     search: Search
     reset: Reset
-    adjustWallet: Adjust Wallet
-    memberIdColumn: Member ID
-    walletTypeColumn: Wallet Type
-    changeAmount: Change Amount
+    adjustWallet: Adjust
+    memberIdColumn: Member
+    walletTypeColumn: Wallet
+    changeAmount: Change
     beforeAfter: Before/After
     sourceColumn: Source
     operatorColumn: Operator
     remarkColumn: Remark
     timeColumn: Time
-    adjustTitle: Adjust Member Wallet
-    walletTypePlaceholder: Select wallet type
-    changeValue: Change Amount
-    changeValueRequired: Please enter change value
-    memberIdRequired: Please enter member ID
-    walletTypeRequired: Please select wallet type
-    sourceRequired: Please select source
+    adjustTitle: Adjust Wallet
+    walletTypePlaceholder: Select wallet
+    changeValue: Amount
+    changeValueRequired: Enter amount
+    memberIdRequired: Enter member ID
+    walletTypeRequired: Select wallet
+    sourceRequired: Select source
     sourcePlaceholder: Select source
     remarkLabel: Remark
     unitYuan: "Unit: ¥"
     loadFailed: Load failed
-    adjustSuccess: Operation successful
-    adjustFailed: Operation failed
+    adjustSuccess: Success
+    adjustFailed: Failed
   levelConfig:
     keyword: Keyword
-    levelName: Level name
+    levelName: Name
     status: Status
-    allStatus: All Status
+    allStatus: All
     active: Active
     inactive: Inactive
     search: Search
     reset: Reset
-    title: Level Settings
-    createLevel: New Level
+    title: Levels
+    createLevel: New
     name: Name
-    levelValue: Level Value
-    growthRange: Growth Range
-    discountRate: Discount Rate
-    pointRate: Point Rate
+    levelValue: Value
+    growthRange: Growth
+    discountRate: Discount
+    pointRate: Points
     statusColumn: Status
-    sortOrder: Sort Order
-    operation: Operation
+    sortOrder: Sort
+    operation: Action
     edit: Edit
     delete: Delete
-    deleteConfirm: Are you sure to delete this level?
+    deleteConfirm: Delete this level?
     drawerCreateTitle: New Level
     drawerEditTitle: Edit Level
     nameLabel: Name
-    namePlaceholder: Enter level name
-    nameRequired: Please enter level name
-    levelLabel: Level Value
-    levelRequired: Please enter level value
-    growthMinLabel: Growth Min
-    growthMinRequired: Please enter growth min value
-    growthMaxLabel: Growth Max
-    discountRateLabel: Discount Rate (%)
-    pointRateLabel: Point Rate (%)
+    namePlaceholder: Level name
+    nameRequired: Enter name
+    levelLabel: Value
+    levelRequired: Enter value
+    growthMinLabel: Min Growth
+    growthMinRequired: Enter min
+    growthMaxLabel: Max Growth
+    discountRateLabel: Discount (%)
+    pointRateLabel: Points (%)
     colorLabel: Color
     iconLabel: Icon
     iconPlaceholder: Iconify name
     statusLabel: Status
-    sortOrderLabel: Sort Order
+    sortOrderLabel: Sort
     descriptionLabel: Description
     cancel: Cancel
     save: Save
-    levelUpdated: Level updated
-    levelCreated: Level created
+    levelUpdated: Updated
+    levelCreated: Created
     saveFailed: Save failed
     deleted: Deleted
     deleteFailed: Delete failed
     loadFailed: Load failed
 export:
-  title: Download Center
-  subtitle: Manage export tasks and download files
-  taskName: Task Name
-  exportFormat: Export Format
+  title: Downloads
+  subtitle: Manage export tasks
+  taskName: Task
+  exportFormat: Format
   status: Status
   progress: Progress
-  fileSize: File Size
-  createdAt: Created At
-  completedAt: Completed At
+  fileSize: Size
+  createdAt: Created
+  completedAt: Completed
   download: Download
   delete: Delete
   retry: Retry
-  confirmDelete: Are you sure you want to delete this export record?
-  deleteSuccess: Deleted successfully
+  confirmDelete: Delete this record?
+  deleteSuccess: Deleted
   statusPending: Pending
   statusProcessing: Processing
   statusSuccess: Success
   statusFailed: Failed
   statusExpired: Expired
-  allStatus: All Status
-  startDate: Start Date
-  endDate: End Date
-  timeRange: Time Range
-  errorMessage: Error Message
+  allStatus: All
+  startDate: Start
+  endDate: End
+  timeRange: Time
+  errorMessage: Error
   retryCount: Retries
 exportMenu:
-  exportCenter: Export Center
-  downloadCenter: Download Center
+  exportCenter: Export
+  downloadCenter: Downloads
 plugin:
   systemMessage:
     title: Message Management
@@ -1390,12 +1390,12 @@ dictionary:
     successState: Success
     failState: Failure
   base:
-    systemUser: System user
-    normalUser: Normal user
+    systemUser: System
+    normalUser: Normal
   dataScope:
-    all: Full data permissions
-    deptSelf: Current department data permissions
-    deptTree: Current department and all sub-departments data permissions
-    self: Personal data permissions
-    customDept: Custom department selection data permissions
-    customFunc: Custom function data permissions
+    all: All data
+    deptSelf: Current dept
+    deptTree: Dept & sub-depts
+    self: Personal
+    customDept: Custom dept
+    customFunc: Custom function

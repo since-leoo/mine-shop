@@ -13,8 +13,11 @@ import { activityCreate, activityUpdate } from '~/mall/api/seckill'
 import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:seckill:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null } = defineProps<{
   formType: 'add' | 'edit'
@@ -29,7 +32,7 @@ useForm('activityForm').then(async (form: MaFormExpose) => {
   if (formType === 'edit' && data) {
     Object.assign(model.value, data)
   }
-  form.setItems(getFormItems(formType, model.value))
+  form.setItems(getFormItems(formType, model.value, t))
   form.setOptions({ labelWidth: '90px' })
 })
 

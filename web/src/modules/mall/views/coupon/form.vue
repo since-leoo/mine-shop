@@ -14,8 +14,11 @@ import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import { centsToYuan, yuanToCents } from '@/utils/price'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:coupon:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null } = defineProps<{
   formType: 'add' | 'edit'
@@ -44,7 +47,7 @@ useForm('couponForm').then(async (form: MaFormExpose) => {
     model.value.status = 'active'
   }
 
-  form.setItems(getFormItems(model.value))
+  form.setItems(getFormItems(model.value, t))
   form.setOptions({ labelWidth: '100px' })
 })
 
