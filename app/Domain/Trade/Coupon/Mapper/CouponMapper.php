@@ -12,16 +12,46 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Mapper;
 
+use App\Domain\Trade\Coupon\Contract\CouponInput;
 use App\Domain\Trade\Coupon\Entity\CouponEntity;
 use App\Infrastructure\Model\Coupon\Coupon;
 
+/**
+ * 优惠券 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
+ */
 final class CouponMapper
 {
+    /**
+     * 从 DTO 创建新实体.
+     *
+     * @param CouponInput $dto 优惠券输入 DTO
+     * @return CouponEntity 优惠券实体
+     */
+    public static function fromDto(CouponInput $dto): CouponEntity
+    {
+        $entity = new CouponEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
+     * 获取空实体.
+     *
+     * @deprecated 使用 fromDto 代替
+     */
     public static function getNewEntity(): CouponEntity
     {
         return new CouponEntity();
     }
 
+    /**
+     * 从持久化模型重建实体.
+     *
+     * @param Coupon $coupon 数据库模型
+     * @return CouponEntity 优惠券实体
+     */
     public static function fromModel(Coupon $coupon): CouponEntity
     {
         $entity = new CouponEntity();

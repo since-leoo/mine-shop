@@ -17,6 +17,9 @@ use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\ValueObject\ActivityRules;
 use Carbon\Carbon;
 
+/**
+ * 秒杀活动实体.
+ */
 final class SeckillActivityEntity
 {
     private int $id = 0;
@@ -39,6 +42,9 @@ final class SeckillActivityEntity
 
     public function __construct() {}
 
+    /**
+     * 从持久化数据重建实体.
+     */
     public static function reconstitute(
         int $id,
         string $title,
@@ -63,6 +69,9 @@ final class SeckillActivityEntity
         return $entity;
     }
 
+    /**
+     * 从 DTO 创建实体.
+     */
     public function create(SeckillActivityInput $dto): self
     {
         $this->title = $dto->getTitle() ?? '';
@@ -74,6 +83,9 @@ final class SeckillActivityEntity
         return $this;
     }
 
+    /**
+     * 从 DTO 更新实体.
+     */
     public function update(SeckillActivityInput $dto): self
     {
         if ($dto->getTitle()) {

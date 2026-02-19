@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Coupon\Service;
 
-use App\Domain\Trade\Coupon\Contract\CouponInput;
 use App\Domain\Trade\Coupon\Entity\CouponEntity;
 use App\Domain\Trade\Coupon\Mapper\CouponMapper;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
@@ -24,6 +23,9 @@ use App\Interface\Common\ResultCode;
 
 /**
  * 优惠券领域服务.
+ *
+ * 负责优惠券的核心业务逻辑，只接受实体对象。
+ * DTO 到实体的转换由应用层负责。
  */
 final class DomainCouponService extends IService
 {
@@ -32,6 +34,13 @@ final class DomainCouponService extends IService
         private readonly CouponUserRepository $couponUserRepository
     ) {}
 
+    /**
+     * 根据 ID 获取优惠券实体.
+     *
+     * @param int $id 优惠券 ID
+     * @return CouponEntity 优惠券实体
+     * @throws BusinessException 优惠券不存在时抛出
+     */
     public function getEntity(int $id): CouponEntity
     {
         /** @var null|Coupon $coupon */
@@ -56,35 +65,31 @@ final class DomainCouponService extends IService
     /**
      * 创建优惠券.
      *
-     * @param CouponInput $dto 优惠券输入数据传输对象
-     * @return bool 创建是否成功
+     * @param CouponEntity $entity 优惠券实体
+     * @return Coupon 创建的模型
      */
-    public function create(CouponInput $dto): bool
+    public function create(CouponEntity $entity): Coupon
     {
-        $entity = CouponMapper::getNewEntity();
-        $entity->create($dto);
-
-        return (bool) $this->repository->createFromEntity($entity);
+        return $this->repository->createFromEntity($entity);
     }
 
     /**
      * 更新优惠券.
      *
-     * @param CouponInput $dto 优惠券输入数据传输对象
-     * @return bool 更新是否成功
+     * @param CouponEntity $entity 更新后的实体
+     * @return bool 是否更新成功
      */
-    public function update(CouponInput $dto): bool
+    public function update(CouponEntity $entity): bool
     {
-        $entity = $this->getEntity($dto->getId());
-        $entity->update($dto);
-
         return $this->repository->updateFromEntity($entity);
     }
 
     /**
      * 删除优惠券.
      *
-     * @return int 删除是否成功
+     * @param int $id 优惠券 ID
+     * @return int 删除的记录数
+     * @throws \RuntimeException 有发放记录时抛出
      */
     public function deleteById(mixed $id): int
     {
@@ -98,8 +103,9 @@ final class DomainCouponService extends IService
     }
 
     /**
-     * 切换优惠券状态
+     * 切换优惠券状态.
      *
+     * @param CouponEntity $entity 优惠券实体
      * @return bool 状态切换是否成功
      */
     public function toggleStatus(CouponEntity $entity): bool
@@ -110,7 +116,7 @@ final class DomainCouponService extends IService
     }
 
     /**
-     * 同步优惠券使用统计
+     * 同步优惠券使用统计.
      *
      * @param int $couponId 优惠券ID
      */

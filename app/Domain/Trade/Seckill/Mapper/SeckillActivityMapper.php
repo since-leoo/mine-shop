@@ -12,11 +12,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\Mapper;
 
+use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Trade\Seckill\Entity\SeckillActivityEntity;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 
+/**
+ * 秒杀活动 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
+ */
 final class SeckillActivityMapper
 {
+    /**
+     * 从持久化模型重建实体.
+     */
     public static function fromModel(SeckillActivity $model): SeckillActivityEntity
     {
         return SeckillActivityEntity::reconstitute(
@@ -32,6 +41,21 @@ final class SeckillActivityMapper
         );
     }
 
+    /**
+     * 从 DTO 创建新实体.
+     */
+    public static function fromDto(SeckillActivityInput $dto): SeckillActivityEntity
+    {
+        $entity = new SeckillActivityEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
+     * 获取空实体.
+     *
+     * @deprecated 使用 fromInput 代替
+     */
     public static function getNewEntity(): SeckillActivityEntity
     {
         return new SeckillActivityEntity();

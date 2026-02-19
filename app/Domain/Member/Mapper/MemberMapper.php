@@ -12,20 +12,47 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Mapper;
 
+use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 
+/**
+ * 会员 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
+ */
 final class MemberMapper
 {
     /**
+     * 从 DTO 创建新实体.
+     *
+     * @param MemberInput $dto 会员输入 DTO
+     * @return MemberEntity 会员实体
+     */
+    public static function fromDto(MemberInput $dto): MemberEntity
+    {
+        $entity = new MemberEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
      * 获取新实体.
+     *
+     * @deprecated 使用 fromDto 代替
      */
     public static function getNewEntity(): MemberEntity
     {
         return new MemberEntity();
     }
 
+    /**
+     * 从持久化模型重建实体.
+     *
+     * @param Member $member 数据库模型
+     * @return MemberEntity 会员实体
+     */
     public static function fromModel(Member $member): MemberEntity
     {
         $entity = new MemberEntity();
@@ -59,7 +86,10 @@ final class MemberMapper
     }
 
     /**
-     * @param array<string, mixed> $profile
+     * 从微信小程序用户信息创建实体.
+     *
+     * @param array<string, mixed> $profile 微信用户信息
+     * @return MemberEntity 会员实体
      */
     public static function fromMiniProfile(array $profile): MemberEntity
     {

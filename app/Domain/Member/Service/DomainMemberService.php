@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
-use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
@@ -23,7 +22,10 @@ use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;
 
 /**
- * 会员领域服务：负责会员档案的增删改查及标签管理.
+ * 会员领域服务.
+ *
+ * 负责会员档案的核心业务逻辑，只接受实体对象。
+ * DTO 到实体的转换由应用层负责。
  */
 final class DomainMemberService extends IService
 {
@@ -34,19 +36,15 @@ final class DomainMemberService extends IService
 
     /**
      * 创建会员.
+     *
+     * @param MemberEntity $entity 会员实体
+     * @return Member 创建的模型
      */
-    public function create(MemberInput $dto): Member
+    public function create(MemberEntity $entity): Member
     {
-        // 1. 通过 Mapper 获取新实体
-        $entity = MemberMapper::getNewEntity();
-
-        // 2. 调用实体的 create 行为方法
-        $entity->create($dto);
-
-        // 3. 调用仓储持久化
         $member = $this->repository->save($entity);
 
-        // 4. 同步标签
+        // 同步标签
         if ($entity->getTagIds() !== []) {
             $this->applyTags($member->id, $entity->getTagIds());
         }
@@ -56,22 +54,17 @@ final class DomainMemberService extends IService
 
     /**
      * 更新会员档案.
+     *
+     * @param MemberEntity $entity 更新后的实体
+     * @return Member 更新后的模型
      */
-    public function update(MemberInput $dto): Member
+    public function update(MemberEntity $entity): Member
     {
-        // 1. 通过仓储获取 Model
-        $model = $this->repository->findById($dto->getId());
+        $model = $this->repository->findById($entity->getId());
         if (! $model) {
             throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
         }
 
-        // 2. 通过 Mapper 将 Model 转换为 Entity
-        $entity = MemberMapper::fromModel($model);
-
-        // 3. 调用实体的 update 行为方法
-        $entity->update($dto);
-
-        // 4. 持久化修改
         $this->repository->updateEntity($entity);
 
         return $model->refresh();
@@ -79,24 +72,25 @@ final class DomainMemberService extends IService
 
     /**
      * 更新会员状态.
+     *
+     * @param int $memberId 会员 ID
+     * @param string $status 新状态
+     * @return Member 更新后的模型
      */
     public function updateStatus(int $memberId, string $status): Member
     {
-        // 1. 获取实体
         $entity = $this->getEntity($memberId);
-
-        // 2. 调用实体的 updateStatus 行为方法
         $entity->updateStatus($status);
-
-        // 3. 持久化修改
         $this->repository->updateEntity($entity);
 
-        /* @var Member $model */
         return $this->repository->findById($memberId);
     }
 
     /**
      * 同步会员标签.
+     *
+     * @param int $memberId 会员 ID
+     * @param array $tagIds 标签 ID 数组
      */
     public function syncTags(int $memberId, array $tagIds): void
     {
@@ -107,12 +101,9 @@ final class DomainMemberService extends IService
     /**
      * 获取会员实体.
      *
-     * 通过 ID 获取 Model，然后通过 Mapper 转换为 Entity.
-     * 用于需要调用实体行为方法的场景.
-     *
-     * @param int $memberId 会员ID
-     * @return MemberEntity 会员实体对象
-     * @throws BusinessException 当会员不存在时
+     * @param int $memberId 会员 ID
+     * @return MemberEntity 会员实体
+     * @throws BusinessException 会员不存在时抛出
      */
     public function getEntity(int $memberId): MemberEntity
     {
@@ -127,6 +118,8 @@ final class DomainMemberService extends IService
     }
 
     /**
+     * 获取会员统计数据.
+     *
      * @return array<string, int>
      */
     public function stats(array $filters): array
@@ -135,6 +128,8 @@ final class DomainMemberService extends IService
     }
 
     /**
+     * 获取会员概览数据.
+     *
      * @return array<string, mixed>
      */
     public function overview(array $filters): array
@@ -143,6 +138,8 @@ final class DomainMemberService extends IService
     }
 
     /**
+     * 获取会员详情.
+     *
      * @return null|array<string, mixed>
      */
     public function detail(int $id): ?array
@@ -150,6 +147,11 @@ final class DomainMemberService extends IService
         return $this->repository->detail($id);
     }
 
+    /**
+     * 确保会员存在.
+     *
+     * @throws BusinessException 会员不存在时抛出
+     */
     private function ensureMemberExists(int $memberId): void
     {
         if (! $this->repository->existsById($memberId)) {
@@ -157,6 +159,9 @@ final class DomainMemberService extends IService
         }
     }
 
+    /**
+     * 应用标签到会员.
+     */
     private function applyTags(int $memberId, array $tagIds): void
     {
         $available = $tagIds === [] ? [] : $this->memberTagRepository

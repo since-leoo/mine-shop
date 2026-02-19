@@ -12,19 +12,22 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\Mapper;
 
+use App\Domain\Permission\Contract\Role\RoleInput;
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Infrastructure\Model\Permission\Role;
 
 /**
- * RoleMapper 类用于在 Role 模型和 RoleEntity 实体之间进行转换。
+ * 角色 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
  */
 class RoleMapper
 {
     /**
-     * 将 Role 模型对象转换为 RoleEntity 实体对象。
+     * 从持久化模型重建实体.
      *
-     * @param Role $model 需要转换的 Role 模型对象
-     * @return RoleEntity 转换后的 RoleEntity 实体对象
+     * @param Role $model 数据库模型
+     * @return RoleEntity 角色实体
      */
     public static function fromModel(Role $model): RoleEntity
     {
@@ -43,9 +46,27 @@ class RoleMapper
     }
 
     /**
-     * 创建并返回一个新的 RoleEntity 实例。
+     * 从 DTO 创建新实体.
      *
-     * @return RoleEntity 新创建的 RoleEntity 实例
+     * @param RoleInput $dto 角色输入 DTO
+     * @return RoleEntity 角色实体
+     */
+    public static function fromDto(RoleInput $dto): RoleEntity
+    {
+        $entity = new RoleEntity();
+        $entity->setName($dto->getName());
+        $entity->setCode($dto->getCode());
+        $entity->setStatus($dto->getStatus());
+        $entity->setSort($dto->getSort());
+        $entity->setRemark($dto->getRemark());
+        $entity->setCreatedBy($dto->getCreatedBy());
+        return $entity;
+    }
+
+    /**
+     * 获取新实体.
+     *
+     * @deprecated 使用 fromDto 代替
      */
     public static function getNewEntity(): RoleEntity
     {

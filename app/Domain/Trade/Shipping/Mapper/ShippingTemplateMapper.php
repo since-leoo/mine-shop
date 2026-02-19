@@ -12,16 +12,22 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Shipping\Mapper;
 
+use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Infrastructure\Model\Shipping\ShippingTemplate;
 
 /**
- * 运费模板映射器：Model ↔ Entity 转换.
+ * 运费模板 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
  */
 final class ShippingTemplateMapper
 {
     /**
-     * 从 Model 转换为 Entity.
+     * 从持久化模型重建实体.
+     *
+     * @param ShippingTemplate $model 数据库模型
+     * @return ShippingTemplateEntity 运费模板实体
      */
     public static function fromModel(ShippingTemplate $model): ShippingTemplateEntity
     {
@@ -39,6 +45,19 @@ final class ShippingTemplateMapper
     }
 
     /**
+     * 从 DTO 创建新实体.
+     *
+     * @param ShippingTemplateInput $dto 运费模板输入 DTO
+     * @return ShippingTemplateEntity 运费模板实体
+     */
+    public static function fromDto(ShippingTemplateInput $dto): ShippingTemplateEntity
+    {
+        $entity = new ShippingTemplateEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
      * 将 Entity 转换为持久化数组.
      *
      * @return array<string, mixed>
@@ -50,6 +69,8 @@ final class ShippingTemplateMapper
 
     /**
      * 获取新实体.
+     *
+     * @deprecated 使用 fromDto 代替
      */
     public static function getNewEntity(): ShippingTemplateEntity
     {

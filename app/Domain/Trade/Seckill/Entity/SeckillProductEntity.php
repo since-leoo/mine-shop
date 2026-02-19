@@ -17,6 +17,9 @@ use App\Domain\Trade\Seckill\ValueObject\ProductPrice;
 use App\Domain\Trade\Seckill\ValueObject\ProductStock;
 use Carbon\Carbon;
 
+/**
+ * 秒杀商品实体.
+ */
 final class SeckillProductEntity
 {
     private int $id = 0;
@@ -45,6 +48,9 @@ final class SeckillProductEntity
 
     public function __construct() {}
 
+    /**
+     * 从持久化数据重建实体.
+     */
     public static function reconstitute(
         int $id,
         int $activityId,
@@ -77,6 +83,9 @@ final class SeckillProductEntity
         return $entity;
     }
 
+    /**
+     * 从 DTO 创建实体.
+     */
     public function create(SeckillProductInput $dto): self
     {
         $this->activityId = $dto->getActivityId();
@@ -91,6 +100,9 @@ final class SeckillProductEntity
         return $this;
     }
 
+    /**
+     * 从 DTO 更新实体.
+     */
     public function update(SeckillProductInput $dto): self
     {
         if ($dto->getOriginalPrice() !== null && $dto->getSeckillPrice() !== null) {

@@ -203,6 +203,69 @@ final class GroupBuyEntity
         return $timeVo->isActive();
     }
 
+    /**
+     * 判断活动是否可以编辑.
+     *
+     * 以下情况不允许编辑：
+     * - 活动已激活或已结束
+     * - 活动开始前 30 分钟内（缓存已开始预热）
+     */
+    public function canBeEdited(): bool
+    {
+        if (\in_array($this->status, ['active', 'ended', 'sold_out'], true)) {
+            return false;
+        }
+
+        // 开始前 30 分钟内禁止编辑（缓存预热期）
+        if ($this->isWithinCacheWarmupPeriod()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断活动是否可以删除.
+     *
+     * 以下情况不允许删除：
+     * - 活动进行中且已有销量
+     * - 活动开始前 30 分钟内（缓存已开始预热）
+     */
+    public function canBeDeleted(): bool
+    {
+        if ($this->status === 'active' && $this->soldQuantity > 0) {
+            return false;
+        }
+
+        // 开始前 30 分钟内禁止删除（缓存预热期）
+        if ($this->isWithinCacheWarmupPeriod()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 判断是否处于缓存预热期（开始前 30 分钟内）.
+     */
+    public function isWithinCacheWarmupPeriod(): bool
+    {
+        if (empty($this->startTime)) {
+            return false;
+        }
+
+        $startTime = \Carbon\Carbon::parse($this->startTime);
+        $now = \Carbon\Carbon::now();
+
+        // 如果开始时间已过，不在预热期
+        if ($startTime->lte($now)) {
+            return false;
+        }
+
+        // 开始前 30 分钟内
+        return $startTime->diffInMinutes($now) <= 30;
+    }
+
     // Getters & Setters
     public function getId(): int
     {

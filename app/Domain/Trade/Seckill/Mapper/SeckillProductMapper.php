@@ -12,11 +12,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\Mapper;
 
+use App\Domain\Trade\Seckill\Contract\SeckillProductInput;
 use App\Domain\Trade\Seckill\Entity\SeckillProductEntity;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 
+/**
+ * 秒杀商品 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
+ */
 final class SeckillProductMapper
 {
+    /**
+     * 从持久化模型重建实体.
+     */
     public static function fromModel(SeckillProduct $model): SeckillProductEntity
     {
         return SeckillProductEntity::reconstitute(
@@ -37,6 +46,21 @@ final class SeckillProductMapper
         );
     }
 
+    /**
+     * 从 DTO 创建新实体.
+     */
+    public static function fromDto(SeckillProductInput $dto): SeckillProductEntity
+    {
+        $entity = new SeckillProductEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
+     * 获取空实体.
+     *
+     * @deprecated 使用 fromInput 代替
+     */
     public static function getNewEntity(): SeckillProductEntity
     {
         return new SeckillProductEntity();

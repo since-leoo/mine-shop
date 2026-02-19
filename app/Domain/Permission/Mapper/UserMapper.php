@@ -12,26 +12,27 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\Mapper;
 
+use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Entity\UserEntity;
 use App\Infrastructure\Model\Permission\User;
 
 /**
- * UserMapper 类用于在 User 模型和 UserEntity 实体之间进行转换。
+ * 用户 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
  */
 class UserMapper
 {
     /**
-     * 将 User 模型对象转换为 UserEntity 实体对象。
+     * 从持久化模型重建实体.
      *
-     * @param User $model 需要转换的 User 模型对象
-     * @return UserEntity 转换后的 UserEntity 实体对象
+     * @param User $model 数据库模型
+     * @return UserEntity 用户实体
      */
     public static function fromModel(User $model): UserEntity
     {
-        // 创建一个新的 UserEntity 实例
         $entity = new UserEntity();
 
-        // 将模型中的属性逐个映射到实体对象中
         $entity->setId($model->id);
         $entity->setUsername($model->username);
         $entity->setAvatar($model->avatar ?? '');
@@ -47,14 +48,26 @@ class UserMapper
         $entity->setUserType($model->user_type);
         $entity->setStatus($model->status);
 
-        // 返回填充完成的实体对象
         return $entity;
     }
 
     /**
-     * 创建并返回一个新的 UserEntity 实例。
+     * 从 DTO 创建新实体.
      *
-     * @return UserEntity 新创建的 UserEntity 实例
+     * @param UserInput $dto 用户输入 DTO
+     * @return UserEntity 用户实体
+     */
+    public static function fromDto(UserInput $dto): UserEntity
+    {
+        $entity = new UserEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
+     * 获取新实体.
+     *
+     * @deprecated 使用 fromDto 代替
      */
     public static function getNewEntity(): UserEntity
     {

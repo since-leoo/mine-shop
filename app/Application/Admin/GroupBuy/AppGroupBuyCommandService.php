@@ -14,11 +14,17 @@ namespace App\Application\Admin\GroupBuy;
 
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
 use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
+use App\Domain\Trade\GroupBuy\Mapper\GroupBuyMapper;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\GroupBuy\Service\GroupBuyCacheService;
 use Carbon\Carbon;
 use Hyperf\DbConnection\Db;
 
+/**
+ * 团购活动应用层命令服务.
+ *
+ * 负责协调领域服务，处理 DTO 到实体的转换。
+ */
 final class AppGroupBuyCommandService
 {
     public function __construct(
@@ -27,9 +33,18 @@ final class AppGroupBuyCommandService
         private readonly GroupBuyCacheService $cacheService,
     ) {}
 
+    /**
+     * 创建团购活动.
+     *
+     * @param GroupBuyCreateInput $input 创建输入 DTO
+     * @return bool 是否创建成功
+     */
     public function create(GroupBuyCreateInput $input): bool
     {
-        $result = Db::transaction(fn () => $this->groupBuyService->create($input));
+        // 使用 Mapper 将 DTO 转换为实体
+        $entity = GroupBuyMapper::fromDto($input);
+
+        $result = Db::transaction(fn () => (bool) $this->groupBuyService->create($entity));
 
         // 如果活动开始时间已过且已启用，立即激活并预热缓存
         if ($result && $input->getIsEnabled()) {
@@ -39,9 +54,19 @@ final class AppGroupBuyCommandService
         return $result;
     }
 
+    /**
+     * 更新团购活动.
+     *
+     * @param GroupBuyUpdateInput $input 更新输入 DTO
+     * @return bool 是否更新成功
+     */
     public function update(GroupBuyUpdateInput $input): bool
     {
-        $result = Db::transaction(fn () => $this->groupBuyService->update($input));
+        // 从数据库获取实体并更新
+        $entity = $this->groupBuyService->getEntity($input->getId());
+        $entity->update($input);
+
+        $result = Db::transaction(fn () => $this->groupBuyService->update($entity));
 
         // 更新后检查：如果活动仍是 pending 且开始时间已过，立即激活
         if ($result && $input->getIsEnabled()) {
@@ -51,6 +76,12 @@ final class AppGroupBuyCommandService
         return $result;
     }
 
+    /**
+     * 删除团购活动.
+     *
+     * @param int $id 活动 ID
+     * @return bool 是否删除成功
+     */
     public function delete(int $id): bool
     {
         $groupBuy = $this->queryService->find($id);
@@ -58,6 +89,12 @@ final class AppGroupBuyCommandService
         return Db::transaction(fn () => $this->groupBuyService->delete($id));
     }
 
+    /**
+     * 切换活动启用状态.
+     *
+     * @param int $id 活动 ID
+     * @return bool 是否操作成功
+     */
     public function toggleStatus(int $id): bool
     {
         $groupBuy = $this->queryService->find($id);

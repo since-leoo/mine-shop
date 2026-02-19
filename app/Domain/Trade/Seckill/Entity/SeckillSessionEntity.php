@@ -19,6 +19,9 @@ use App\Domain\Trade\Seckill\ValueObject\SessionPeriod;
 use App\Domain\Trade\Seckill\ValueObject\SessionRules;
 use Carbon\Carbon;
 
+/**
+ * 秒杀场次实体.
+ */
 final class SeckillSessionEntity
 {
     private int $id = 0;
@@ -45,6 +48,9 @@ final class SeckillSessionEntity
 
     public function __construct() {}
 
+    /**
+     * 从持久化数据重建实体.
+     */
     public static function reconstitute(
         int $id,
         int $activityId,
@@ -77,6 +83,9 @@ final class SeckillSessionEntity
         return $entity;
     }
 
+    /**
+     * 从 DTO 创建实体.
+     */
     public function create(SeckillSessionInput $dto): self
     {
         $this->activityId = $dto->getActivityId();
@@ -91,6 +100,9 @@ final class SeckillSessionEntity
         return $this;
     }
 
+    /**
+     * 从 DTO 更新实体.
+     */
     public function update(SeckillSessionInput $dto): self
     {
         if ($dto->getStartTime() && $dto->getEndTime()) {
@@ -174,14 +186,68 @@ final class SeckillSessionEntity
         return $this->isEnabled && ! $this->stock->isSoldOut() && $this->period->isActive();
     }
 
+    /**
+     * 判断场次是否可以编辑.
+     *
+     * 以下情况不允许编辑：
+     * - 场次已激活或已结束
+     * - 场次开始前 30 分钟内（缓存已开始预热）
+     */
     public function canBeEdited(): bool
     {
-        return $this->status !== SeckillStatus::ACTIVE && $this->status !== SeckillStatus::ENDED;
+        if ($this->status === SeckillStatus::ACTIVE || $this->status === SeckillStatus::ENDED) {
+            return false;
+        }
+
+        // 开始前 30 分钟内禁止编辑（缓存预热期）
+        if ($this->isWithinCacheWarmupPeriod()) {
+            return false;
+        }
+
+        return true;
     }
 
+    /**
+     * 判断是否处于缓存预热期（开始前 30 分钟内）.
+     */
+    public function isWithinCacheWarmupPeriod(): bool
+    {
+        $startTime = $this->period->getStartTime();
+        $now = Carbon::now();
+
+        // 如果开始时间已过，不在预热期
+        if ($startTime->lte($now)) {
+            return false;
+        }
+
+        // 开始前 30 分钟内
+        return $startTime->diffInMinutes($now) <= 30;
+    }
+
+    /**
+     * 判断场次是否可以删除.
+     *
+     * 以下情况不允许删除：
+     * - 场次已激活
+     * - 已有销量
+     * - 场次开始前 30 分钟内（缓存已开始预热）
+     */
     public function canBeDeleted(): bool
     {
-        return $this->status !== SeckillStatus::ACTIVE && $this->stock->getSoldQuantity() <= 0;
+        if ($this->status === SeckillStatus::ACTIVE) {
+            return false;
+        }
+
+        if ($this->stock->getSoldQuantity() > 0) {
+            return false;
+        }
+
+        // 开始前 30 分钟内禁止删除（缓存预热期）
+        if ($this->isWithinCacheWarmupPeriod()) {
+            return false;
+        }
+
+        return true;
     }
 
     public function toggleEnabled(): self

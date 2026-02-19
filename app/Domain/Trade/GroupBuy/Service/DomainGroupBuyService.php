@@ -12,14 +12,18 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Service;
 
-use App\Domain\Trade\GroupBuy\Contract\GroupBuyCreateInput;
-use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\Trade\GroupBuy\Mapper\GroupBuyMapper;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
+/**
+ * 团购活动领域服务.
+ *
+ * 负责团购活动的核心业务逻辑，只接受实体对象。
+ * DTO 到实体的转换由应用层负责。
+ */
 final class DomainGroupBuyService extends IService
 {
     public function __construct(
@@ -48,20 +52,34 @@ final class DomainGroupBuyService extends IService
         return $model && $model->status === 'pending';
     }
 
-    public function create(GroupBuyCreateInput $dto): bool
+    /**
+     * 创建团购活动.
+     *
+     * @param GroupBuyEntity $entity 团购实体
+     * @return GroupBuy 创建的模型
+     */
+    public function create(GroupBuyEntity $entity): GroupBuy
     {
-        $entity = GroupBuyMapper::getNewEntity();
-        $entity->create($dto);
         $groupBuy = $this->repository->create($entity->toArray());
         $entity->setId((int) $groupBuy->id);
-        return (bool) $groupBuy;
+        return $groupBuy;
     }
 
-    public function update(GroupBuyUpdateInput $dto): bool
+    /**
+     * 更新团购活动.
+     *
+     * @param GroupBuyEntity $entity 更新后的实体
+     * @return bool 是否更新成功
+     * @throws \DomainException 活动不允许编辑时抛出
+     */
+    public function update(GroupBuyEntity $entity): bool
     {
-        $entity = $this->getEntity($dto->getId());
-        $entity->update($dto);
-        return $this->repository->updateById($dto->getId(), $entity->toArray());
+        // 检查是否允许编辑
+        if (! $entity->canBeEdited()) {
+            throw new \DomainException('当前活动状态不允许编辑（活动已开始或即将开始）');
+        }
+
+        return $this->repository->updateById($entity->getId(), $entity->toArray());
     }
 
     public function delete(int $id): bool
@@ -70,9 +88,12 @@ final class DomainGroupBuyService extends IService
         if (! $groupBuy) {
             throw new \RuntimeException('团购活动不存在');
         }
-        if ($groupBuy->status === 'active' && $groupBuy->sold_quantity > 0) {
-            throw new \DomainException('活动进行中且已有销量，无法删除');
+
+        $entity = GroupBuyMapper::fromModel($groupBuy);
+        if (! $entity->canBeDeleted()) {
+            throw new \DomainException('当前活动状态不允许删除（活动进行中有销量或即将开始）');
         }
+
         return $this->repository->deleteById($id) > 0;
     }
 

@@ -12,11 +12,20 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\Mapper;
 
+use App\Domain\Trade\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Trade\Seckill\Entity\SeckillSessionEntity;
 use App\Infrastructure\Model\Seckill\SeckillSession;
 
+/**
+ * 秒杀场次 Mapper.
+ *
+ * 负责实体与模型/DTO 之间的转换。
+ */
 final class SeckillSessionMapper
 {
+    /**
+     * 从持久化模型重建实体.
+     */
     public static function fromModel(SeckillSession $model): SeckillSessionEntity
     {
         return SeckillSessionEntity::reconstitute(
@@ -37,6 +46,21 @@ final class SeckillSessionMapper
         );
     }
 
+    /**
+     * 从 DTO 创建新实体.
+     */
+    public static function fromDto(SeckillSessionInput $dto): SeckillSessionEntity
+    {
+        $entity = new SeckillSessionEntity();
+        $entity->create($dto);
+        return $entity;
+    }
+
+    /**
+     * 获取空实体.
+     *
+     * @deprecated 使用 fromInput 代替
+     */
     public static function getNewEntity(): SeckillSessionEntity
     {
         return new SeckillSessionEntity();

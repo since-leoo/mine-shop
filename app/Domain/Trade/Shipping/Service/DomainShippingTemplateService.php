@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Shipping\Service;
 
-use App\Domain\Trade\Shipping\Contract\ShippingTemplateInput;
 use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Domain\Trade\Shipping\Mapper\ShippingTemplateMapper;
 use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
@@ -22,7 +21,10 @@ use App\Infrastructure\Model\Shipping\ShippingTemplate;
 use App\Interface\Common\ResultCode;
 
 /**
- * 运费模板领域服务：封装运费模板相关的核心业务逻辑.
+ * 运费模板领域服务.
+ *
+ * 负责运费模板的核心业务逻辑，只接受实体对象。
+ * DTO 到实体的转换由应用层负责。
  */
 final class DomainShippingTemplateService extends IService
 {
@@ -31,41 +33,32 @@ final class DomainShippingTemplateService extends IService
     /**
      * 创建运费模板.
      *
-     * @param ShippingTemplateInput $input 运费模板输入数据
-     * @return ShippingTemplateEntity 创建后的运费模板实体
+     * @param ShippingTemplateEntity $entity 运费模板实体
+     * @return ShippingTemplateEntity 创建后的运费模板实体（含 ID）
      */
-    public function create(ShippingTemplateInput $input): ShippingTemplateEntity
+    public function create(ShippingTemplateEntity $entity): ShippingTemplateEntity
     {
-        $entity = ShippingTemplateMapper::getNewEntity();
-        $entity->create($input);
-
         $model = $this->repository->store($entity->toArray());
         $entity->setId((int) $model->id);
-
         return $entity;
     }
 
     /**
      * 更新运费模板.
      *
-     * @param int $id 模板ID
-     * @param ShippingTemplateInput $input 运费模板输入数据
+     * @param ShippingTemplateEntity $entity 更新后的实体
      * @return ShippingTemplateEntity 更新后的运费模板实体
      */
-    public function update(int $id, ShippingTemplateInput $input): ShippingTemplateEntity
+    public function update(ShippingTemplateEntity $entity): ShippingTemplateEntity
     {
-        $entity = $this->getEntity($id);
-        $entity->update($input);
-
-        $this->repository->update($id, $entity->toArray());
-
+        $this->repository->update($entity->getId(), $entity->toArray());
         return $entity;
     }
 
     /**
      * 删除运费模板.
      *
-     * @param int $id 模板ID
+     * @param int $id 模板 ID
      * @throws BusinessException 当模板不存在或正在被商品使用时
      */
     public function delete(int $id): void
@@ -82,9 +75,9 @@ final class DomainShippingTemplateService extends IService
     }
 
     /**
-     * 根据ID查找运费模板实体.
+     * 根据 ID 查找运费模板实体.
      *
-     * @param int $id 模板ID
+     * @param int $id 模板 ID
      * @return ShippingTemplateEntity 运费模板实体
      * @throws BusinessException 当模板不存在时
      */
