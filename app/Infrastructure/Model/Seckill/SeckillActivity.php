@@ -24,6 +24,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property bool $is_enabled
  * @property null|array $rules
  * @property null|string $remark
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -31,10 +33,11 @@ class SeckillActivity extends Model
 {
     protected ?string $table = 'seckill_activities';
 
-    protected array $fillable = ['title', 'description', 'status', 'is_enabled', 'rules', 'remark'];
+    protected array $fillable = ['title', 'description', 'status', 'is_enabled', 'rules', 'remark', 'created_by', 'updated_by'];
 
     protected array $casts = [
         'is_enabled' => 'boolean', 'rules' => 'array',
+        'created_by' => 'integer', 'updated_by' => 'integer',
         'created_at' => 'datetime', 'updated_at' => 'datetime',
     ];
 

@@ -23,6 +23,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|array $free_rules
  * @property bool $is_default
  * @property string $status
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -37,6 +39,8 @@ class ShippingTemplate extends Model
         'free_rules',
         'is_default',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
@@ -44,6 +48,8 @@ class ShippingTemplate extends Model
         'rules' => 'array',
         'free_rules' => 'array',
         'is_default' => 'boolean',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

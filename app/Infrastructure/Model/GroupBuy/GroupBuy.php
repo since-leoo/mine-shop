@@ -42,6 +42,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|array $rules
  * @property null|array $images
  * @property null|string $remark
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property null|Carbon $deleted_at
@@ -58,6 +60,7 @@ class GroupBuy extends Model
         'start_time', 'end_time', 'group_time_limit', 'status',
         'total_quantity', 'sold_quantity', 'group_count', 'success_group_count',
         'sort_order', 'is_enabled', 'rules', 'images', 'remark',
+        'created_by', 'updated_by',
     ];
 
     protected array $casts = [
@@ -69,6 +72,7 @@ class GroupBuy extends Model
         'sold_quantity' => 'integer', 'group_count' => 'integer',
         'success_group_count' => 'integer', 'sort_order' => 'integer',
         'is_enabled' => 'boolean', 'rules' => 'array', 'images' => 'array',
+        'created_by' => 'integer', 'updated_by' => 'integer',
         'created_at' => 'datetime', 'updated_at' => 'datetime', 'deleted_at' => 'datetime',
     ];
 

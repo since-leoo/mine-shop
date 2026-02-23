@@ -29,6 +29,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $status
  * @property int $sort_order
  * @property null|string $description
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -49,6 +51,8 @@ class MemberLevel extends Model
         'status',
         'sort_order',
         'description',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
@@ -58,6 +62,8 @@ class MemberLevel extends Model
         'point_rate' => 'decimal:2',
         'privileges' => 'array',
         'sort_order' => 'integer',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

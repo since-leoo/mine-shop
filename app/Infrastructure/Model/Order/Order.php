@@ -44,6 +44,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $shipping_status
  * @property int $package_count
  * @property null|Carbon $expire_time
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @method Builder pendingStatus() 获取待付款订单
@@ -77,6 +79,8 @@ class Order extends Model
         'shipping_status',
         'package_count',
         'expire_time',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
@@ -87,6 +91,8 @@ class Order extends Model
         'pay_amount' => 'integer',
         'pay_time' => 'datetime',
         'expire_time' => 'datetime',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

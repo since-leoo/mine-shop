@@ -23,6 +23,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $description
  * @property string $status
  * @property int $sort_order
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  */
@@ -40,9 +42,13 @@ class MemberTag extends Model
         'description',
         'status',
         'sort_order',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -29,6 +29,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|Carbon $end_time
  * @property null|string $status
  * @property null|string $description
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property null|Carbon $created_at
  * @property null|Carbon $updated_at
  */
@@ -39,12 +41,14 @@ class Coupon extends Model
     protected array $fillable = [
         'name', 'type', 'value', 'min_amount', 'total_quantity', 'used_quantity',
         'per_user_limit', 'start_time', 'end_time', 'status', 'description',
+        'created_by', 'updated_by',
     ];
 
     protected array $casts = [
         'value' => 'integer', 'min_amount' => 'integer', 'total_quantity' => 'integer',
         'used_quantity' => 'integer', 'per_user_limit' => 'integer',
         'start_time' => 'datetime', 'end_time' => 'datetime',
+        'created_by' => 'integer', 'updated_by' => 'integer',
         'created_at' => 'datetime', 'updated_at' => 'datetime',
     ];
 

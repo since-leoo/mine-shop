@@ -25,6 +25,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $website
  * @property int $sort
  * @property string $status
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property null|Carbon $deleted_at
@@ -46,11 +48,15 @@ class Brand extends Model
         'website',
         'sort',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
         'id' => 'integer',
         'sort' => 'integer',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

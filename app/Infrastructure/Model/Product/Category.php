@@ -29,6 +29,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $sort
  * @property int $level
  * @property string $status
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Collection<int,self>|self[] $children
@@ -48,6 +50,8 @@ class Category extends Model
         'sort',
         'level',
         'status',
+        'created_by',
+        'updated_by',
     ];
 
     protected array $casts = [
@@ -56,6 +60,8 @@ class Category extends Model
         'level' => 'integer',
         'status' => 'string',
         'thumbnail' => 'string',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
     ];
 
     public function children(): HasMany

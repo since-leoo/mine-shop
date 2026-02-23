@@ -14,11 +14,13 @@ namespace App\Interface\Admin\Controller\Dashboard;
 
 use App\Application\Admin\Dashboard\AppDashboardQueryService;
 use App\Interface\Admin\Controller\AbstractController;
+use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
+use Mine\Access\Attribute\Permission;
 
 /**
  * 仪表盘控制器.
@@ -30,6 +32,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
  */
 #[Controller(prefix: '/admin/dashboard')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
+#[Middleware(middleware: PermissionMiddleware::class, priority: 99)]
 final class DashboardController extends AbstractController
 {
     public function __construct(
@@ -42,6 +45,7 @@ final class DashboardController extends AbstractController
      * 实时查询今日数据 + 待处理事项 + 总览 + 近7天趋势 + 热销商品.
      */
     #[GetMapping(path: 'welcome')]
+    #[Permission(code: 'dashboard:welcome')]
     public function welcome(): Result
     {
         return $this->success($this->queryService->welcome());
@@ -57,6 +61,7 @@ final class DashboardController extends AbstractController
      * 参数：start_date, end_date（默认近30天）
      */
     #[GetMapping(path: 'analysis')]
+    #[Permission(code: 'dashboard:analysis')]
     public function analysis(): Result
     {
         $params = $this->getRequestData();
@@ -72,6 +77,7 @@ final class DashboardController extends AbstractController
      * 参数：start_date, end_date（默认近30天）
      */
     #[GetMapping(path: 'report')]
+    #[Permission(code: 'dashboard:report')]
     public function report(): Result
     {
         $params = $this->getRequestData();

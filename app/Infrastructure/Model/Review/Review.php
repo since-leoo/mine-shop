@@ -34,6 +34,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $status
  * @property null|string $admin_reply
  * @property null|Carbon $reply_time
+ * @property null|int $created_by
+ * @property null|int $updated_by
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property null|Carbon $deleted_at
@@ -47,7 +49,7 @@ class Review extends Model
     protected array $fillable = [
         'order_id', 'order_item_id', 'product_id', 'sku_id', 'member_id',
         'rating', 'content', 'images', 'is_anonymous', 'status',
-        'admin_reply', 'reply_time',
+        'admin_reply', 'reply_time', 'created_by', 'updated_by',
     ];
 
     protected array $casts = [
@@ -60,6 +62,8 @@ class Review extends Model
         'images' => 'array',
         'is_anonymous' => 'boolean',
         'reply_time' => 'datetime',
+        'created_by' => 'integer',
+        'updated_by' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'deleted_at' => 'datetime',

@@ -346,7 +346,7 @@ final class UserEntity
             'user_type' => $this->getUserType(),
             'nickname' => $this->getNickname(),
             'phone' => $this->getPhone(),
-            'email' => $this->getPhone(),
+            'email' => $this->getEmail(),
             'avatar' => $this->getAvatar(),
             'signed' => $this->getSigned(),
             'status' => $this->getStatus(),
