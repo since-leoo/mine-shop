@@ -10,8 +10,6 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace Plugin\ExportCenter\Database\Seeders;
-
 use App\Infrastructure\Model\Permission\Menu;
 use App\Infrastructure\Model\Permission\Meta;
 use Hyperf\Database\Seeders\Seeder;
