@@ -1,9 +1,0 @@
-{
-  "navigationBarTitleText": "收银台",
-  "usingComponents": {
-    "t-icon": "tdesign-miniprogram/icon/icon",
-    "t-toast": "tdesign-miniprogram/toast/toast",
-    "t-loading": "tdesign-miniprogram/loading/loading",
-    "price": "/components/price/index"
-  }
-}

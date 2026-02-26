@@ -1,8 +1,0 @@
-{
-  "navigationBarTitleText": "流水明细",
-  "usingComponents": {
-    "t-empty": "tdesign-miniprogram/empty/empty",
-    "t-loading": "tdesign-miniprogram/loading/loading"
-  },
-  "enablePullDownRefresh": true
-}
