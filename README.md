@@ -1,4 +1,4 @@
-中文 | [English](./README-en.md)
+中文
 
 # MineShop 商城系统
 
@@ -6,8 +6,8 @@
     <img src="web/public/logo.svg" width="120" alt="MineShop Logo" />
 </p>
 <p align="center">
-    <a href="https://www.mineshop.club" target="_blank">官网</a> |
-    <a href="https://www.mineshop.club/docs" target="_blank">文档</a> | 
+    <a href="https://mineshop.club" target="_blank">官网</a> |
+    <a href="https://mineshop.club" target="_blank">文档</a> | 
     <a href="https://demo.mineshop.club" target="_blank">演示</a> |
     <a href="https://hyperf.wiki/3.0/#/" target="_blank">Hyperf官方文档</a> 
 </p>
