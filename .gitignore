@@ -19,7 +19,7 @@ tests/coding_standard.xml
 tests/junit.xml
 public
 !web/public
-*.lock
+composer.lock
 storage/swagger/http.json
 storage/uploads
 ./kiro

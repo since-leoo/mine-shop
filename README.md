@@ -83,13 +83,14 @@ MineShop 是一款基于 MineAdmin 开发的高性能商城系统，采用 DDD�
 ## 环境需求
 
 - Swoole >= 5.0 并关闭 `Short Name`
-- PHP >= 8.1 并开启以下扩展：
+- PHP >= 8.2 并开启以下扩展：
   - mbstring
   - json
   - pdo
   - openssl
   - redis
   - pcntl
+  - bcmath
 - [x] Mysql >= 5.7
 - [x] Pgsql >= 10
 - [x] Sql Server Latest
@@ -102,10 +103,10 @@ MineShop 是一款基于 MineAdmin 开发的高性能商城系统，采用 DDD�
 
 ### 环境准备
 确保你的开发环境已安装：
-- PHP >= 8.1
+- PHP >= 8.2
 - Composer
 - Node.js >= 16
-- MySQL >= 5.7 或 PostgreSQL >= 10
+- MySQL >= 5.7 或8.0+
 - Redis >= 4.0
 
 ### 安装步骤
