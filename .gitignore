@@ -20,8 +20,8 @@ tests/junit.xml
 public
 !web/public
 composer.lock
-storage/swagger/http.json
 storage/uploads
 ./kiro
 .qoder
 .kiro
+web/*.lock
