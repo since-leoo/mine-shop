@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -13,7 +13,6 @@ import type { CategoryVo } from '~/mall/api/category'
 import type { ProductAttributeVo, ProductSkuVo, ProductVo } from '~/mall/api/product'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 import MaRichEditor from '@/components/ma-rich-editor/index.vue'
-import { useI18n } from 'vue-i18n'
 
 type BrandOption = {
   value?: number
@@ -32,8 +31,8 @@ export default function getFormItems(
   model: ProductVo,
   activeStep: Ref<number>,
   msg: ReturnType<typeof import('@/hooks/useMessage.ts').useMessage>,
+  t: (key: string) => string,
 ): MaFormItem[] {
-  const { t } = useI18n()
   const categoryOptions = ref<CategoryVo[]>([])
   const brandOptions = ref<BrandOption[]>([])
   const shippingTemplateOptions = ref<{ id: number; name: string }[]>([])
@@ -250,7 +249,7 @@ export default function getFormItems(
 
   const items: MaFormItem[] = [
     {
-      label: () => t('mall.product.productCode'),
+      label: t('mall.product.productCode'),
       prop: 'product_code',
       render: 'input',
       renderProps: { placeholder: t('mall.productForm.productCodePlaceholder'), disabled: formType !== 'add' },
@@ -259,7 +258,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.product.productName'),
+      label: t('mall.product.productName'),
       prop: 'name',
       render: 'input',
       renderProps: { placeholder: t('mall.product.productName') },
@@ -267,7 +266,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.product.subTitle'),
+      label: t('mall.product.subTitle'),
       prop: 'sub_title',
       render: 'input',
       renderProps: { placeholder: t('mall.product.subTitle') },
@@ -275,7 +274,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.product.category'),
+      label: t('mall.product.category'),
       prop: 'category_id',
       render: () => (
         <el-tree-select
@@ -290,7 +289,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.product.brand'),
+      label: t('mall.product.brand'),
       prop: 'brand_id',
       render: () => (
         <el-select-v2
@@ -305,7 +304,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.productForm.statusLabel'),
+      label: t('mall.productForm.statusLabel'),
       prop: 'status',
       render: () => (
         <el-radio-group>
@@ -318,28 +317,28 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.product.isRecommendLabel'),
+      label: t('mall.product.isRecommendLabel'),
       prop: 'is_recommend',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => t('mall.product.isHotLabel'),
+      label: t('mall.product.isHotLabel'),
       prop: 'is_hot',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => t('mall.product.isNewLabel'),
+      label: t('mall.product.isNewLabel'),
       prop: 'is_new',
       render: () => <el-switch active-value={true} inactive-value={false} />,
       cols: { md: 8, xs: 24 },
       step: 1,
     },
     {
-      label: () => t('mall.product.freightType'),
+      label: t('mall.product.freightType'),
       prop: 'freight_type',
       render: () => (
         <el-select placeholder={t('mall.common.selectPlaceholder')} class="w-full">
@@ -357,7 +356,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.productForm.freightAmount'),
+      label: t('mall.productForm.freightAmount'),
       prop: 'flat_freight_amount',
       render: 'inputNumber',
       renderProps: { min: 0, max: 999.99, precision: 2, class: 'w-full' },
@@ -369,7 +368,7 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.productForm.freightTemplate'),
+      label: t('mall.productForm.freightTemplate'),
       prop: 'shipping_template_id',
       render: () => (
         <el-select placeholder={t('mall.productForm.freightTemplatePlaceholder')} clearable class="w-full">
@@ -386,14 +385,14 @@ export default function getFormItems(
       step: 1,
     },
     {
-      label: () => t('mall.productForm.mainImage'),
+      label: t('mall.productForm.mainImage'),
       prop: 'main_image',
       render: () => MaUploadImage,
       cols: { md: 12, xs: 24 },
       step: 2,
     },
     {
-      label: () => t('mall.productForm.gallery'),
+      label: t('mall.productForm.gallery'),
       prop: 'gallery_images',
       render: () => MaUploadImage,
       renderProps: {
@@ -405,14 +404,14 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.description'),
+      label: t('mall.productForm.description'),
       prop: 'description',
       render: 'input',
       renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.productForm.descPlaceholder') },
       step: 4,
     },
     {
-      label: () => t('mall.productForm.detail'),
+      label: t('mall.productForm.detail'),
       prop: 'detail_content',
       render: () => (
         <MaRichEditor
@@ -426,7 +425,7 @@ export default function getFormItems(
       step: 4,
     },
     {
-      label: () => t('mall.productForm.minPrice'),
+      label: t('mall.productForm.minPrice'),
       prop: 'min_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -434,7 +433,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.maxPrice'),
+      label: t('mall.productForm.maxPrice'),
       prop: 'max_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -442,7 +441,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.virtualSales'),
+      label: t('mall.productForm.virtualSales'),
       prop: 'virtual_sales',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -450,7 +449,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.realSales'),
+      label: t('mall.productForm.realSales'),
       prop: 'real_sales',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -458,7 +457,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.sort'),
+      label: t('mall.productForm.sort'),
       prop: 'sort',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -466,7 +465,7 @@ export default function getFormItems(
       step: 2,
     },
     {
-      label: () => t('mall.productForm.productAttributes'),
+      label: t('mall.productForm.productAttributes'),
       prop: 'attributes',
       render: () => (
         <div class="w-full">
@@ -515,7 +514,7 @@ export default function getFormItems(
       step: 3,
     },
     {
-      label: () => t('mall.productForm.specConfig'),
+      label: t('mall.productForm.specConfig'),
       prop: 'specs',
       render: () => (
         <div class="w-full">
@@ -585,7 +584,7 @@ export default function getFormItems(
       step: 3,
     },
     {
-      label: () => t('mall.productForm.skuList'),
+      label: t('mall.productForm.skuList'),
       prop: 'skus',
       render: () => (
         <div class="w-full">

@@ -22,20 +22,20 @@ export default function getFormItems(
 
   return [
     {
-      label: () => t('mall.seckill.activityTitle'),
+      label: t('mall.seckill.activityTitle'),
       prop: 'title',
       render: 'input',
       renderProps: { placeholder: t('mall.seckill.activityTitlePlaceholder'), maxlength: 100, showWordLimit: true },
       itemProps: { rules: [{ required: true, message: t('mall.seckill.activityTitleRequired') }] },
     },
     {
-      label: () => t('mall.seckill.activityDesc'),
+      label: t('mall.seckill.activityDesc'),
       prop: 'description',
       render: 'input',
       renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.seckill.activityDescPlaceholder'), maxlength: 500, showWordLimit: true },
     },
     {
-      label: () => t('mall.seckill.activityStatus'),
+      label: t('mall.seckill.activityStatus'),
       prop: 'status',
       render: () => (
         <el-select placeholder={t('mall.seckill.statusPlaceholder')}>
@@ -47,12 +47,12 @@ export default function getFormItems(
       ),
     },
     {
-      label: () => t('mall.seckill.enabledStatus'),
+      label: t('mall.seckill.enabledStatus'),
       prop: 'is_enabled',
       render: () => <el-switch active-value={true} inactive-value={false} />,
     },
     {
-      label: () => t('mall.seckill.remarkLabel'),
+      label: t('mall.seckill.remarkLabel'),
       prop: 'remark',
       render: 'input',
       renderProps: { type: 'textarea', rows: 2, placeholder: t('mall.seckill.remarkPlaceholder'), maxlength: 500, showWordLimit: true },

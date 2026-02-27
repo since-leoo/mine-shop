@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -10,10 +10,8 @@
 import type { MaFormItem } from '@mineadmin/form'
 import type { CategoryVo } from '~/mall/api/category'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
-import { useI18n } from 'vue-i18n'
 
-export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any): MaFormItem[] {
-  const { t } = useI18n()
+export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any, t: (key: string) => string): MaFormItem[] {
   const treeData = ref<CategoryVo[]>([])
 
   if (formType === 'add') {
@@ -29,7 +27,7 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
 
   return [
     {
-      label: () => t('mall.category.formParent'),
+      label: t('mall.category.formParent'),
       prop: 'parent_id',
       render: () => (
         <el-tree-select
@@ -52,38 +50,38 @@ export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo
       },
     },
     {
-      label: () => t('mall.category.formName'),
+      label: t('mall.category.formName'),
       prop: 'name',
       render: 'input',
       renderProps: { placeholder: t('mall.category.formNamePlaceholder') },
       itemProps: { rules: [{ required: true, message: t('mall.category.formNameRequired') }] },
     },
     {
-      label: () => t('mall.category.formIcon'),
+      label: t('mall.category.formIcon'),
       prop: 'icon',
       render: 'input',
       renderProps: { placeholder: t('mall.category.formIconPlaceholder') },
     },
     {
-      label: () => t('mall.category.formImage'),
+      label: t('mall.category.formImage'),
       prop: 'thumbnail',
       render: () => MaUploadImage,
       itemProps: { help: t('mall.category.formImageHelp') },
     },
     {
-      label: () => t('mall.category.formDescription'),
+      label: t('mall.category.formDescription'),
       prop: 'description',
       render: 'input',
       renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.category.formDescPlaceholder') },
     },
     {
-      label: () => t('mall.category.formSort'),
+      label: t('mall.category.formSort'),
       prop: 'sort',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
     },
     {
-      label: () => t('mall.category.formStatus'),
+      label: t('mall.category.formStatus'),
       prop: 'status',
       render: () => (
         <el-radio-group>

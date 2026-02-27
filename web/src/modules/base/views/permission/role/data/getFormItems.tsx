@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -19,7 +19,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
 
   return [
     {
-      label: () => t('baseRoleManage.name'),
+      label: t('baseRoleManage.name'),
       prop: 'name',
       render: 'input',
       renderProps: {
@@ -30,7 +30,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
       },
     },
     {
-      label: () => t('baseRoleManage.code'),
+      label: t('baseRoleManage.code'),
       prop: 'code',
       render: 'input',
       renderProps: {
@@ -41,7 +41,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
       },
     },
     {
-      label: () => t('crud.sort'),
+      label: t('crud.sort'),
       prop: 'sort',
       render: 'inputNumber',
       cols: { md: 12, xs: 24 },
@@ -51,7 +51,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
       },
     },
     {
-      label: () => t('crud.status'),
+      label: t('crud.status'),
       prop: 'status',
       render: () => MaDictRadio,
       cols: { md: 12, xs: 24 },
@@ -61,7 +61,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
       },
     },
     {
-      label: () => t('crud.remark'),
+      label: t('crud.remark'),
       prop: 'remark',
       render: 'input',
       renderProps: {

@@ -100,14 +100,14 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
 
   return [
     {
-      label: () => t('mall.coupon.name'),
+      label: t('mall.coupon.name'),
       prop: 'name',
       render: 'input',
       renderProps: { placeholder: t('mall.coupon.namePlaceholder'), maxlength: 120, showWordLimit: true },
       itemProps: { rules: [{ required: true, message: t('mall.coupon.nameRequired'), trigger: ['blur', 'change'] }] },
     },
     {
-      label: () => t('mall.coupon.typeLabel'),
+      label: t('mall.coupon.typeLabel'),
       prop: 'type',
       render: () => (
         <el-select placeholder={t('mall.coupon.typePlaceholder')}>
@@ -118,7 +118,7 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       itemProps: { rules: [{ required: true, message: t('mall.coupon.typeRequired'), trigger: ['change'] }] },
     },
     {
-      label: () => t('mall.coupon.valueLabel'),
+      label: t('mall.coupon.valueLabel'),
       prop: 'value',
       render: () => (
         <el-input-number
@@ -138,7 +138,7 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       },
     },
     {
-      label: () => t('mall.coupon.minAmountLabel'),
+      label: t('mall.coupon.minAmountLabel'),
       prop: 'min_amount',
       render: () => (
         <el-input-number
@@ -154,7 +154,7 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       itemProps: { rules: [optionalNonNegative(t('mall.coupon.minAmountLabel'))] },
     },
     {
-      label: () => t('mall.coupon.totalCountLabel'),
+      label: t('mall.coupon.totalCountLabel'),
       prop: 'total_quantity',
       render: () => (
         <el-input-number
@@ -174,7 +174,7 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       },
     },
     {
-      label: () => t('mall.coupon.perLimitLabel'),
+      label: t('mall.coupon.perLimitLabel'),
       prop: 'per_user_limit',
       render: () => (
         <el-input-number
@@ -192,7 +192,7 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       itemProps: { rules: [optionalPositiveInteger(t('mall.coupon.perLimitLabel'))] },
     },
     {
-      label: () => t('mall.coupon.validityLabel'),
+      label: t('mall.coupon.validityLabel'),
       prop: 'dateRange',
       render: () => (
         <el-date-picker
@@ -225,12 +225,12 @@ export default function getFormItems(model: CouponVo, t: (key: string) => string
       },
     },
     {
-      label: () => t('mall.coupon.statusLabel'),
+      label: t('mall.coupon.statusLabel'),
       prop: 'status',
       render: () => <el-switch active-value="active" inactive-value="inactive" active-text={t('mall.coupon.statusActive')} inactive-text={t('mall.coupon.statusInactive')} />,
     },
     {
-      label: () => t('mall.coupon.descriptionLabel'),
+      label: t('mall.coupon.descriptionLabel'),
       prop: 'description',
       render: 'input',
       renderProps: { type: 'textarea', rows: 3, maxlength: 500, showWordLimit: true, placeholder: t('mall.coupon.descriptionPlaceholder') },

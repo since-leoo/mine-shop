@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -66,12 +66,12 @@ export default function getFormItems(
 
   return [
     {
-      label: () => t('baseUserManage.avatar'),
+      label: t('baseUserManage.avatar'),
       prop: 'avatar',
       render: () => MaUploadImage,
     },
     {
-      label: () => t('baseUserManage.username'),
+      label: t('baseUserManage.username'),
       prop: 'username',
       render: 'input',
       cols: { md: 12, xs: 24 },
@@ -83,7 +83,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.nickname'),
+      label: t('baseUserManage.nickname'),
       prop: 'nickname',
       render: 'input',
       cols: { md: 12, xs: 24 },
@@ -95,7 +95,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.password'),
+      label: t('baseUserManage.password'),
       prop: 'password',
       render: 'input',
       cols: { md: 12, xs: 24 },
@@ -108,7 +108,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.phone'),
+      label: t('baseUserManage.phone'),
       prop: 'phone',
       render: 'input',
       cols: { md: 12, xs: 24 },
@@ -117,7 +117,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.dept'),
+      label: t('baseUserManage.dept'),
       prop: 'department',
       render: () => <el-tree-select />,
       renderProps: {
@@ -161,7 +161,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.post'),
+      label: t('baseUserManage.post'),
       prop: 'position',
       render: () => <el-tree-select />,
       cols: { md: 12, xs: 24 },
@@ -212,10 +212,10 @@ export default function getFormItems(
         },
       },
       itemSlots: {
-        label: () => (
+        label: (
           <div class="flex items-center gap-x-1">
             {t('baseUserManage.dataScope')}
-            <el-tooltip content="设置后将覆盖岗位的数据权限" placement="top">
+            <el-tooltip content="设置后将覆盖岗位的数据权�? placement="top">
               <ma-svg-icon name="material-symbols:help-outline" />
             </el-tooltip>
           </div>
@@ -226,7 +226,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.email'),
+      label: t('baseUserManage.email'),
       prop: 'email',
       render: 'input',
       cols: { md: 12, xs: 24 },
@@ -235,7 +235,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('baseUserManage.userType'),
+      label: t('baseUserManage.userType'),
       prop: 'user_type',
       cols: { md: 12, xs: 24 },
       render: () => MaDictRadio,
@@ -246,7 +246,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('crud.remark'),
+      label: t('crud.remark'),
       prop: 'remark',
       render: 'input',
       renderProps: {
@@ -255,7 +255,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('crud.status'),
+      label: t('crud.status'),
       prop: 'status',
       render: () => MaDictRadio,
       renderProps: {

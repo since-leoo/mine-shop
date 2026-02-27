@@ -16,8 +16,11 @@ import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import { centsToYuan, yuanToCents } from '@/utils/price'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:seckill:product:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null, sessionId = 0, activityId = 0 } = defineProps<{
   formType: 'add' | 'edit'
@@ -91,7 +94,7 @@ useForm('productForm').then(async (form: MaFormExpose) => {
   if (formType === 'add') {
     await loadProducts()
   }
-  form.setItems(getFormItems(formType, model.value, productOptions, skuOptions, onProductChange, onSkuChange))
+  form.setItems(getFormItems(formType, model.value, productOptions, skuOptions, onProductChange, onSkuChange, t))
   form.setOptions({ labelWidth: '90px' })
 })
 

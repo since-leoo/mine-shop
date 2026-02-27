@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -26,7 +26,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
 
   return [
     {
-      label: () => t('baseDepartment.parentDepartment'), prop: 'parent_id',
+      label: t('baseDepartment.parentDepartment'), prop: 'parent_id',
       render: () => (
         <el-tree-select
           ref={treeSelectRef}
@@ -50,7 +50,7 @@ export default function getFormItems(formType: 'add' | 'edit' = 'add', t: any, m
       },
     },
     {
-      label: () => t('baseDepartment.name'),
+      label: t('baseDepartment.name'),
       prop: 'name',
       render: 'input',
       renderProps: {

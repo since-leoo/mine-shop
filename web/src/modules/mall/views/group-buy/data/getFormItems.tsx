@@ -1,4 +1,4 @@
-/**
+﻿/**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
  * For the full copyright and license information.
@@ -83,14 +83,14 @@ export default function getFormItems(
 
   return [
     {
-      label: () => t('mall.groupBuy.formTitle'),
+      label: t('mall.groupBuy.formTitle'),
       prop: 'title',
       render: 'input',
       renderProps: { placeholder: t('mall.groupBuy.formTitlePlaceholder') },
       itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formTitleRequired'), trigger: ['blur', 'change'] }] },
     },
     {
-      label: () => t('mall.groupBuy.formProduct'),
+      label: t('mall.groupBuy.formProduct'),
       prop: 'product_id',
       render: () => (
         <el-select
@@ -105,7 +105,7 @@ export default function getFormItems(
       itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formProductRequired'), trigger: ['change'] }] },
     },
     {
-      label: () => 'SKU',
+      label: 'SKU',
       prop: 'sku_id',
       render: () => (
         <el-select filterable clearable placeholder={t('mall.groupBuy.formSkuPlaceholder')}>
@@ -115,7 +115,7 @@ export default function getFormItems(
       itemProps: { rules: [{ required: true, message: t('mall.groupBuy.formSkuRequired'), trigger: ['change'] }] },
     },
     {
-      label: () => t('mall.groupBuy.formOriginalPrice'),
+      label: t('mall.groupBuy.formOriginalPrice'),
       prop: 'original_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -126,7 +126,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formGroupPrice'),
+      label: t('mall.groupBuy.formGroupPrice'),
       prop: 'group_price',
       render: 'inputNumber',
       renderProps: { min: 0, precision: 2, class: 'w-full' },
@@ -151,7 +151,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formMinPeople'),
+      label: t('mall.groupBuy.formMinPeople'),
       prop: 'min_people',
       render: 'inputNumber',
       renderProps: { min: 2, class: 'w-full' },
@@ -162,7 +162,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formMaxPeople'),
+      label: t('mall.groupBuy.formMaxPeople'),
       prop: 'max_people',
       render: 'inputNumber',
       renderProps: { min: 2, class: 'w-full' },
@@ -187,7 +187,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formTimeLimit'),
+      label: t('mall.groupBuy.formTimeLimit'),
       prop: 'group_time_limit',
       render: 'inputNumber',
       renderProps: { min: 1, max: 168, class: 'w-full' },
@@ -198,7 +198,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formStock'),
+      label: t('mall.groupBuy.formStock'),
       prop: 'total_quantity',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full' },
@@ -209,7 +209,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formStartTime'),
+      label: t('mall.groupBuy.formStartTime'),
       prop: 'start_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" />,
       renderProps: { class: 'w-full' },
@@ -230,7 +230,7 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formEndTime'),
+      label: t('mall.groupBuy.formEndTime'),
       prop: 'end_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" />,
       renderProps: { class: 'w-full' },
@@ -251,14 +251,14 @@ export default function getFormItems(
       },
     },
     {
-      label: () => t('mall.groupBuy.formEnabled'),
+      label: t('mall.groupBuy.formEnabled'),
       prop: 'is_enabled',
       render: () => (
         <el-switch active-value={true} inactive-value={false} />
       ),
     },
     {
-      label: () => t('mall.groupBuy.formRemark'),
+      label: t('mall.groupBuy.formRemark'),
       prop: 'remark',
       render: 'input',
       renderProps: { type: 'textarea', rows: 3, placeholder: t('mall.groupBuy.formRemarkPlaceholder') },

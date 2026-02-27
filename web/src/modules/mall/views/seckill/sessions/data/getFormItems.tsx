@@ -24,19 +24,19 @@ export default function getFormItems(
 
   return [
     {
-      label: () => t('mall.common.startTime'),
+      label: t('mall.common.startTime'),
       prop: 'start_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder={t('mall.seckill.startTimePlaceholder')} style="width: 100%" />,
       itemProps: { rules: [{ required: true, message: t('mall.seckill.startTimeRequired') }] },
     },
     {
-      label: () => t('mall.common.endTime'),
+      label: t('mall.common.endTime'),
       prop: 'end_time',
       render: () => <el-date-picker type="datetime" value-format="YYYY-MM-DD HH:mm:ss" placeholder={t('mall.seckill.endTimePlaceholder')} style="width: 100%" />,
       itemProps: { rules: [{ required: true, message: t('mall.seckill.endTimeRequired') }] },
     },
     {
-      label: () => t('mall.seckill.sessionStatus'),
+      label: t('mall.seckill.sessionStatus'),
       prop: 'status',
       render: () => (
         <el-select placeholder={t('mall.seckill.statusPlaceholder')}>
@@ -48,24 +48,24 @@ export default function getFormItems(
       ),
     },
     {
-      label: () => t('mall.seckill.perUserLimit'),
+      label: t('mall.seckill.perUserLimit'),
       prop: 'max_quantity_per_user',
       render: 'inputNumber',
       renderProps: { min: 1, class: 'w-full', placeholder: t('mall.seckill.perUserLimitPlaceholder') },
     },
     {
-      label: () => t('mall.seckill.sortOrder'),
+      label: t('mall.seckill.sortOrder'),
       prop: 'sort_order',
       render: 'inputNumber',
       renderProps: { min: 0, class: 'w-full', placeholder: t('mall.seckill.sortOrderPlaceholder') },
     },
     {
-      label: () => t('mall.seckill.enabledStatus'),
+      label: t('mall.seckill.enabledStatus'),
       prop: 'is_enabled',
       render: () => <el-switch active-value={true} inactive-value={false} />,
     },
     {
-      label: () => t('mall.seckill.remarkLabel'),
+      label: t('mall.seckill.remarkLabel'),
       prop: 'remark',
       render: 'input',
       renderProps: { type: 'textarea', rows: 2, placeholder: t('mall.seckill.remarkPlaceholder'), maxlength: 500, showWordLimit: true },

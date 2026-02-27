@@ -15,8 +15,11 @@ import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
 import { useMessage } from '@/hooks/useMessage.ts'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:category:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null } = defineProps<{
   formType: 'add' | 'edit'
@@ -32,7 +35,7 @@ useForm('categoryForm').then((form: MaFormExpose) => {
   if (formType === 'edit' && data) {
     Object.assign(model.value, data)
   }
-  form.setItems(getFormItems(formType, model.value, msg))
+  form.setItems(getFormItems(formType, model.value, msg, t))
   form.setOptions({ labelWidth: '100px' })
 })
 

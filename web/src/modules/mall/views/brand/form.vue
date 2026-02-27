@@ -14,8 +14,11 @@ import { create, save } from '~/mall/api/brand'
 import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:brand:form' })
+
+const { t } = useI18n()
 
 const { formType = 'add', data = null } = defineProps<{
   formType: 'add' | 'edit'
@@ -30,7 +33,7 @@ useForm('brandForm').then((form: MaFormExpose) => {
   if (formType === 'edit' && data) {
     Object.assign(model.value, data)
   }
-  form.setItems(getFormItems(formType, model.value))
+  form.setItems(getFormItems(formType, model.value, t))
   form.setOptions({ labelWidth: '100px' })
 })
 
