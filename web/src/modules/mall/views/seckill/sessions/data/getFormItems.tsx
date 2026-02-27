@@ -8,13 +8,12 @@
  */
 import type { MaFormItem } from '@mineadmin/form'
 import type { SeckillSessionVo } from '~/mall/api/seckill'
-import { useI18n } from 'vue-i18n'
 
 export default function getFormItems(
   formType: 'add' | 'edit',
   model: SeckillSessionVo,
+  t: (key: string) => string,
 ): MaFormItem[] {
-  const { t } = useI18n()
 
   if (formType === 'add') {
     model.is_enabled = true

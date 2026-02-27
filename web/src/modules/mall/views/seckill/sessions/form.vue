@@ -13,6 +13,7 @@ import { sessionCreate, sessionUpdate } from '~/mall/api/seckill'
 import getFormItems from './data/getFormItems.tsx'
 import useForm from '@/hooks/useForm.ts'
 import { ResultCode } from '@/utils/ResultCode.ts'
+import { useI18n } from 'vue-i18n'
 
 defineOptions({ name: 'mall:seckill:session:form' })
 
@@ -22,6 +23,7 @@ const { formType = 'add', data = null, activityId = 0 } = defineProps<{
   activityId: number
 }>()
 
+const { t } = useI18n()
 const formRef = ref<MaFormExpose>()
 const model = ref<SeckillSessionVo>({})
 
@@ -31,7 +33,7 @@ useForm('sessionForm').then(async (form: MaFormExpose) => {
     Object.assign(model.value, data)
   }
   model.value.activity_id = activityId
-  form.setItems(getFormItems(formType, model.value))
+  form.setItems(getFormItems(formType, model.value, t))
   form.setOptions({ labelWidth: '90px' })
 })
 
