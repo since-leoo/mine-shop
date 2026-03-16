@@ -51,7 +51,12 @@ final class DomainMallSettingService extends IService
     {
         return $this->basic ??= new BasicSetting(
             (string) $this->value('mall.basic.name', 'MineMall 商城'),
-            (string) $this->value('mall.basic.logo', ''),
+            (string) $this->value('mall.basic.admin_logo', '/logo.svg'),
+            (string) $this->value('mall.basic.admin_small_logo', '/logo.svg'),
+            (string) $this->value('mall.basic.login_logo', '/logo.svg'),
+            (string) $this->value('mall.basic.miniapp_logo', '/logo.svg'),
+            (string) $this->value('mall.basic.favicon', '/favicon.ico'),
+            (string) $this->value('mall.basic.logo', '/logo.svg'),
             (string) $this->value('mall.basic.support_email', 'support@minemall.local'),
             (string) $this->value('mall.basic.hotline', '400-888-0000'),
         );

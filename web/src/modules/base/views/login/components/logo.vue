@@ -10,15 +10,33 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import LogoSvg from '@/assets/images/logo.svg'
+import { useMallBasicConfig } from '@/modules/mall/composables/useMallBasicConfig'
 
 const { t } = useI18n()
+const { getLogo, getName } = useMallBasicConfig()
 
 const appTitle = ref<string>(import.meta.env.VITE_APP_TITLE)
+const logoUrl = ref<string>(LogoSvg)
+
+// 初始化加载配置
+onMounted(async () => {
+  try {
+    const [logo, name] = await Promise.all([
+      getLogo('login'),
+      getName(),
+    ])
+    logoUrl.value = logo
+    appTitle.value = name
+  }
+  catch (e) {
+    console.error('Failed to load mall config:', e)
+  }
+})
 </script>
 
 <template>
   <div class="relative w-auto flex items-center gap-x-3">
-    <img :alt="appTitle" :src="LogoSvg" class="login-logo">
+    <img :alt="appTitle" :src="logoUrl" class="login-logo">
     <h3 class="text-4xl text-white tracking-[3px] lg:text-[#2d2d33ff]">
       {{ appTitle }}
     </h3>

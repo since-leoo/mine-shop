@@ -20,6 +20,7 @@ import MineIframe from './components/iframe'
 import '@/layouts/style/index.scss'
 import type { SystemSettings } from '#/global'
 import handleResize from '@/utils/handleResize'
+import { initMallBasicConfig } from '@/modules/mall/utils/initMallConfig'
 
 export default defineComponent({
   name: 'MineContainer',
@@ -61,6 +62,9 @@ export default defineComponent({
         menuStore.setSubAsideWidthByDefault()
       }
       handleResize(subAsideEl)
+
+      // 加载商城基础配置
+      initMallBasicConfig()
     })
 
     return () => (

@@ -23,6 +23,7 @@ use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
+use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
 
@@ -59,5 +60,13 @@ final class SystemSettingController extends AbstractController
         $value = $payload['value'] ?? null;
         $setting = $this->commandService->update($key, $value);
         return $this->success($setting, '配置已更新');
+    }
+
+    #[GetMapping(path: 'values')]
+    #[Permission(code: 'system:setting:list')]
+    public function values(?string $keys = null): Result
+    {
+        $keyList = $keys ? explode(',', $keys) : [];
+        return $this->success($this->queryService->getValues($keyList));
     }
 }

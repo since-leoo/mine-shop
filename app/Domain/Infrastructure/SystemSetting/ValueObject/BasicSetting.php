@@ -19,6 +19,11 @@ final class BasicSetting
 {
     public function __construct(
         private readonly string $mallName,
+        private readonly string $adminLogo,
+        private readonly string $adminSmallLogo,
+        private readonly string $loginLogo,
+        private readonly string $miniappLogo,
+        private readonly string $favicon,
         private readonly string $logo,
         private readonly string $supportEmail,
         private readonly string $hotline,
@@ -29,6 +34,34 @@ final class BasicSetting
         return $this->mallName;
     }
 
+    public function adminLogo(): string
+    {
+        return $this->adminLogo;
+    }
+
+    public function adminSmallLogo(): string
+    {
+        return $this->adminSmallLogo;
+    }
+
+    public function loginLogo(): string
+    {
+        return $this->loginLogo;
+    }
+
+    public function miniappLogo(): string
+    {
+        return $this->miniappLogo;
+    }
+
+    public function favicon(): string
+    {
+        return $this->favicon;
+    }
+
+    /**
+     * 通用 Logo（兼容旧版）.
+     */
     public function logo(): string
     {
         return $this->logo;

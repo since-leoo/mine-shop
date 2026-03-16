@@ -33,6 +33,7 @@ export const systemSettingApi = {
   groups: () => http.get<SystemSettingGroupVo[]>(`${baseUrl}/groups`),
   groupSettings: (group: string) => http.get<SystemSettingItemVo[]>(`${baseUrl}/group/${group}`),
   update: (key: string, value: any) => http.put<SystemSettingItemVo>(`${baseUrl}/${key}`, { value }),
+  values: (keys: string[]) => http.get<Record<string, any>>(`${baseUrl}/values`, { keys: keys.join(',') }),
 }
 
 export type { SystemSettingItemVo as SystemSettingItem, SystemSettingGroupVo as SystemSettingGroup }

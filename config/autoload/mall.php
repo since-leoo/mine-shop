@@ -24,16 +24,77 @@ return [
                     'default' => 'MineMall 商城',
                     'sort' => 10,
                 ],
-                'mall.basic.logo' => [
-                    'label' => '商城 LOGO',
-                    'description' => '建议1:1/2:1的透明底LOGO，最多2MB。',
+                'mall.basic.admin_logo' => [
+                    'label' => '后台管理 Logo',
+                    'description' => '后台管理系统侧边栏 Logo，建议 200×50 透明底 PNG/SVG。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 90,
+                    ],
+                    'default' => '/logo.svg',
+                    'sort' => 15,
+                ],
+                'mall.basic.admin_small_logo' => [
+                    'label' => '后台管理小 Logo',
+                    'description' => '侧边栏收起状态下的显示，建议 32×32 透明底 PNG/SVG。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 40,
+                    ],
+                    'default' => '/logo.svg',
+                    'sort' => 16,
+                ],
+                'mall.basic.login_logo' => [
+                    'label' => '登录页 Logo',
+                    'description' => '后台登录页面显示的 Logo，建议 200×50 透明底 PNG/SVG。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 90,
+                    ],
+                    'default' => '/logo.svg',
+                    'sort' => 17,
+                ],
+                'mall.basic.miniapp_logo' => [
+                    'label' => '小程序 Logo',
+                    'description' => '小程序端使用的商城图标，建议 1:1 比例。',
                     'type' => 'string',
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
                         'preview_size' => 60,
                     ],
-                    'default' => '',
+                    'default' => '/logo.svg',
+                    'sort' => 18,
+                ],
+                'mall.basic.favicon' => [
+                    'label' => '网站 Favicon',
+                    'description' => '浏览器标签栏图标，建议 32×32 ICO/PNG 格式。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 32,
+                    ],
+                    'default' => '/favicon.ico',
+                    'sort' => 19,
+                ],
+                // 保留原有 logo 配置作为兼容
+                'mall.basic.logo' => [
+                    'label' => '商城通用 Logo',
+                    'description' => '用于小程序首页备用、分享图标等通用场景。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 60,
+                    ],
+                    'default' => '/logo.svg',
                     'sort' => 20,
                 ],
                 // 语言与时区相关能力暂不开放

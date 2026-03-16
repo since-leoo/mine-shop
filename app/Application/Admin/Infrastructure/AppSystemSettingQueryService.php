@@ -40,4 +40,19 @@ final class AppSystemSettingQueryService
     {
         return $this->service->groups();
     }
+
+    /**
+     * 获取多个配置的值.
+     *
+     * @param string[] $keys 配置键数组
+     * @return array<string, mixed>
+     */
+    public function getValues(array $keys): array
+    {
+        $result = [];
+        foreach ($keys as $key) {
+            $result[$key] = $this->service->get($key);
+        }
+        return $result;
+    }
 }
