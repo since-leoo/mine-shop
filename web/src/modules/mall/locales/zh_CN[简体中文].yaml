@@ -81,3 +81,9 @@ mallMenu:
     setting: 系统配置
     settingList: 配置查看
     settingUpdate: 配置更新
+
+    afterSale: 售后管理
+    afterSaleList: 售后列表
+    afterSaleRead: 售后详情
+
+    afterSaleUpdate: 售后处理

@@ -61,6 +61,10 @@ mallMenu:
     orderRead: Detail
     orderCreate: Create
     orderUpdate: Update
+    afterSale: After Sales
+    afterSaleList: List
+    afterSaleRead: Detail
+    afterSaleUpdate: Handle
     groupBuyOrder: Group Orders
     groupBuyOrderList: List
     seckillOrder: Flash Orders
