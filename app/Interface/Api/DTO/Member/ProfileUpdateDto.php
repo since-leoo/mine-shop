@@ -21,7 +21,7 @@ class ProfileUpdateDto implements ProfileUpdateInput
 {
     public ?string $avatar_url = null;
 
-    public ?string $nickname = null;
+    public ?string $nick_name = null;
 
     public ?int $gender = null;
 
@@ -34,7 +34,7 @@ class ProfileUpdateDto implements ProfileUpdateInput
 
     public function getNickname(): ?string
     {
-        return $this->nickname;
+        return $this->nick_name;
     }
 
     public function getGender(): ?int

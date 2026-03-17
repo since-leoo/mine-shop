@@ -69,7 +69,7 @@ return [
                         'display_span' => ['compact'],
                         'preview_size' => 60,
                     ],
-                    'default' => '/logo.svg',
+                    'default' => '',
                     'sort' => 18,
                 ],
                 'mall.basic.favicon' => [

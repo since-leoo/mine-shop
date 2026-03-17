@@ -316,6 +316,50 @@ class MenuSeeder20240926 extends Seeder
                         ],
                     ],
                     [
+                        'name' => 'mall:after-sale',
+                        'path' => '/mall/after-sale',
+                        'component' => 'mall/views/after-sale/index',
+                        'meta' => new Meta([
+                            'title' => '售后管理',
+                            'i18n' => 'mallMenu.mall.afterSale',
+                            'icon' => 'ph:arrows-counter-clockwise',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'order:after-sale:list',
+                                'meta' => new Meta([
+                                    'title' => '售后列表',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.afterSaleList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'order:after-sale:read',
+                                'meta' => new Meta([
+                                    'title' => '售后详情',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.afterSaleRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'order:after-sale:update',
+                                'meta' => new Meta([
+                                    'title' => '售后处理',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.afterSaleUpdate',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
                         'name' => 'mall:group_buy_order',
                         'path' => '/mall/group-buy-order',
                         'component' => 'mall/views/group-buy-order/index',

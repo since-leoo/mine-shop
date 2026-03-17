@@ -1,0 +1,75 @@
+<?php
+
+declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
+
+namespace HyperfTests\Unit\Interface\Api\Transformer;
+
+use App\Infrastructure\Model\AfterSale\AfterSale;
+use App\Infrastructure\Model\Order\Order;
+use App\Infrastructure\Model\Order\OrderItem;
+use App\Interface\Api\Transformer\AfterSaleTransformer;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * @internal
+ * @coversNothing
+ */
+final class AfterSaleTransformerTest extends TestCase
+{
+    public function testTransformBuildsApiPayload(): void
+    {
+        $afterSale = new class extends AfterSale {
+            public function __construct() {}
+        };
+        $order = new class extends Order {
+            public function __construct() {}
+        };
+        $orderItem = new class extends OrderItem {
+            public function __construct() {}
+        };
+
+        $afterSale->id = 1;
+        $afterSale->after_sale_no = 'AS202603160001';
+        $afterSale->order_id = 10;
+        $afterSale->order_item_id = 20;
+        $afterSale->type = 'refund_only';
+        $afterSale->status = 'pending_review';
+        $afterSale->refund_status = 'pending';
+        $afterSale->return_status = 'not_required';
+        $afterSale->apply_amount = 100;
+        $afterSale->refund_amount = 100;
+        $afterSale->quantity = 1;
+        $afterSale->reason = '尺寸不合适';
+        $afterSale->description = '测试';
+        $afterSale->images = ['a.png'];
+        $afterSale->buyer_return_logistics_company = '????';
+        $afterSale->buyer_return_logistics_no = 'SF1234567890';
+
+        $order->order_no = 'ORD202603160001';
+        $orderItem->product_id = 200;
+        $orderItem->sku_id = 300;
+        $orderItem->product_name = '测试商品';
+        $orderItem->sku_name = '默认规格';
+        $orderItem->product_image = 'cover.png';
+
+        $afterSale->setRelation('order', $order);
+        $afterSale->setRelation('orderItem', $orderItem);
+
+        $data = (new AfterSaleTransformer())->transform($afterSale);
+
+        self::assertSame('AS202603160001', $data['afterSaleNo']);
+        self::assertSame('ORD202603160001', $data['orderNo']);
+        self::assertSame('测试商品', $data['product']['productName']);
+        self::assertSame(['a.png'], $data['images']);
+        self::assertSame('????', $data['buyerReturnLogisticsCompany']);
+        self::assertSame('SF1234567890', $data['buyerReturnLogisticsNo']);
+    }
+}

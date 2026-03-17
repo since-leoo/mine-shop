@@ -85,8 +85,7 @@ final class AppApiHomeQueryService
             }
         }
 
-        $logo = $this->mallSettingService->basic()->logo();
-        return $logo ? [$logo] : [];
+        return [];
     }
 
     private function resolveActivityImage(): ?string

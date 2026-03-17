@@ -23,7 +23,7 @@ class ProfileUpdateRequest extends BaseRequest
     {
         return [
             'avatar_url' => ['nullable', 'string', 'max:500'],
-            'nickname' => ['nullable', 'string', 'max:60'],
+            'nick_name' => ['nullable', 'string', 'max:60'],
             'gender' => ['nullable', 'integer', 'in:0,1,2'],
             'phone' => ['nullable', 'string', 'regex:/^1[3-9]\d{9}$/'],
         ];
@@ -33,7 +33,7 @@ class ProfileUpdateRequest extends BaseRequest
     {
         return [
             'avatar_url' => '头像',
-            'nickname' => '昵称',
+            'nick_name' => '昵称',
             'gender' => '性别',
             'phone' => '手机号',
         ];

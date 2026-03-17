@@ -18,7 +18,7 @@ use App\Infrastructure\Model\Order\Order;
 final class OrderTransformer
 {
     /**
-     * 转换订单（含默认 includes: items, address）.
+     * 转换订单基础信息，默认包含商品与地址信息。
      */
     public function transform(Order $order): array
     {
@@ -32,7 +32,7 @@ final class OrderTransformer
     }
 
     /**
-     * 转换订单详情（含所有 includes）.
+     * 转换订单详情，补充分包与操作日志。
      */
     public function transformDetail(Order $order): array
     {
@@ -44,10 +44,10 @@ final class OrderTransformer
     }
 
     /**
-     * 根据订单状态返回操作按钮列表.
+     * 根据订单状态返回可操作按钮列表。
      *
-     * type: 1=付款, 2=取消订单, 3=确认收货, 6=评价, 7=删除订单, 8=查看物流, 9=再次购买
-     * 售后相关按钮(4,5)暂不返回
+     * type: 1=付款, 2=取消订单, 3=确认收货, 6=评价, 7=删除订单, 8=查看物流, 9=再次购买。
+     * 售后相关按钮（4、5）暂不返回。
      */
     private function resolveButtons(string $status): array
     {
