@@ -131,7 +131,7 @@ final class AppApiAfterSaleServicesTest extends TestCase
         $input = new class implements AfterSaleReturnShipmentInput {
             public function getId(): int { return 88; }
             public function getMemberId(): int { return 1; }
-            public function getLogisticsCompany(): string { return '????'; }
+            public function getLogisticsCompany(): string { return '??'; }
             public function getLogisticsNo(): string { return 'SF1234567890'; }
         };
 
@@ -145,13 +145,41 @@ final class AppApiAfterSaleServicesTest extends TestCase
             ->with(self::callback(static function (AfterSaleEntity $entity): bool {
                 return $entity->getId() === 88
                     && $entity->getStatus() === 'waiting_seller_receive'
-                    && $entity->getBuyerReturnLogisticsCompany() === '????'
+                    && $entity->getBuyerReturnLogisticsCompany() === '??'
                     && $entity->getBuyerReturnLogisticsNo() === 'SF1234567890';
             }))
             ->willReturn(true);
 
         $service = new AppApiAfterSaleCommandService($domainService, $repository);
         $service->submitReturnShipment($input);
+
+        self::assertTrue(true);
+    }
+
+    public function testCommandServiceConfirmExchangeReceivedUpdatesEntity(): void
+    {
+        $domainService = $this->createMock(DomainAfterSaleService::class);
+        $repository = $this->createMock(AfterSaleRepository::class);
+        $model = $this->makeAfterSaleModel(status: 'reshipped', type: 'exchange', returnStatus: 'seller_reshipped');
+        $model->reship_logistics_company = '??';
+        $model->reship_logistics_no = 'YT0001';
+
+        $repository->expects(self::once())
+            ->method('findByIdAndMember')
+            ->with(88, 1)
+            ->willReturn($model);
+
+        $repository->expects(self::once())
+            ->method('updateFromEntity')
+            ->with(self::callback(static function (AfterSaleEntity $entity): bool {
+                return $entity->getId() === 88
+                    && $entity->getStatus() === 'completed'
+                    && $entity->getReturnStatus() === 'buyer_received';
+            }))
+            ->willReturn(true);
+
+        $service = new AppApiAfterSaleCommandService($domainService, $repository);
+        $service->confirmExchangeReceived(1, 88);
 
         self::assertTrue(true);
     }

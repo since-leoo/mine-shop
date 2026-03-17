@@ -36,6 +36,7 @@ final class AfterSaleTransformer
             'quantity' => (int) $afterSale->quantity,
             'reason' => (string) $afterSale->reason,
             'description' => $afterSale->description,
+            'rejectReason' => $afterSale->reject_reason,
             'images' => $afterSale->images ?? [],
             'buyerReturnLogisticsCompany' => $afterSale->buyer_return_logistics_company,
             'buyerReturnLogisticsNo' => $afterSale->buyer_return_logistics_no,

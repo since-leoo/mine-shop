@@ -82,6 +82,52 @@ final class AppAfterSaleServicesTest extends TestCase
         self::assertSame('Test product', $result['list'][0]['product']['productName']);
     }
 
+
+    public function testQueryServiceUsesGeneratedAfterSaleNoWhenFieldIsEmpty(): void
+    {
+        $repository = $this->createMock(AfterSaleRepository::class);
+        $repository->expects(self::once())
+            ->method('pageForAdmin')
+            ->with([], 1, 10)
+            ->willReturn([
+                'list' => [
+                    [
+                        'id' => 93,
+                        'after_sale_no' => '',
+                        'order_id' => 10,
+                        'order_item_id' => 20,
+                        'member_id' => 1,
+                        'type' => 'refund_only',
+                        'status' => 'pending_review',
+                        'refund_status' => 'pending',
+                        'return_status' => 'not_required',
+                        'apply_amount' => 18800,
+                        'refund_amount' => 18800,
+                        'quantity' => 1,
+                        'reason' => 'size issue',
+                        'description' => 'apply refund',
+                        'images' => [],
+                        'created_at' => '2026-03-16 10:00:00',
+                        'updated_at' => '2026-03-16 10:00:00',
+                        'order' => ['order_no' => 'O202603160001'],
+                        'order_item' => [
+                            'product_id' => 11,
+                            'sku_id' => 22,
+                            'product_name' => 'Test product',
+                            'sku_name' => 'Default sku',
+                            'product_image' => 'https://img.example/product.png',
+                        ],
+                    ],
+                ],
+                'total' => 1,
+            ]);
+
+        $service = new AppAfterSaleQueryService($repository);
+        $result = $service->page([], 1, 10);
+
+        self::assertSame('AS202603161000000093', $result['list'][0]['after_sale_no']);
+    }
+
     public function testQueryServiceReturnsDetail(): void
     {
         $repository = $this->createMock(AfterSaleRepository::class);
@@ -141,6 +187,7 @@ final class AppAfterSaleServicesTest extends TestCase
 
         $input->method('getId')->willReturn(88);
         $input->method('getApprovedRefundAmount')->willReturn(null);
+        $input->method('getRejectReason')->willReturn('???????????');
 
         $repository->expects(self::once())
             ->method('findById')
@@ -151,14 +198,15 @@ final class AppAfterSaleServicesTest extends TestCase
             ->method('updateFromEntity')
             ->with(self::callback(static function ($entity): bool {
                 return $entity->getId() === 88
-                    && $entity->getStatus() === 'closed';
+                    && $entity->getStatus() === 'closed'
+                    && $entity->getRejectReason() === '???????????';
             }))
             ->willReturn(true);
 
         $queryService->expects(self::once())
             ->method('detail')
             ->with(88)
-            ->willReturn(['id' => 88, 'status' => 'closed']);
+            ->willReturn(['id' => 88, 'status' => 'closed', 'reject_reason' => '???????????']);
 
         $service = new AppAfterSaleCommandService($repository, $queryService);
         $result = $service->reject($input);

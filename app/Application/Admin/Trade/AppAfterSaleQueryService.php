@@ -56,7 +56,7 @@ final class AppAfterSaleQueryService
 
         return [
             'id' => (int) ($item['id'] ?? 0),
-            'after_sale_no' => (string) ($item['after_sale_no'] ?? ''),
+            'after_sale_no' => $this->resolveAfterSaleNo($item),
             'order_id' => (int) ($item['order_id'] ?? 0),
             'order_no' => (string) ($order['order_no'] ?? ''),
             'order_item_id' => (int) ($item['order_item_id'] ?? 0),
@@ -70,6 +70,7 @@ final class AppAfterSaleQueryService
             'quantity' => (int) ($item['quantity'] ?? 0),
             'reason' => (string) ($item['reason'] ?? ''),
             'description' => $item['description'] ?? null,
+            'reject_reason' => $item['reject_reason'] ?? null,
             'images' => $item['images'] ?? [],
             'buyer_return_logistics_company' => $item['buyer_return_logistics_company'] ?? null,
             'buyer_return_logistics_no' => $item['buyer_return_logistics_no'] ?? null,
@@ -88,13 +89,33 @@ final class AppAfterSaleQueryService
     }
 
     /**
+     * @param array<string, mixed> $item
+     */
+    private function resolveAfterSaleNo(array $item): string
+    {
+        $afterSaleNo = trim((string) ($item['after_sale_no'] ?? ''));
+        if ($afterSaleNo !== '') {
+            return $afterSaleNo;
+        }
+
+        return AfterSale::generateAfterSaleNo(
+            isset($item['created_at']) ? (string) $item['created_at'] : null,
+            isset($item['id']) ? (int) $item['id'] : null,
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function transformDetail(AfterSale $model): array
     {
         return [
             'id' => (int) $model->id,
-            'after_sale_no' => (string) $model->after_sale_no,
+            'after_sale_no' => $this->resolveAfterSaleNo([
+                'id' => (int) $model->id,
+                'after_sale_no' => (string) $model->after_sale_no,
+                'created_at' => $model->getRawOriginal('created_at') ?: null,
+            ]),
             'order_id' => (int) $model->order_id,
             'order_no' => (string) ($model->order?->order_no ?? ''),
             'order_item_id' => (int) $model->order_item_id,
@@ -108,6 +129,7 @@ final class AppAfterSaleQueryService
             'quantity' => (int) $model->quantity,
             'reason' => (string) $model->reason,
             'description' => $model->description,
+            'reject_reason' => $model->reject_reason,
             'images' => $model->images ?? [],
             'buyer_return_logistics_company' => $model->buyer_return_logistics_company,
             'buyer_return_logistics_no' => $model->buyer_return_logistics_no,

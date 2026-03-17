@@ -56,6 +56,7 @@ final class AppAfterSaleCommandService
     public function reject(AfterSaleReviewInput $input): array
     {
         $entity = $this->getEntity($input->getId());
+        $entity->setRejectReason(trim($input->getRejectReason()));
         $entity->reject();
         $this->afterSaleRepository->updateFromEntity($entity);
 

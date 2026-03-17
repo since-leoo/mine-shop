@@ -36,28 +36,31 @@ final class AfterSaleTransformerTest extends TestCase
             public function __construct() {}
         };
 
-        $afterSale->id = 1;
-        $afterSale->after_sale_no = 'AS202603160001';
-        $afterSale->order_id = 10;
-        $afterSale->order_item_id = 20;
-        $afterSale->type = 'refund_only';
-        $afterSale->status = 'pending_review';
-        $afterSale->refund_status = 'pending';
-        $afterSale->return_status = 'not_required';
-        $afterSale->apply_amount = 100;
-        $afterSale->refund_amount = 100;
-        $afterSale->quantity = 1;
-        $afterSale->reason = '尺寸不合适';
-        $afterSale->description = '测试';
-        $afterSale->images = ['a.png'];
-        $afterSale->buyer_return_logistics_company = '????';
-        $afterSale->buyer_return_logistics_no = 'SF1234567890';
+        $afterSale->setRawAttributes([
+            'id' => 1,
+            'after_sale_no' => 'AS202603160001',
+            'order_id' => 10,
+            'order_item_id' => 20,
+            'type' => 'refund_only',
+            'status' => 'pending_review',
+            'refund_status' => 'pending',
+            'return_status' => 'not_required',
+            'apply_amount' => 100,
+            'refund_amount' => 100,
+            'quantity' => 1,
+            'reason' => '?????',
+            'description' => '??',
+            'reject_reason' => '???????????',
+            'images' => '["a.png"]',
+            'buyer_return_logistics_company' => '??',
+            'buyer_return_logistics_no' => 'SF1234567890',
+        ], true);
 
         $order->order_no = 'ORD202603160001';
         $orderItem->product_id = 200;
         $orderItem->sku_id = 300;
-        $orderItem->product_name = '测试商品';
-        $orderItem->sku_name = '默认规格';
+        $orderItem->product_name = '????';
+        $orderItem->sku_name = '????';
         $orderItem->product_image = 'cover.png';
 
         $afterSale->setRelation('order', $order);
@@ -67,9 +70,10 @@ final class AfterSaleTransformerTest extends TestCase
 
         self::assertSame('AS202603160001', $data['afterSaleNo']);
         self::assertSame('ORD202603160001', $data['orderNo']);
-        self::assertSame('测试商品', $data['product']['productName']);
+        self::assertSame('????', $data['product']['productName']);
         self::assertSame(['a.png'], $data['images']);
-        self::assertSame('????', $data['buyerReturnLogisticsCompany']);
+        self::assertSame('???????????', $data['rejectReason']);
+        self::assertSame('??', $data['buyerReturnLogisticsCompany']);
         self::assertSame('SF1234567890', $data['buyerReturnLogisticsNo']);
     }
 }

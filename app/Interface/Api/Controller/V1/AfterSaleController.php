@@ -108,4 +108,15 @@ final class AfterSaleController extends AbstractController
 
         return $this->success([], 'éè´§ç©æµå·²æäº¤');
     }
+
+    /**
+     * ?????????????????
+     */
+    #[PostMapping(path: '{id}/confirm-exchange-received')]
+    public function confirmExchangeReceived(int $id): Result
+    {
+        $this->commandService->confirmExchangeReceived($this->currentMember->id(), $id);
+
+        return $this->success([], '?????????');
+    }
 }

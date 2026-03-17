@@ -15,6 +15,7 @@ namespace App\Infrastructure\Model\AfterSale;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
 use Carbon\Carbon;
+use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
@@ -33,6 +34,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $quantity
  * @property string $reason
  * @property null|string $description
+ * @property null|string $reject_reason
  * @property null|array $images
  * @property null|string $buyer_return_logistics_company
  * @property null|string $buyer_return_logistics_no
@@ -59,6 +61,7 @@ class AfterSale extends Model
         'quantity',
         'reason',
         'description',
+        'reject_reason',
         'images',
         'buyer_return_logistics_company',
         'buyer_return_logistics_no',
@@ -77,6 +80,24 @@ class AfterSale extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+
+    public function creating(Creating $event): void
+    {
+        if (empty($this->after_sale_no)) {
+            $this->after_sale_no = self::generateAfterSaleNo();
+        }
+    }
+
+    public static function generateAfterSaleNo(?string $createdAt = null, ?int $id = null): string
+    {
+        $timestamp = $createdAt ? Carbon::parse($createdAt)->format('YmdHis') : date('YmdHis');
+        $suffix = $id !== null
+            ? str_pad((string) $id, 4, '0', STR_PAD_LEFT)
+            : mb_str_pad((string) mt_rand(0, 9999), 4, '0', STR_PAD_LEFT);
+
+        return 'AS' . $timestamp . $suffix;
+    }
 
     public function order(): BelongsTo
     {

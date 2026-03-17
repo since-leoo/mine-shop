@@ -49,6 +49,8 @@ final class AfterSaleEntity
 
     private ?string $description = null;
 
+    private ?string $rejectReason = null;
+
     private ?array $images = null;
 
     private ?string $buyerReturnLogisticsCompany = null;
@@ -204,6 +206,7 @@ final class AfterSaleEntity
             'quantity' => $this->quantity,
             'reason' => $this->reason,
             'description' => $this->description,
+            'reject_reason' => $this->rejectReason,
             'images' => $this->images,
             'buyer_return_logistics_company' => $this->buyerReturnLogisticsCompany,
             'buyer_return_logistics_no' => $this->buyerReturnLogisticsNo,
@@ -240,6 +243,8 @@ final class AfterSaleEntity
     public function setReason(string $reason): self { $this->reason = $reason; return $this; }
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(?string $description): self { $this->description = $description; return $this; }
+    public function getRejectReason(): ?string { return $this->rejectReason; }
+    public function setRejectReason(?string $rejectReason): self { $this->rejectReason = $rejectReason; return $this; }
     public function getImages(): ?array { return $this->images; }
     public function setImages(?array $images): self { $this->images = $images; return $this; }
     public function getBuyerReturnLogisticsCompany(): ?string { return $this->buyerReturnLogisticsCompany; }

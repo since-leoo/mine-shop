@@ -45,11 +45,6 @@ final class AfterSaleRepository extends IRepository
         return $record->update($entity->toArray());
     }
 
-    public function findByOrderItemId(int $orderItemId): ?AfterSale
-    {
-        return AfterSale::where('order_item_id', $orderItemId)->first();
-    }
-
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
         return AfterSale::query()

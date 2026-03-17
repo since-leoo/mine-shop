@@ -56,4 +56,15 @@ final class AppApiAfterSaleCommandService
         $entity->submitBuyerReturn($input->getLogisticsCompany(), $input->getLogisticsNo());
         $this->afterSaleRepository->updateFromEntity($entity);
     }
+
+    /**
+     * 提交售后换货收货确认。
+     */
+    public function confirmExchangeReceived(int $memberId, int $id): void
+    {
+        $model = $this->afterSaleRepository->findByIdAndMember($id, $memberId);
+        $entity = AfterSaleMapper::fromModel($model);
+        $entity->confirmExchangeReceived();
+        $this->afterSaleRepository->updateFromEntity($entity);
+    }
 }

@@ -39,6 +39,7 @@ class AfterSaleMapper
         $entity->setQuantity((int) $model->quantity);
         $entity->setReason((string) $model->reason);
         $entity->setDescription($model->description);
+        $entity->setRejectReason($model->reject_reason);
         $entity->setImages($model->images);
         $entity->setBuyerReturnLogisticsCompany($model->buyer_return_logistics_company);
         $entity->setBuyerReturnLogisticsNo($model->buyer_return_logistics_no);
