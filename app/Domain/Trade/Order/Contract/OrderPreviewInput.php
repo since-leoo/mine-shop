@@ -64,4 +64,9 @@ interface OrderPreviewInput
      * 是否以原价购买（拼团商品可选原价购买，不参与拼团）.
      */
     public function getBuyOriginalPrice(): bool;
+
+    /**
+     * 是否购物车
+     */
+    public function getFromCart(): bool;
 }

@@ -43,6 +43,8 @@ class OrderPreviewDto implements OrderPreviewInput
 
     public bool $buy_original_price = false;
 
+    public bool $from_cart = false;
+
     public function getMemberId(): int
     {
         return $this->member_id;
@@ -116,5 +118,10 @@ class OrderPreviewDto implements OrderPreviewInput
     public function getBuyOriginalPrice(): bool
     {
         return $this->buy_original_price;
+    }
+
+    public function getFromCart(): bool
+    {
+        return $this->from_cart;
     }
 }

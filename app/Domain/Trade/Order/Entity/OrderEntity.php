@@ -486,6 +486,9 @@ final class OrderEntity
         if ($input->getBuyOriginalPrice()) {
             $this->setExtra('buy_original_price', true);
         }
+        if ($input->getFromCart()) {
+            $this->setExtra('from_cart', true);
+        }
     }
 
     /**
@@ -498,13 +501,6 @@ final class OrderEntity
     {
         if ($frontendAmountCent !== $this->getPayAmount()) {
             throw new \DomainException('商品价格已变动，请重新下单');
-        }
-    }
-
-    public function guardPreorderAllowed(bool $allowPreorder): void
-    {
-        if (! $allowPreorder && $this->orderType === 'preorder') {
-            throw new \DomainException('当前商品不支持预订单');
         }
     }
 

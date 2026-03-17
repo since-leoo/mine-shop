@@ -12,15 +12,19 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Listener;
 
+use App\Domain\Member\Api\Command\DomainApiMemberCartCommandService;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use App\Domain\Trade\Order\Event\OrderCreatedEvent;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
-use Hyperf\Logger\LoggerFactory;
 
 #[Listener]
 final class OrderCreatedListener implements ListenerInterface
 {
-    public function __construct(private readonly LoggerFactory $loggerFactory) {}
+    public function __construct(
+        private readonly DomainApiMemberCartCommandService $cartCommandService,
+    ) {}
 
     public function listen(): array
     {
@@ -34,12 +38,25 @@ final class OrderCreatedListener implements ListenerInterface
         }
 
         $order = $event->order;
-        $this->loggerFactory->get('order')->info('订单创建', [
-            'order_no' => $order->getOrderNo(),
-            'member_id' => $order->getMemberId(),
-            'pay_amount' => $order->getPayAmount(),
-        ]);
 
-        // TODO: 发送通知、同步外部系统
+        $this->removeCartItem($order);
+    }
+
+    private function removeCartItem(OrderEntity $order): void
+    {
+        if (! $order->getExtra('from_cart', false)) {
+            return;
+        }
+
+        foreach ($order->getItems() as $item) {
+            if (! $item instanceof OrderItemEntity) {
+                continue;
+            }
+
+            $skuId = $item->getSkuId();
+            if ($skuId > 0) {
+                $this->cartCommandService->removeItem($order->getMemberId(), (int) $skuId);
+            }
+        }
     }
 }

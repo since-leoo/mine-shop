@@ -14,6 +14,7 @@ namespace App\Interface\Api\Request\V1;
 
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Interface\Api\DTO\Order\OrderCommitDto;
+use Hyperf\DTO\Mapper;
 
 final class OrderCommitRequest extends OrderPreviewRequest
 {
@@ -31,22 +32,15 @@ final class OrderCommitRequest extends OrderPreviewRequest
 
     public function toDto(int $memberId): OrderSubmitInput
     {
-        $dto = new OrderCommitDto();
         $params = $this->validated();
-        $dto->member_id = $memberId;
-        $dto->order_type = $params['order_type'];
-        $dto->goods_request_list = $params['goods_request_list'];
-        $dto->address_id = $params['address_id'] ?? null;
-        $dto->user_address = $params['user_address'] ?? null;
-        $dto->coupon_id = isset($params['coupon_id']) ? (int) $params['coupon_id'] : null;
-        $dto->store_info_list = $params['store_info_list'] ?? null;
-        $dto->total_amount = $params['total_amount'];
-        $dto->user_name = $params['user_name'] ?? null;
-        $dto->activity_id = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
-        $dto->session_id = isset($params['session_id']) ? (int) $params['session_id'] : null;
-        $dto->group_buy_id = isset($params['group_buy_id']) ? (int) $params['group_buy_id'] : null;
-        $dto->group_no = $params['group_no'] ?? null;
-        $dto->buy_original_price = ! empty($params['buy_original_price']);
-        return $dto;
+        $params['member_id'] = $memberId;
+        $params['coupon_id'] = isset($params['coupon_id']) ? (int) $params['coupon_id'] : null;
+        $params['activity_id'] = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
+        $params['session_id'] = isset($params['session_id']) ? (int) $params['session_id'] : null;
+        $params['group_buy_id'] = isset($params['group_buy_id']) ? (int) $params['group_buy_id'] : null;
+        $params['buy_original_price'] = ! empty($params['buy_original_price']);
+        $params['from_cart'] = ! empty($params['from_cart']);
+
+        return Mapper::map($params, new OrderCommitDto());
     }
 }
