@@ -119,6 +119,71 @@ final class DomainAfterSaleRefundServiceTest extends TestCase
         self::assertSame('processing', $status);
     }
 
+
+    public function testRefundThrowsReadableMessageWhenPaymentRecordMissing(): void
+    {
+        $paymentRepository = $this->createMock(OrderPaymentRepository::class);
+        $paymentRefundRepository = $this->createMock(OrderPaymentRefundRepository::class);
+        $payService = $this->createMock(YsdPayService::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $paymentRepository->expects(self::once())
+            ->method('findByOrderId')
+            ->with(10)
+            ->willReturn(null);
+
+        $paymentRefundRepository->expects(self::never())->method('create');
+        $payService->expects(self::never())->method('refund');
+        $dispatcher->expects(self::never())->method('dispatch');
+
+        $service = new DomainAfterSaleRefundService($paymentRepository, $paymentRefundRepository, $payService, $dispatcher);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('订单支付记录不存在');
+        $service->refund($this->makeAfterSaleEntity(), 1, 'admin');
+    }
+
+    public function testWechatRefundFailureFallsBackToReadableMessage(): void
+    {
+        $paymentRepository = $this->createMock(OrderPaymentRepository::class);
+        $paymentRefundRepository = $this->createMock(OrderPaymentRefundRepository::class);
+        $payService = $this->createMock(YsdPayService::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $paymentRepository->expects(self::once())
+            ->method('findByOrderId')
+            ->with(10)
+            ->willReturn($this->makePaymentModel(paymentMethod: 'wechat'));
+
+        $paymentRefundRepository->expects(self::once())
+            ->method('create');
+
+        $payService->expects(self::once())
+            ->method('refund')
+            ->willReturn([
+                'status' => 'FAILED',
+            ]);
+
+        $paymentRefundRepository->expects(self::once())
+            ->method('updateByRefundNo')
+            ->with(
+                self::isType('string'),
+                self::callback(static function (array $data): bool {
+                    return $data['status'] === 'failed'
+                        && $data['remark'] === '原路退款失败';
+                })
+            )
+            ->willReturn(true);
+
+        $dispatcher->expects(self::never())->method('dispatch');
+
+        $service = new DomainAfterSaleRefundService($paymentRepository, $paymentRefundRepository, $payService, $dispatcher);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('原路退款失败');
+        $service->refund($this->makeAfterSaleEntity(), 1, 'admin');
+    }
+
     private function makeAfterSaleEntity(): AfterSaleEntity
     {
         $entity = new AfterSaleEntity();

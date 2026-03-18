@@ -15,7 +15,7 @@ namespace HyperfTests\Unit\Interface\Api\Transformer;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
-use App\Interface\Api\Transformer\AfterSaleTransformer;
+use App\Interface\Api\Request\Transformer\AfterSaleTransformer;
 use PHPUnit\Framework\TestCase;
 
 /**

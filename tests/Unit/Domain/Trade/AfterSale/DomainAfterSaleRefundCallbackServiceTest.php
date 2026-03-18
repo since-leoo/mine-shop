@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Domain\Trade\AfterSale;
 
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
+use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
+use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Infrastructure\Model\Order\OrderPaymentRefund;
+use DG\BypassFinals;
 use PHPUnit\Framework\TestCase;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -17,9 +20,16 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  */
 final class DomainAfterSaleRefundCallbackServiceTest extends TestCase
 {
+    public static function setUpBeforeClass(): void
+    {
+        BypassFinals::enable();
+    }
+
     public function testSuccessCallbackUpdatesRefundAndDispatchesEvent(): void
     {
         $repository = $this->createMock(OrderPaymentRefundRepository::class);
+        $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
+        $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $repository->expects(self::once())
@@ -49,7 +59,9 @@ final class DomainAfterSaleRefundCallbackServiceTest extends TestCase
                     && $event->paymentMethod === 'wechat';
             }));
 
-        $service = new DomainAfterSaleRefundCallbackService($repository, $dispatcher);
+        $afterSaleRepository->expects(self::never())->method('findById');
+
+        $service = new DomainAfterSaleRefundCallbackService($repository, $afterSaleRepository, $dispatcher);
         $service->handleWechatRefundCallback([
             'out_refund_no' => 'REF202603180001',
             'refund_id' => '500000001',
@@ -62,6 +74,7 @@ final class DomainAfterSaleRefundCallbackServiceTest extends TestCase
     public function testDuplicateSuccessCallbackIsIgnored(): void
     {
         $repository = $this->createMock(OrderPaymentRefundRepository::class);
+        $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
 
         $repository->expects(self::once())
@@ -72,10 +85,102 @@ final class DomainAfterSaleRefundCallbackServiceTest extends TestCase
         $repository->expects(self::never())->method('updateByRefundNo');
         $dispatcher->expects(self::never())->method('dispatch');
 
-        $service = new DomainAfterSaleRefundCallbackService($repository, $dispatcher);
+        $afterSaleRepository->expects(self::never())->method('findById');
+
+        $service = new DomainAfterSaleRefundCallbackService($repository, $afterSaleRepository, $dispatcher);
         $service->handleWechatRefundCallback([
             'out_refund_no' => 'REF202603180001',
             'refund_status' => 'SUCCESS',
+        ]);
+    }
+
+    public function testFailedCallbackMarksAfterSaleBackToWaitingRefund(): void
+    {
+        $repository = $this->createMock(OrderPaymentRefundRepository::class);
+        $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $repository->expects(self::once())
+            ->method('findByRefundNo')
+            ->with('REF202603180001')
+            ->willReturn($this->makeRefundModel());
+
+        $repository->expects(self::once())
+            ->method('updateByRefundNo')
+            ->with(
+                'REF202603180001',
+                self::callback(static function (array $data): bool {
+                    return $data['status'] === 'failed'
+                        && $data['remark'] === 'ABNORMAL';
+                })
+            )
+            ->willReturn(true);
+
+        $afterSaleRepository->expects(self::once())
+            ->method('findById')
+            ->with(90)
+            ->willReturn($this->makeAfterSaleModel());
+
+        $afterSaleRepository->expects(self::once())
+            ->method('updateFromEntity')
+            ->with(self::callback(static function ($entity): bool {
+                return $entity->getStatus() === 'waiting_refund'
+                    && $entity->getRefundStatus() === 'failed';
+            }))
+            ->willReturn(true);
+
+        $dispatcher->expects(self::never())->method('dispatch');
+
+        $service = new DomainAfterSaleRefundCallbackService($repository, $afterSaleRepository, $dispatcher);
+        $service->handleWechatRefundCallback([
+            'out_refund_no' => 'REF202603180001',
+            'refund_id' => '500000001',
+            'refund_status' => 'ABNORMAL',
+        ]);
+    }
+
+
+    public function testFailedCallbackFallsBackToReadableRemarkWhenStatusMissing(): void
+    {
+        $repository = $this->createMock(OrderPaymentRefundRepository::class);
+        $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
+        $dispatcher = $this->createMock(EventDispatcherInterface::class);
+
+        $repository->expects(self::once())
+            ->method('findByRefundNo')
+            ->with('REF202603180001')
+            ->willReturn($this->makeRefundModel());
+
+        $repository->expects(self::once())
+            ->method('updateByRefundNo')
+            ->with(
+                'REF202603180001',
+                self::callback(static function (array $data): bool {
+                    return $data['status'] === 'failed'
+                        && $data['remark'] === '退款失败';
+                })
+            )
+            ->willReturn(true);
+
+        $afterSaleRepository->expects(self::once())
+            ->method('findById')
+            ->with(90)
+            ->willReturn($this->makeAfterSaleModel());
+
+        $afterSaleRepository->expects(self::once())
+            ->method('updateFromEntity')
+            ->with(self::callback(static function ($entity): bool {
+                return $entity->getStatus() === 'waiting_refund'
+                    && $entity->getRefundStatus() === 'failed';
+            }))
+            ->willReturn(true);
+
+        $dispatcher->expects(self::never())->method('dispatch');
+
+        $service = new DomainAfterSaleRefundCallbackService($repository, $afterSaleRepository, $dispatcher);
+        $service->handleWechatRefundCallback([
+            'out_refund_no' => 'REF202603180001',
+            'refund_id' => '500000001',
         ]);
     }
 
@@ -97,6 +202,31 @@ final class DomainAfterSaleRefundCallbackServiceTest extends TestCase
             'operator_id' => 1,
             'operator_name' => 'admin',
             'extra_data' => '{"after_sale_id":90,"after_sale_no":"AS202603170090"}',
+        ], true);
+
+        return $model;
+    }
+
+    private function makeAfterSaleModel(): AfterSale
+    {
+        $model = new class extends AfterSale {
+            public function __construct() {}
+        };
+        $model->setRawAttributes([
+            'id' => 90,
+            'after_sale_no' => 'AS202603170090',
+            'order_id' => 10,
+            'order_item_id' => 20,
+            'member_id' => 1,
+            'type' => 'refund_only',
+            'status' => 'refunding',
+            'refund_status' => 'processing',
+            'return_status' => 'not_required',
+            'apply_amount' => 18800,
+            'refund_amount' => 18800,
+            'quantity' => 1,
+            'reason' => 'size issue',
+            'images' => '[]',
         ], true);
 
         return $model;
