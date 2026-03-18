@@ -76,34 +76,34 @@ final class AfterSaleReviewRequest extends BaseRequest
     public function attributes(): array
     {
         return [
-            'after_sale_no' => '????',
-            'order_no' => '???',
-            'member_id' => '??ID',
-            'type' => '????',
-            'status' => '????',
-            'approved_refund_amount' => '????',
-            'reject_reason' => '????',
-            'remark' => '????',
-            'logistics_company' => '??????',
-            'logistics_no' => '??????',
+            'after_sale_no' => '售后单号',
+            'order_no' => '订单号',
+            'member_id' => '会员ID',
+            'type' => '售后类型',
+            'status' => '售后状态',
+            'approved_refund_amount' => '审核退款金额',
+            'reject_reason' => '驳回原因',
+            'remark' => '备注',
+            'logistics_company' => '物流公司',
+            'logistics_no' => '物流单号',
         ];
     }
 
     /**
-     * ???????? DTO?
+     * 转换审核 DTO?
      */
     public function toDto(int $id, int $operatorId, string $operatorName): AfterSaleReviewDto
     {
-        $payload = $this->validated();
-        $payload['id'] = $id;
-        $payload['operator_id'] = $operatorId;
-        $payload['operator_name'] = $operatorName;
-
-        return Mapper::map($payload, new AfterSaleReviewDto());
+        return Mapper::map([
+            ...$this->validated(),
+            'id' => $id,
+            'operator_id' => $operatorId,
+            'operator_name' => $operatorName,
+        ], new AfterSaleReviewDto());
     }
 
     /**
-     * ?????????? DTO?
+     * 转换通用动作 DTO?
      */
     public function toActionDto(int $id, int $operatorId, string $operatorName): AfterSaleActionDto
     {
@@ -115,15 +115,15 @@ final class AfterSaleReviewRequest extends BaseRequest
     }
 
     /**
-     * ???????? DTO?
+     * 转换补发 DTO?
      */
     public function toReshipDto(int $id, int $operatorId, string $operatorName): AfterSaleReshipDto
     {
-        $payload = $this->validated();
-        $payload['id'] = $id;
-        $payload['operator_id'] = $operatorId;
-        $payload['operator_name'] = $operatorName;
-
-        return Mapper::map($payload, new AfterSaleReshipDto());
+        return Mapper::map([
+            ...$this->validated(),
+            'id' => $id,
+            'operator_id' => $operatorId,
+            'operator_name' => $operatorName,
+        ], new AfterSaleReshipDto());
     }
 }

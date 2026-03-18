@@ -18,6 +18,8 @@ use App\Domain\Trade\AfterSale\Contract\AfterSaleReviewInput;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
+use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundService;
+use App\Infrastructure\Model\AfterSale\AfterSale;
 use Hyperf\DbConnection\Annotation\Transactional;
 use RuntimeException;
 
@@ -26,10 +28,11 @@ final class AppAfterSaleCommandService
     public function __construct(
         private readonly AfterSaleRepository $afterSaleRepository,
         private readonly AppAfterSaleQueryService $queryService,
+        private readonly DomainAfterSaleRefundService $refundService,
     ) {}
 
     /**
-     * ?????????
+     * 审核通过售后申请.
      *
      * @return array<string, mixed>
      */
@@ -48,7 +51,7 @@ final class AppAfterSaleCommandService
     }
 
     /**
-     * ?????????
+     * 审核拒绝售后申请.
      *
      * @return array<string, mixed>
      */
@@ -64,7 +67,7 @@ final class AppAfterSaleCommandService
     }
 
     /**
-     * ???????????
+     * 确认收到买家尨回商品.
      *
      * @return array<string, mixed>
      */
@@ -79,7 +82,7 @@ final class AppAfterSaleCommandService
     }
 
     /**
-     * ???????
+     * 发起售后退款.
      *
      * @return array<string, mixed>
      */
@@ -88,14 +91,15 @@ final class AppAfterSaleCommandService
     {
         $entity = $this->getEntity($input->getId());
         $entity->markRefunding();
-        $entity->markRefunded();
         $this->afterSaleRepository->updateFromEntity($entity);
+
+        $this->refundService->refund($entity, $input->getOperatorId(), $input->getOperatorName());
 
         return $this->detail($entity->getId());
     }
 
     /**
-     * ????????????
+     * 执行补发处理.
      *
      * @return array<string, mixed>
      */
@@ -110,7 +114,7 @@ final class AppAfterSaleCommandService
     }
 
     /**
-     * ?????????????
+     * 确认换货完成.
      *
      * @return array<string, mixed>
      */
@@ -124,17 +128,23 @@ final class AppAfterSaleCommandService
         return $this->detail($entity->getId());
     }
 
+    /**
+     * 获取售后实体.
+     */
     private function getEntity(int $id): AfterSaleEntity
     {
+        /** @var AfterSale $model */
         $model = $this->afterSaleRepository->findById($id);
         if ($model === null) {
-            throw new RuntimeException('??????');
+            throw new RuntimeException('售后单不存在');
         }
 
         return AfterSaleMapper::fromModel($model);
     }
 
     /**
+     * 获取售后详情结果.
+     *
      * @return array<string, mixed>
      */
     private function detail(int $id): array

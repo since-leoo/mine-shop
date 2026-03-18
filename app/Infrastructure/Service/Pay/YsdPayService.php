@@ -12,19 +12,38 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Service\Pay;
 
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Yansongda\Artful\Exception\ContainerException;
 use Yansongda\Pay\Pay;
 
-final class YsdPayService
+class YsdPayService
 {
-    /**
-     * @throws ContainerException
-     */
     public function pay(array $params, array $config): array
     {
-        // 合并配置
         Pay::config(array_merge($config, ['_force' => true]));
 
         return Pay::wechat()->mini($params)->toArray();
+    }
+
+    public function refund(array $params, array $config, string $scene = 'mini'): array
+    {
+        Pay::config(array_merge($config, ['_force' => true]));
+
+        return Pay::wechat()->refund(array_merge($params, ['_action' => $scene]))->toArray();
+    }
+
+    public function callback(ServerRequestInterface $request, array $config): array
+    {
+        Pay::config(array_merge($config, ['_force' => true]));
+
+        return Pay::wechat()->callback($request)->toArray();
+    }
+
+    public function success(array $config): ResponseInterface
+    {
+        Pay::config(array_merge($config, ['_force' => true]));
+
+        return Pay::wechat()->success();
     }
 }

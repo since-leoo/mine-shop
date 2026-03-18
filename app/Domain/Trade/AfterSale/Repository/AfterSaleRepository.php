@@ -29,7 +29,7 @@ final class AfterSaleRepository extends IRepository
 
     public function createFromEntity(AfterSaleEntity $entity): AfterSale
     {
-        $record = AfterSale::create($entity->toArray());
+        $record = $this->create($entity->toArray());
         $entity->setId((int) $record->id);
 
         return $record;
@@ -37,7 +37,7 @@ final class AfterSaleRepository extends IRepository
 
     public function updateFromEntity(AfterSaleEntity $entity): bool
     {
-        $record = AfterSale::find($entity->getId());
+        $record = $this->findById($entity->getId());
         if ($record === null) {
             return false;
         }
@@ -47,19 +47,20 @@ final class AfterSaleRepository extends IRepository
 
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
-        return AfterSale::query()
-            ->where('order_item_id', $orderItemId)
+        /** @var AfterSale|null $info */
+        $info = $this->model::where('order_item_id', $orderItemId)
             ->whereNotIn('status', [
                 AfterSaleStatus::COMPLETED->value,
                 AfterSaleStatus::CLOSED->value,
             ])
             ->first();
+
+        return $info ?: null;
     }
 
     public function paginateByMember(int $memberId, string $status = 'all', int $page = 1, int $pageSize = 10): LengthAwarePaginatorInterface
     {
-        $query = AfterSale::query()
-            ->where('member_id', $memberId)
+        $query = $this->model::where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->orderByDesc('id');
 
@@ -72,8 +73,8 @@ final class AfterSaleRepository extends IRepository
 
     public function findByIdAndMember(int $id, int $memberId): AfterSale
     {
-        $record = AfterSale::query()
-            ->where('id', $id)
+        /** @var AfterSale|null $record */
+        $record = $this->model::where('id', $id)
             ->where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->first();

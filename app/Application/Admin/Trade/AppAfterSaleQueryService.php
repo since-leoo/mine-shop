@@ -20,7 +20,9 @@ final class AppAfterSaleQueryService
     public function __construct(private readonly AfterSaleRepository $afterSaleRepository) {}
 
     /**
-     * 鍚庡彴鍒嗛〉鏌ヨ鍞悗鍗曞垪琛ㄣ€?     *
+     * 分页查询后台售后单列表.
+     *
+     * @param array<string, mixed> $filters
      * @return array{list: array<int, array<string, mixed>>, total: int}
      */
     public function page(array $filters, int $page, int $pageSize): array
@@ -32,7 +34,8 @@ final class AppAfterSaleQueryService
     }
 
     /**
-     * 鏌ヨ鍚庡彴鍞悗璇︽儏銆?     *
+     * 查询后台售后单详情.
+     *
      * @return array<string, mixed>|null
      */
     public function detail(int $id): ?array
@@ -46,6 +49,8 @@ final class AppAfterSaleQueryService
     }
 
     /**
+     * 转换列表项数据.
+     *
      * @param array<string, mixed> $item
      * @return array<string, mixed>
      */
@@ -89,6 +94,8 @@ final class AppAfterSaleQueryService
     }
 
     /**
+     * 兼容售后单号为空时的兜底展示.
+     *
      * @param array<string, mixed> $item
      */
     private function resolveAfterSaleNo(array $item): string
@@ -105,6 +112,8 @@ final class AppAfterSaleQueryService
     }
 
     /**
+     * 转换售后详情数据.
+     *
      * @return array<string, mixed>
      */
     private function transformDetail(AfterSale $model): array

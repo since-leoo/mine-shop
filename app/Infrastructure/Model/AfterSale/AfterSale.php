@@ -14,6 +14,7 @@ namespace App\Infrastructure\Model\AfterSale;
 
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
+use App\Infrastructure\Model\Order\OrderPaymentRefund;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Relations\BelongsTo;
@@ -81,7 +82,6 @@ class AfterSale extends Model
         'updated_at' => 'datetime',
     ];
 
-
     public function creating(Creating $event): void
     {
         if (empty($this->after_sale_no)) {
@@ -107,5 +107,13 @@ class AfterSale extends Model
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class, 'order_item_id', 'id');
+    }
+
+    public function latestRefundRecord(): ?OrderPaymentRefund
+    {
+        return OrderPaymentRefund::query()
+            ->where('extra_data->after_sale_id', (int) $this->id)
+            ->orderByDesc('id')
+            ->first();
     }
 }

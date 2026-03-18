@@ -38,6 +38,7 @@ return [
             'mch_secret_cert' => env('WECHAT_PAY_MCH_SECRET_CERT', ''),
             'mch_public_cert_path' => env('WECHAT_PAY_MCH_PUBLIC_CERT_PATH', ''),
             'notify_url' => env('WECHAT_PAY_NOTIFY_URL', ''),
+            'refund_notify_url' => env('WECHAT_PAY_REFUND_NOTIFY_URL', env('WECHAT_PAY_NOTIFY_URL', '')),
             'log' => [
                 'enable' => env('WECHAT_PAY_LOG_ENABLE', true),
                 'file' => BASE_PATH . '/runtime/logs/wechat_pay.log',

@@ -54,7 +54,7 @@ final class AfterSaleController extends AbstractController
     {
         $afterSale = $this->queryService->detail($id);
         if ($afterSale === null) {
-            return $this->error('??????', 404);
+            return $this->error('售后单不存在', 404);
         }
 
         return $this->success($afterSale);
@@ -64,53 +64,53 @@ final class AfterSaleController extends AbstractController
     #[Permission(code: 'order:after-sale:update')]
     public function approve(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->approve($dto), '??????');
+        return $this->success($this->commandService->approve($dto), '审核通过成功');
     }
 
     #[PutMapping(path: '{id:\d+}/reject')]
     #[Permission(code: 'order:after-sale:update')]
     public function reject(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->reject($dto), '??????');
+        return $this->success($this->commandService->reject($dto), '审核拒绝成功');
     }
 
     #[PutMapping(path: '{id:\d+}/receive')]
     #[Permission(code: 'order:after-sale:update')]
     public function receive(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->receive($dto), '??????');
+        return $this->success($this->commandService->receive($dto), '确认收货成功');
     }
 
     #[PutMapping(path: '{id:\d+}/refund')]
     #[Permission(code: 'order:after-sale:update')]
     public function refund(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->refund($dto), '??????');
+        return $this->success($this->commandService->refund($dto), '退款提交成功');
     }
 
     #[PutMapping(path: '{id:\d+}/reship')]
     #[Permission(code: 'order:after-sale:update')]
     public function reship(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toReshipDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toReshipDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->reship($dto), '????');
+        return $this->success($this->commandService->reship($dto), '补发成功');
     }
 
     #[PutMapping(path: '{id:\d+}/complete-exchange')]
     #[Permission(code: 'order:after-sale:update')]
     public function completeExchange(int $id, AfterSaleReviewRequest $request): Result
     {
-        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '???');
+        $dto = $request->toActionDto($id, $this->currentUser->id(), $this->currentUser->user()?->username ?? '系统');
 
-        return $this->success($this->commandService->completeExchange($dto), '????????');
+        return $this->success($this->commandService->completeExchange($dto), '换货完成成功');
     }
 }

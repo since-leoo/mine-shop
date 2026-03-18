@@ -40,7 +40,7 @@ final class AfterSaleController extends AbstractController
     ) {}
 
     /**
-     * æ¥è¯¢è®¢åååé¡¹æ¯å¦æ»¡è¶³ç³è¯·å®åçæ¡ä»¶ã
+     * 获取订单商品项的售后资格和当前售后信息.
      */
     #[GetMapping(path: 'eligibility')]
     public function eligibility(): Result
@@ -52,18 +52,18 @@ final class AfterSaleController extends AbstractController
     }
 
     /**
-     * æäº¤å®åç³è¯·ã
+     * 提交售后申请.
      */
     #[PostMapping(path: '')]
     public function apply(AfterSaleApplyRequest $request): Result
     {
         $afterSale = $this->commandService->apply($request->toDto($this->currentMember->id()));
 
-        return $this->successWithTransform($afterSale, fn ($item) => $this->transformer->transform($item), 'å®åç³è¯·å·²æäº¤');
+        return $this->successWithTransform($afterSale, fn ($item) => $this->transformer->transform($item), '售后申请提交成功');
     }
 
     /**
-     * è·åå½åä¼åçå®åååè¡¨ã
+     * 获取当前会员的售后单列表.
      */
     #[GetMapping(path: '')]
     public function index(): Result
@@ -77,7 +77,7 @@ final class AfterSaleController extends AbstractController
     }
 
     /**
-     * è·åå½åä¼åçå®ååè¯¦æã
+     * 获取当前会员的售后单详情.
      */
     #[GetMapping(path: '{id}')]
     public function detail(int $id): Result
@@ -88,35 +88,35 @@ final class AfterSaleController extends AbstractController
     }
 
     /**
-     * æ¤éå½åä¼åèªå·±çå®ååã
+     * 会员撤销待审核状态的售后申请.
      */
     #[PostMapping(path: '{id}/cancel')]
     public function cancel(int $id): Result
     {
         $this->commandService->cancel($this->currentMember->id(), $id);
 
-        return $this->success([], 'å®ååå·²æ¤é');
+        return $this->success([], '售后申请已撤销');
     }
 
     /**
-     * æäº¤ä¹°å®¶éè´§ç©æµã
+     * 提交买家退货物流信息.
      */
     #[PostMapping(path: '{id}/return-shipment')]
     public function submitReturnShipment(int $id, AfterSaleReturnShipmentRequest $request): Result
     {
         $this->commandService->submitReturnShipment($request->toDto($id, $this->currentMember->id()));
 
-        return $this->success([], 'éè´§ç©æµå·²æäº¤');
+        return $this->success([], '退货物流提交成功');
     }
 
     /**
-     * ?????????????????
+     * 确认换货补发商品已收货.
      */
     #[PostMapping(path: '{id}/confirm-exchange-received')]
     public function confirmExchangeReceived(int $id): Result
     {
         $this->commandService->confirmExchangeReceived($this->currentMember->id(), $id);
 
-        return $this->success([], '?????????');
+        return $this->success([], '确认收货成功');
     }
 }

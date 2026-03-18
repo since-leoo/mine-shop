@@ -17,10 +17,12 @@ use App\Infrastructure\Model\AfterSale\AfterSale;
 final class AfterSaleTransformer
 {
     /**
-     * 将售后模型转换为小程序可直接消费的结构。
+     * 将售后模型转换为小程序序直接消费的结构.
      */
     public function transform(AfterSale $afterSale): array
     {
+        $latestRefund = $afterSale->latestRefundRecord();
+
         return [
             'id' => (int) $afterSale->id,
             'afterSaleNo' => (string) $afterSale->after_sale_no,
@@ -42,6 +44,15 @@ final class AfterSaleTransformer
             'buyerReturnLogisticsNo' => $afterSale->buyer_return_logistics_no,
             'reshipLogisticsCompany' => $afterSale->reship_logistics_company,
             'reshipLogisticsNo' => $afterSale->reship_logistics_no,
+            'refundRecord' => $latestRefund ? [
+                'refundNo' => (string) $latestRefund->refund_no,
+                'status' => (string) $latestRefund->status,
+                'refundAmount' => (int) $latestRefund->refund_amount,
+                'refundReason' => $latestRefund->refund_reason,
+                'thirdPartyRefundNo' => $latestRefund->third_party_refund_no,
+                'remark' => $latestRefund->remark,
+                'processedAt' => $latestRefund->processed_at?->toDateTimeString(),
+            ] : null,
             'product' => [
                 'productId' => (int) ($afterSale->orderItem?->product_id ?? 0),
                 'skuId' => (int) ($afterSale->orderItem?->sku_id ?? 0),

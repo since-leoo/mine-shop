@@ -12,33 +12,23 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Repository;
 
+use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\OrderPayment;
 use Hyperf\Collection\Collection;
 
-class OrderPaymentRepository
+class OrderPaymentRepository extends IRepository
 {
-    /**
-     * 创建支付记录.
-     */
-    public function create(array $data): OrderPayment
-    {
-        return OrderPayment::query()->create($data);
-    }
-
-    /**
-     * 通过 ID 查找.
-     */
-    public function findById(int $id): ?OrderPayment
-    {
-        return OrderPayment::query()->find($id);
-    }
+    public function __construct(protected readonly OrderPayment $model) {}
 
     /**
      * 通过支付单号查找.
      */
     public function findByPaymentNo(string $paymentNo): ?OrderPayment
     {
-        return OrderPayment::query()->where('payment_no', $paymentNo)->first();
+        /** @var OrderPayment $info */
+        $info = $this->model::where('payment_no', $paymentNo)->first();
+
+        return $info ?: null;
     }
 
     /**
@@ -46,7 +36,10 @@ class OrderPaymentRepository
      */
     public function findByOrderId(int $orderId): ?OrderPayment
     {
-        return OrderPayment::query()->where('order_id', $orderId)->first();
+        /** @var OrderPayment $info */
+        $info = $this->model::where('order_id', $orderId)->first();
+
+        return $info ?: null;
     }
 
     /**
@@ -54,7 +47,10 @@ class OrderPaymentRepository
      */
     public function findByOrderNo(string $orderNo): ?OrderPayment
     {
-        return OrderPayment::query()->where('order_no', $orderNo)->first();
+        /** @var OrderPayment $info */
+        $info = $this->model::where('order_no', $orderNo)->first();
+
+        return $info ?: null;
     }
 
     /**
@@ -62,7 +58,10 @@ class OrderPaymentRepository
      */
     public function findByThirdPartyNo(string $thirdPartyNo): ?OrderPayment
     {
-        return OrderPayment::query()->where('third_party_no', $thirdPartyNo)->first();
+        /** @var OrderPayment $info */
+        $info = $this->model::where('third_party_no', $thirdPartyNo)->first();
+
+        return $info ?: null;
     }
 
     /**
@@ -70,8 +69,7 @@ class OrderPaymentRepository
      */
     public function getByMemberId(int $memberId, int $limit = 20): Collection
     {
-        return OrderPayment::query()
-            ->where('member_id', $memberId)
+        return $this->model::where('member_id', $memberId)
             ->orderByDesc('created_at')
             ->limit($limit)
             ->get();
@@ -82,7 +80,7 @@ class OrderPaymentRepository
      */
     public function updateById(int $id, array $data): bool
     {
-        return OrderPayment::query()->where('id', $id)->update($data) > 0;
+        return $this->model::where('id', $id)->update($data) > 0;
     }
 
     /**
@@ -90,14 +88,6 @@ class OrderPaymentRepository
      */
     public function updateByPaymentNo(string $paymentNo, array $data): bool
     {
-        return OrderPayment::query()->where('payment_no', $paymentNo)->update($data) > 0;
-    }
-
-    /**
-     * 删除支付记录.
-     */
-    public function deleteById(int $id): bool
-    {
-        return OrderPayment::query()->where('id', $id)->delete() > 0;
+        return $this->model::where('payment_no', $paymentNo)->update($data) > 0;
     }
 }
