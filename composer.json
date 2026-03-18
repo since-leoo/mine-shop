@@ -70,7 +70,8 @@
     "since-leoo/hyperf-plugin": "^1.0",
     "tangwei/dto": "*",
     "w7corp/easywechat": "^6.5",
-    "yansongda/pay": "^3.6"
+    "yansongda/pay": "^3.6",
+    "ext-xlswriter": "*"
   },
   "require-dev": {
     "dg/bypass-finals": "^1.9",
