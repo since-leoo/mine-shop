@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Domain\Trade\AfterSale\Service;
 
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
+use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
+use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use Carbon\Carbon;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -22,6 +24,7 @@ class DomainAfterSaleRefundCallbackService
 {
     public function __construct(
         private readonly OrderPaymentRefundRepository $paymentRefundRepository,
+        private readonly AfterSaleRepository $afterSaleRepository,
         private readonly EventDispatcherInterface $dispatcher,
     ) {}
 
@@ -49,6 +52,7 @@ class DomainAfterSaleRefundCallbackService
                 'third_party_response' => $payload,
                 'remark' => (string) ($payload['refund_status'] ?? '退款失败'),
             ]);
+            $this->markAfterSaleRefundFailed($refund->extra_data ?? []);
 
             return;
         }
@@ -72,7 +76,28 @@ class DomainAfterSaleRefundCallbackService
             'wechat',
             $refundNo,
             (int) ($refund->operator_id ?? 0),
-            (string) ($refund->operator_name ?? '系统'),
+            (string) ($refund->operator_name ?? 'system'),
         ));
+    }
+
+    private function markAfterSaleRefundFailed(mixed $extraData): void
+    {
+        if (! is_array($extraData)) {
+            return;
+        }
+
+        $afterSaleId = (int) ($extraData['after_sale_id'] ?? 0);
+        if ($afterSaleId <= 0) {
+            return;
+        }
+
+        $afterSaleModel = $this->afterSaleRepository->findById($afterSaleId);
+        if ($afterSaleModel === null) {
+            return;
+        }
+
+        $entity = AfterSaleMapper::fromModel($afterSaleModel);
+        $entity->markRefundFailed();
+        $this->afterSaleRepository->updateFromEntity($entity);
     }
 }

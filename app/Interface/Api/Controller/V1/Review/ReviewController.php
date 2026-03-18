@@ -13,7 +13,8 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Review;
 
 use App\Application\Api\Review\AppApiReviewCommandService;
-use App\Domain\Trade\Review\Api\Query\DomainApiReviewQueryService;
+use App\Application\Api\Review\AppApiReviewQueryService;
+use App\Interface\Api\Transformer\ReviewTransformer;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\Review\CreateReviewRequest;
 use App\Interface\Common\Controller\AbstractController;
@@ -30,7 +31,8 @@ final class ReviewController extends AbstractController
 {
     public function __construct(
         private readonly AppApiReviewCommandService $commandService,
-        private readonly DomainApiReviewQueryService $queryService,
+        private readonly AppApiReviewQueryService $queryService,
+        private readonly ReviewTransformer $transformer,
         private readonly CurrentMember $currentMember,
         private readonly RequestInterface $request,
     ) {}
@@ -69,7 +71,7 @@ final class ReviewController extends AbstractController
 
         $result = $this->queryService->listByProduct($id, $filters, $page, $pageSize);
 
-        return $this->success($result);
+        return $this->success($this->transformer->transformListResult($result));
     }
 
     /**
@@ -92,6 +94,6 @@ final class ReviewController extends AbstractController
         $limit = (int) $this->request->query('limit', 3);
         $summary = $this->queryService->getProductSummary($id, $limit);
 
-        return $this->success($summary);
+        return $this->success($this->transformer->transformSummaryResult($summary));
     }
 }

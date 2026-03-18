@@ -18,9 +18,6 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillQueryService;
 
-/**
- * 首页数据聚合应用服务.
- */
 final class AppApiHomeQueryService
 {
     public function __construct(
@@ -28,7 +25,7 @@ final class AppApiHomeQueryService
         private readonly AppApiCategoryQueryService $categoryQueryService,
         private readonly DomainMallSettingService $mallSettingService,
         private readonly DomainSystemSettingService $systemSettingService,
-        private readonly DomainApiSeckillQueryService $seckillQueryService
+        private readonly DomainApiSeckillQueryService $seckillQueryService,
     ) {}
 
     /**
@@ -36,29 +33,15 @@ final class AppApiHomeQueryService
      */
     public function overview(): array
     {
-        $featured = $this->productQueryService->page(['is_recommend' => true, 'status' => 'active'], 1, 10)['list'];
-        $hot = $this->productQueryService->page(['is_hot' => true, 'status' => 'active'], 1, 10)['list'];
-        $new = $this->productQueryService->page(['is_new' => true, 'status' => 'active'], 1, 10)['list'];
-
-        $seckill = $this->resolveSeckill();
-
         return [
-            'swiper' => $this->resolveBanners(),
-            'tabList' => [],
-            'activityImg' => $this->resolveActivityImage(),
-            'sections' => [
-                'featured' => $featured,
-                'hot' => $hot,
-                'new' => $new,
-            ],
+            'banners' => $this->resolveBanners(),
+            'activity_image' => $this->resolveActivityImage(),
             'headline' => $this->mallSettingService->basic()->mallName(),
-            'categoryList' => $this->resolveTopCategories(),
-            'seckillList' => $seckill['list'],
-            'seckillEndTime' => $seckill['endTime'],
-            'seckillTitle' => $seckill['title'],
-            'seckillActivityId' => $seckill['activityId'],
-            'seckillSessionId' => $seckill['sessionId'],
-            'groupBuyList' => [],
+            'categories' => $this->categoryQueryService->tree(0)->take(10)->values()->all(),
+            'featured_products' => $this->productQueryService->page(['is_recommend' => true, 'status' => 'active'], 1, 10)['list'],
+            'hot_products' => $this->productQueryService->page(['is_hot' => true, 'status' => 'active'], 1, 10)['list'],
+            'new_products' => $this->productQueryService->page(['is_new' => true, 'status' => 'active'], 1, 10)['list'],
+            'seckill' => $this->seckillQueryService->getHomeSeckill(6),
         ];
     }
 
@@ -94,27 +77,7 @@ final class AppApiHomeQueryService
         if (\is_string($custom) && $custom !== '') {
             return $custom;
         }
+
         return $this->mallSettingService->basic()->logo() ?: null;
-    }
-
-    /**
-     * 获取顶级分类列表（金刚区）.
-     *
-     * @return array<int, array{id: int, name: string, icon: null|string}>
-     */
-    private function resolveTopCategories(): array
-    {
-        $categories = $this->categoryQueryService->tree(0);
-
-        return $categories->take(10)->map(static fn ($cat) => [
-            'id' => $cat->id,
-            'name' => $cat->name,
-            'icon' => $cat->icon ?: null,
-        ])->values()->toArray();
-    }
-
-    private function resolveSeckill(): array
-    {
-        return $this->seckillQueryService->getHomeSeckill(6);
     }
 }

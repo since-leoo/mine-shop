@@ -17,6 +17,7 @@ enum AfterSaleRefundStatus: string
     case NONE = 'none';
     case PENDING = 'pending';
     case PROCESSING = 'processing';
+    case FAILED = 'failed';
     case REFUNDED = 'refunded';
 
     public static function values(): array

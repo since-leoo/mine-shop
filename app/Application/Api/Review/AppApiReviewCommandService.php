@@ -14,7 +14,6 @@ namespace App\Application\Api\Review;
 
 use App\Domain\Trade\Review\Api\Command\DomainApiReviewCommandService;
 use App\Domain\Trade\Review\Contract\ReviewInput;
-use App\Infrastructure\Model\Review\Review;
 use Hyperf\DbConnection\Db;
 
 final class AppApiReviewCommandService
@@ -26,8 +25,10 @@ final class AppApiReviewCommandService
     /**
      * 提交评价（事务管理）.
      */
-    public function create(int $memberId, ReviewInput $dto): Review
+    public function create(int $memberId, ReviewInput $dto): int
     {
-        return Db::transaction(fn () => $this->reviewCommandService->create($memberId, $dto));
+        return Db::transaction(function () use ($memberId, $dto): int {
+            return (int) $this->reviewCommandService->create($memberId, $dto)->id;
+        });
     }
 }

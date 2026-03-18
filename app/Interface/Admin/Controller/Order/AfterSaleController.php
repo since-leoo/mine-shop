@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Order;
 
 use App\Application\Admin\Trade\AppAfterSaleCommandService;
 use App\Application\Admin\Trade\AppAfterSaleQueryService;
+use App\Interface\Admin\Transformer\Order\AfterSaleTransformer;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\AfterSaleReviewRequest;
@@ -36,6 +37,7 @@ final class AfterSaleController extends AbstractController
     public function __construct(
         private readonly AppAfterSaleQueryService $queryService,
         private readonly AppAfterSaleCommandService $commandService,
+        private readonly AfterSaleTransformer $transformer,
         private readonly CurrentUser $currentUser,
     ) {}
 
@@ -45,7 +47,7 @@ final class AfterSaleController extends AbstractController
     {
         $data = $this->queryService->page($request->validated(), $this->getCurrentPage(), $this->getPageSize());
 
-        return $this->success($data);
+        return $this->success($this->transformer->transformPageResult($data));
     }
 
     #[GetMapping(path: '{id:\d+}')]
@@ -57,7 +59,7 @@ final class AfterSaleController extends AbstractController
             return $this->error('售后单不存在', 404);
         }
 
-        return $this->success($afterSale);
+        return $this->success($this->transformer->transformDetailResult($afterSale));
     }
 
     #[PutMapping(path: '{id:\d+}/approve')]

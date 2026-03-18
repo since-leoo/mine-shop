@@ -152,6 +152,14 @@ final class AfterSaleEntity
         return $this;
     }
 
+
+    public function markRefundFailed(): self
+    {
+        $this->assertStatus([AfterSaleStatus::REFUNDING], '只有退款处理中状态才能标记退款失败');
+        $this->status = AfterSaleStatus::WAITING_REFUND->value;
+        $this->refundStatus = AfterSaleRefundStatus::FAILED->value;
+        return $this;
+    }
     public function markSellerReceived(): self
     {
         $this->assertStatus([AfterSaleStatus::WAITING_SELLER_RECEIVE], '只有待商家收货状态才能确认收货');

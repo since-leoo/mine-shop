@@ -42,7 +42,7 @@ final class OrderRepository extends IRepository
      */
     public function handleItems(Collection $items): Collection
     {
-        return $items->map(static fn (Order $order) => $order->loads(['member', 'items', 'address', 'packages']));
+        return $items->map(static fn (Order $order) => $order->loads(['member', 'items.review', 'address', 'packages']));
     }
 
     /**
@@ -80,10 +80,10 @@ final class OrderRepository extends IRepository
     {
         /** @var null|Order $order */
         $order = $this->getQuery()
-            ->with(['member', 'items', 'address', 'packages'])
+            ->with(['member', 'items.review', 'address', 'packages'])
             ->find($id);
 
-        return $order?->loads(['member', 'items', 'address', 'packages']);
+        return $order?->loads(['member', 'items.review', 'address', 'packages']);
     }
 
     /**
@@ -248,7 +248,7 @@ final class OrderRepository extends IRepository
     ): LengthAwarePaginatorInterface {
         $query = $this->getQuery()
             ->where('member_id', $memberId)
-            ->with(['items', 'address']);
+            ->with(['items.review', 'address']);
 
         $query = $this->applyStatusScope($query, $status);
 
@@ -269,7 +269,7 @@ final class OrderRepository extends IRepository
         return $this->getQuery()
             ->where('member_id', $memberId)
             ->where('order_no', $orderNo)
-            ->with(['items', 'address', 'packages', 'logs'])
+            ->with(['items.review', 'address', 'packages', 'logs'])
             ->first();
     }
 
@@ -304,7 +304,7 @@ final class OrderRepository extends IRepository
         return $this->getQuery()
             ->where('status', OrderStatus::PENDING->value)
             ->where('expire_time', '<=', Carbon::now())
-            ->with('items')
+            ->with('items.review')
             ->limit($limit)
             ->get();
     }
@@ -329,7 +329,7 @@ final class OrderRepository extends IRepository
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
-            ->with(['items', 'address'])
+            ->with(['items.review', 'address'])
             ->when(! empty($params['order_no']), static fn (Builder $q) => $q->where('order_no', 'like', '%' . $params['order_no'] . '%'))
             ->when(! empty($params['pay_no']), static fn (Builder $q) => $q->where('pay_no', 'like', '%' . $params['pay_no'] . '%'))
             ->when(! empty($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))

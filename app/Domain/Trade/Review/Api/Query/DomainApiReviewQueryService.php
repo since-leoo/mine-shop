@@ -14,7 +14,7 @@ namespace App\Domain\Trade\Review\Api\Query;
 
 use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Model\Review\Review;
+use Hyperf\Collection\Collection;
 
 /**
  * 小程序评价查询服务.
@@ -33,37 +33,9 @@ final class DomainApiReviewQueryService extends IService
      */
     public function listByProduct(int $productId, array $filters, int $page, int $pageSize): array
     {
-        $query = Review::with('member:id,nickname,avatar')
-            ->where('product_id', $productId)
-            ->where('status', 'approved');
-
-        // 按评分等级筛选：good(4-5), medium(3), bad(1-2)
-        if (isset($filters['rating_level'])) {
-            $query = match ($filters['rating_level']) {
-                'good' => $query->whereBetween('rating', [4, 5]),
-                'medium' => $query->where('rating', 3),
-                'bad' => $query->whereBetween('rating', [1, 2]),
-                default => $query,
-            };
-        }
-
-        // 按是否有图筛选
-        if (isset($filters['has_images']) && $filters['has_images']) {
-            $query->whereNotNull('images');
-        }
-
-        $total = $query->count();
-
-        $reviews = $query->orderByDesc('created_at')
-            ->offset(($page - 1) * $pageSize)
-            ->limit($pageSize)
-            ->get();
-
-        $list = $reviews->map(fn (Review $review) => $this->formatReview($review))->toArray();
-
         return [
-            'total' => $total,
-            'list' => $list,
+            'total' => $this->repository->countApprovedProductReviews($productId, $filters),
+            'list' => $this->repository->getApprovedProductReviews($productId, $filters, $page, $pageSize),
             'page' => $page,
             'page_size' => $pageSize,
         ];
@@ -86,72 +58,9 @@ final class DomainApiReviewQueryService extends IService
      */
     public function getProductSummary(int $productId, int $limit = 3): array
     {
-        $total = Review::where('product_id', $productId)
-            ->where('status', 'approved')
-            ->count();
-
-        $reviews = Review::with('member:id,nickname,avatar')
-            ->where('product_id', $productId)
-            ->where('status', 'approved')
-            ->orderByDesc('created_at')
-            ->limit($limit)
-            ->get();
-
-        $list = $reviews->map(fn (Review $review) => $this->formatReview($review))->toArray();
-
         return [
-            'total' => $total,
-            'list' => $list,
-        ];
-    }
-
-    /**
-     * 昵称脱敏处理.
-     *
-     * 规则：保留首尾字符，中间用 *** 替代
-     * 例如："张三丰" → "张***丰"，"张三" → "张***三"，单字符 "张" → "张***"
-     */
-    public static function desensitizeNickname(string $nickname): string
-    {
-        $len = mb_strlen($nickname);
-
-        if ($len <= 0) {
-            return '匿名用户';
-        }
-
-        if ($len === 1) {
-            return $nickname . '***';
-        }
-
-        $first = mb_substr($nickname, 0, 1);
-        $last = mb_substr($nickname, -1, 1);
-
-        return $first . '***' . $last;
-    }
-
-    /**
-     * 格式化评价数据，处理匿名昵称脱敏.
-     */
-    private function formatReview(Review $review): array
-    {
-        $nickname = $review->member?->nickname ?? '匿名用户';
-        $avatar = $review->member?->avatar ?? '';
-
-        if ($review->is_anonymous) {
-            $nickname = self::desensitizeNickname($nickname);
-        }
-
-        return [
-            'id' => $review->id,
-            'rating' => $review->rating,
-            'content' => $review->content,
-            'images' => $review->images,
-            'is_anonymous' => $review->is_anonymous,
-            'nickname' => $nickname,
-            'avatar' => $review->is_anonymous ? '' : $avatar,
-            'admin_reply' => $review->admin_reply,
-            'reply_time' => $review->reply_time?->toDateTimeString(),
-            'created_at' => $review->created_at?->toDateTimeString(),
+            'total' => $this->repository->countApprovedProductReviews($productId),
+            'list' => $this->repository->getApprovedProductSummary($productId, $limit),
         ];
     }
 }

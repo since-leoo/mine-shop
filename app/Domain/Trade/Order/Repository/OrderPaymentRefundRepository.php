@@ -32,4 +32,16 @@ class OrderPaymentRefundRepository
             ->where('refund_no', $refundNo)
             ->update($data);
     }
+
+    public function findLatestByAfterSaleId(int $afterSaleId): ?OrderPaymentRefund
+    {
+        if ($afterSaleId <= 0) {
+            return null;
+        }
+
+        return OrderPaymentRefund::query()
+            ->where('extra_data->after_sale_id', $afterSaleId)
+            ->orderByDesc('id')
+            ->first();
+    }
 }

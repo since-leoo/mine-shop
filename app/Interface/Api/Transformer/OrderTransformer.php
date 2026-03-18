@@ -25,7 +25,7 @@ final class OrderTransformer
         $data = $this->transformBase($order);
         $data['items'] = $this->transformItems($order);
         $data['address'] = $this->transformAddress($order);
-        $data['buttonVOs'] = $this->resolveButtons($order->status);
+        $data['buttonVOs'] = $this->resolveButtons($order);
         $data['orderStatusName'] = $this->resolveStatusName($order->status);
 
         return $data;
@@ -34,6 +34,23 @@ final class OrderTransformer
     /**
      * 转换订单详情，补充分包与操作日志。
      */
+    /**
+     * @param array{0:int,1:int,2:int,3:int,4:int} $counts
+     * @return array<string, int>
+     */
+    public function transformStatistics(array $counts): array
+    {
+        [$pending, $paid, $shipped, $completed, $afterSale] = $counts;
+
+        return [
+            'pending_count' => $pending,
+            'paid_count' => $paid,
+            'shipped_count' => $shipped,
+            'completed_count' => $completed,
+            'after_sale_count' => $afterSale,
+        ];
+    }
+
     public function transformDetail(Order $order): array
     {
         $data = $this->transform($order);
@@ -47,11 +64,11 @@ final class OrderTransformer
      * 根据订单状态返回可操作按钮列表。
      *
      * type: 1=付款, 2=取消订单, 3=确认收货, 6=评价, 7=删除订单, 8=查看物流, 9=再次购买。
-     * 售后相关按钮（4、5）暂不返回。
+     * 售后相关按钮（4、5）由售后链路按场景补充。
      */
-    private function resolveButtons(string $status): array
+    private function resolveButtons(Order $order): array
     {
-        return match ($status) {
+        return match ($order->status) {
             OrderStatus::PENDING->value => [
                 ['type' => 2, 'name' => '取消订单', 'primary' => false],
                 ['type' => 1, 'name' => '付款', 'primary' => true],
@@ -64,12 +81,47 @@ final class OrderTransformer
                 ['type' => 8, 'name' => '查看物流', 'primary' => false],
                 ['type' => 3, 'name' => '确认收货', 'primary' => true],
             ],
-            OrderStatus::COMPLETED->value => [
+            OrderStatus::COMPLETED->value => $this->resolveCompletedButtons($order),
+            OrderStatus::REFUNDED->value => [
                 ['type' => 9, 'name' => '再次购买', 'primary' => false],
-                ['type' => 6, 'name' => '评价', 'primary' => true],
+                ['type' => 5, 'name' => '查看售后', 'primary' => true],
             ],
             default => [],
         };
+    }
+
+    /**
+     * 已完成订单仅在存在未评价商品时展示评价按钮。
+     */
+    private function resolveCompletedButtons(Order $order): array
+    {
+        $buttons = [
+            ['type' => 9, 'name' => '再次购买', 'primary' => false],
+        ];
+
+        if ($this->hasPendingReviewItem($order)) {
+            $buttons[] = ['type' => 6, 'name' => '评价', 'primary' => true];
+        }
+
+        return $buttons;
+    }
+
+    /**
+     * 判断订单中是否仍有待评价商品。
+     */
+    private function hasPendingReviewItem(Order $order): bool
+    {
+        if (! $order->relationLoaded('items')) {
+            return true;
+        }
+
+        return $order->items->contains(static function ($item): bool {
+            if (! method_exists($item, 'relationLoaded') || ! $item->relationLoaded('review')) {
+                return true;
+            }
+
+            return $item->review === null;
+        });
     }
 
     private function resolveStatusName(string $status): string

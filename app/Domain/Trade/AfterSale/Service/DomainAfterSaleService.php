@@ -16,6 +16,7 @@ use App\Domain\Trade\AfterSale\Contract\AfterSaleApplyInput;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleType;
+use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
@@ -52,6 +53,22 @@ final class DomainAfterSaleService
         $this->afterSaleRepository->createFromEntity($entity);
 
         return $entity;
+    }
+
+    public function saveEntity(AfterSaleEntity $entity): bool
+    {
+        return $this->afterSaleRepository->updateFromEntity($entity);
+    }
+
+
+    public function getEntity(int $id): AfterSaleEntity
+    {
+        $model = $this->afterSaleRepository->findById($id);
+        if ($model === null) {
+            throw new DomainException('å®ååä¸å­å¨');
+        }
+
+        return AfterSaleMapper::fromModel($model);
     }
 
     private function resolveEligibleOrderItem(int $memberId, int $orderId, int $orderItemId): OrderItem

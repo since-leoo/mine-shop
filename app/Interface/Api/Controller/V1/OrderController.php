@@ -124,7 +124,7 @@ final class OrderController extends AbstractController
     {
         $statistics = $this->orderQueryService->getOrderStatistics($this->currentMember->id());
 
-        return $this->success($statistics);
+        return $this->success($this->orderTransformer->transformStatistics($statistics));
     }
 
     /**

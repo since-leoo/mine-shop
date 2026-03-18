@@ -22,6 +22,7 @@ use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use RuntimeException;
+use Throwable;
 
 class DomainAfterSaleRefundService
 {
@@ -62,7 +63,7 @@ class DomainAfterSaleRefundService
             ],
         ]);
 
-        if ((string) $payment->payment_method === PayType::BALANCE->value) {
+        if ($payment->payment_method === PayType::BALANCE->value) {
             $this->paymentRefundRepository->updateByRefundNo($refundNo, [
                 'status' => 'success',
                 'processed_at' => Carbon::now()->toDateTimeString(),
@@ -117,7 +118,7 @@ class DomainAfterSaleRefundService
             'status' => 'failed',
             'third_party_refund_no' => $response['refund_id'] ?? null,
             'third_party_response' => $response,
-            'remark' => (string) ($response['message'] ?? '退款失败'),
+            'remark' => (string) ($response['message'] ?? '原路退款失败'),
         ]);
 
         throw new RuntimeException((string) ($response['message'] ?? '原路退款失败'));

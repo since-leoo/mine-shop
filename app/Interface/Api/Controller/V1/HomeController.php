@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1;
 
 use App\Application\Api\Home\AppApiHomeQueryService;
+use App\Interface\Api\Transformer\HomeTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
@@ -21,11 +22,14 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 #[Controller(prefix: '/api/v1/home')]
 final class HomeController extends AbstractController
 {
-    public function __construct(private readonly AppApiHomeQueryService $service) {}
+    public function __construct(
+        private readonly AppApiHomeQueryService $service,
+        private readonly HomeTransformer $transformer,
+    ) {}
 
     #[GetMapping(path: '')]
     public function show(): Result
     {
-        return $this->success($this->service->overview());
+        return $this->success($this->transformer->transformOverview($this->service->overview()));
     }
 }

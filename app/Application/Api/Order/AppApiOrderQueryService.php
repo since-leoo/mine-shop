@@ -13,7 +13,6 @@ declare(strict_types=1);
 namespace App\Application\Api\Order;
 
 use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
-use App\Infrastructure\Model\Order\Order;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 
 final class AppApiOrderQueryService
@@ -37,7 +36,7 @@ final class AppApiOrderQueryService
     /**
      * 获取订单详情.
      */
-    public function getOrderDetail(int $memberId, string $orderNo): ?Order
+    public function getOrderDetail(int $memberId, string $orderNo): ?object
     {
         return $this->orderQueryService->findMemberOrderDetail($memberId, $orderNo);
     }
@@ -47,14 +46,6 @@ final class AppApiOrderQueryService
      */
     public function getOrderStatistics(int $memberId): array
     {
-        [$pending, $paid, $shipped, $completed, $afterSale] = $this->orderQueryService->countByMemberStatuses($memberId);
-
-        return [
-            'pending_count' => $pending,
-            'paid_count' => $paid,
-            'shipped_count' => $shipped,
-            'completed_count' => $completed,
-            'after_sale_count' => $afterSale,
-        ];
+        return $this->orderQueryService->countByMemberStatuses($memberId);
     }
 }
