@@ -21,8 +21,6 @@ final class AppApiReviewQueryService
     ) {}
 
     /**
-     * ?????????
-     *
      * @param array<string, mixed> $filters
      * @return array<string, mixed>
      */
@@ -32,8 +30,6 @@ final class AppApiReviewQueryService
     }
 
     /**
-     * ?????????
-     *
      * @return array<string, int>
      */
     public function getProductStats(int $productId): array
@@ -42,8 +38,6 @@ final class AppApiReviewQueryService
     }
 
     /**
-     * ?????????
-     *
      * @return array<string, mixed>
      */
     public function getProductSummary(int $productId, int $limit): array

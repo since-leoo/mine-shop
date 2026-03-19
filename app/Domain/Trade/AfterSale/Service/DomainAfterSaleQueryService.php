@@ -23,8 +23,6 @@ final class DomainAfterSaleQueryService
     ) {}
 
     /**
-     * åé¡µæ¥è¯¢åå°å®åååå§æ°æ®ã
-     *
      * @param array<string, mixed> $filters
      * @return array{list: array<int, array<string, mixed>>, total: int}
      */
@@ -34,8 +32,6 @@ final class DomainAfterSaleQueryService
     }
 
     /**
-     * æ¥è¯¢åå°å®åè¯¦æåå§æ°æ®ã
-     *
      * @return array{after_sale: object, refund_record: object|null}|null
      */
     public function detailForAdmin(int $id): ?array

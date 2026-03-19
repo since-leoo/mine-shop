@@ -20,6 +20,7 @@ use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
+use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\OrderItem;
 use DomainException;
 
@@ -63,9 +64,10 @@ final class DomainAfterSaleService
 
     public function getEntity(int $id): AfterSaleEntity
     {
+        /** @var AfterSale $model */
         $model = $this->afterSaleRepository->findById($id);
         if ($model === null) {
-            throw new DomainException('å®ååä¸å­å¨');
+            throw new DomainException('获取售后单失败');
         }
 
         return AfterSaleMapper::fromModel($model);

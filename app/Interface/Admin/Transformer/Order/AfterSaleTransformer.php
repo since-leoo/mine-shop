@@ -17,8 +17,6 @@ use App\Infrastructure\Model\AfterSale\AfterSale;
 final class AfterSaleTransformer
 {
     /**
-     * è½¬æ¢å®ååè¡¨ç»æã
-     *
      * @param array{list: array<int, array<string, mixed>>, total: int} $result
      * @return array{list: array<int, array<string, mixed>>, total: int}
      */
@@ -31,8 +29,6 @@ final class AfterSaleTransformer
     }
 
     /**
-     * è½¬æ¢å®åè¯¦æç»æã
-     *
      * @param array{after_sale: object, refund_record: object|null} $result
      * @return array<string, mixed>
      */
