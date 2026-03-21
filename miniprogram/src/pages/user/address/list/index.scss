@@ -1,0 +1,148 @@
+@use '../../../../styles/variables' as *;
+
+.address-list {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+  padding-bottom: 140rpx;
+
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    padding: 120rpx 0;
+    margin: 0 $warm-spacing-md;
+  }
+
+  &__state-text {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+    text-align: center;
+    margin-top: $warm-spacing-sm;
+  }
+
+  &__skeleton-card {
+    height: 140rpx;
+    border-radius: $warm-radius-lg;
+    margin-bottom: $warm-spacing-sm;
+  }
+
+  &__items {
+    padding: $warm-spacing-md;
+  }
+
+  // ===== Card =====
+  &__card-wrap {
+    margin-bottom: $warm-spacing-md;
+  }
+
+  &__card {
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    padding: $warm-spacing-md $warm-spacing-lg;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: $warm-spacing-xs;
+  }
+
+  &__name {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-primary;
+    margin-right: $warm-spacing-md;
+  }
+
+  &__phone {
+    font-size: $warm-font-md;
+    color: $warm-text-secondary;
+  }
+
+  &__default-badge {
+    margin-left: $warm-spacing-sm;
+    padding: 2rpx 12rpx;
+    background: rgba(232, 131, 107, 0.12);
+    border-radius: $warm-radius-round;
+  }
+
+  &__default-badge-text {
+    font-size: $warm-font-xs;
+    color: $warm-primary;
+    font-weight: bold;
+  }
+
+  &__address {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    line-height: 1.5;
+  }
+
+  // ===== Card actions =====
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $warm-spacing-sm;
+    margin-top: $warm-spacing-md;
+  }
+
+  &__action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 120rpx;
+    height: 56rpx;
+    border-radius: 28rpx;
+    padding: 0 20rpx;
+
+    &--edit {
+      background: rgba(255, 189, 108, 0.18);
+    }
+
+    &--delete {
+      background: rgba(232, 131, 107, 0.16);
+    }
+  }
+
+  &__action-btn-text {
+    font-size: $warm-font-sm;
+    font-weight: 600;
+  }
+
+  &__action-btn--edit &__action-btn-text {
+    color: #bd6a20;
+  }
+
+  &__action-btn--delete &__action-btn-text {
+    color: $warm-primary;
+  }
+
+  // ===== Add button =====
+  &__add-wrap {
+    position: fixed;
+    bottom: 12rpx;
+    bottom: calc(env(safe-area-inset-bottom) + 12rpx);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: $warm-spacing-md;
+    background: transparent;
+  }
+
+  &__add-btn {
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $warm-gradient-primary;
+    border-radius: $warm-radius-round;
+  }
+
+  &__add-btn-text {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-white;
+  }
+}

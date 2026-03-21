@@ -1,0 +1,170 @@
+@use '../../../styles/variables' as *;
+
+.pay-result {
+  min-height: 100vh;
+  background: $warm-bg-cream;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 160rpx $warm-spacing-md $warm-spacing-xl;
+  box-sizing: border-box;
+  overflow: hidden;
+
+  &__icon-wrap {
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    background: $warm-gradient-mint;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: $warm-spacing-lg;
+    box-shadow: 0 8rpx 24rpx rgba(126, 184, 162, 0.3);
+  }
+
+  &__icon {
+    width: 60rpx;
+    height: 60rpx;
+    font-size: 52rpx;
+    line-height: 1;
+    color: $warm-text-white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: $warm-font-xl;
+    font-weight: bold;
+    color: $warm-text-primary;
+    margin-bottom: $warm-spacing-md;
+  }
+
+  &__amount {
+    display: flex;
+    align-items: center;
+    margin-bottom: 72rpx;
+  }
+
+  &__amount-label {
+    font-size: $warm-font-md;
+    color: $warm-text-secondary;
+  }
+
+  &__price {
+    font-size: $warm-font-lg;
+    color: $warm-text-primary;
+    font-weight: bold;
+  }
+
+  &__buttons {
+    display: flex;
+    gap: $warm-spacing-lg;
+    padding: 0 $warm-spacing-lg;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 40rpx;
+  }
+
+  &__btn {
+    flex: 1;
+    height: 80rpx;
+    border-radius: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--primary {
+      background: $warm-gradient-primary;
+      box-shadow: 0 8rpx 24rpx rgba(232, 131, 107, 0.28);
+    }
+
+    &--outline {
+      background: $warm-bg-white;
+      border: 2rpx solid $warm-primary;
+    }
+  }
+
+  &__btn-text {
+    font-size: $warm-font-md;
+    font-weight: 500;
+
+    &--primary {
+      color: $warm-text-white;
+      font-weight: 700;
+    }
+
+    &--outline {
+      color: $warm-primary;
+      font-weight: 700;
+    }
+  }
+
+  &__recommend {
+    width: 100%;
+  }
+
+  &__recommend-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10rpx;
+    margin-bottom: $warm-spacing-sm;
+  }
+
+  &__recommend-bar {
+    width: 6rpx;
+    height: 28rpx;
+    border-radius: 4rpx;
+    background: $warm-primary;
+  }
+
+  &__recommend-title {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    font-weight: 700;
+  }
+
+  &__recommend-grid {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: $warm-spacing-sm;
+  }
+
+  &__goods-card {
+    background: $warm-bg-white;
+    border-radius: $warm-radius-md;
+    overflow: hidden;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__goods-img {
+    width: 100%;
+    height: 220rpx;
+    display: block;
+    background: $warm-bg-warm;
+  }
+
+  &__goods-info {
+    padding: $warm-spacing-sm;
+  }
+
+  &__goods-name {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-height: 64rpx;
+    line-height: 1.35;
+    font-size: $warm-font-sm;
+    color: $warm-text-primary;
+    font-weight: 600;
+    margin-bottom: 10rpx;
+  }
+
+  &__goods-price {
+    color: $warm-primary;
+    font-weight: 700;
+  }
+}

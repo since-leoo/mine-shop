@@ -1,0 +1,121 @@
+@use '../../../styles/variables' as *;
+
+.coupon-detail-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+  padding-bottom: 160rpx;
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+
+  // ===== Header card =====
+  &__header {
+    position: relative;
+    margin: $warm-spacing-md;
+    border-radius: $warm-radius-lg;
+    overflow: hidden;
+    box-shadow: $warm-shadow-md;
+  }
+
+  &__header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $warm-gradient-primary;
+  }
+
+  &__header-content {
+    position: relative;
+    padding: $warm-spacing-xl $warm-spacing-lg;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__amount {
+    font-size: $warm-font-xxl;
+    font-weight: bold;
+    color: $warm-text-white;
+    margin-bottom: $warm-spacing-sm;
+  }
+
+  &__title {
+    font-size: $warm-font-md;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: $warm-spacing-xs;
+  }
+
+  &__time {
+    font-size: $warm-font-sm;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  // ===== Info cells =====
+  &__info {
+    margin: $warm-spacing-md;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    overflow: hidden;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__cell {
+    --nutui-cell-title-color: #{$warm-text-primary};
+    --nutui-cell-desc-color: #{$warm-text-secondary};
+  }
+
+  // ===== Actions =====
+  &__actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: $warm-spacing-md;
+    padding: $warm-spacing-md;
+    background: $warm-bg-white;
+    box-shadow: 0 -2rpx 12rpx rgba(200, 140, 110, 0.08);
+  }
+
+  &__btn {
+    flex: 1;
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $warm-radius-round;
+
+    &--outline {
+      border: 2rpx solid $warm-primary;
+      background: $warm-bg-white;
+    }
+
+    &--primary {
+      background: $warm-gradient-primary;
+    }
+  }
+
+  &__btn-text {
+    font-size: $warm-font-md;
+    font-weight: bold;
+
+    &--outline {
+      color: $warm-primary;
+    }
+
+    &--primary {
+      color: $warm-text-white;
+    }
+  }
+}

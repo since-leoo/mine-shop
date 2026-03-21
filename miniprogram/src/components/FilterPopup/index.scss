@@ -1,0 +1,60 @@
+@use '../../styles/variables' as *;
+
+.filter-popup {
+  .nut-popup {
+    width: 75vw;
+    height: 100vh;
+  }
+}
+
+.filter-popup__content {
+  position: relative;
+  width: 75vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: $warm-bg-white;
+}
+
+.filter-popup__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32rpx;
+  padding-bottom: 160rpx;
+}
+
+.filter-popup__btns {
+  width: 100%;
+  position: absolute;
+  bottom: calc(20rpx + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: row;
+  padding: 16rpx 32rpx;
+  border-top: 1rpx solid $warm-border;
+  box-sizing: border-box;
+  background: $warm-bg-white;
+}
+
+.filter-popup__btn {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 28rpx;
+  font-weight: 500;
+  height: 80rpx;
+}
+
+.filter-popup__btn--reset {
+  color: $warm-primary;
+  background: $warm-bg-white;
+  border: 1rpx solid $warm-primary;
+  border-radius: 84rpx 0 0 84rpx;
+}
+
+.filter-popup__btn--confirm {
+  color: $warm-text-white;
+  background: $warm-primary;
+  border: 1rpx solid $warm-primary;
+  border-radius: 0 84rpx 84rpx 0;
+}

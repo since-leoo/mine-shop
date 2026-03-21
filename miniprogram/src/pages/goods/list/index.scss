@@ -1,0 +1,85 @@
+@use '../../../styles/variables' as *;
+
+.goods-list-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+}
+
+/* === Sort Bar === */
+.sort-bar {
+  display: flex;
+  align-items: center;
+  background: $warm-bg-white;
+  padding: 20rpx 0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1rpx solid $warm-divider;
+
+  &__item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60rpx;
+    position: relative;
+
+    &--active {
+      .sort-bar__text {
+        color: $warm-primary;
+        font-weight: 600;
+      }
+
+      .sort-bar__arrow {
+        color: $warm-primary;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -20rpx;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 48rpx;
+        height: 4rpx;
+        background: $warm-primary;
+        border-radius: 2rpx;
+      }
+    }
+  }
+
+  &__text {
+    font-size: $warm-font-md;
+    color: $warm-text-secondary;
+  }
+
+  &__arrow {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+    margin-left: 4rpx;
+  }
+}
+
+/* === Empty State === */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+
+  &__icon {
+    font-size: 120rpx;
+    margin-bottom: 24rpx;
+  }
+
+  &__text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+}
+
+/* === Goods List === */
+.goods-list-wrap {
+  padding: 20rpx 24rpx;
+}

@@ -1,0 +1,264 @@
+@use '../../../styles/variables' as *;
+
+.order-list-page {
+  min-height: 100vh;
+  background: $warm-bg-page;
+
+  &__tabs {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: $warm-bg-white;
+    box-shadow: 0 2rpx 8rpx rgba(200, 140, 110, 0.06);
+  }
+
+  &__content {
+    padding: 8rpx $warm-spacing-md $warm-spacing-lg;
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 120rpx 0;
+  }
+
+  &__empty-icon {
+    width: 80rpx;
+    height: 80rpx;
+    font-size: 64rpx;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: $warm-spacing-md;
+  }
+
+  &__empty-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+}
+
+.order-tabs {
+  display: flex;
+  align-items: center;
+  background: $warm-bg-white;
+
+  &__item {
+    flex: 1;
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  &__item--active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    width: 32rpx;
+    height: 4rpx;
+    border-radius: 4rpx;
+    background: $warm-primary;
+  }
+
+  &__text {
+    font-size: 26rpx;
+    color: $warm-text-secondary;
+    white-space: nowrap;
+  }
+
+  &__text--active {
+    color: $warm-primary;
+    font-weight: 700;
+  }
+}
+
+.order-card {
+  background: $warm-bg-white;
+  border-radius: $warm-radius-lg;
+  overflow: hidden;
+  margin-bottom: $warm-spacing-md;
+  box-shadow: $warm-shadow-sm;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx 32rpx;
+    border-bottom: 1rpx solid $warm-divider;
+  }
+
+  &__no {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+  }
+
+  &__status {
+    font-size: $warm-font-sm;
+    color: $warm-primary;
+    font-weight: 700;
+  }
+
+  &__status--muted {
+    color: $warm-text-muted;
+    font-weight: 600;
+  }
+
+  &__goods-list {
+    padding: 0 32rpx;
+  }
+
+  &__goods {
+    display: flex;
+    padding: 24rpx 0;
+
+    & + & {
+      border-top: 1rpx solid $warm-divider;
+    }
+  }
+
+  &__goods-img {
+    width: 152rpx;
+    height: 152rpx;
+    border-radius: $warm-radius-md;
+    flex-shrink: 0;
+  }
+
+  &__goods-info {
+    flex: 1;
+    margin: 0 $warm-spacing-sm;
+    overflow: hidden;
+  }
+
+  &__goods-title {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  &__goods-specs {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+    margin-top: 6rpx;
+  }
+
+  &__goods-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  &__goods-price {
+    font-weight: bold;
+    color: $warm-text-primary;
+  }
+
+  &__goods-num {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+    margin-top: 6rpx;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20rpx 32rpx;
+    border-top: 1rpx solid $warm-divider;
+  }
+
+  &__footer-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12rpx;
+  }
+
+  &__total {
+    display: flex;
+    align-items: center;
+  }
+
+  &__total-label {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    margin-right: 8rpx;
+  }
+
+  &__total-price {
+    font-weight: bold;
+    color: $warm-primary;
+  }
+
+  &__service-link {
+    padding: 6rpx 18rpx;
+    border-radius: 999rpx;
+    background: rgba(232, 131, 107, 0.08);
+    border: 2rpx solid rgba(232, 131, 107, 0.16);
+  }
+
+  &__service-link-text {
+    font-size: 22rpx;
+    color: $warm-primary;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  &__actions {
+    display: flex;
+    gap: $warm-spacing-sm;
+  }
+
+  &__action-btn {
+    height: 52rpx;
+    padding: 0 32rpx;
+    border-radius: 26rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--primary {
+      background: $warm-primary;
+    }
+
+    &--gradient {
+      background: $warm-gradient-primary;
+    }
+
+    &--outline {
+      border: 2rpx solid $warm-border;
+      background: $warm-bg-white;
+    }
+
+    &--outline-primary {
+      border: 2rpx solid $warm-primary;
+      background: $warm-bg-white;
+    }
+  }
+
+  &__action-text {
+    font-size: 24rpx;
+
+    &--primary {
+      color: $warm-text-white;
+      font-weight: 500;
+    }
+
+    &--outline {
+      color: $warm-text-secondary;
+    }
+
+    &--outline-primary {
+      color: $warm-primary;
+      font-weight: 700;
+    }
+  }
+}

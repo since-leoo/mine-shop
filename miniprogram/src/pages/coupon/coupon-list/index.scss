@@ -1,0 +1,160 @@
+@use '../../../styles/variables' as *;
+
+.coupon-list-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+  padding-bottom: 120rpx;
+
+  &__tabs {
+    background: $warm-bg-white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    .coupon-tabs {
+      --nutui-tabs-titles-background-color: #{$warm-bg-white};
+      --nutui-tabs-title-color: #{$warm-text-secondary};
+      --nutui-tabs-title-color-active: #{$warm-primary};
+      --nutui-tabs-line-bottom-color: #{$warm-primary};
+    }
+  }
+
+  &__list {
+    padding: $warm-spacing-md;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+
+  &__center-entry {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: $warm-spacing-md;
+    background: $warm-bg-white;
+    box-shadow: 0 -2rpx 12rpx rgba(200, 140, 110, 0.08);
+  }
+
+  &__center-text {
+    font-size: $warm-font-md;
+    color: $warm-primary;
+    font-weight: bold;
+  }
+
+  &__center-arrow {
+    font-size: $warm-font-xl;
+    color: $warm-primary;
+    margin-left: 4rpx;
+  }
+}
+
+// ===== Coupon card =====
+.coupon-card {
+  display: flex;
+  align-items: stretch;
+  background: $warm-bg-white;
+  border-radius: $warm-radius-lg;
+  margin-bottom: $warm-spacing-md;
+  overflow: hidden;
+  box-shadow: $warm-shadow-sm;
+
+  &--disabled {
+    opacity: 0.55;
+  }
+
+  &__left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200rpx;
+    flex-shrink: 0;
+    padding: $warm-spacing-md $warm-spacing-sm;
+    background: linear-gradient(135deg, rgba(232, 131, 107, 0.08) 0%, rgba(232, 131, 107, 0.04) 100%);
+  }
+
+  &__amount-row {
+    display: flex;
+    align-items: baseline;
+  }
+
+  &__currency {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-primary;
+  }
+
+  &__value {
+    font-size: 56rpx;
+    font-weight: bold;
+    color: $warm-primary;
+    line-height: 1.1;
+  }
+
+  &__condition {
+    font-size: $warm-font-xs;
+    color: $warm-text-secondary;
+    margin-top: $warm-spacing-xs;
+  }
+
+  &__divider {
+    width: 2rpx;
+    background: repeating-linear-gradient(
+      to bottom,
+      $warm-divider 0,
+      $warm-divider 8rpx,
+      transparent 8rpx,
+      transparent 16rpx
+    );
+  }
+
+  &__right {
+    flex: 1;
+    padding: $warm-spacing-md;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-primary;
+    margin-bottom: $warm-spacing-xs;
+  }
+
+  &__tag {
+    display: inline-block;
+    font-size: $warm-font-xs;
+    color: $warm-primary;
+    border: 1rpx solid $warm-primary;
+    padding: 2rpx 8rpx;
+    border-radius: $warm-radius-sm;
+    margin-bottom: $warm-spacing-xs;
+    align-self: flex-start;
+  }
+
+  &__desc {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    margin-bottom: 4rpx;
+  }
+
+  &__time {
+    font-size: $warm-font-xs;
+    color: $warm-text-hint;
+  }
+}

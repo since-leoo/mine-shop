@@ -1,0 +1,121 @@
+﻿// 娓╅Θ鍟嗗煄璁捐绯荤粺鍙橀噺 - 鍖归厤 design-mockup.html 璁捐绋?
+
+// === 鍝佺墝鑹?===
+$warm-primary: #E8836B;           // 鐝婄憵鑹?- 涓昏壊
+$warm-primary-light: #F2A99A;     // 娴呯強鐟?
+$warm-primary-dark: #D4654D;      // 娣辩強鐟?
+$warm-secondary: #F5C5A3;         // 鏆栨潖鑹?- 娆¤壊
+$warm-accent-mint: #7EB8A2;       // 钖勮嵎缁?- 杈呭姪鑹?
+$warm-accent-mint-light: #B5DDD0; // 娴呰杽鑽?
+$warm-accent-mint-dark: #5A9A84;  // 娣辫杽鑽?
+$warm-warm-yellow: #F5D89A;       // 鏆栭粍
+$warm-warm-pink: #F7B8B8;         // 鏆栫矇
+
+// === 鑳屾櫙鑹?===
+$warm-bg-cream: #FFF8F3;          // 濂舵补鑹茶儗鏅?
+$warm-bg-warm: #FFF1E8;           // 鏆栬壊鑳屾櫙
+$warm-bg-section: #FFF5EE;        // 鍖哄潡鑳屾櫙
+$warm-bg-page: #FAF3ED;           // 椤甸潰鑳屾櫙
+$warm-bg-warm-gray: #FAF3ED;      // 鏆栫伆鑳屾櫙 (鍚?bg-page)
+$warm-bg-white: #FFFFFF;          // 鐧借壊鑳屾櫙
+$warm-bg-card: #FFFFFF;           // 鍗＄墖鑳屾櫙
+
+// === 鏂囧瓧鑹?===
+$warm-text-primary: #4A3228;      // 娣辨 - 涓绘枃瀛?
+$warm-text-body: #6B5248;         // 妫曡壊 - 姝ｆ枃
+$warm-text-secondary: #6B5248;    // 妫曡壊 - 鍓枃瀛?(鍚?body)
+$warm-text-muted: #A89088;        // 鐏版 - 寮辨枃瀛?
+$warm-text-hint: #A89088;         // 鐏版 - 鎻愮ず鏂囧瓧 (鍚?muted)
+$warm-text-light: #C4B0A6;        // 娴呮 - 鏈€寮辨枃瀛?
+$warm-text-white: #FFFFFF;        // 鐧借壊鏂囧瓧
+
+// === 鍔熻兘鑹?===
+$warm-success: #7EB8A2;           // 鎴愬姛 - 钖勮嵎缁?
+$warm-warning: #F5C078;           // 璀﹀憡 - 鏆栭粍
+$warm-error: #E8836B;             // 閿欒 - 鐝婄憵鑹?
+$warm-info: #89B8D6;              // 淇℃伅 - 澶╄摑
+
+// === 杈规 & 鍒嗗壊绾?===
+$warm-border: #F0DDD4;            // 鏆栬竟妗?
+$warm-border-light: #F8EDE5;      // 娴呰竟妗?
+$warm-divider: #F5E8DF;           // 鍒嗗壊绾?
+
+// === 鍦嗚 ===
+$warm-radius-xs: 6rpx;            // 瓒呭皬鍦嗚
+$warm-radius-sm: 10rpx;           // 灏忓渾瑙?
+$warm-radius-md: 16rpx;           // 涓渾瑙?(--radius)
+$warm-radius-lg: 24rpx;           // 澶у渾瑙?(--radius-lg)
+$warm-radius-xl: 32rpx;           // 瓒呭ぇ鍦嗚
+$warm-radius-round: 999rpx;       // 鍏ㄥ渾
+
+// === 闃村奖 ===
+$warm-shadow-sm: 0 2rpx 8rpx rgba(200, 140, 110, 0.08);
+$warm-shadow-md: 0 4rpx 16rpx rgba(200, 140, 110, 0.12);
+$warm-shadow-lg: 0 8rpx 30rpx rgba(200, 140, 110, 0.16);
+
+// === 娓愬彉 ===
+$warm-gradient-primary: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+$warm-gradient-header: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 70%, #FAF3ED 100%);
+$warm-gradient-soft: linear-gradient(180deg, #FFF1E8 0%, #FFF8F3 100%);
+$warm-gradient-mint: linear-gradient(135deg, #B5DDD0 0%, #7EB8A2 100%);
+
+// === 闂磋窛 ===
+$warm-spacing-xs: 8rpx;
+$warm-spacing-sm: 16rpx;
+$warm-spacing-md: 24rpx;
+$warm-spacing-lg: 32rpx;
+$warm-spacing-xl: 48rpx;
+
+// === 瀛椾綋澶у皬 ===
+$warm-font-xs: 20rpx;             // 灏忔爣绛?
+$warm-font-sm: 24rpx;             // 杈呭姪鏂囧瓧
+$warm-font-md: 28rpx;             // 鍟嗗搧鍚?姝ｆ枃
+$warm-font-lg: 30rpx;             // 鍖哄潡鏍囬 Bold
+$warm-font-xl: 36rpx;             // 澶ф爣棰?Bold
+$warm-font-xxl: 44rpx;
+
+// === CSS 鍙橀噺鏄犲皠锛堜緵缁勪欢鐩存帴浣跨敤锛?==
+:root {
+  --warm-primary: #{$warm-primary};
+  --warm-primary-light: #{$warm-primary-light};
+  --warm-primary-dark: #{$warm-primary-dark};
+  --warm-secondary: #{$warm-secondary};
+  --warm-accent-mint: #{$warm-accent-mint};
+  --warm-accent-mint-light: #{$warm-accent-mint-light};
+  --warm-accent-mint-dark: #{$warm-accent-mint-dark};
+  --warm-warm-yellow: #{$warm-warm-yellow};
+  --warm-warm-pink: #{$warm-warm-pink};
+
+  --warm-bg-cream: #{$warm-bg-cream};
+  --warm-bg-warm: #{$warm-bg-warm};
+  --warm-bg-section: #{$warm-bg-section};
+  --warm-bg-page: #{$warm-bg-page};
+  --warm-bg-white: #{$warm-bg-white};
+  --warm-bg-card: #{$warm-bg-card};
+
+  --warm-text-primary: #{$warm-text-primary};
+  --warm-text-body: #{$warm-text-body};
+  --warm-text-secondary: #{$warm-text-secondary};
+  --warm-text-muted: #{$warm-text-muted};
+  --warm-text-hint: #{$warm-text-hint};
+  --warm-text-light: #{$warm-text-light};
+  --warm-text-white: #{$warm-text-white};
+
+  --warm-success: #{$warm-success};
+  --warm-warning: #{$warm-warning};
+  --warm-error: #{$warm-error};
+  --warm-info: #{$warm-info};
+
+  --warm-border: #{$warm-border};
+  --warm-border-light: #{$warm-border-light};
+  --warm-divider: #{$warm-divider};
+
+  --warm-radius-xs: #{$warm-radius-xs};
+  --warm-radius-sm: #{$warm-radius-sm};
+  --warm-radius-md: #{$warm-radius-md};
+  --warm-radius-lg: #{$warm-radius-lg};
+  --warm-radius-xl: #{$warm-radius-xl};
+  --warm-radius-round: #{$warm-radius-round};
+}
+
+

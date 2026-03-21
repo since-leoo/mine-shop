@@ -1,0 +1,16 @@
+@use '../../styles/variables' as *;
+
+// 严格按照 design-mockup.html 推荐商品网格 CSS 一比一还原
+// 设计稿: .product-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0 16px 12px; }
+
+.goods-list {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 20rpx; // 10px * 2
+  padding: 0 32rpx 24rpx; // 0 16px 12px * 2
+  background: transparent;
+}
+
+.goods-list__item {
+  width: calc(50% - 10rpx); // half width minus half gap
+}

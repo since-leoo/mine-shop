@@ -1,0 +1,51 @@
+@use '../../styles/variables' as *;
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.loading-content--static {
+  position: static;
+  min-height: 200rpx;
+}
+
+.loading-content--absolute {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.loading-content--fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.loading-content--no-mask {
+  background: transparent;
+}
+
+.loading-content__spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-content__icon {
+  --nutui-loading-icon-color: #{$warm-primary};
+}
+
+.loading-content__extra {
+  margin-top: 16rpx;
+  color: $warm-text-secondary;
+  font-size: 24rpx;
+}

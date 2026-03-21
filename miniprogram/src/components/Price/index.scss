@@ -1,0 +1,70 @@
+@use '../../styles/variables' as *;
+
+.price {
+  display: inline-flex;
+  align-items: baseline;
+  color: $warm-primary;
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: inherit;
+  white-space: nowrap;
+}
+
+.price.lighter {
+  font-weight: 400;
+  font-size: 32rpx;
+}
+
+.price.mini {
+  font-size: 24rpx;
+  color: $warm-text-secondary;
+  font-weight: 400;
+}
+
+.price.del {
+  font-size: 32rpx;
+  color: $warm-text-hint;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+.price.delthrough {
+  position: relative;
+  color: $warm-text-hint;
+  font-weight: 400;
+}
+
+.price__line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1rpx;
+  transform: translateY(-50%);
+  margin: 0;
+  background-color: currentColor;
+}
+
+.price__symbol {
+  display: inline;
+  color: inherit;
+  font-size: 0.8em;
+}
+
+.price__integer {
+  display: inline;
+  color: inherit;
+  font-size: inherit;
+  margin-left: 4rpx;
+}
+
+.price__decimal {
+  display: inline;
+  color: inherit;
+  font-size: inherit;
+}
+
+.price__decimal--smaller {
+  font-size: 0.8em;
+  vertical-align: baseline;
+}

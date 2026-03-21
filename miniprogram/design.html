@@ -1,0 +1,2672 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>温馨商城小程序 - 全页面UI设计稿</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600;700;800&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css');
+
+:root {
+  /* 温馨配色方案 */
+  --primary: #E8836B;
+  --primary-light: #F2A99A;
+  --primary-dark: #D4654D;
+  --secondary: #F5C5A3;
+  --accent: #7EB8A2;
+  --accent-light: #B5DDD0;
+  --accent-dark: #5A9A84;
+  --warm-yellow: #F5D89A;
+  --warm-pink: #F7B8B8;
+
+  --bg-cream: #FFF8F3;
+  --bg-warm: #FFF1E8;
+  --bg-section: #FFF5EE;
+  --bg-card: #FFFFFF;
+  --bg-page: #FAF3ED;
+
+  --text-dark: #4A3228;
+  --text-body: #6B5248;
+  --text-muted: #A89088;
+  --text-light: #C4B0A6;
+  --text-white: #FFFFFF;
+
+  --border: #F0DDD4;
+  --border-light: #F8EDE5;
+  --divider: #F5E8DF;
+
+  --shadow: 0 4px 16px rgba(200,140,110,0.12);
+  --shadow-sm: 0 2px 8px rgba(200,140,110,0.08);
+  --shadow-lg: 0 8px 30px rgba(200,140,110,0.16);
+
+  --radius: 16px;
+  --radius-lg: 24px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+
+  --gradient-warm: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+  --gradient-soft: linear-gradient(180deg, #FFF1E8 0%, #FFF8F3 100%);
+  --gradient-header: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 70%, #FAF3ED 100%);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Nunito Sans', -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #E8DDD5;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 50px;
+  padding: 40px 20px 80px;
+  min-height: 100vh;
+}
+
+/* ===== 标题区域 ===== */
+h1.page-title {
+  width: 100%; text-align: center; color: var(--text-dark);
+  font-size: 32px; font-weight: 800; margin-bottom: 0;
+  letter-spacing: 1px;
+}
+p.page-subtitle {
+  width: 100%; text-align: center; color: var(--text-muted);
+  font-size: 15px; margin-bottom: 10px;
+}
+
+/* ===== 调色板 ===== */
+.color-bar {
+  width: 100%; max-width: 900px; display: flex; gap: 16px;
+  justify-content: center; flex-wrap: wrap; margin-bottom: 20px;
+}
+.color-swatch { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.color-swatch .dot {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: var(--shadow-sm);
+}
+.color-swatch span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+/* ===== 手机壳 ===== */
+.phone-wrapper { display: flex; flex-direction: column; align-items: center; }
+.phone-label {
+  text-align: center; color: var(--text-body);
+  font-size: 16px; font-weight: 700; margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+.phone {
+  width: 375px; height: 780px;
+  background: var(--bg-cream);
+  border-radius: 44px; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(100,60,30,0.2), 0 0 0 8px #3a3a3a, 0 0 0 10px #1a1a1a;
+  position: relative; display: flex; flex-direction: column;
+}
+
+/* ===== 状态栏 & 导航栏 ===== */
+.status-bar {
+  height: 44px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 28px;
+  font-size: 13px; font-weight: 700; color: var(--text-dark); flex-shrink: 0;
+}
+.status-bar.light { color: #fff; }
+.nav-bar {
+  height: 44px; display: flex; align-items: center;
+  justify-content: center; padding: 0 16px;
+  font-size: 17px; font-weight: 700; color: var(--text-dark); flex-shrink: 0;
+}
+.nav-bar.light { color: #fff; }
+.nav-bar .back { position: absolute; left: 16px; font-size: 20px; }
+
+/* ===== 内容区 ===== */
+.content {
+  flex: 1; overflow-y: auto; padding-bottom: 64px;
+}
+.content::-webkit-scrollbar { display: none; }
+
+/* ===== 底部TabBar ===== */
+.tab-bar {
+  height: 60px; background: #fff;
+  display: flex; align-items: center; justify-content: space-around;
+  border-top: 1px solid var(--border-light);
+  flex-shrink: 0; position: absolute; bottom: 0; left: 0; right: 0;
+  border-radius: 0 0 44px 44px;
+  box-shadow: 0 -2px 10px rgba(200,140,110,0.06);
+}
+.tab-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 10px; color: var(--text-muted); font-weight: 600;
+}
+.tab-item.active { color: var(--primary); }
+.tab-icon { font-size: 22px; height: 24px; line-height: 24px; }
+.tab-icon,
+.search-bar .search-icon,
+.cate-icon-circle i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.tab-item.active .tab-icon { font-weight: 700; }
+.icon i,
+.user-avatar i,
+.order-icon-item .icon i,
+.menu-item .icon i {
+  font-style: normal;
+}
+.tab-badge {
+  position: relative;
+}
+.tab-badge::after {
+  content: '2'; position: absolute; top: -4px; right: -10px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: #FF4646; color: #fff; font-size: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
+}
+
+/* ========================================
+   首页 HOME
+   ======================================== */
+.home-header-bg {
+  background: var(--gradient-header);
+  padding-bottom: 10px;
+}
+
+.search-bar {
+  margin: 4px 16px 10px; background: rgba(255,255,255,0.88);
+  border-radius: 22px; height: 38px; display: flex; align-items: center;
+  padding: 0 14px; color: var(--text-light); font-size: 13px;
+  box-shadow: 0 2px 12px rgba(200,140,110,0.1); gap: 8px;
+  backdrop-filter: blur(10px);
+}
+.search-bar .search-icon { font-size: 16px; opacity: 0.5; }
+
+/* 轮播Banner */
+.banner {
+  margin: 0 16px 10px; height: 148px; border-radius: var(--radius-lg);
+  background: var(--gradient-warm);
+  display: flex; align-items: center; padding: 0 24px;
+  position: relative; overflow: hidden;
+}
+.banner::after {
+  content: ''; position: absolute; right: -30px; top: -30px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.banner::before {
+  content: ''; position: absolute; right: 30px; bottom: -40px;
+  width: 120px; height: 120px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+}
+.banner-text { color: #fff; z-index: 1; }
+.banner-text h2 { font-size: 22px; font-weight: 800; margin-bottom: 6px; text-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+.banner-text p { font-size: 13px; opacity: 0.92; }
+.banner-text .btn-banner {
+  margin-top: 10px; display: inline-block; background: rgba(255,255,255,0.3);
+  padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 700;
+  backdrop-filter: blur(4px);
+}
+
+.banner-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.banner-dots .dot { width: 6px; height: 6px; border-radius: 3px; background: var(--border); }
+.banner-dots .dot.active { width: 20px; background: var(--primary); }
+
+/* 金刚区 */
+.cate-icons {
+  display: flex; justify-content: space-around; padding: 14px 8px 10px;
+  margin: 0 16px; background: #fff; border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+.cate-icon-item { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.cate-icon-circle {
+  width: 48px; height: 48px; border-radius: 16px;
+  display: flex; align-items: center; justify-content: center; font-size: 22px;
+}
+.cate-icon-circle i { font-size: 22px; color: var(--text-body); }
+.cate-icon-item span { font-size: 11px; color: var(--text-body); font-weight: 600; }
+
+/* 通用 section */
+.section-title {
+  padding: 16px 16px 10px; font-size: 16px; font-weight: 700;
+  color: var(--text-dark); display: flex; align-items: center;
+  justify-content: space-between;
+}
+.section-title .title-bar {
+  width: 4px; height: 18px; background: var(--primary);
+  border-radius: 2px; margin-right: 8px;
+}
+.section-title .title-text { display: flex; align-items: center; }
+.section-title .more { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+
+/* 限时秒杀 */
+.seckill-section { margin: 8px 16px; background: #fff; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); }
+.seckill-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.seckill-header .left { display: flex; align-items: center; gap: 8px; }
+.seckill-header .left .bar { width: 4px; height: 18px; background: var(--primary); border-radius: 2px; }
+.seckill-header .left .title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+.countdown { display: flex; align-items: center; gap: 3px; }
+.countdown .block {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 20px; background: var(--primary);
+  color: #fff; font-size: 11px; font-weight: 700; border-radius: 4px;
+}
+.countdown .sep { font-size: 11px; color: var(--primary); font-weight: 700; }
+.seckill-scroll { display: flex; gap: 10px; overflow-x: auto; }
+.seckill-scroll::-webkit-scrollbar { display: none; }
+.seckill-item { flex-shrink: 0; width: 100px; }
+.seckill-item .img {
+  width: 100px; height: 100px; border-radius: var(--radius-sm);
+  background: var(--bg-warm); display: flex; align-items: center;
+  justify-content: center; font-size: 32px;
+}
+.seckill-item .name { font-size: 11px; color: var(--text-body); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seckill-item .price-row { display: flex; align-items: baseline; gap: 4px; margin-top: 3px; }
+.seckill-item .price { font-size: 15px; font-weight: 700; color: var(--primary); }
+.seckill-item .price .sym { font-size: 10px; }
+.seckill-item .old-price { font-size: 10px; color: var(--text-light); text-decoration: line-through; }
+
+/* 热门商品横滑 */
+.hot-section { margin: 8px 16px; background: #fff; border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow-sm); }
+.hot-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.hot-header .bar { width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+.hot-header .title { font-size: 15px; font-weight: 700; color: var(--text-dark); }
+.hot-scroll { display: flex; gap: 10px; overflow-x: auto; }
+.hot-scroll::-webkit-scrollbar { display: none; }
+.hot-item { flex-shrink: 0; width: 110px; }
+.hot-item .img {
+  width: 110px; height: 110px; border-radius: var(--radius-sm);
+  background: linear-gradient(135deg, #E8F5E9, #C8E6C9); display: flex;
+  align-items: center; justify-content: center; font-size: 34px;
+}
+.hot-item .name { font-size: 11px; color: var(--text-body); margin-top: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600; }
+.hot-item .price { font-size: 14px; font-weight: 700; color: var(--primary); margin-top: 3px; }
+.hot-item .price .sym { font-size: 10px; }
+
+/* 推荐商品 瀑布流 */
+.recommend-header-bg {
+  margin: 8px 16px 0;
+  background: linear-gradient(180deg, var(--bg-warm) 0%, var(--bg-cream) 100%);
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 14px 14px 4px;
+}
+.product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 12px; }
+.product-card {
+  background: #fff; border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s;
+}
+.product-img {
+  width: 100%; height: 164px;
+  display: flex; align-items: center; justify-content: center; font-size: 44px;
+  background: linear-gradient(135deg, var(--bg-warm), #FFE8D6);
+  position: relative;
+}
+.product-img .badge-new {
+  position: absolute; top: 8px; left: 8px;
+  background: var(--accent); color: #fff; font-size: 10px;
+  padding: 2px 8px; border-radius: 10px; font-weight: 700;
+}
+.product-info { padding: 10px 12px 12px; }
+.product-info .name {
+  font-size: 13px; color: var(--text-dark); font-weight: 600;
+  line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden; height: 36px;
+}
+.product-info .tag {
+  display: inline-block; font-size: 10px; color: var(--primary);
+  background: var(--bg-warm); padding: 2px 8px; border-radius: 8px;
+  margin-top: 5px; font-weight: 600;
+}
+.product-info .price-row {
+  display: flex; align-items: baseline; justify-content: space-between; margin-top: 8px;
+}
+.product-info .price { font-size: 18px; font-weight: 800; color: var(--primary); }
+.product-info .price .sym { font-size: 12px; }
+.product-info .origin-price {
+  font-size: 11px; color: var(--text-light); text-decoration: line-through;
+}
+.add-cart-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; font-weight: 300;
+  box-shadow: 0 2px 8px rgba(232,131,107,0.3);
+}
+
+/* ========================================
+   分类页 CATEGORY
+   ======================================== */
+.category-page { display: flex; flex: 1; }
+.category-sidebar {
+  width: 88px; background: var(--bg-section);
+  overflow-y: auto; flex-shrink: 0;
+}
+.category-sidebar::-webkit-scrollbar { display: none; }
+.sidebar-item {
+  padding: 14px 0; text-align: center; font-size: 12px;
+  color: var(--text-muted); font-weight: 600; position: relative;
+  border-left: 3px solid transparent;
+}
+.sidebar-item.active {
+  background: #fff; color: var(--primary);
+  border-left-color: var(--primary);
+  font-weight: 700;
+}
+.category-main {
+  flex: 1; background: #fff; padding: 12px;
+  overflow-y: auto;
+}
+.category-main::-webkit-scrollbar { display: none; }
+.cate-group-title {
+  font-size: 14px; font-weight: 700; color: var(--text-dark);
+  padding: 8px 0 10px; display: flex; align-items: center; gap: 6px;
+}
+.cate-group-title .bar { width: 3px; height: 14px; background: var(--primary); border-radius: 2px; }
+.cate-product-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.cate-product-item { display: flex; flex-direction: column; align-items: center; }
+.cate-product-item .img {
+  width: 78px; height: 78px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px; background: var(--bg-warm);
+}
+.cate-product-item .name { font-size: 11px; color: var(--text-body); margin-top: 6px; text-align: center; }
+
+/* ========================================
+   购物车 CART
+   ======================================== */
+.cart-page-bg { background: var(--bg-page); }
+
+.cart-empty {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding-top: 120px;
+}
+.cart-empty .icon { font-size: 80px; margin-bottom: 16px; opacity: 0.4; }
+.cart-empty .text { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+.cart-empty .btn-go {
+  background: var(--primary); color: #fff; border: none;
+  padding: 10px 40px; border-radius: 24px; font-size: 14px; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(232,131,107,0.3);
+}
+
+/* 有商品 */
+.cart-store {
+  margin: 10px 16px; background: #fff; border-radius: var(--radius);
+  padding: 14px; box-shadow: var(--shadow-sm);
+}
+.cart-store-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  font-size: 14px; font-weight: 700; color: var(--text-dark);
+}
+.cart-store-header .check-circle {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex;
+  align-items: center; justify-content: center;
+}
+.cart-store-header .check-circle.checked {
+  background: var(--primary); border-color: var(--primary); color: #fff; font-size: 12px;
+}
+
+.cart-goods-item {
+  display: flex; gap: 12px; padding: 10px 0;
+  border-top: 1px solid var(--border-light);
+}
+.cart-goods-item:first-of-type { border-top: none; }
+.cart-goods-item .check-col {
+  display: flex; align-items: center;
+}
+.cart-goods-item .check-circle {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0;
+}
+.cart-goods-item .check-circle.checked {
+  background: var(--primary); border-color: var(--primary); color: #fff; font-size: 12px;
+}
+.cart-goods-item .goods-img {
+  width: 90px; height: 90px; border-radius: var(--radius-sm);
+  background: var(--bg-warm); display: flex; align-items: center;
+  justify-content: center; font-size: 36px; flex-shrink: 0;
+}
+.cart-goods-item .goods-info { flex: 1; display: flex; flex-direction: column; justify-content: space-between; }
+.cart-goods-item .goods-name { font-size: 13px; color: var(--text-dark); font-weight: 600; line-height: 1.3; }
+.cart-goods-item .goods-spec { font-size: 11px; color: var(--text-muted); background: var(--bg-section); padding: 2px 8px; border-radius: 4px; display: inline-block; margin-top: 4px; }
+.cart-goods-item .goods-bottom { display: flex; align-items: center; justify-content: space-between; }
+.cart-goods-item .goods-price { font-size: 16px; font-weight: 700; color: var(--primary); }
+.cart-goods-item .goods-price .sym { font-size: 11px; }
+
+.stepper {
+  display: flex; align-items: center; gap: 0; border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden;
+}
+.stepper .btn {
+  width: 26px; height: 26px; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; color: var(--text-muted);
+  background: var(--bg-section);
+}
+.stepper .num {
+  width: 30px; text-align: center; font-size: 13px; font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* 底部结算栏 */
+.cart-bottom-bar {
+  position: absolute; bottom: 60px; left: 0; right: 0;
+  height: 56px; background: #fff;
+  display: flex; align-items: center; padding: 0 16px;
+  box-shadow: 0 -2px 10px rgba(200,140,110,0.08);
+  border-top: 1px solid var(--border-light);
+}
+.cart-bottom-bar .check-all {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--text-body); font-weight: 600;
+}
+.cart-bottom-bar .total-area { flex: 1; text-align: right; margin-right: 12px; }
+.cart-bottom-bar .total-label { font-size: 12px; color: var(--text-muted); }
+.cart-bottom-bar .total-price { font-size: 18px; font-weight: 800; color: var(--primary); }
+.cart-bottom-bar .total-price .sym { font-size: 12px; }
+.cart-bottom-bar .btn-settle {
+  background: var(--gradient-warm); color: #fff; border: none;
+  padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: 700;
+  box-shadow: 0 4px 16px rgba(232,131,107,0.3);
+}
+
+/* ========================================
+   我的页面 USERCENTER
+   ======================================== */
+.user-header-bg {
+  background: var(--gradient-header);
+  padding: 0 20px 30px;
+  border-radius: 0 0 30px 30px;
+  position: relative;
+  overflow: hidden;
+}
+.user-header-bg::after {
+  content: ''; position: absolute; right: -40px; top: 20px;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+}
+.user-info-row {
+  display: flex; align-items: center; gap: 14px;
+  padding-top: 8px; position: relative; z-index: 1;
+}
+.user-avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(255,255,255,0.3); display: flex; align-items: center;
+  justify-content: center; font-size: 32px;
+  border: 3px solid rgba(255,255,255,0.5);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+.user-name-col { flex: 1; }
+.user-name {
+  font-size: 20px; font-weight: 800; color: #fff;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+.user-id {
+  font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px;
+}
+.user-qrcode {
+  width: 36px; height: 36px; display: flex; align-items: center;
+  justify-content: center; font-size: 20px; color: rgba(255,255,255,0.8);
+}
+
+/* 钱包卡片 */
+.wallet-card {
+  margin: -20px 16px 0; background: #fff; border-radius: var(--radius);
+  padding: 16px; display: flex; justify-content: space-around;
+  box-shadow: var(--shadow); position: relative; z-index: 2;
+}
+.wallet-item {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.wallet-item .num { font-size: 20px; font-weight: 800; color: var(--text-dark); }
+.wallet-item .label { font-size: 11px; color: var(--text-muted); }
+
+/* 订单区域 */
+.order-section {
+  margin: 14px 16px; background: #fff; border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.order-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; font-size: 15px; font-weight: 700; color: var(--text-dark);
+}
+.order-section-header .more { font-size: 12px; color: var(--text-muted); font-weight: 400; }
+.order-icons {
+  display: flex; justify-content: space-around; padding: 6px 0 18px;
+}
+.order-icon-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  position: relative;
+}
+.order-icon-item .icon {
+  width: 40px; height: 40px; display: flex; align-items: center;
+  justify-content: center; font-size: 24px;
+  /* 温馨渐变图标 */
+  color: var(--text-body);
+}
+.order-icon-item .label { font-size: 11px; color: var(--text-body); }
+.order-icon-item .dot-badge {
+  position: absolute; top: -2px; right: 6px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #FF4646;
+}
+
+/* 功能菜单 */
+.menu-section { margin: 0 16px 14px; background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow: hidden; }
+.menu-item {
+  display: flex; align-items: center; padding: 14px 16px;
+  border-bottom: 1px solid var(--border-light);
+}
+.menu-item:last-child { border-bottom: none; }
+.menu-item .icon { font-size: 20px; margin-right: 12px; width: 24px; text-align: center; }
+.menu-item .text { flex: 1; font-size: 14px; color: var(--text-dark); font-weight: 600; }
+.menu-item .arrow { font-size: 12px; color: var(--text-light); }
+.menu-item .note { font-size: 12px; color: var(--text-muted); margin-right: 8px; }
+
+/* ========================================
+   设计规范说明
+   ======================================== */
+.spec-section {
+  width: 100%; max-width: 900px;
+  background: #fff; border-radius: var(--radius-lg);
+  padding: 30px; box-shadow: var(--shadow);
+  margin-top: 20px;
+}
+.spec-section h2 {
+  font-size: 20px; color: var(--text-dark); margin-bottom: 16px;
+  padding-bottom: 10px; border-bottom: 2px solid var(--border);
+}
+.spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.spec-item h3 { font-size: 14px; color: var(--primary); margin-bottom: 6px; font-weight: 700; }
+.spec-item p { font-size: 13px; color: var(--text-body); line-height: 1.6; }
+.spec-item code {
+  background: var(--bg-warm); padding: 1px 6px; border-radius: 4px;
+  font-size: 12px; color: var(--primary-dark);
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 800px) {
+  .phone { transform: scale(0.85); transform-origin: top center; }
+  .spec-grid { grid-template-columns: 1fr; }
+}
+
+
+.h5-shell {
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,0.22) 0, rgba(255,255,255,0) 24%),
+    radial-gradient(circle at left 18%, rgba(255,255,255,0.16) 0, rgba(255,255,255,0) 18%),
+    linear-gradient(180deg, #E8836B 0%, #F2A99A 20%, #F5C5A3 42%, #FFF1E8 68%, #FFF8F3 100%);
+}
+
+.hero {
+  position: relative;
+  padding: 18px 18px 92px;
+  overflow: hidden;
+}
+.hero::before,
+.hero::after {
+  content: '';
+  position: absolute;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+}
+.hero::before {
+  width: 180px;
+  height: 180px;
+  right: -36px;
+  top: -18px;
+}
+.hero::after {
+  width: 120px;
+  height: 120px;
+  left: -28px;
+  bottom: -34px;
+}
+.hero-brand {
+  position: relative;
+  z-index: 1;
+  margin-top: 46px;
+  color: #fff;
+}
+.hero-mark {
+  width: 56px;
+  height: 56px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.22);
+  backdrop-filter: blur(8px);
+  font-size: 24px;
+  box-shadow: 0 10px 24px rgba(188, 103, 79, 0.16);
+}
+.hero-title {
+  margin-top: 16px;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 800;
+}
+.hero-desc {
+  margin-top: 10px;
+  max-width: 286px;
+  line-height: 1.65;
+  font-size: 13px;
+  color: rgba(255,255,255,0.92);
+}
+
+.card {
+  margin: -56px 16px 0;
+  position: relative;
+  z-index: 2;
+  background: rgba(255,255,255,0.96);
+  border-radius: 24px;
+  box-shadow: 0 20px 42px rgba(188, 112, 86, 0.2);
+  overflow: hidden;
+  border: 1px solid rgba(255, 238, 229, 0.82);
+}
+.card-head { padding: 18px 18px 12px; }
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--bg-warm);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+}
+.card-title {
+  margin-top: 12px;
+  font-size: 22px;
+  font-weight: 800;
+}
+.card-desc {
+  margin-top: 6px;
+  line-height: 1.65;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.tabs {
+  margin-top: 16px;
+  display: flex;
+  gap: 10px;
+}
+.tab {
+  flex: 1;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid #F3D8CC;
+  background: #FBEDE6;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.tab.active {
+  color: #fff;
+  border-color: transparent;
+  background: var(--gradient-main);
+  box-shadow: 0 8px 18px rgba(232,131,107,0.18);
+}
+.form { padding: 6px 18px 18px; }
+.field { margin-top: 12px; }
+.field-label {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text-body);
+}
+.link { color: var(--primary); font-weight: 800; }
+.hint { color: var(--text-light); font-weight: 700; }
+.field-box {
+  height: 50px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #FFFDFC;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.field-icon { color: #C8A99A; font-size: 18px; }
+.code-row { display: flex; gap: 10px; align-items: flex-end; }
+.code-row .field-box { flex: 1; }
+.code-btn {
+  width: 108px;
+  height: 50px;
+  border-radius: 16px;
+  border: 1px solid #F2D4C6;
+  background: #FFF1E8;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+}
+.mini-switch {
+  margin-top: 14px;
+  border: 1px solid #F4E3D9;
+  border-radius: 18px;
+  background: #FFF9F5;
+  padding: 12px;
+}
+.mini-switch-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.mini-title { font-size: 13px; font-weight: 800; }
+.mini-note { font-size: 11px; color: var(--text-muted); }
+.check-row {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-body);
+}
+.check-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.submit {
+  margin-top: 16px;
+  height: 52px;
+  border-radius: 18px;
+  background: var(--gradient-main);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 800;
+  box-shadow: 0 14px 22px rgba(232,131,107,0.2);
+}
+.subactions {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.divider {
+  padding: 0 18px 14px;
+  font-size: 12px;
+  color: var(--text-light);
+  text-align: center;
+}
+.alt-actions {
+  padding: 0 18px 18px;
+  display: flex;
+  gap: 10px;
+}
+.alt-btn {
+  flex: 1;
+  height: 42px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: #FFF8F4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-body);
+  font-size: 12px;
+  font-weight: 800;
+}
+.safe-card {
+  margin: 14px 16px 0;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(255, 248, 243, 0.92);
+  border: 1px solid #F0D9CD;
+  box-shadow: 0 10px 22px rgba(197,145,114,0.12);
+}
+.safe-title { font-size: 13px; font-weight: 800; }
+.safe-desc { margin-top: 6px; font-size: 12px; line-height: 1.7; color: var(--text-muted); }
+
+.steps {
+  margin-top: 14px;
+  display: flex;
+  gap: 8px;
+}
+.step {
+  flex: 1;
+  height: 34px;
+  border-radius: 999px;
+  background: #FFF4EE;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+}
+.step.active {
+  background: var(--gradient-main);
+  color: #fff;
+}
+.tip {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #FFF7F2;
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-body);
+  line-height: 1.6;
+}
+.tip i { color: var(--primary); font-size: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ===== 标题 ===== -->
+<h1 class="page-title">温馨商城小程序 - 全页面 UI 设计稿</h1>
+<p class="page-subtitle">设计风格：温暖柔和 / 奶油珊瑚色调 / 圆角卡片 / 自然亲切 / 轻投影</p>
+
+<!-- ===== 调色板 ===== -->
+<div class="color-bar">
+  <div class="color-swatch"><div class="dot" style="background:#E8836B"></div><span>珊瑚主色</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#F2A99A"></div><span>浅珊瑚</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#F5C5A3"></div><span>暖杏色</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#7EB8A2"></div><span>薄荷绿</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#F5D89A"></div><span>暖黄色</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#FFF8F3"></div><span>奶油底色</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#FAF3ED"></div><span>页面背景</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#4A3228"></div><span>深棕文字</span></div>
+  <div class="color-swatch"><div class="dot" style="background:#A89088"></div><span>辅助灰文</span></div>
+</div>
+
+
+<!-- ===================================================
+     PAGE 1A : 首页活动融合改版 HOME (PROMO MERGED)
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">首页</div>
+  <div class="phone">
+    <div class="home-header-bg">
+      <div class="status-bar light">
+        <span>9:41</span>
+        <span>⦿ ▮▮▮ ▮▮</span>
+      </div>
+      <div class="search-bar">
+        <span class="search-icon ri-search-line"></span>
+        搜索你需要的商品
+      </div>
+      <div class="banner">
+        <div class="banner-text">
+          <h2>春日焕新季</h2>
+          <p>好物上新 爆款直降</p>
+          <span class="btn-banner">逛活动会场 →</span>
+        </div>
+      </div>
+      <div class="banner-dots">
+        <div class="dot active"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+      <div class="cate-icons">
+        <div class="cate-icon-item">
+          <div class="cate-icon-circle" style="background:#FFF1E8"><i class="ri-price-tag-3-line"></i></div>
+          <span>限时特惠</span>
+        </div>
+        <div class="cate-icon-item">
+          <div class="cate-icon-circle" style="background:#E8F5E9"><i class="ri-user-shared-2-line"></i></div>
+          <span>拼团活动</span>
+        </div>
+        <div class="cate-icon-item">
+          <div class="cate-icon-circle" style="background:#FFF3E0"><i class="ri-gift-2-line"></i></div>
+          <span>优惠券</span>
+        </div>
+        <div class="cate-icon-item">
+          <div class="cate-icon-circle" style="background:#FCE4EC"><i class="ri-fire-line"></i></div>
+          <span>热卖榜</span>
+        </div>
+        <div class="cate-icon-item">
+          <div class="cate-icon-circle" style="background:#F3E5F5"><i class="ri-sparkling-line"></i></div>
+          <span>全部分类</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div style="margin:8px 16px;background:#fff;border-radius:16px;box-shadow:var(--shadow-sm);padding:12px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div style="width:4px;height:18px;background:var(--primary);border-radius:2px;"></div>
+          <span style="font-size:15px;font-weight:700;color:var(--text-dark);">今日活动直达</span>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:12px;">
+          <div style="flex:1;border-radius:12px;padding:10px;background:linear-gradient(135deg,#FDDCC8,#F2A99A,#E8836B);color:#fff;position:relative;overflow:hidden;">
+            <div style="position:absolute;right:-12px;top:-10px;width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,0.2);"></div>
+            <div style="font-size:13px;font-weight:700;">秒杀专场</div>
+            <div style="font-size:10px;opacity:0.9;margin-top:2px;">点击进入专题页</div>
+            <div style="margin-top:8px;display:flex;align-items:center;gap:3px;">
+              <span style="font-size:10px;opacity:0.9;">距下一场</span>
+              <span style="padding:0 4px;height:18px;border-radius:4px;background:rgba(0,0,0,0.25);font-size:10px;display:flex;align-items:center;">02</span>
+              <span style="font-size:10px;">:</span>
+              <span style="padding:0 4px;height:18px;border-radius:4px;background:rgba(0,0,0,0.25);font-size:10px;display:flex;align-items:center;">18</span>
+              <span style="font-size:10px;">:</span>
+              <span style="padding:0 4px;height:18px;border-radius:4px;background:rgba(0,0,0,0.25);font-size:10px;display:flex;align-items:center;">45</span>
+            </div>
+          </div>
+          <div style="flex:1;border-radius:12px;padding:10px;background:linear-gradient(135deg,#9ED3BF,#7EB8A2,#5D9A84);color:#fff;position:relative;overflow:hidden;">
+            <div style="position:absolute;right:-10px;bottom:-10px;width:54px;height:54px;border-radius:50%;background:rgba(255,255,255,0.2);"></div>
+            <div style="font-size:13px;font-weight:700;">拼团会场</div>
+            <div style="font-size:10px;opacity:0.9;margin-top:2px;">精选团购每天上新</div>
+            <div style="margin-top:10px;font-size:11px;font-weight:700;background:rgba(255,255,255,0.2);border-radius:10px;display:inline-flex;padding:2px 8px;">3人团最低5折起</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:8px 16px;background:linear-gradient(135deg,#FDE7DB,#F9CDBA,#F3E5D9);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow-sm);position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20px;top:-14px;width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,0.22);"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1;">
+          <div>
+            <div style="font-size:16px;font-weight:800;color:#7B3F2D;">满199减40</div>
+            <div style="font-size:11px;color:#9A5F4D;margin-top:2px;">全场跨店可用 · 今日有效</div>
+          </div>
+          <div style="height:30px;padding:0 14px;border-radius:16px;background:#fff;color:#C66B52;font-size:12px;font-weight:700;display:flex;align-items:center;">立即领券</div>
+        </div>
+      </div>
+
+      <div class="product-grid" style="margin-top:8px;">
+        <div class="product-card">
+          <div class="product-img" style="position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧴</div>
+          <div class="product-info">
+            <div class="name">温和氨基酸洗面奶</div>
+            <div class="price-row"><span class="price"><span class="sym">¥</span>29</span><span class="origin-price">¥89</span></div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧣</div>
+          <div class="product-info">
+            <div class="name">冬日柔软羊毛围巾</div>
+            <div class="price-row"><span class="price"><span class="sym">¥</span>39</span><span class="origin-price">¥128</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="tab-bar">
+      <div class="tab-item active"><span class="tab-icon ri-home-5-line"></span><span>首页</span></div>
+      <div class="tab-item"><span class="tab-icon ri-layout-grid-line"></span><span>分类</span></div>
+      <div class="tab-item"><span class="tab-icon tab-badge ri-shopping-cart-2-line"></span><span>购物车</span></div>
+      <div class="tab-item"><span class="tab-icon ri-user-3-line"></span><span>我的</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 10A : 秒杀专题页（场次版） SECKILL SESSIONS
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">秒杀专题 Session Seckill</div>
+  <div class="phone">
+    <div class="status-bar light" style="position:relative;z-index:2;">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="content" style="background:var(--bg-page);">
+      <div style="background:var(--gradient-warm);padding:0 16px 14px 16px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-34px;top:-20px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.14);"></div>
+        <div style="position:absolute;left:20px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.08);"></div>
+        <div style="position:relative;z-index:1;padding-top:4px;">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
+            <div>
+              <div style="font-size:26px;font-weight:800;color:#fff;">秒杀专场</div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:4px;">整点开抢 爆款限量</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <span style="font-size:11px;color:rgba(255,255,255,0.9);">距本场结束</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">00</span>
+              <span style="color:#fff;font-size:12px;font-weight:700;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">42</span>
+              <span style="color:#fff;font-size:12px;font-weight:700;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">19</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:-10px 12px 0;background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);position:relative;z-index:2;padding:8px;">
+        <div style="display:flex;gap:8px;overflow-x:auto;">
+          <div style="flex:1;min-width:80px;background:var(--gradient-warm);border-radius:10px;padding:8px 6px;color:#fff;text-align:center;">
+            <div style="font-size:13px;font-weight:700;">10:00</div>
+            <div style="font-size:10px;opacity:0.9;margin-top:2px;">抢购中</div>
+          </div>
+          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
+            <div style="font-size:13px;font-weight:700;">14:00</div>
+            <div style="font-size:10px;margin-top:2px;">即将开始</div>
+          </div>
+          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
+            <div style="font-size:13px;font-weight:700;">18:00</div>
+            <div style="font-size:10px;margin-top:2px;">即将开始</div>
+          </div>
+          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
+            <div style="font-size:13px;font-weight:700;">22:00</div>
+            <div style="font-size:10px;margin-top:2px;">即将开始</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:10px 12px 0;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);background:linear-gradient(135deg,#FFDCCB,#F8BBA0);padding:10px 12px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div style="font-size:15px;font-weight:800;color:#7B3F2D;">本场爆款推荐</div>
+            <div style="font-size:11px;color:#9A5F4D;margin-top:2px;">限量秒杀 · 售完即止</div>
+          </div>
+          <div style="font-size:12px;color:#7B3F2D;font-weight:700;">去会场 ›</div>
+        </div>
+      </div>
+
+      <div class="product-grid" style="margin-top:8px;">
+        <div class="product-card">
+          <div class="product-img" style="position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧴</div>
+          <div class="product-info">
+            <div class="name">温和氨基酸洗面奶</div>
+            <div class="price-row"><span class="price"><span class="sym">¥</span>29</span><span class="origin-price">¥89</span></div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧣</div>
+          <div class="product-info">
+            <div class="name">冬日柔软羊毛围巾</div>
+            <div class="price-row"><span class="price"><span class="sym">¥</span>39</span><span class="origin-price">¥128</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 2 : 分类页 CATEGORY
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">分类 Category</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="nav-bar">商品分类</div>
+
+    <div class="category-page">
+      <div class="category-sidebar">
+        <div class="sidebar-item active">推荐</div>
+        <div class="sidebar-item">护肤</div>
+        <div class="sidebar-item">家居</div>
+        <div class="sidebar-item">美食</div>
+        <div class="sidebar-item">服饰</div>
+        <div class="sidebar-item">配饰</div>
+        <div class="sidebar-item">文具</div>
+        <div class="sidebar-item">数码</div>
+        <div class="sidebar-item">母婴</div>
+        <div class="sidebar-item">运动</div>
+        <div class="sidebar-item">宠物</div>
+      </div>
+      <div class="category-main">
+        <div class="cate-group-title"><div class="bar"></div>热门推荐</div>
+        <div class="cate-product-grid">
+          <div class="cate-product-item">
+            <div class="img">🧴</div>
+            <div class="name">洁面乳</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#E8F5E9">🌿</div>
+            <div class="name">精华液</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#FFF3E0">🧴</div>
+            <div class="name">面霜</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#FCE4EC">💄</div>
+            <div class="name">口红</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#F3E5F5">🪞</div>
+            <div class="name">化妆镜</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#E3F2FD">💅</div>
+            <div class="name">美甲套装</div>
+          </div>
+        </div>
+        <div class="cate-group-title"><div class="bar"></div>温馨家居</div>
+        <div class="cate-product-grid">
+          <div class="cate-product-item">
+            <div class="img">🕯️</div>
+            <div class="name">香薰蜡烛</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#E8F5E9">🌻</div>
+            <div class="name">花瓶摆件</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#FFF3E0">🛋️</div>
+            <div class="name">抱枕靠垫</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#FCE4EC">🧸</div>
+            <div class="name">毛绒玩偶</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#F3E5F5">🖼️</div>
+            <div class="name">装饰挂画</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#E3F2FD">🪴</div>
+            <div class="name">绿植盆栽</div>
+          </div>
+        </div>
+        <div class="cate-group-title"><div class="bar"></div>美味零食</div>
+        <div class="cate-product-grid">
+          <div class="cate-product-item">
+            <div class="img">🍪</div>
+            <div class="name">手工饼干</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#E8F5E9">🍵</div>
+            <div class="name">花果茶</div>
+          </div>
+          <div class="cate-product-item">
+            <div class="img" style="background:#FFF3E0">🍫</div>
+            <div class="name">巧克力</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="tab-icon ri-home-5-line"></span>
+        <span>首页</span>
+      </div>
+      <div class="tab-item active">
+        <span class="tab-icon ri-layout-grid-line"></span>
+        <span>分类</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon tab-badge ri-shopping-cart-2-line"></span>
+        <span>购物车</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon ri-user-3-line"></span>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 3 : 购物车 CART
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">购物车 Cart</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="nav-bar">购物车</div>
+
+    <div class="content cart-page-bg">
+      <!-- 店铺商品组 -->
+      <div class="cart-store">
+        <div class="cart-store-header">
+          <div class="check-circle checked">✓</div>
+          <span>温馨小铺</span>
+        </div>
+
+        <div class="cart-goods-item">
+          <div class="check-col">
+            <div class="check-circle checked">✓</div>
+          </div>
+          <div class="goods-img">🌻</div>
+          <div class="goods-info">
+            <div>
+              <div class="goods-name">北欧简约陶瓷花瓶 温暖日系风格装饰</div>
+              <span class="goods-spec">白色 / 大号</span>
+            </div>
+            <div class="goods-bottom">
+              <span class="goods-price"><span class="sym">¥</span>89</span>
+              <div class="stepper">
+                <span class="btn">−</span>
+                <span class="num">1</span>
+                <span class="btn">+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart-goods-item">
+          <div class="check-col">
+            <div class="check-circle checked">✓</div>
+          </div>
+          <div class="goods-img" style="background:#E8F5E9">🍃</div>
+          <div class="goods-info">
+            <div>
+              <div class="goods-name">有机棉柔软毛巾 亲肤吸水</div>
+              <span class="goods-spec">米白色 / 2条装</span>
+            </div>
+            <div class="goods-bottom">
+              <span class="goods-price"><span class="sym">¥</span>35</span>
+              <div class="stepper">
+                <span class="btn">−</span>
+                <span class="num">2</span>
+                <span class="btn">+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cart-goods-item">
+          <div class="check-col">
+            <div class="check-circle"></div>
+          </div>
+          <div class="goods-img" style="background:#FFF3E0">🕯️</div>
+          <div class="goods-info">
+            <div>
+              <div class="goods-name">手工大豆蜡香薰蜡烛 助眠放松</div>
+              <span class="goods-spec">薰衣草味 / 200g</span>
+            </div>
+            <div class="goods-bottom">
+              <span class="goods-price"><span class="sym">¥</span>52</span>
+              <div class="stepper">
+                <span class="btn">−</span>
+                <span class="num">1</span>
+                <span class="btn">+</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 猜你喜欢 -->
+      <div style="padding: 14px 16px 8px; font-size: 14px; font-weight: 700; color: var(--text-dark);">
+        猜你喜欢
+      </div>
+      <div class="product-grid" style="padding-bottom: 80px;">
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);height:120px;font-size:36px;">🎀</div>
+          <div class="product-info">
+            <div class="name">复古法式发带 百搭甜美气质</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>18</span>
+              <div class="add-cart-btn">+</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E3F2FD,#BBDEFB);height:120px;font-size:36px;">☕</div>
+          <div class="product-info">
+            <div class="name">手冲咖啡壶 木柄复古</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>128</span>
+              <div class="add-cart-btn">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部结算栏 -->
+    <div class="cart-bottom-bar">
+      <div class="check-all">
+        <div class="check-circle checked" style="width:18px;height:18px;border-radius:50%;background:var(--primary);border:none;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;">✓</div>
+        <span>全选</span>
+      </div>
+      <div class="total-area">
+        <span class="total-label">合计 </span>
+        <span class="total-price"><span class="sym">¥</span>159</span>
+      </div>
+      <button class="btn-settle">去结算(3)</button>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="tab-icon ri-home-5-line"></span>
+        <span>首页</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon ri-layout-grid-line"></span>
+        <span>分类</span>
+      </div>
+      <div class="tab-item active">
+        <span class="tab-icon ri-shopping-cart-2-line"></span>
+        <span>购物车</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon ri-user-3-line"></span>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 4 : 我的 USERCENTER
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">我的 Profile</div>
+  <div class="phone">
+    <div class="user-header-bg">
+      <div class="status-bar light">
+        <span>9:41</span>
+        <span>⦿ ▮▮▮ ▮▮</span>
+      </div>
+      <div style="height: 20px;"></div>
+      <div class="user-info-row">
+        <div class="user-avatar"><i class="ri-user-3-fill"></i></div>
+        <div class="user-name-col">
+          <div class="user-name">小花花</div>
+          <div class="user-id">邀请码: WARM2026</div>
+        </div>
+        <div class="user-qrcode">⊞</div>
+      </div>
+    </div>
+
+    <div class="content" style="background: var(--bg-page);">
+      <!-- 钱包卡片 -->
+      <div class="wallet-card">
+        <div class="wallet-item">
+          <span class="num">3</span>
+          <span class="label">优惠券</span>
+        </div>
+        <div class="wallet-item">
+          <span class="num">520</span>
+          <span class="label">积分</span>
+        </div>
+        <div class="wallet-item">
+          <span class="num">¥88</span>
+          <span class="label">余额</span>
+        </div>
+        <div class="wallet-item">
+          <span class="num">12</span>
+          <span class="label">收藏</span>
+        </div>
+      </div>
+
+      <!-- 我的订单 -->
+      <div class="order-section">
+        <div class="order-section-header">
+          <span>我的订单</span>
+          <span class="more">全部订单 ›</span>
+        </div>
+        <div class="order-icons">
+          <div class="order-icon-item">
+            <span class="icon"><i class="ri-bank-card-line"></i></span>
+            <span class="label">待付款</span>
+            <div class="dot-badge"></div>
+          </div>
+          <div class="order-icon-item">
+            <span class="icon"><i class="ri-archive-line"></i></span>
+            <span class="label">待发货</span>
+          </div>
+          <div class="order-icon-item">
+            <span class="icon"><i class="ri-truck-line"></i></span>
+            <span class="label">待收货</span>
+          </div>
+          <div class="order-icon-item">
+            <span class="icon"><i class="ri-star-line"></i></span>
+            <span class="label">待评价</span>
+          </div>
+          <div class="order-icon-item">
+            <span class="icon"><i class="ri-arrow-left-right-line"></i></span>
+            <span class="label">退换/售后</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 功能菜单 -->
+      <div class="menu-section">
+        <div class="menu-item">
+          <span class="icon"><i class="ri-map-pin-2-line"></i></span>
+          <span class="text">收货地址</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon"><i class="ri-coupon-3-line"></i></span>
+          <span class="text">优惠券</span>
+          <span class="note">3张可用</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon"><i class="ri-wallet-3-line"></i></span>
+          <span class="text">我的钱包</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+
+      <div class="menu-section">
+        <div class="menu-item">
+          <span class="icon"><i class="ri-message-3-line"></i></span>
+          <span class="text">联系客服</span>
+          <span class="arrow">›</span>
+        </div>
+        <div class="menu-item">
+          <span class="icon"><i class="ri-settings-3-line"></i></span>
+          <span class="text">设置</span>
+          <span class="arrow">›</span>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px 0;font-size:12px;color:var(--text-light);">
+        当前版本 v1.2.0
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+      <div class="tab-item">
+        <span class="tab-icon ri-home-5-line"></span>
+        <span>首页</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon ri-layout-grid-line"></span>
+        <span>分类</span>
+      </div>
+      <div class="tab-item">
+        <span class="tab-icon tab-badge ri-shopping-cart-2-line"></span>
+        <span>购物车</span>
+      </div>
+      <div class="tab-item active">
+        <span class="tab-icon ri-user-3-line"></span>
+        <span>我的</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     设计规范
+     =================================================== -->
+<div class="spec-section">
+  <h2>设计规范说明</h2>
+  <div class="spec-grid">
+    <div class="spec-item">
+      <h3>配色方案</h3>
+      <p>
+        主色: <code>#E8836B</code> 珊瑚橘 - 温暖而不刺眼<br>
+        辅色: <code>#7EB8A2</code> 薄荷绿 - 清新点缀<br>
+        暖杏: <code>#F5C5A3</code> - 渐变过渡<br>
+        背景: <code>#FFF8F3</code> 奶油色 / <code>#FAF3ED</code> 暖灰<br>
+        文字: <code>#4A3228</code> 深棕 / <code>#6B5248</code> 正文<br>
+        辅助: <code>#A89088</code> 灰棕
+      </p>
+    </div>
+    <div class="spec-item">
+      <h3>圆角规范</h3>
+      <p>
+        大卡片: <code>24rpx</code> (Banner、弹窗)<br>
+        中卡片: <code>16rpx</code> (商品卡、功能区)<br>
+        小元素: <code>10rpx</code> (图标、标签)<br>
+        按钮: <code>48rpx</code> (全圆角胶囊)<br>
+        底部导航: 无圆角，保持规整
+      </p>
+    </div>
+    <div class="spec-item">
+      <h3>投影规范</h3>
+      <p>
+        轻投影: <code>0 2px 8px rgba(200,140,110,0.08)</code><br>
+        标准投影: <code>0 4px 16px rgba(200,140,110,0.12)</code><br>
+        强调投影: <code>0 8px 30px rgba(200,140,110,0.16)</code><br>
+        使用暖色调阴影，避免冰冷的灰色投影
+      </p>
+    </div>
+    <div class="spec-item">
+      <h3>字体规范</h3>
+      <p>
+        大标题: <code>36rpx</code> Bold<br>
+        区块标题: <code>30rpx</code> Bold<br>
+        商品名: <code>28rpx</code> Regular<br>
+        辅助文字: <code>24rpx</code> Regular<br>
+        小标签: <code>20rpx</code> Semibold<br>
+        价格使用: <code>700-800</code> 加粗
+      </p>
+    </div>
+    <div class="spec-item">
+      <h3>渐变规范</h3>
+      <p>
+        头部渐变: 珊瑚 → 浅珊瑚 → 暖杏 → 背景色<br>
+        按钮渐变: <code>135deg, #FDDCC8 → #F2A99A → #E8836B</code><br>
+        卡片背景: 纯白 <code>#FFFFFF</code><br>
+        页面背景: <code>#FAF3ED</code> 暖灰奶油
+      </p>
+    </div>
+    <div class="spec-item">
+      <h3>设计原则</h3>
+      <p>
+        1. 避免纯黑/纯白对比，使用暖色系灰阶<br>
+        2. 减少直角，多用圆角营造亲和感<br>
+        3. 使用暖色系投影而非冷灰投影<br>
+        4. 渐变过渡要柔和，不要过于跳跃<br>
+        5. 留白适度，不拥挤，有呼吸感<br>
+        6. 价格使用主色珊瑚，不用刺眼红色
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 5 : 商品详情 GOODS DETAIL
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">商品详情 Goods Detail</div>
+  <div class="phone" style="height:850px;">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="padding-bottom:110px;">
+      <!-- 商品大图 -->
+      <div style="width:100%;height:375px;background:linear-gradient(135deg,var(--bg-warm),#FFE8D6);display:flex;align-items:center;justify-content:center;font-size:100px;position:relative;">
+        🌻
+        <div style="position:absolute;bottom:12px;display:flex;gap:6px;justify-content:center;width:100%;">
+          <div class="dot active" style="width:18px;height:5px;border-radius:3px;background:var(--primary);"></div>
+          <div class="dot" style="width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);"></div>
+          <div class="dot" style="width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);"></div>
+          <div class="dot" style="width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);"></div>
+        </div>
+      </div>
+
+      <!-- 价格区 -->
+      <div style="background:#fff;padding:16px 16px 12px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <div style="display:flex;align-items:baseline;gap:4px;">
+            <span style="font-size:28px;font-weight:800;color:var(--primary);">
+              <span style="font-size:16px;">¥</span>89
+            </span>
+            <span style="font-size:12px;color:var(--primary);">起</span>
+            <span style="font-size:14px;color:var(--text-light);text-decoration:line-through;margin-left:4px;">¥158</span>
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">已售 1286</span>
+        </div>
+        <!-- 活动标签 -->
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <span style="font-size:10px;color:var(--primary);background:var(--bg-warm);padding:2px 8px;border-radius:8px;font-weight:600;">满100减20</span>
+          <span style="font-size:10px;color:var(--accent);background:#E8F5E9;padding:2px 8px;border-radius:8px;font-weight:600;">新人专享</span>
+          <span style="font-size:10px;color:var(--primary);font-weight:600;margin-left:auto;">领券 ›</span>
+        </div>
+        <!-- 标题 -->
+        <div style="display:flex;align-items:flex-start;margin-top:12px;gap:10px;">
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.4;">北欧简约陶瓷花瓶 温暖日系风格家居装饰摆件</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.4;">精选优质陶土烧制，手工上釉，每一个都独一无二</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-muted);font-size:10px;flex-shrink:0;">
+            <span style="font-size:18px;">↗</span>
+            分享
+          </div>
+        </div>
+      </div>
+
+      <!-- 已选规格 -->
+      <div style="background:#fff;margin-top:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--text-muted);">已选</span>
+        <div style="flex:1;margin-left:16px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;color:var(--text-dark);">白色 / 大号 × 1</span>
+          <span style="color:var(--text-light);font-size:14px;">›</span>
+        </div>
+      </div>
+
+      <!-- 评价区 -->
+      <div style="background:#fff;margin-top:8px;padding:14px 16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">商品评价</span>
+            <span style="font-size:13px;color:var(--text-muted);">(128)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="font-size:12px;color:var(--accent);">98% 好评</span>
+            <span style="color:var(--text-light);font-size:14px;">›</span>
+          </div>
+        </div>
+        <!-- 评价条目 -->
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <div style="width:32px;height:32px;border-radius:50%;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;"><i class="ri-user-3-line"></i></div>
+          <div>
+            <div style="font-size:12px;color:var(--text-dark);font-weight:600;">小花</div>
+            <div style="display:flex;gap:1px;margin:2px 0;">
+              <span style="color:#F5D89A;font-size:10px;">★★★★★</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-body);line-height:1.5;">质量很好，颜色和图片一致，放在桌上特别温馨，很喜欢！</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 详情介绍 -->
+      <div style="background:#fff;margin-top:8px;padding:16px;">
+        <div style="text-align:center;font-size:13px;font-weight:600;color:var(--text-dark);padding:8px 0;display:flex;align-items:center;justify-content:center;gap:12px;">
+          <span style="width:60px;height:1px;background:var(--border);display:inline-block;"></span>
+          详情介绍
+          <span style="width:60px;height:1px;background:var(--border);display:inline-block;"></span>
+        </div>
+        <div style="width:100%;height:200px;background:linear-gradient(180deg,#FFF1E8,#FFE8D6);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--text-light);font-size:13px;margin-top:8px;">
+          商品详情图片区域
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部购买栏 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;padding:0 12px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;">
+      <div style="display:flex;gap:20px;margin-right:12px;">
+        <div style="display:flex;flex-direction:column;align-items:center;font-size:9px;color:var(--text-muted);gap:1px;">
+          <span style="font-size:18px;"><i class="ri-home-5-line"></i></span>首页
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;font-size:9px;color:var(--text-muted);gap:1px;position:relative;">
+          <span style="font-size:18px;"><i class="ri-shopping-cart-2-line"></i></span>购物车
+          <span style="position:absolute;top:-2px;right:-8px;width:14px;height:14px;background:#FF4646;color:#fff;border-radius:50%;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700;">2</span>
+        </div>
+      </div>
+      <div style="flex:1;display:flex;height:40px;border-radius:24px;overflow:hidden;box-shadow:0 2px 10px rgba(232,131,107,0.2);">
+        <div style="flex:1;background:var(--warm-yellow);color:var(--text-dark);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">加入购物车</div>
+        <div style="flex:1;background:var(--gradient-warm);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">立即购买</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 6 : 订单确认 ORDER CONFIRM
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">订单确认 Order Confirm</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="nav-bar" style="position:relative;">
+      <span style="position:absolute;left:16px;font-size:18px;color:var(--text-body);">‹</span>
+      确认订单
+    </div>
+
+    <div class="content" style="background:var(--bg-page);padding-bottom:120px;">
+      <!-- 收货地址 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);padding:16px;box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;"><i class="ri-map-pin-2-line"></i></span>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">小花花</span>
+            <span style="font-size:13px;color:var(--text-muted);">138****8888</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-body);margin-top:4px;line-height:1.4;">浙江省杭州市西湖区文三路 123 号幸福小区 8 栋 301</div>
+        </div>
+        <span style="color:var(--text-light);font-size:14px;">›</span>
+      </div>
+      <!-- 地址分割线 - 彩条 -->
+      <div style="margin:0 16px;height:3px;background:repeating-linear-gradient(90deg,var(--primary) 0,var(--primary) 8px,var(--warm-yellow) 8px,var(--warm-yellow) 16px,var(--accent) 16px,var(--accent) 24px,var(--primary-light) 24px,var(--primary-light) 32px);border-radius:2px;opacity:0.5;"></div>
+
+      <!-- 商品卡片组 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <!-- 店铺头 -->
+        <div style="padding:12px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border-light);">
+          <span style="font-size:16px;"><i class="ri-store-2-line"></i></span>
+          <span style="font-size:14px;font-weight:700;color:var(--text-dark);">温馨小铺</span>
+        </div>
+        <!-- 商品1 -->
+        <div style="padding:12px 16px;display:flex;gap:12px;">
+          <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,var(--bg-warm),#FFE8D6);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🌻</div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;line-height:1.3;">北欧简约陶瓷花瓶 温暖日系风格</div>
+            <div style="font-size:11px;color:var(--text-muted);">白色 / 大号</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥89.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×1</span>
+          </div>
+        </div>
+        <!-- 商品2 -->
+        <div style="padding:12px 16px;display:flex;gap:12px;border-top:1px solid var(--border-light);">
+          <div style="width:80px;height:80px;border-radius:10px;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🍃</div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;line-height:1.3;">有机棉柔软毛巾 亲肤吸水</div>
+            <div style="font-size:11px;color:var(--text-muted);">米白色 / 2条装</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥35.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×2</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 费用明细 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);">
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+          <span style="color:var(--text-body);">商品总额</span>
+          <span style="color:var(--text-dark);font-weight:700;">¥159.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+          <span style="color:var(--text-body);">运费</span>
+          <span style="color:var(--accent);font-weight:700;">免运费</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;">
+          <span style="color:var(--text-body);">活动优惠</span>
+          <span style="color:var(--primary);font-weight:700;">-¥20.00</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;align-items:center;">
+          <span style="color:var(--text-body);">优惠券</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="color:var(--primary);font-weight:600;font-size:12px;">-¥10.00</span>
+            <span style="color:var(--text-light);font-size:12px;">›</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;align-items:center;">
+          <span style="color:var(--text-body);">订单备注</span>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <span style="color:var(--text-light);font-size:12px;">选填</span>
+            <span style="color:var(--text-light);font-size:12px;">›</span>
+          </div>
+        </div>
+        <!-- 合计行 -->
+        <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:4px;padding-top:10px;border-top:1px solid var(--border-light);">
+          <span style="font-size:12px;color:var(--text-muted);">共3件</span>
+          <span style="font-size:13px;color:var(--text-dark);">小计</span>
+          <span style="font-size:20px;font-weight:800;color:var(--primary);">
+            <span style="font-size:12px;">¥</span>129.00
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部提交栏 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:58px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 16px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;">
+      <div>
+        <span style="font-size:12px;color:var(--text-muted);">合计：</span>
+        <span style="font-size:22px;font-weight:800;color:var(--primary);"><span style="font-size:14px;">¥</span>129.00</span>
+      </div>
+      <div style="background:var(--gradient-warm);color:#fff;padding:11px 32px;border-radius:28px;font-size:15px;font-weight:700;box-shadow:0 4px 16px rgba(232,131,107,0.3);">
+        提交订单
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 7 : 支付结果 PAY RESULT
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">支付结果 Pay Result</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="nav-bar" style="position:relative;">
+      <span style="position:absolute;left:16px;font-size:18px;color:var(--text-body);">‹</span>
+      支付结果
+    </div>
+
+    <div class="content" style="background:var(--bg-cream);">
+      <!-- 成功动画区 -->
+      <div style="display:flex;flex-direction:column;align-items:center;padding-top:80px;">
+        <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent-light),var(--accent));display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 8px 24px rgba(126,184,162,0.3);">
+          ✓
+        </div>
+        <div style="font-size:22px;font-weight:800;color:var(--text-dark);margin-top:20px;">支付成功</div>
+        <div style="font-size:14px;color:var(--text-muted);margin-top:8px;display:flex;align-items:baseline;gap:4px;">
+          微信支付：
+          <span style="font-size:20px;font-weight:700;color:var(--primary);">¥129.00</span>
+        </div>
+      </div>
+
+      <!-- 按钮组 -->
+      <div style="display:flex;gap:16px;padding:40px 24px 0;">
+        <div style="flex:1;height:44px;border-radius:24px;border:2px solid var(--primary);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;">查看订单</div>
+        <div style="flex:1;height:44px;border-radius:24px;background:var(--gradient-warm);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;box-shadow:0 4px 16px rgba(232,131,107,0.3);">返回首页</div>
+      </div>
+
+      <!-- 猜你喜欢 -->
+      <div style="padding:30px 16px 8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <div style="width:4px;height:18px;background:var(--primary);border-radius:2px;"></div>
+          <span style="font-size:15px;font-weight:700;color:var(--text-dark);">猜你喜欢</span>
+        </div>
+      </div>
+      <div class="product-grid" style="padding-top:0;">
+        <div class="product-card">
+          <div class="product-img" style="height:130px;font-size:36px;background:linear-gradient(135deg,#FCE4EC,#F8BBD0);">🎀</div>
+          <div class="product-info">
+            <div class="name">复古法式发带 百搭甜美</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>18</span>
+              <div class="add-cart-btn">+</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="height:130px;font-size:36px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);">🕯️</div>
+          <div class="product-info">
+            <div class="name">手工香薰蜡烛 助眠放松</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>52</span>
+              <div class="add-cart-btn">+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 8 : 订单列表 ORDER LIST
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">订单列表 Order List</div>
+  <div class="phone">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="background:var(--bg-page);">
+      <!-- Tab 栏 -->
+      <div style="display:flex;background:#fff;padding:0 8px;position:sticky;top:0;z-index:10;box-shadow:0 1px 4px rgba(200,140,110,0.06);">
+        <div style="flex:1;text-align:center;padding:14px 0;font-size:14px;font-weight:700;color:var(--primary);border-bottom:2px solid var(--primary);">全部</div>
+        <div style="flex:1;text-align:center;padding:14px 0;font-size:14px;color:var(--text-muted);">待付款</div>
+        <div style="flex:1;text-align:center;padding:14px 0;font-size:14px;color:var(--text-muted);">待发货</div>
+        <div style="flex:1;text-align:center;padding:14px 0;font-size:14px;color:var(--text-muted);">待收货</div>
+        <div style="flex:1;text-align:center;padding:14px 0;font-size:14px;color:var(--text-muted);">已完成</div>
+      </div>
+
+      <!-- 订单卡片1 - 待收货 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light);">
+          <span style="font-size:12px;color:var(--text-muted);">订单号 WX20260307001</span>
+          <span style="font-size:12px;color:var(--accent);font-weight:700;">待收货</span>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:12px;">
+          <div style="width:76px;height:76px;border-radius:10px;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🌻</div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">北欧简约陶瓷花瓶</div>
+            <div style="font-size:11px;color:var(--text-muted);">白色 / 大号</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥89.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×1</span>
+          </div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:12px;color:var(--text-muted);">
+            实付 <span style="font-size:15px;font-weight:700;color:var(--primary);">¥89.00</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text-body);">查看物流</div>
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;background:var(--primary);color:#fff;">确认收货</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订单卡片2 - 待付款 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light);">
+          <span style="font-size:12px;color:var(--text-muted);">订单号 WX20260306002</span>
+          <span style="font-size:12px;color:var(--primary);font-weight:700;">待付款</span>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:12px;">
+          <div style="width:76px;height:76px;border-radius:10px;background:linear-gradient(135deg,#E8F5E9,#C8E6C9);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🍃</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">有机棉柔软毛巾</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">米白色 / 2条装</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥35.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×2</span>
+          </div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:12px;color:var(--text-muted);">
+            实付 <span style="font-size:15px;font-weight:700;color:var(--primary);">¥70.00</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text-body);">取消订单</div>
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;background:var(--gradient-warm);color:#fff;box-shadow:0 2px 8px rgba(232,131,107,0.2);">去支付</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订单卡片3 - 已完成 -->
+      <div style="margin:10px 16px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="padding:12px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-light);">
+          <span style="font-size:12px;color:var(--text-muted);">订单号 WX20260305003</span>
+          <span style="font-size:12px;color:var(--text-muted);font-weight:600;">已完成</span>
+        </div>
+        <div style="padding:12px 16px;display:flex;gap:12px;">
+          <div style="width:76px;height:76px;border-radius:10px;background:linear-gradient(135deg,#FFF3E0,#FFE0B2);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🕯️</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">手工香薰蜡烛</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">薰衣草味 / 200g</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥52.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×1</span>
+          </div>
+        </div>
+        <div style="padding:10px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;">
+          <div style="font-size:12px;color:var(--text-muted);">
+            实付 <span style="font-size:15px;font-weight:700;color:var(--primary);">¥52.00</span>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--border);color:var(--text-body);">再次购买</div>
+            <div style="padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;border:1px solid var(--primary);color:var(--primary);">去评价</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 9 : 订单详情 ORDER DETAIL
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">订单详情 Order Detail</div>
+  <div class="phone" style="height:850px;">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+    <div class="nav-bar" style="position:relative;">
+      <span style="position:absolute;left:16px;font-size:18px;color:var(--text-body);">‹</span>
+      订单详情
+    </div>
+
+    <div class="content" style="background:var(--bg-page);padding-bottom:120px;">
+      <!-- 订单状态Banner -->
+      <div style="margin:10px 16px;border-radius:var(--radius-lg);background:var(--gradient-warm);padding:24px 20px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20px;top:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.12);"></div>
+        <div style="font-size:20px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.1);">待收货</div>
+        <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">预计3月10日送达</div>
+      </div>
+
+      <!-- 物流信息 -->
+      <div style="margin:0 16px 10px;background:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <span style="font-size:20px;margin-top:2px;"><i class="ri-truck-line"></i></span>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">您的快递正在派送中</div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">2026-03-07 14:30</div>
+          </div>
+          <span style="color:var(--text-light);font-size:14px;align-self:center;">›</span>
+        </div>
+      </div>
+
+      <!-- 收货地址 -->
+      <div style="margin:0 16px 10px;background:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);">
+        <div style="display:flex;align-items:flex-start;gap:12px;">
+          <span style="font-size:20px;margin-top:2px;"><i class="ri-map-pin-2-line"></i></span>
+          <div>
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">小花花  138****8888</div>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.4;">浙江省杭州市西湖区文三路 123 号幸福小区 8 栋 301</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 商品信息 -->
+      <div style="margin:0 16px 10px;background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="padding:12px 16px;display:flex;gap:12px;">
+          <div style="width:76px;height:76px;border-radius:10px;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🌻</div>
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <div style="font-size:13px;color:var(--text-dark);font-weight:600;">北欧简约陶瓷花瓶</div>
+            <div style="font-size:11px;color:var(--text-muted);">白色 / 大号</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;justify-content:space-between;">
+            <span style="font-size:14px;font-weight:700;color:var(--text-dark);">¥89.00</span>
+            <span style="font-size:12px;color:var(--text-muted);">×1</span>
+          </div>
+        </div>
+        <!-- 费用明细 -->
+        <div style="padding:12px 16px;border-top:1px solid var(--border-light);">
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+            <span style="color:var(--text-muted);">商品总额</span>
+            <span style="color:var(--text-dark);font-weight:600;">¥89.00</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+            <span style="color:var(--text-muted);">运费</span>
+            <span style="color:var(--accent);font-weight:600;">免运费</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+            <span style="color:var(--text-muted);">优惠券</span>
+            <span style="color:var(--primary);font-weight:600;">-¥10.00</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;align-items:baseline;gap:4px;padding-top:8px;border-top:1px solid var(--border-light);">
+            <span style="font-size:13px;color:var(--text-dark);">实付</span>
+            <span style="font-size:20px;font-weight:800;color:var(--primary);"><span style="font-size:12px;">¥</span>79.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 订单信息 -->
+      <div style="margin:0 16px 10px;background:#fff;border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow-sm);">
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+          <span style="color:var(--text-muted);">订单编号</span>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:var(--text-dark);">WX20260307001</span>
+            <span style="font-size:11px;color:var(--text-body);border:1px solid var(--border);padding:1px 8px;border-radius:10px;">复制</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+          <span style="color:var(--text-muted);">下单时间</span>
+          <span style="color:var(--text-dark);">2026-03-07 10:30</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+          <span style="color:var(--text-muted);">支付方式</span>
+          <span style="color:var(--text-dark);">微信支付</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:12px;">
+          <span style="color:var(--text-muted);">备注</span>
+          <span style="color:var(--text-dark);">请轻放，易碎品</span>
+        </div>
+        <!-- 联系客服 -->
+        <div style="display:flex;align-items:center;justify-content:center;gap:6px;padding:12px 0 4px;border-top:1px solid var(--border-light);margin-top:6px;">
+          <span style="font-size:16px;"><i class="ri-message-3-line"></i></span>
+          <span style="font-size:13px;color:var(--text-dark);font-weight:600;">联系客服</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部操作栏 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;justify-content:flex-end;padding:0 16px;gap:10px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;">
+      <div style="padding:8px 20px;border-radius:22px;font-size:13px;font-weight:600;border:1px solid var(--border);color:var(--text-body);">查看物流</div>
+      <div style="padding:8px 20px;border-radius:22px;font-size:13px;font-weight:700;background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(232,131,107,0.2);">确认收货</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 10 : 秒杀活动页 SECKILL
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">秒杀活动 Seckill</div>
+  <div class="phone">
+    <div class="status-bar light" style="position:relative;z-index:2;">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="background:var(--bg-page);">
+      <!-- 头部Banner -->
+      <div style="background:var(--gradient-warm);padding:0 20px 30px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-40px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>
+        <div style="position:absolute;left:20px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
+        <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.1);">限时秒杀</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">好物低价 手慢无</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:4px;">距结束</span>
+            <div style="display:flex;align-items:center;gap:3px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">02</span>
+              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">18</span>
+              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">45</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 商品列表 -->
+      <div class="product-grid" style="margin-top:-12px;position:relative;z-index:2;">
+        <div class="product-card">
+          <div class="product-img" style="position:relative;">
+            <span class="badge-new" style="background:var(--primary);">秒杀</span>
+            🧴
+          </div>
+          <div class="product-info">
+            <div class="name">温和氨基酸洗面奶 补水保湿</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>29</span>
+              <span class="origin-price">¥89</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
+                <div style="width:72%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+              </div>
+              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢72%</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);position:relative;">
+            <span class="badge-new" style="background:var(--primary);">秒杀</span>
+            🍵
+          </div>
+          <div class="product-info">
+            <div class="name">有机绿茶龙井 明前特级新茶</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>19</span>
+              <span class="origin-price">¥58</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
+                <div style="width:45%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+              </div>
+              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢45%</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;">
+            <span class="badge-new" style="background:var(--primary);">秒杀</span>
+            🧣
+          </div>
+          <div class="product-info">
+            <div class="name">冬日柔软羊毛围巾 多色可选</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>39</span>
+              <span class="origin-price">¥128</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
+                <div style="width:88%;height:100%;background:linear-gradient(90deg,var(--primary),#FF5252);border-radius:3px;"></div>
+              </div>
+              <span style="font-size:10px;color:var(--primary);font-weight:600;white-space:nowrap;">即将售罄</span>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);position:relative;">
+            <span class="badge-new" style="background:var(--primary);">秒杀</span>
+            🌸
+          </div>
+          <div class="product-info">
+            <div class="name">樱花限定护手霜 滋润不油腻</div>
+            <div class="price-row">
+              <span class="price"><span class="sym">¥</span>15</span>
+              <span class="origin-price">¥45</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
+              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
+                <div style="width:30%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+              </div>
+              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢30%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 11 : 拼团活动页 GROUP BUY
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">拼团活动 Group Buy</div>
+  <div class="phone">
+    <div class="status-bar light" style="position:relative;z-index:2;">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="background:var(--bg-page);">
+      <!-- 拼团头部Banner -->
+      <div style="background:linear-gradient(135deg,var(--accent-dark),var(--accent),var(--accent-light));padding:0 20px 30px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-30px;top:-10px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>
+        <div style="position:absolute;left:30px;bottom:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
+        <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
+          <div>
+            <div style="font-size:26px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.1);">拼团特惠</div>
+            <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">好物拼着买 更划算</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;">
+            <span style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:4px;">距结束</span>
+            <div style="display:flex;align-items:center;gap:3px;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">01</span>
+              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">05</span>
+              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
+              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 拼团商品列表 -->
+      <div class="product-grid" style="margin-top:-12px;position:relative;z-index:2;">
+        <div class="product-card">
+          <div class="product-img" style="position:relative;">
+            <span class="badge-new" style="background:var(--accent);">3人团</span>
+            🌻
+          </div>
+          <div class="product-info">
+            <div class="name">北欧简约陶瓷花瓶 温暖日系装饰</div>
+            <div class="price-row" style="margin-top:6px;">
+              <div>
+                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
+                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>59</span>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥89</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:10px;color:var(--text-muted);">已拼 326 件</span>
+              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;">
+            <span class="badge-new" style="background:var(--accent);">2人团</span>
+            ☕
+          </div>
+          <div class="product-info">
+            <div class="name">手冲咖啡壶 木柄复古设计</div>
+            <div class="price-row" style="margin-top:6px;">
+              <div>
+                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
+                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>88</span>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥128</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:10px;color:var(--text-muted);">已拼 158 件</span>
+              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);position:relative;">
+            <span class="badge-new" style="background:var(--accent);">3人团</span>
+            🍃
+          </div>
+          <div class="product-info">
+            <div class="name">有机棉柔软毛巾 亲肤吸水</div>
+            <div class="price-row" style="margin-top:6px;">
+              <div>
+                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
+                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>22</span>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥35</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:10px;color:var(--text-muted);">已拼 512 件</span>
+              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            </div>
+          </div>
+        </div>
+        <div class="product-card">
+          <div class="product-img" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);position:relative;">
+            <span class="badge-new" style="background:var(--accent);">2人团</span>
+            🧸
+          </div>
+          <div class="product-info">
+            <div class="name">萌趣毛绒公仔 柔软可爱</div>
+            <div class="price-row" style="margin-top:6px;">
+              <div>
+                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
+                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>32</span>
+              </div>
+            </div>
+            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥45</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:10px;color:var(--text-muted);">已拼 89 件</span>
+              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 12 : 商品详情-拼团模式 GOODS DETAIL (GROUP BUY)
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">拼团商品详情</div>
+  <div class="phone" style="height:850px;">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="padding-bottom:110px;">
+      <!-- 商品大图 -->
+      <div style="width:100%;height:300px;background:linear-gradient(135deg,var(--bg-warm),#FFE8D6);display:flex;align-items:center;justify-content:center;font-size:90px;">
+        🌻
+      </div>
+
+      <!-- 价格区 -->
+      <div style="background:#fff;padding:16px;">
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <span style="font-size:28px;font-weight:800;color:var(--text-dark);"><span style="font-size:16px;">¥</span>89</span>
+          <span style="font-size:12px;color:var(--text-light);text-decoration:line-through;">¥158</span>
+          <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">已售 1286</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-dark);margin-top:10px;line-height:1.4;">北欧简约陶瓷花瓶 温暖日系风格家居装饰</div>
+      </div>
+
+      <!-- 拼团信息卡片 -->
+      <div style="margin:8px 0;background:#fff;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span style="font-size:11px;color:#fff;background:var(--accent);padding:3px 10px;border-radius:8px;font-weight:700;">拼团价</span>
+            <span style="font-size:24px;font-weight:800;color:var(--accent-dark);"><span style="font-size:14px;">¥</span>59</span>
+            <span style="font-size:12px;color:var(--text-light);text-decoration:line-through;">¥89</span>
+          </div>
+          <span style="font-size:12px;color:var(--accent);border:1.5px solid var(--accent);border-radius:14px;padding:2px 12px;font-weight:700;">3人团</span>
+        </div>
+        <!-- 拼团步骤 -->
+        <div style="display:flex;align-items:center;justify-content:space-around;padding:14px 0 4px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <span style="font-size:18px;"><i class="ri-edit-box-line"></i></span>
+            <span style="font-size:10px;color:var(--text-body);">开团/参团</span>
+          </div>
+          <span style="color:var(--border);font-size:14px;">→</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <span style="font-size:18px;">↗️</span>
+            <span style="font-size:10px;color:var(--text-body);">邀请好友</span>
+          </div>
+          <span style="color:var(--border);font-size:14px;">→</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <span style="font-size:18px;"><i class="ri-checkbox-circle-line"></i></span>
+            <span style="font-size:10px;color:var(--text-body);">满员成功</span>
+          </div>
+          <span style="color:var(--border);font-size:14px;">→</span>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+            <span style="font-size:18px;"><i class="ri-gift-2-line"></i></span>
+            <span style="font-size:10px;color:var(--text-body);">发货收货</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 正在拼团 -->
+      <div style="background:#fff;padding:16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+          <div style="width:3px;height:14px;background:var(--accent);border-radius:2px;"></div>
+          <span style="font-size:13px;font-weight:700;color:var(--text-dark);">正在拼团，可直接参团</span>
+        </div>
+        <!-- 拼团条目 -->
+        <div style="display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-light);">
+          <div style="width:36px;height:36px;border-radius:50%;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="ri-user-3-line"></i></div>
+          <span style="font-size:12px;color:var(--text-dark);margin-left:8px;flex:1;">小王</span>
+          <div style="text-align:right;margin-right:10px;">
+            <div style="font-size:11px;color:var(--text-body);">还差<span style="color:var(--accent-dark);font-weight:700;">2</span>人</div>
+            <div style="font-size:10px;color:var(--text-muted);">剩余 2小时</div>
+          </div>
+          <div style="padding:5px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;">去拼团</div>
+        </div>
+        <div style="display:flex;align-items:center;padding:10px 0;">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FCE4EC,#F8BBD0);display:flex;align-items:center;justify-content:center;font-size:18px;"><i class="ri-user-3-line"></i></div>
+          <span style="font-size:12px;color:var(--text-dark);margin-left:8px;flex:1;">张三</span>
+          <div style="text-align:right;margin-right:10px;">
+            <div style="font-size:11px;color:var(--text-body);">还差<span style="color:var(--accent-dark);font-weight:700;">1</span>人</div>
+            <div style="font-size:10px;color:var(--text-muted);">剩余 30分钟</div>
+          </div>
+          <div style="padding:5px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;">去拼团</div>
+        </div>
+      </div>
+
+      <!-- 评价 + 详情 省略 -->
+      <div style="background:#fff;padding:16px;text-align:center;color:var(--text-light);font-size:12px;">
+        ↓ 商品评价 / 详情介绍 ↓
+      </div>
+    </div>
+
+    <!-- 拼团底部栏 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:56px;display:flex;z-index:10;box-shadow:0 -2px 10px rgba(200,140,110,0.08);">
+      <div style="flex:1;background:var(--text-body);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <span style="font-size:16px;font-weight:700;">¥89</span>
+        <span style="font-size:10px;opacity:0.8;">原价购买</span>
+      </div>
+      <div style="flex:1.2;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <span style="font-size:16px;font-weight:700;">¥59</span>
+        <span style="font-size:10px;opacity:0.9;">立即开团</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================
+     PAGE 13 : 商品详情-秒杀模式 GOODS DETAIL (SECKILL)
+     =================================================== -->
+<div class="phone-wrapper">
+  <div class="phone-label">秒杀商品详情</div>
+  <div class="phone" style="height:850px;">
+    <div class="status-bar">
+      <span>9:41</span>
+      <span>⦿ ▮▮▮ ▮▮</span>
+    </div>
+
+    <div class="content" style="padding-bottom:110px;">
+      <!-- 商品大图 -->
+      <div style="width:100%;height:375px;background:linear-gradient(135deg,var(--bg-warm),#FFE8D6);display:flex;align-items:center;justify-content:center;font-size:96px;position:relative;">
+        🧴
+        <div style="position:absolute;bottom:12px;display:flex;gap:6px;justify-content:center;width:100%;">
+          <div class="dot active" style="width:18px;height:5px;border-radius:3px;background:var(--primary);"></div>
+          <div class="dot" style="width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);"></div>
+          <div class="dot" style="width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);"></div>
+        </div>
+      </div>
+
+      <!-- 基础信息 -->
+      <div style="background:#fff;padding:16px 16px 12px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;">
+          <div style="display:flex;align-items:baseline;gap:6px;">
+            <span style="font-size:14px;color:var(--text-light);text-decoration:line-through;">¥89</span>
+            <span style="font-size:12px;color:var(--text-muted);">市场价参考</span>
+          </div>
+          <span style="font-size:12px;color:var(--text-muted);">已售 1268</span>
+        </div>
+        <div style="margin-top:10px;font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.4;">温和氨基酸洗面奶 深层清洁不紧绷 适合敏感肌</div>
+      </div>
+
+      <!-- 秒杀信息卡 -->
+      <div style="margin:8px 0;background:#fff;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border-light);">
+          <div style="display:flex;align-items:baseline;gap:8px;">
+            <span style="font-size:11px;color:#fff;background:var(--primary);padding:3px 10px;border-radius:8px;font-weight:700;">秒杀价</span>
+            <span style="font-size:24px;font-weight:800;color:var(--primary);"><span style="font-size:14px;">¥</span>29</span>
+            <span style="font-size:12px;color:var(--text-light);text-decoration:line-through;">¥89</span>
+          </div>
+          <span style="font-size:11px;color:var(--primary);border:1.5px solid var(--primary);border-radius:14px;padding:2px 12px;font-weight:700;">限时抢购</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:11px;color:var(--text-muted);">距结束</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">02</span>
+            <span style="color:var(--primary);font-weight:700;font-size:12px;">:</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">18</span>
+            <span style="color:var(--primary);font-weight:700;font-size:12px;">:</span>
+            <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:var(--primary);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">45</span>
+          </div>
+          <span style="font-size:11px;color:var(--text-muted);">每人限购 2 件</span>
+        </div>
+      </div>
+
+      <!-- 已选规格 -->
+      <div style="background:#fff;margin-top:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:var(--text-muted);">已选</span>
+        <div style="flex:1;margin-left:16px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;color:var(--text-dark);">120g / 温和清洁 × 1</span>
+          <span style="color:var(--text-light);font-size:14px;">›</span>
+        </div>
+      </div>
+
+      <!-- 说明 -->
+      <div style="background:#fff;margin-top:8px;padding:14px 16px;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+          <div style="width:3px;height:14px;background:var(--primary);border-radius:2px;"></div>
+          <span style="font-size:13px;font-weight:700;color:var(--text-dark);">秒杀说明</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-body);line-height:1.6;">
+          1. 秒杀商品库存有限，先到先得。<br>
+          2. 活动结束后恢复原价，不支持补差价。<br>
+          3. 下单后请在30分钟内完成支付。
+        </div>
+      </div>
+    </div>
+
+    <!-- 秒杀底部栏 -->
+    <div style="position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;padding:0 12px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;">
+      <div style="display:flex;gap:20px;margin-right:12px;">
+        <div style="display:flex;flex-direction:column;align-items:center;font-size:9px;color:var(--text-muted);gap:1px;">
+          <span style="font-size:18px;"><i class="ri-home-5-line"></i></span>首页
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;font-size:9px;color:var(--text-muted);gap:1px;">
+          <span style="font-size:18px;"><i class="ri-shopping-cart-2-line"></i></span>购物车
+        </div>
+      </div>
+      <div style="flex:1;display:flex;height:40px;border-radius:24px;overflow:hidden;box-shadow:0 2px 10px rgba(232,131,107,0.2);">
+        <div style="flex:1;background:var(--gradient-warm);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">立即抢购</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- ===== Merged From design2: H5 Auth Pages ===== -->
+<div class="phone-wrap">
+  <div class="phone-label">H5 登录页 / 双方式登录</div>
+  <div class="phone">
+    <div class="content h5-shell">
+      <div class="status-bar light"><span>9:41</span><span>5G 100%</span></div>
+      <div class="hero">
+        <div class="hero-brand">
+          <div class="hero-mark"><i class="ri-store-2-line"></i></div>
+          <div class="hero-title">欢迎来到<br>MineMall 会员中心</div>
+          <div class="hero-desc">延续首页的暖杏色与奶油卡片风格，让登录、注册和验证都保持轻盈、亲切、可信赖的体验。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="eyebrow"><i class="ri-shield-keyhole-line"></i><span>双方式登录</span></div>
+          <div class="card-title">登录你的商城账号</div>
+          <div class="card-desc">支持账号密码登录和短信验证码登录，H5 首次进入不再走小程序静默授权。</div>
+          <div class="tabs">
+            <div class="tab active">账号密码登录</div>
+            <div class="tab">短信验证码登录</div>
+          </div>
+        </div>
+        <div class="form">
+          <div class="field">
+            <div class="field-label"><span>登录账号</span><span class="hint">支持手机号 / 用户名</span></div>
+            <div class="field-box"><i class="field-icon ri-user-3-line"></i><span>请输入手机号或账号</span></div>
+          </div>
+          <div class="field">
+            <div class="field-label"><span>登录密码</span><span class="link">忘记密码</span></div>
+            <div class="field-box"><i class="field-icon ri-lock-2-line"></i><span>请输入 6-20 位密码</span><i style="margin-left:auto;color:#C8A99A;" class="ri-eye-off-line"></i></div>
+          </div>
+          <div class="mini-switch">
+            <div class="mini-switch-head"><div class="mini-title">短信验证码登录</div><div class="mini-note">适合快速登录</div></div>
+            <div class="field">
+              <div class="field-label"><span>手机号</span></div>
+              <div class="field-box"><i class="field-icon ri-smartphone-line"></i><span>请输入手机号</span></div>
+            </div>
+            <div class="field">
+              <div class="field-label"><span>短信验证码</span></div>
+              <div class="code-row">
+                <div class="field-box"><i class="field-icon ri-chat-1-line"></i><span>请输入短信验证码</span></div>
+                <div class="code-btn">获取验证码</div>
+              </div>
+            </div>
+          </div>
+          <div class="check-row"><div class="check-dot">✓</div><span>我已阅读并同意《用户协议》《隐私政策》</span></div>
+          <div class="submit">立即登录</div>
+          <div class="subactions"><span>还没有账号？</span><span class="link">去注册</span><span>|</span><span class="link">游客先逛逛</span></div>
+        </div>
+        <div class="divider">更多帮助</div>
+        <div class="alt-actions">
+          <div class="alt-btn"><i class="ri-message-2-line"></i><span>短信验证说明</span></div>
+          <div class="alt-btn"><i class="ri-customer-service-2-line"></i><span>联系客服</span></div>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-title">登录安全提示</div>
+        <div class="safe-desc">账号密码登录更适合已注册会员，短信验证码登录更适合快捷进入；两者共用同一会员体系，后续可继续绑定微信、小程序账号与更多平台身份。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone-label">H5 注册页 / 手机号注册</div>
+  <div class="phone">
+    <div class="content h5-shell">
+      <div class="status-bar light"><span>9:41</span><span>5G 100%</span></div>
+      <div class="hero">
+        <div class="hero-brand">
+          <div class="hero-mark"><i class="ri-user-add-line"></i></div>
+          <div class="hero-title">创建你的<br>MineMall 新账号</div>
+          <div class="hero-desc">注册页延续登录页的温暖基调，但强化“手机号验证 + 设置密码”的明确引导，让新用户一眼知道下一步怎么完成。</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="eyebrow"><i class="ri-user-shared-line"></i><span>新会员注册</span></div>
+          <div class="card-title">手机号快速创建账号</div>
+          <div class="card-desc">注册完成后，可使用账号密码登录，也可使用短信验证码快捷登录。</div>
+          <div class="steps">
+            <div class="step active">1. 验证手机</div>
+            <div class="step active">2. 设置密码</div>
+            <div class="step">3. 完成注册</div>
+          </div>
+        </div>
+        <div class="form">
+          <div class="field">
+            <div class="field-label"><span>手机号</span><span class="hint">用于登录和找回密码</span></div>
+            <div class="field-box"><i class="field-icon ri-smartphone-line"></i><span>请输入手机号</span></div>
+          </div>
+          <div class="field">
+            <div class="field-label"><span>短信验证码</span><span class="link">重新发送</span></div>
+            <div class="code-row">
+              <div class="field-box"><i class="field-icon ri-chat-check-line"></i><span>请输入 6 位验证码</span></div>
+              <div class="code-btn">发送验证码</div>
+            </div>
+          </div>
+          <div class="field">
+            <div class="field-label"><span>设置密码</span><span class="hint">建议字母+数字组合</span></div>
+            <div class="field-box"><i class="field-icon ri-lock-password-line"></i><span>请输入 6-20 位登录密码</span><i style="margin-left:auto;color:#C8A99A;" class="ri-eye-off-line"></i></div>
+          </div>
+          <div class="field">
+            <div class="field-label"><span>确认密码</span><span class="hint">请再次输入</span></div>
+            <div class="field-box"><i class="field-icon ri-shield-user-line"></i><span>请再次输入登录密码</span></div>
+          </div>
+          <div class="tip"><i class="ri-information-line"></i><span>注册后默认进入 H5 会员中心。后续若接入小程序授权绑定，可以把当前手机号账号与微信身份关联到同一个会员主体。</span></div>
+          <div class="check-row"><div class="check-dot">✓</div><span>注册即表示同意《用户协议》《隐私政策》与短信验证规则</span></div>
+          <div class="submit">注册并登录</div>
+          <div class="subactions"><span>已经有账号？</span><span class="link">返回登录</span><span>|</span><span class="link">查看注册帮助</span></div>
+        </div>
+      </div>
+      <div class="safe-card">
+        <div class="safe-title">注册说明</div>
+        <div class="safe-desc">这里把“账号密码登录”和“短信登录”放在同一个登录页，把“手机号注册”单独成页，信息架构更清楚，也更适合后续真实落到 H5 路由和表单校验。</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,73 @@
+@use '../../../styles/variables' as *;
+
+.search-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+
+  &__bar {
+    padding: 16rpx 24rpx;
+    background: $warm-bg-white;
+  }
+
+  &__search-bar {
+    --nutui-searchbar-background: #{$warm-bg-warm-gray};
+    --nutui-searchbar-input-text-color: #{$warm-text-primary};
+    border-radius: $warm-radius-round;
+  }
+
+  &__body {
+    padding: 32rpx;
+  }
+}
+
+/* === Search Sections === */
+.search-section {
+  margin-bottom: 48rpx;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24rpx;
+  }
+
+  &__title {
+    font-size: $warm-font-lg;
+    font-weight: 600;
+    color: $warm-text-primary;
+    line-height: 44rpx;
+  }
+
+  &__clear {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16rpx;
+  }
+}
+
+/* === Search Tags === */
+.search-tag {
+  background: $warm-bg-white;
+  border-radius: $warm-radius-round;
+  padding: 14rpx 28rpx;
+  box-shadow: $warm-shadow-sm;
+
+  &--hot {
+    background: rgba($warm-primary, 0.06);
+  }
+
+  &__text {
+    font-size: $warm-font-sm;
+    color: $warm-text-primary;
+    line-height: 32rpx;
+
+    .search-tag--hot & {
+      color: $warm-primary-dark;
+    }
+  }
+}

@@ -1,0 +1,131 @@
+@use '../../../../styles/variables' as *;
+
+.address-edit {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+  padding-bottom: 140rpx;
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+
+  // ===== Form =====
+  &__form {
+    margin: $warm-spacing-md;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    overflow: hidden;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__field {
+    display: flex;
+    flex-direction: column;
+    padding: $warm-spacing-md $warm-spacing-lg;
+    border-bottom: 1rpx solid $warm-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &--switch {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  &__label {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    margin-bottom: $warm-spacing-xs;
+
+    .address-edit__field--switch & {
+      margin-bottom: 0;
+      font-size: $warm-font-md;
+      color: $warm-text-primary;
+    }
+  }
+
+  &__input {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    width: 100%;
+    padding: $warm-spacing-xs 0;
+
+    &--region {
+      flex: 1;
+    }
+  }
+
+  &__region-row {
+    display: flex;
+    gap: $warm-spacing-sm;
+  }
+
+  &__region-picker {
+    height: 72rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1rpx solid $warm-border-light;
+  }
+
+  &__region-text {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+  }
+
+  &__region-text--placeholder {
+    color: $warm-text-hint;
+  }
+
+  &__region-arrow {
+    font-size: 30rpx;
+    color: $warm-text-light;
+  }
+
+  &__switch {
+    transform: scale(0.92);
+    transform-origin: right center;
+  }
+
+  // ===== Save button =====
+  &__btn-wrap {
+    position: fixed;
+    bottom: 12rpx;
+    bottom: calc(env(safe-area-inset-bottom) + 12rpx);
+    left: 0;
+    right: 0;
+    z-index: 30;
+    padding: $warm-spacing-md;
+    background: transparent;
+  }
+
+  &__save-btn {
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $warm-gradient-primary;
+    border-radius: $warm-radius-round;
+
+    &--disabled {
+      opacity: 0.6;
+    }
+  }
+
+  &__save-btn-text {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-white;
+  }
+}

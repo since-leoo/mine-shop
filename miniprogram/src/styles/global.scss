@@ -1,0 +1,213 @@
+@use './variables' as *;
+
+// 温馨商城全局样式 - 匹配 design-mockup.html
+
+// === 页面基础 ===
+page {
+  background-color: $warm-bg-page;
+  color: $warm-text-primary;
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+// === 工具类 ===
+
+// 文字省略
+.ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ellipsis-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+// Flex 布局
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+// 安全区域
+.safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+// === 卡片基础样式 ===
+.warm-card {
+  background: $warm-bg-card;
+  border-radius: $warm-radius-lg;
+  box-shadow: $warm-shadow-sm;
+  margin: $warm-spacing-sm $warm-spacing-md;
+  padding: $warm-spacing-md;
+}
+
+// === 价格样式 ===
+.warm-price {
+  color: $warm-primary;
+  font-weight: 700;
+  font-size: $warm-font-lg;
+  &__symbol {
+    font-size: $warm-font-sm;
+  }
+  &__decimal {
+    font-size: $warm-font-sm;
+  }
+}
+
+// === 按钮基础 ===
+.warm-btn-primary {
+  background: $warm-gradient-primary;
+  color: $warm-text-white;
+  border: none;
+  border-radius: $warm-radius-round;
+  padding: 16rpx 48rpx;
+  font-size: $warm-font-md;
+  font-weight: 500;
+  height: 48rpx;
+  line-height: 48rpx;
+  &::after {
+    border: none;
+  }
+}
+
+.warm-btn-outline {
+  background: transparent;
+  color: $warm-primary;
+  border: 2rpx solid $warm-primary;
+  border-radius: $warm-radius-round;
+  padding: 16rpx 48rpx;
+  font-size: $warm-font-md;
+  height: 48rpx;
+  line-height: 48rpx;
+  &::after {
+    border: none;
+  }
+}
+
+.warm-btn-accent {
+  background: $warm-gradient-mint;
+  color: $warm-text-white;
+  border: none;
+  border-radius: $warm-radius-round;
+  padding: 16rpx 48rpx;
+  font-size: $warm-font-md;
+  font-weight: 500;
+  &::after {
+    border: none;
+  }
+}
+
+// === 标签 ===
+.warm-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 12rpx;
+  border-radius: $warm-radius-xs;
+  font-size: $warm-font-xs;
+  &--primary {
+    background: rgba($warm-primary, 0.1);
+    color: $warm-primary;
+  }
+  &--mint {
+    background: rgba($warm-accent-mint, 0.1);
+    color: $warm-accent-mint;
+  }
+  &--yellow {
+    background: rgba($warm-warm-yellow, 0.15);
+    color: #B8960F;
+  }
+}
+
+// === 分割线 ===
+.warm-divider {
+  height: 1rpx;
+  background: $warm-divider;
+  margin: $warm-spacing-sm 0;
+}
+
+// === 区块标题 ===
+.warm-section-title {
+  font-size: $warm-font-lg;
+  font-weight: bold;
+  color: $warm-text-primary;
+  &__bar {
+    display: inline-block;
+    width: 6rpx;
+    height: 28rpx;
+    background: $warm-primary;
+    border-radius: 3rpx;
+    margin-right: $warm-spacing-xs;
+    vertical-align: middle;
+  }
+}
+
+// === 渐变头部 ===
+.warm-gradient-header {
+  background: $warm-gradient-header;
+  padding-top: $warm-spacing-md;
+}
+
+// === 空状态 ===
+.warm-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $warm-spacing-xl 0;
+  &__text {
+    font-size: $warm-font-sm;
+    color: $warm-text-muted;
+    margin-top: $warm-spacing-md;
+  }
+}
+
+// === Page transition ===
+@keyframes warm-page-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.warm-page-enter {
+  animation: warm-page-fade-in 220ms ease both;
+}
+
+// === Loading ===
+@keyframes warm-skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.warm-skeleton {
+  background: linear-gradient(90deg, #f8ede5 25%, #fff8f3 40%, #f8ede5 60%);
+  background-size: 200% 100%;
+  animation: warm-skeleton 1.2s linear infinite;
+  border-radius: 12rpx;
+}

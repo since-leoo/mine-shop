@@ -1,0 +1,459 @@
+@use '../../../styles/variables' as *;
+
+.order-detail {
+  min-height: 100vh;
+  background: $warm-bg-page;
+  padding-bottom: 160rpx;
+
+  &--loading {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  &__loading-text {
+    color: $warm-text-secondary;
+    font-size: $warm-font-md;
+  }
+
+  // Status banner
+  &__status-banner {
+    margin: 20rpx 32rpx 0;
+    border-radius: 24rpx;
+    padding: 48rpx 40rpx;
+    background: $warm-gradient-primary;
+    position: relative;
+    overflow: hidden;
+  }
+
+  &__status-circle {
+    position: absolute;
+    right: -24rpx;
+    top: -24rpx;
+    width: 200rpx;
+    height: 200rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+  }
+
+  &__status {
+    font-size: 40rpx;
+    font-weight: 800;
+    color: $warm-text-white;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__status-sub {
+    display: block;
+    margin-top: 6rpx;
+    font-size: 24rpx;
+    color: rgba(255, 255, 255, 0.88);
+    position: relative;
+    z-index: 1;
+  }
+
+  // Logistics entry
+  &__logistics {
+    margin: 20rpx 32rpx 20rpx;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-md;
+    padding: 28rpx 32rpx;
+    display: flex;
+    align-items: flex-start;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__logistics-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__logistics-icon {
+    width: 44rpx;
+    height: 44rpx;
+    border-radius: 50%;
+    background: rgba(232, 131, 107, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20rpx;
+    flex-shrink: 0;
+    margin-top: 4rpx;
+  }
+
+  &__logistics-title {
+    font-size: 24rpx;
+    color: $warm-text-secondary;
+    line-height: 1.2;
+  }
+
+  &__logistics-text {
+    display: block;
+    margin-top: 6rpx;
+    font-size: 26rpx;
+    color: $warm-text-primary;
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  &__logistics-time {
+    display: block;
+    margin-top: 6rpx;
+    font-size: $warm-font-sm;
+    color: $warm-text-muted;
+  }
+
+  &__logistics-arrow {
+    font-size: 30rpx;
+    color: $warm-text-hint;
+    margin-left: 16rpx;
+    align-self: center;
+  }
+
+  // Address
+  &__address {
+    margin: 0 32rpx 20rpx;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-md;
+    padding: 28rpx 32rpx;
+    display: flex;
+    align-items: flex-start;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__address-icon {
+    width: 44rpx;
+    height: 44rpx;
+    border-radius: 50%;
+    background: rgba(232, 131, 107, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20rpx;
+    flex-shrink: 0;
+    margin-top: 4rpx;
+  }
+
+  &__address-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  &__address-user {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8rpx;
+  }
+
+  &__address-name {
+    font-size: 26rpx;
+    font-weight: bold;
+    color: $warm-text-primary;
+    margin-right: $warm-spacing-md;
+  }
+
+  &__address-phone {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+  }
+
+  &__icon-text {
+    font-size: 22rpx;
+    line-height: 1;
+    color: $warm-primary;
+    font-weight: 700;
+  }
+
+  &__address-detail {
+    font-size: 24rpx;
+    color: $warm-text-secondary;
+    line-height: 1.45;
+  }
+
+  // Goods card
+  &__goods-card {
+    margin: 20rpx 32rpx 0;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-md;
+    box-shadow: $warm-shadow-sm;
+    overflow: hidden;
+  }
+
+  &__goods {
+    display: flex;
+    padding: 24rpx 32rpx;
+
+    & + & {
+      border-top: 1rpx solid $warm-divider;
+    }
+  }
+
+  &__goods-img {
+    width: 152rpx;
+    height: 152rpx;
+    border-radius: $warm-radius-md;
+    flex-shrink: 0;
+  }
+
+  &__goods-info {
+    flex: 1;
+    margin: 0 $warm-spacing-sm;
+    overflow: hidden;
+  }
+
+  &__goods-title {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+  }
+
+  &__goods-specs {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+    margin-top: 8rpx;
+  }
+
+  &__goods-actions {
+    display: flex;
+    margin-top: 18rpx;
+  }
+
+  &__goods-action {
+    min-width: 144rpx;
+    height: 48rpx;
+    padding: 0 24rpx;
+    border-radius: 24rpx;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &--primary {
+      background: $warm-gradient-primary;
+    }
+
+    &--outline {
+      border: 2rpx solid $warm-primary;
+      background: rgba(232, 131, 107, 0.06);
+    }
+  }
+
+  &__goods-action-text {
+    font-size: 22rpx;
+    font-weight: 700;
+
+    &--primary {
+      color: $warm-text-white;
+    }
+
+    &--outline {
+      color: $warm-primary;
+    }
+  }
+
+  &__goods-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    flex-shrink: 0;
+  }
+
+  &__goods-price {
+    font-weight: bold;
+    color: $warm-text-primary;
+  }
+
+  &__goods-num {
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+    margin-top: 8rpx;
+  }
+
+  // Price section
+  &__price-section {
+    margin-top: 0;
+    padding: 16rpx 32rpx;
+    border-top: 1rpx solid $warm-divider;
+  }
+
+  &__price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $warm-spacing-xs 0;
+
+    &--total {
+      margin-top: 8rpx;
+      padding-top: 12rpx;
+      border-top: 1rpx solid $warm-divider;
+    }
+  }
+
+  &__price-label {
+    font-size: 24rpx;
+    color: $warm-text-secondary;
+  }
+
+  &__price-value {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    font-weight: bold;
+
+    &--free {
+      color: $warm-success;
+      font-weight: normal;
+    }
+
+    &--discount {
+      color: $warm-primary;
+    }
+  }
+
+  &__price-value-row {
+    display: flex;
+    align-items: center;
+  }
+
+  &__price-discount {
+    color: $warm-primary;
+    margin-right: 4rpx;
+  }
+
+  &__price-total {
+    color: $warm-primary;
+    font-weight: bold;
+    font-size: 40rpx;
+  }
+
+  // Info card
+  &__info-card {
+    margin: 20rpx 32rpx 0;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-md;
+    padding: 16rpx 32rpx 12rpx;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12rpx 0;
+  }
+
+  &__info-label {
+    font-size: 24rpx;
+    color: $warm-text-secondary;
+    flex-shrink: 0;
+  }
+
+  &__info-value-row {
+    display: flex;
+    align-items: center;
+  }
+
+  &__info-value {
+    font-size: 24rpx;
+    color: $warm-text-primary;
+  }
+
+  &__info-copy {
+    font-size: 22rpx;
+    color: $warm-text-body;
+    margin-left: $warm-spacing-sm;
+    padding: 2rpx 14rpx;
+    border: 1rpx solid $warm-border;
+    border-radius: 20rpx;
+  }
+
+  &__service-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8rpx;
+    margin-top: 8rpx;
+    padding-top: 18rpx;
+    border-top: 1rpx solid $warm-divider;
+  }
+
+  &__service-icon {
+    width: 30rpx;
+    height: 30rpx;
+    font-size: 28rpx;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__service-text {
+    font-size: 26rpx;
+    color: $warm-text-primary;
+    font-weight: 600;
+  }
+
+  // Bottom spacer & bar
+  &__bottom-spacer {
+    height: 140rpx;
+  }
+
+  &__bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: $warm-bg-white;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
+    gap: $warm-spacing-sm;
+    box-shadow: 0 -2rpx 10rpx rgba(200, 140, 110, 0.08);
+    z-index: 100;
+  }
+
+  &__btn {
+    height: 60rpx;
+    padding: 0 40rpx;
+    border-radius: 30rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--primary {
+      background: $warm-gradient-primary;
+    }
+
+    &--outline {
+      border: 2rpx solid $warm-border;
+      background: $warm-bg-white;
+    }
+
+    &--outline-primary {
+      border: 2rpx solid $warm-primary;
+      background: $warm-bg-white;
+    }
+  }
+
+  &__btn-text {
+    font-size: 26rpx;
+
+    &--primary {
+      color: $warm-text-white;
+      font-weight: bold;
+    }
+
+    &--outline {
+      color: $warm-text-secondary;
+    }
+
+    &--outline-primary {
+      color: $warm-primary;
+      font-weight: 700;
+    }
+  }
+}

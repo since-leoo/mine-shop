@@ -1,0 +1,184 @@
+.after-service-list {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7efe7 0%, #f5f6fa 200px);
+  padding: 24px;
+  box-sizing: border-box;
+
+  &__hero {
+    padding: 16px 4px 20px;
+  }
+
+  &__hero-title {
+    display: block;
+    font-size: 36px;
+    font-weight: 700;
+    color: #2c1f16;
+  }
+
+  &__hero-desc {
+    display: block;
+    margin-top: 10px;
+    color: #7c6f64;
+    font-size: 24px;
+  }
+
+  &__scroll {
+    height: calc(100vh - 150px);
+  }
+
+  &__tabs {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 18px;
+  }
+
+  &__tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 22px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #5f5349;
+    font-size: 24px;
+    border: 1px solid rgba(181, 146, 115, 0.14);
+  }
+
+  &__tab--active {
+    background: #2c1f16;
+    color: #fff8f0;
+    border-color: #2c1f16;
+  }
+
+  &--state {
+    display: flex;
+    min-height: 480px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280;
+    gap: 12px;
+  }
+
+  &__empty-title {
+    font-size: 32px;
+    color: #2c1f16;
+    font-weight: 600;
+  }
+
+  &__empty-desc {
+    font-size: 24px;
+  }
+
+  &__content {
+    padding-bottom: 24px;
+  }
+
+  &__card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(44, 31, 22, 0.05);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  &__status {
+    color: #b45309;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &__no,
+  &__name {
+    color: #2c1f16;
+    font-size: 26px;
+  }
+
+  &__body {
+    margin: 16px 0;
+  }
+
+  &__sku,
+  &__reason,
+  &__progress-desc {
+    display: block;
+    margin-top: 10px;
+    color: #7c6f64;
+    font-size: 24px;
+  }
+
+  &__progress-title {
+    display: block;
+    margin-top: 14px;
+    color: #2c1f16;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  &__footer-main {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    color: #7c6f64;
+    font-size: 24px;
+  }
+
+  &__footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  &__action {
+    min-width: 140px;
+    padding: 12px 18px;
+    border-radius: 999px;
+    border: 1px solid rgba(44, 31, 22, 0.16);
+    color: #5f5349;
+    font-size: 22px;
+    text-align: center;
+    background: #fffaf5;
+  }
+
+  &__action--primary {
+    background: #2c1f16;
+    border-color: #2c1f16;
+    color: #fff8f0;
+  }
+
+  &__status--pending_review,
+  &__status--waiting_buyer_return,
+  &__status--waiting_seller_receive,
+  &__status--waiting_refund,
+  &__status--refunding,
+  &__status--waiting_reship {
+    color: #b45309;
+  }
+
+  &__status--completed,
+  &__status--reshipped {
+    color: #047857;
+  }
+
+  &__status--closed {
+    color: #6b7280;
+  }
+}

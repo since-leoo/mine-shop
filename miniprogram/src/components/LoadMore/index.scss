@@ -1,0 +1,64 @@
+@use '../../styles/variables' as *;
+
+.load-more {
+  font-size: 24rpx;
+  height: 100rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.load-more__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.load-more__spinner {
+  --nutui-loading-icon-color: #{$warm-primary};
+}
+
+.load-more__loading-text {
+  color: $warm-text-hint;
+  font-size: 24rpx;
+}
+
+.load-more__no-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 32rpx;
+}
+
+.load-more__divider-line {
+  flex: 1;
+  height: 1rpx;
+  background: $warm-divider;
+}
+
+.load-more__no-more-text {
+  margin: 0 20rpx;
+  color: $warm-text-hint;
+  font-size: 24rpx;
+  white-space: nowrap;
+}
+
+.load-more__error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.load-more__error-text {
+  color: $warm-text-secondary;
+  font-size: 24rpx;
+}
+
+.load-more__refresh-btn {
+  margin-left: 16rpx;
+  color: $warm-primary;
+  font-size: 24rpx;
+}

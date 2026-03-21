@@ -1,0 +1,171 @@
+@use '../../../styles/variables' as *;
+
+.comments-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+}
+
+/* === Tabs === */
+.comments-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 24rpx 24rpx 16rpx;
+  background: $warm-bg-white;
+  gap: 16rpx;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+
+  &__item {
+    height: 56rpx;
+    padding: 0 20rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $warm-bg-warm-gray;
+    border-radius: $warm-radius-sm;
+    border: 2rpx solid transparent;
+
+    &--active {
+      background: rgba($warm-primary, 0.08);
+      border-color: $warm-primary;
+
+      .comments-tabs__text {
+        color: $warm-primary;
+        font-weight: 500;
+      }
+    }
+  }
+
+  &__text {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+  }
+}
+
+/* === Comment List === */
+.comments-list {
+  padding: 16rpx 24rpx;
+}
+
+/* === Comment Card === */
+.comment-card {
+  background: $warm-bg-white;
+  border-radius: $warm-radius-md;
+  padding: 28rpx 24rpx;
+  margin-bottom: 16rpx;
+  box-shadow: $warm-shadow-sm;
+
+  &__header {
+    display: flex;
+    align-items: center;
+  }
+
+  &__avatar {
+    width: 64rpx;
+    height: 64rpx;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: $warm-bg-warm-gray;
+  }
+
+  &__header-right {
+    margin-left: 16rpx;
+    flex: 1;
+  }
+
+  &__name {
+    font-size: $warm-font-sm;
+    color: $warm-text-primary;
+    font-weight: 500;
+    line-height: 36rpx;
+  }
+
+  &__stars {
+    display: flex;
+    margin-top: 4rpx;
+  }
+
+  &__time {
+    font-size: 22rpx;
+    color: $warm-text-hint;
+    flex-shrink: 0;
+  }
+
+  &__content {
+    margin-top: 20rpx;
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    line-height: 40rpx;
+  }
+
+  &__spec {
+    margin-top: 12rpx;
+    font-size: $warm-font-sm;
+    color: $warm-text-hint;
+  }
+
+  &__images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12rpx;
+    margin-top: 16rpx;
+  }
+
+  &__image {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: $warm-radius-sm;
+  }
+
+  &__reply {
+    margin-top: 20rpx;
+    padding: 20rpx;
+    background: $warm-bg-warm-gray;
+    border-radius: $warm-radius-sm;
+  }
+
+  &__reply-label {
+    font-size: $warm-font-sm;
+    color: $warm-primary;
+    font-weight: 500;
+  }
+
+  &__reply-text {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    line-height: 36rpx;
+  }
+}
+
+/* === Stars === */
+.comment-star {
+  font-size: 30rpx;
+  color: #d8c6b6;
+  margin-right: 4rpx;
+  text-shadow: 0 2rpx 6rpx rgba(120, 80, 28, 0.08);
+
+  &--active {
+    color: #f3b63f;
+    text-shadow: 0 4rpx 10rpx rgba(243, 182, 63, 0.22);
+  }
+}
+
+/* === Empty State === */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 200rpx;
+
+  &__icon {
+    font-size: 120rpx;
+    margin-bottom: 24rpx;
+  }
+
+  &__text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+}

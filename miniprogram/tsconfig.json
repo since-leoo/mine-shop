@@ -1,0 +1,37 @@
+{
+    "compilerOptions":  {
+                            "target":  "es2017",
+                            "module":  "commonjs",
+                            "removeComments":  false,
+                            "preserveConstEnums":  true,
+                            "moduleResolution":  "node",
+                            "experimentalDecorators":  true,
+                            "noImplicitAny":  false,
+                            "allowSyntheticDefaultImports":  true,
+                            "outDir":  "lib",
+                            "strictNullChecks":  true,
+                            "sourceMap":  true,
+                            "baseUrl":  "./taro-app",
+                            "rootDir":  ".",
+                            "jsx":  "react-jsx",
+                            "allowJs":  true,
+                            "resolveJsonModule":  true,
+                            "typeRoots":  [
+                                              "node_modules/@types"
+                                          ],
+                            "paths":  {
+                                          "@/*":  [
+                                                      "./src/*"
+                                                  ]
+                                      },
+                            "skipLibCheck":  true,
+                            "noUnusedLocals":  false,
+                            "noUnusedParameters":  false
+                        },
+    "include":  [
+                    "./src",
+                    "./types",
+                    "./config"
+                ],
+    "compileOnSave":  false
+}

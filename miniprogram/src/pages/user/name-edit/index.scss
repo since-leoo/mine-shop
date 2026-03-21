@@ -1,0 +1,60 @@
+@use '../../../styles/variables' as *;
+
+.name-edit {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+
+  &__card {
+    margin: $warm-spacing-md;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    padding: $warm-spacing-lg;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__label {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    display: block;
+    margin-bottom: $warm-spacing-sm;
+  }
+
+  &__input {
+    font-size: $warm-font-lg;
+    color: $warm-text-primary;
+    width: 100%;
+    padding: $warm-spacing-sm 0;
+    border-bottom: 2rpx solid $warm-divider;
+  }
+
+  &__count {
+    font-size: $warm-font-xs;
+    color: $warm-text-hint;
+    display: block;
+    text-align: right;
+    margin-top: $warm-spacing-xs;
+  }
+
+  &__btn-wrap {
+    padding: $warm-spacing-xl $warm-spacing-md;
+  }
+
+  &__save-btn {
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: $warm-gradient-primary;
+    border-radius: $warm-radius-round;
+
+    &--disabled {
+      opacity: 0.6;
+    }
+  }
+
+  &__save-btn-text {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-white;
+  }
+}

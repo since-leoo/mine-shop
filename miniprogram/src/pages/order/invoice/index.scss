@@ -1,0 +1,97 @@
+@use '../../../styles/variables' as *;
+
+.invoice {
+  min-height: 100vh;
+  background: $warm-bg-page;
+  padding: $warm-spacing-lg;
+
+  &__card {
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    padding: $warm-spacing-lg;
+    margin-bottom: $warm-spacing-md;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__section-title {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-primary;
+    display: block;
+    margin-bottom: $warm-spacing-md;
+  }
+
+  &__type-row {
+    display: flex;
+    gap: $warm-spacing-md;
+  }
+
+  &__type-btn {
+    flex: 1;
+    height: 72rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $warm-radius-md;
+    border: 2rpx solid $warm-border;
+    background: $warm-bg-white;
+    transition: all 0.2s;
+
+    &--active {
+      border-color: $warm-primary;
+      background: rgba($warm-primary, 0.06);
+    }
+  }
+
+  &__type-text {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+  }
+
+  &__field {
+    display: flex;
+    align-items: center;
+    padding: $warm-spacing-md 0;
+    border-bottom: 1rpx solid $warm-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__label {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    width: 160rpx;
+    flex-shrink: 0;
+  }
+
+  &__input {
+    flex: 1;
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+  }
+
+  &__footer {
+    margin-top: $warm-spacing-xl;
+  }
+
+  &__submit-btn {
+    background: $warm-gradient-primary;
+    border-radius: $warm-radius-round;
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--disabled {
+      opacity: 0.6;
+    }
+  }
+
+  &__submit-text {
+    color: $warm-text-white;
+    font-size: $warm-font-lg;
+    font-weight: bold;
+  }
+}

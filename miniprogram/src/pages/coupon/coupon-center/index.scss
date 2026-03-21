@@ -1,0 +1,175 @@
+@use '../../../styles/variables' as *;
+
+.coupon-center {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+
+  // ===== Header =====
+  &__header {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0 0 $warm-radius-xl $warm-radius-xl;
+  }
+
+  &__header-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $warm-gradient-primary;
+  }
+
+  &__header-content {
+    position: relative;
+    padding: $warm-spacing-xl $warm-spacing-lg $warm-spacing-lg;
+    text-align: center;
+  }
+
+  &__header-title {
+    font-size: $warm-font-xxl;
+    font-weight: bold;
+    color: $warm-text-white;
+    display: block;
+  }
+
+  &__header-desc {
+    font-size: $warm-font-sm;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: $warm-spacing-xs;
+    display: block;
+  }
+
+  // ===== State =====
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+
+  // ===== List =====
+  &__list {
+    padding: $warm-spacing-md;
+  }
+
+  // ===== Card =====
+  &__card {
+    display: flex;
+    align-items: stretch;
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    margin-bottom: $warm-spacing-md;
+    overflow: hidden;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__card-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 200rpx;
+    flex-shrink: 0;
+    padding: $warm-spacing-md $warm-spacing-sm;
+    background: linear-gradient(135deg, rgba(232, 131, 107, 0.1) 0%, rgba(232, 131, 107, 0.05) 100%);
+  }
+
+  &__card-amount-row {
+    display: flex;
+    align-items: baseline;
+  }
+
+  &__card-currency {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-primary;
+  }
+
+  &__card-value {
+    font-size: 52rpx;
+    font-weight: bold;
+    color: $warm-primary;
+    line-height: 1.1;
+  }
+
+  &__card-condition {
+    font-size: $warm-font-xs;
+    color: $warm-text-secondary;
+    margin-top: $warm-spacing-xs;
+  }
+
+  &__card-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: $warm-spacing-md;
+    gap: $warm-spacing-sm;
+  }
+
+  &__card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__card-title {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-primary;
+    margin-bottom: $warm-spacing-xs;
+  }
+
+  &__card-tag {
+    display: inline-block;
+    font-size: $warm-font-xs;
+    color: $warm-primary;
+    border: 1rpx solid $warm-primary;
+    padding: 2rpx 8rpx;
+    border-radius: $warm-radius-sm;
+    margin-bottom: $warm-spacing-xs;
+    align-self: flex-start;
+  }
+
+  &__card-desc {
+    font-size: $warm-font-sm;
+    color: $warm-text-secondary;
+    margin-bottom: 4rpx;
+  }
+
+  &__card-time {
+    font-size: $warm-font-xs;
+    color: $warm-text-hint;
+  }
+
+  // ===== Receive button =====
+  &__receive-btn {
+    width: 120rpx;
+    height: 64rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: $warm-radius-round;
+    background: $warm-gradient-primary;
+    flex-shrink: 0;
+
+    &--disabled {
+      background: $warm-bg-warm-gray;
+    }
+  }
+
+  &__receive-btn-text {
+    font-size: $warm-font-sm;
+    font-weight: bold;
+    color: $warm-text-white;
+
+    .coupon-center__receive-btn--disabled & {
+      color: $warm-text-hint;
+    }
+  }
+}

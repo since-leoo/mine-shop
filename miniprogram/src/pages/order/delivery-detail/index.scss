@@ -1,0 +1,138 @@
+@use '../../../styles/variables' as *;
+
+.delivery-detail {
+  min-height: 100vh;
+  background: $warm-bg-page;
+  padding: $warm-spacing-lg;
+
+  &--loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &__loading-text {
+    color: $warm-text-secondary;
+    font-size: $warm-font-md;
+  }
+
+  &__info-card {
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    padding: $warm-spacing-lg;
+    margin-bottom: $warm-spacing-md;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: $warm-spacing-sm 0;
+
+    & + & {
+      border-top: 1rpx solid $warm-divider;
+    }
+  }
+
+  &__info-label {
+    font-size: $warm-font-md;
+    color: $warm-text-secondary;
+  }
+
+  &__info-value-row {
+    display: flex;
+    align-items: center;
+  }
+
+  &__info-value {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+  }
+
+  &__copy-btn {
+    font-size: $warm-font-sm;
+    color: $warm-primary;
+    margin-left: $warm-spacing-sm;
+    padding: 4rpx 16rpx;
+    border: 1rpx solid $warm-primary;
+    border-radius: $warm-radius-sm;
+  }
+
+  &__timeline-card {
+    background: $warm-bg-white;
+    border-radius: $warm-radius-lg;
+    padding: $warm-spacing-lg;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__card-title {
+    font-size: $warm-font-md;
+    font-weight: bold;
+    color: $warm-text-primary;
+    display: block;
+    margin-bottom: $warm-spacing-lg;
+  }
+
+  &__timeline {
+    padding-left: 8rpx;
+  }
+}
+
+// Delivery timeline nodes
+.delivery-node {
+  display: flex;
+  min-height: 100rpx;
+
+  &__dot-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-right: $warm-spacing-md;
+    width: 24rpx;
+    flex-shrink: 0;
+  }
+
+  &__dot {
+    width: 18rpx;
+    height: 18rpx;
+    border-radius: 50%;
+    background: $warm-border;
+    flex-shrink: 0;
+
+    &--active {
+      background: $warm-primary;
+      box-shadow: 0 0 0 6rpx rgba($warm-primary, 0.2);
+    }
+  }
+
+  &__line {
+    width: 2rpx;
+    flex: 1;
+    background: $warm-divider;
+    margin: 6rpx 0;
+  }
+
+  &__content {
+    flex: 1;
+    padding-bottom: $warm-spacing-md;
+  }
+
+  &__desc {
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+    display: block;
+    margin-bottom: 6rpx;
+    line-height: 1.4;
+  }
+
+  &__time {
+    font-size: $warm-font-xs;
+    color: $warm-text-hint;
+  }
+
+  &--active &__desc {
+    color: $warm-primary;
+    font-weight: 500;
+  }
+}

@@ -1,0 +1,14 @@
+@use 'styles/theme';
+@use 'styles/global';
+@import '@nutui/nutui-react-taro/dist/style.css';
+
+page {
+  background: var(--warm-bg-page);
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB',
+    'Microsoft Yahei', sans-serif;
+  color: var(--warm-text-primary);
+  font-size: 28rpx;
+  line-height: 1.6;
+  animation: warm-page-fade-in 220ms ease both;
+}

@@ -1,0 +1,34 @@
+@use '../../../styles/variables' as *;
+
+.coupon-goods-page {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+
+  &__banner {
+    background: $warm-gradient-primary;
+    padding: $warm-spacing-md $warm-spacing-lg;
+    text-align: center;
+  }
+
+  &__banner-text {
+    font-size: $warm-font-md;
+    color: $warm-text-white;
+    font-weight: bold;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: $warm-font-md;
+    color: $warm-text-hint;
+  }
+
+  &__list {
+    padding: $warm-spacing-md;
+  }
+}

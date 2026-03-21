@@ -1,0 +1,348 @@
+@use '../../../styles/variables' as *;
+
+.promotion-detail {
+  min-height: 100vh;
+  background-color: $warm-bg-page;
+
+  &__banner-wrap {
+    position: relative;
+    height: 336rpx;
+    overflow: hidden;
+  }
+
+  &__banner-circle {
+    position: absolute;
+    border-radius: 50%;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  &__banner-circle--right {
+    width: 280rpx;
+    height: 280rpx;
+    right: -60rpx;
+    top: -40rpx;
+  }
+
+  &__banner-circle--left {
+    width: 180rpx;
+    height: 180rpx;
+    left: 60rpx;
+    bottom: -60rpx;
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  &__banner-img,
+  &__banner-fallback {
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: $warm-gradient-primary;
+  }
+
+  &__banner-mask {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(232, 131, 107, 0.2), rgba(212, 101, 77, 0.16));
+    z-index: 0;
+  }
+
+  &__banner-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8rpx 40rpx 0;
+    z-index: 2;
+  }
+
+  &__banner-title {
+    display: block;
+    font-size: 52rpx;
+    line-height: 1.1;
+    font-weight: 800;
+    color: $warm-text-white;
+  }
+
+  &__banner-sub {
+    display: block;
+    margin-top: 8rpx;
+    font-size: 24rpx;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__cd-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__cd-top {
+    font-size: 22rpx;
+    line-height: 22rpx;
+    color: rgba(255, 255, 255, 0.84);
+    margin-bottom: 8rpx;
+  }
+
+  &__cd-blocks {
+    display: flex;
+    align-items: center;
+  }
+
+  &__cd-block {
+    min-width: 48rpx;
+    height: 44rpx;
+    border-radius: 8rpx;
+    background: rgba(0, 0, 0, 0.28);
+    color: $warm-text-white;
+    font-size: 24rpx;
+    line-height: 24rpx;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6rpx;
+    box-sizing: border-box;
+  }
+
+  &__cd-sep {
+    margin: 0 6rpx;
+    color: $warm-text-white;
+    font-size: 24rpx;
+    line-height: 24rpx;
+    font-weight: 700;
+  }
+
+  &__rules-entry {
+    position: absolute;
+    right: 40rpx;
+    bottom: 24rpx;
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    z-index: 2;
+  }
+
+  &__rules-label,
+  &__rules-arrow {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 24rpx;
+    line-height: 24rpx;
+  }
+
+  &__state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 120rpx 0;
+  }
+
+  &__state-text {
+    font-size: 28rpx;
+    line-height: 28rpx;
+    color: $warm-text-hint;
+  }
+
+  &__goods-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20rpx;
+    margin-top: 12rpx;
+    padding: 0 32rpx 24rpx;
+    position: relative;
+    z-index: 2;
+  }
+
+  &__card {
+    background: $warm-bg-white;
+    border-radius: 32rpx;
+    overflow: hidden;
+    box-shadow: $warm-shadow-sm;
+  }
+
+  &__card-img-wrap {
+    position: relative;
+    width: 100%;
+    height: 328rpx;
+    background: $warm-bg-warm;
+  }
+
+  &__card-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  &__card-badge {
+    position: absolute;
+    left: 16rpx;
+    top: 16rpx;
+    height: 28rpx;
+    line-height: 28rpx;
+    border-radius: 20rpx;
+    padding: 0 16rpx;
+    font-size: 20rpx;
+    color: $warm-text-white;
+    background: $warm-primary;
+    font-weight: 700;
+  }
+
+  &__card-body {
+    padding: 20rpx 24rpx 24rpx;
+  }
+
+  &__card-title {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    min-height: 72rpx;
+    font-size: 26rpx;
+    color: $warm-text-primary;
+    line-height: 1.4;
+    font-weight: 600;
+  }
+
+  &__card-price-row {
+    margin-top: 8rpx;
+    display: flex;
+    align-items: baseline;
+    gap: 10rpx;
+  }
+
+  &__card-price {
+    font-size: 36rpx;
+    font-weight: 800;
+    color: $warm-primary;
+    line-height: 36rpx;
+  }
+
+  &__card-origin {
+    font-size: 22rpx;
+    color: $warm-text-light;
+    text-decoration: line-through;
+  }
+
+  &__progress-row {
+    margin-top: 12rpx;
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+  }
+
+  &__progress-track {
+    flex: 1;
+    height: 12rpx;
+    border-radius: 6rpx;
+    background: $warm-bg-warm;
+    overflow: hidden;
+  }
+
+  &__progress-fill {
+    height: 100%;
+    border-radius: 6rpx;
+    background: $warm-gradient-primary;
+  }
+
+  &__progress-text {
+    font-size: 20rpx;
+    line-height: 20rpx;
+    color: $warm-text-muted;
+    white-space: nowrap;
+  }
+
+  &__progress-text--warn {
+    color: $warm-primary;
+    font-weight: 600;
+  }
+
+  &__session-wrap {
+    margin: -20rpx 24rpx 0;
+    background: #fff;
+    border-radius: 28rpx;
+    box-shadow: $warm-shadow-sm;
+    position: relative;
+    z-index: 3;
+    padding: 12rpx;
+  }
+
+  &__session-scroll {
+    display: flex;
+    gap: 12rpx;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+
+  &__session-item {
+    min-width: 132rpx;
+    border-radius: 20rpx;
+    background: #F7F1EC;
+    padding: 12rpx 8rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  &__session-item--active {
+    background: $warm-gradient-primary;
+  }
+
+  &__session-time {
+    font-size: 26rpx;
+    line-height: 26rpx;
+    color: $warm-text-muted;
+    font-weight: 700;
+  }
+
+  &__session-time--active {
+    color: #fff;
+  }
+
+  &__session-status {
+    margin-top: 6rpx;
+    font-size: 20rpx;
+    line-height: 20rpx;
+    color: $warm-text-muted;
+  }
+
+  &__session-status--active {
+    color: rgba(255, 255, 255, 0.92);
+  }
+
+  &__mid-banner {
+    margin: 16rpx 24rpx 0;
+    border-radius: 28rpx;
+    padding: 20rpx 24rpx;
+    background: linear-gradient(135deg, #FFDCCB, #F8BBA0);
+    box-shadow: $warm-shadow-sm;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__mid-title {
+    display: block;
+    font-size: 30rpx;
+    line-height: 30rpx;
+    font-weight: 800;
+    color: #7B3F2D;
+  }
+
+  &__mid-sub {
+    display: block;
+    margin-top: 4rpx;
+    font-size: 22rpx;
+    line-height: 22rpx;
+    color: #9A5F4D;
+  }
+
+  &__mid-link {
+    font-size: 24rpx;
+    line-height: 24rpx;
+    color: #7B3F2D;
+    font-weight: 700;
+  }
+}

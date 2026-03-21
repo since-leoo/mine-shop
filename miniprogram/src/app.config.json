@@ -1,0 +1,79 @@
+﻿{
+  "pages": [
+    "pages/home/index",
+    "pages/category/index",
+    "pages/cart/index",
+    "pages/usercenter/index",
+    "pages/auth/login/index",
+    "pages/auth/register/index",
+    "pages/auth/forgot-password/index",
+    "pages/goods/list/index",
+    "pages/goods/details/index",
+    "pages/goods/search/index",
+    "pages/goods/result/index",
+    "pages/goods/comments/index",
+    "pages/goods/comments/create/index",
+    "pages/order/order-confirm/index",
+    "pages/order/cashier/index",
+    "pages/order/receipt/index",
+    "pages/order/pay-result/index",
+    "pages/order/order-list/index",
+    "pages/order/order-detail/index",
+    "pages/order/apply-service/index",
+    "pages/order/after-service-list/index",
+    "pages/order/after-service-detail/index",
+    "pages/order/fill-return-shipping/index",
+    "pages/order/fill-tracking-no/index",
+    "pages/order/delivery-detail/index",
+    "pages/order/invoice/index",
+    "pages/coupon/coupon-list/index",
+    "pages/coupon/coupon-detail/index",
+    "pages/coupon/coupon-activity-goods/index",
+    "pages/coupon/coupon-center/index",
+    "pages/promotion/detail/index",
+    "pages/promotion/group-buy/index",
+    "pages/usercenter/wallet-transactions/index",
+    "pages/user/person-info/index",
+    "pages/user/address/list/index",
+    "pages/user/address/edit/index",
+    "pages/user/name-edit/index"
+  ],
+  "tabBar": {
+    "color": "#A89088",
+    "selectedColor": "#E8836B",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页",
+        "iconPath": "assets/tab/home.png",
+        "selectedIconPath": "assets/tab/home-active.png"
+      },
+      {
+        "pagePath": "pages/category/index",
+        "text": "分类",
+        "iconPath": "assets/tab/category.png",
+        "selectedIconPath": "assets/tab/category-active.png"
+      },
+      {
+        "pagePath": "pages/cart/index",
+        "text": "购物车",
+        "iconPath": "assets/tab/cart.png",
+        "selectedIconPath": "assets/tab/cart-active.png"
+      },
+      {
+        "pagePath": "pages/usercenter/index",
+        "text": "我的",
+        "iconPath": "assets/tab/user.png",
+        "selectedIconPath": "assets/tab/user-active.png"
+      }
+    ]
+  },
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "温馨商城",
+    "navigationBarTextStyle": "black"
+  }
+}

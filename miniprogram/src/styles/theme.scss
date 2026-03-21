@@ -1,0 +1,54 @@
+// NutUI 主题覆盖 - 温馨风格
+// 覆盖 NutUI CSS 变量以匹配温馨设计系统 (design-mockup.html)
+
+:root,
+page {
+  // 主色调
+  --nutui-brand-color: #E8836B;
+  --nutui-brand-color-start: #FDDCC8;
+  --nutui-brand-color-end: #E8836B;
+  --nutui-brand-link-color: #E8836B;
+
+  // 圆角
+  --nutui-button-border-radius: 999rpx;
+  --nutui-cell-border-radius: 16rpx;
+
+  // TabBar
+  --nutui-tabbar-active-color: #E8836B;
+  --nutui-tabbar-inactive-color: #A89088;
+
+  // 按钮
+  --nutui-button-primary-background-color: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+  --nutui-button-primary-border-color: #E8836B;
+  --nutui-button-primary-color: #FFFFFF;
+
+  // 对话框
+  --nutui-dialog-button-primary-color: #E8836B;
+
+  // 输入框
+  --nutui-input-active-color: #E8836B;
+
+  // Tag
+  --nutui-tag-primary-background-color: #E8836B;
+
+  // Badge
+  --nutui-badge-background-color: #E8836B;
+
+  // 导航栏
+  --nutui-navbar-background: #FFFFFF;
+  --nutui-navbar-title-font-weight: 500;
+
+  // Checkbox
+  --nutui-checkbox-label-color: #4A3228;
+  --nutui-checkbox-icon-checked-color: #E8836B;
+
+  // SearchBar
+  --nutui-searchbar-background: transparent;
+  --nutui-searchbar-input-background: rgba(255, 255, 255, 0.9);
+
+  // Popup
+  --nutui-popup-border-radius: 24rpx;
+
+  // Toast
+  --nutui-toast-background: rgba(74, 50, 40, 0.88);
+}
