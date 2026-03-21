@@ -20,7 +20,7 @@ use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
 
 /**
- * 会员聚合根.
+ * 濠电姷鏁搁崑鐐差焽濞嗘挸瑙﹂悗锝庡枟閸ゅ苯螖閿濆懎鏆欑紒鐘靛枛閺岀喖骞嗛弶鍟冩捇鏌涢妶鍛偓褰掑箞閵娿儺娼ㄩ柛鈩冾殔椤亪姊虹粙娆剧劸闁稿﹥绻堝?
  */
 final class MemberEntity
 {
@@ -37,6 +37,8 @@ final class MemberEntity
     private ?string $gender = null;
 
     private ?string $phone = null;
+
+    private ?string $password = null;
 
     private ?Carbon $birthday = null;
 
@@ -83,7 +85,7 @@ final class MemberEntity
     private array $dirtyFields = [];
 
     /**
-     * 创建行为方法：接收 DTO，内部组装设置值.
+     * 闂傚倸鍊风粈渚€骞夐敍鍕殰婵°倕鍟伴惌娆撴煙鐎电啸缁惧彞绮欓弻鐔煎箲閹邦剛鍘梺绋款儐閿曘垽骞冨鈧幃娆戞崉娓氼垱顥嶇紓鍌欒閸嬫捇鎮楅敐搴℃灍闁绘挻鐩弻娑氫沪閸撗咁吋濠电偛鍚嬮崝妤呮儉椤忓牜鏁囬柣鎰版涧閻撶喖姊烘潪鎵槮缂佸鎸抽敐鐐测攽鐎ｅ灚鏅ｉ梺缁樺姇濡﹤危婵犳碍鈷掑ù锝咁潟閳ь兘鍋撻梺?DTO闂傚倸鍊烽悞锔锯偓绗涘懐鐭欓柟杈鹃檮閸ゆ劖銇勯弽顐粶闁肩缍婇弻鐔虹磼閵忕姵鐏嶉梺缁樺浮缁犳牠寮婚弴鐔虹鐟滃秹骞婇幇鐗堝亗濞撴埃鍋撻柡宀嬬秮閹垽宕滄笟鍥ㄐ滈梻浣侯攰濞呮洟骞戦崶顑锯偓浣糕枎閹惧啿宓嗛梺缁橆焽閺佹悂鏁嶉悙宸富闁靛牆妫欓悡銉╂煟閵娧冨幋鐎?
      */
     public function create(MemberInput $dto): self
     {
@@ -109,7 +111,7 @@ final class MemberEntity
     }
 
     /**
-     * 更新行为方法：接收 DTO，内部组装设置值.
+     * 闂傚倸鍊风粈渚€骞栭鈷氭椽濡舵径瀣槐闂侀潧艌閺呮盯鎷戦悢灏佹斀闁绘ɑ褰冮顏堟煕鐎ｎ偓鑰块柟顔斤耿閹瑧鎹勬笟顖涱棈缂傚倷璁查崑鎾绘倵閿濆骸鏋熼柣鎾寸洴閺屾稓浠﹂崜褏顓煎┑鐐插悑閸旀鎯€椤忓牜鏁囬柣鎰版涧閻撶喖姊烘潪鎵槮缂佸鎸抽敐鐐测攽鐎ｅ灚鏅ｉ梺缁樺姇濡﹤危婵犳碍鈷掑ù锝咁潟閳ь兘鍋撻梺?DTO闂傚倸鍊烽悞锔锯偓绗涘懐鐭欓柟杈鹃檮閸ゆ劖銇勯弽顐粶闁肩缍婇弻鐔虹磼閵忕姵鐏嶉梺缁樺浮缁犳牠寮婚弴鐔虹鐟滃秹骞婇幇鐗堝亗濞撴埃鍋撻柡宀嬬秮閹垽宕滄笟鍥ㄐ滈梻浣侯攰濞呮洟骞戦崶顑锯偓浣糕枎閹惧啿宓嗛梺缁橆焽閺佹悂鏁嶉悙宸富闁靛牆妫欓悡銉╂煟閵娧冨幋鐎?
      */
     public function update(MemberInput $dto): self
     {
@@ -134,12 +136,12 @@ final class MemberEntity
     }
 
     /**
-     * 更新状态行为方法.
+     * 闂傚倸鍊风粈渚€骞栭鈷氭椽濡舵径瀣槐闂侀潧艌閺呮盯鎷戦悢灏佹斀闁绘ê寮舵径鍕煕鐎ｎ偄濮嶉柡灞诲€濆畷顐﹀Ψ椤旇姤鐦滈梻浣侯焾椤戝棝骞愭繝姘闁告侗鍨虫す鎶芥倵閿濆骸浜濋柡澶岊焾閳规垿鎮欓弶鎴犱桓闂佽鎮傜粻鏍х暦閺囥垹围濠㈣泛锕ㄩ幗鏇㈡⒑缂佹ɑ鐓ラ柣銊︾箞瀵?
      */
     public function updateStatus(string $status): self
     {
         if (! \in_array($status, ['active', 'inactive', 'banned'], true)) {
-            throw new BusinessException(ResultCode::FAIL, '无效的会员状态');
+            throw new BusinessException(ResultCode::FAIL, 'Invalid member status');
         }
 
         $this->setStatus($status);
@@ -147,7 +149,7 @@ final class MemberEntity
     }
 
     /**
-     * 同步标签行为方法.
+     * 闂傚倸鍊风粈渚€骞夐敓鐘冲殞濡わ絽鍟€氬銇勯幒鎴濐伌闁轰礁妫濋弻锝夊箛椤掍焦鍎撻梺鍛婂姀閸嬫捇姊绘担瑙勫仩闁稿寒鍣ｅ鏌ュ煛閸涱厾顦銈嗘磵閸嬫捇鏌熼鎸庣【闁宠棄顦灒濞撴凹鍨遍鍕⒑閼姐倕校闁告梹顨婂畷浼村冀瑜滈崵鏇熴亜閹烘垵鈧綊宕伴崱娑欑厱闁哄洢鍔岄獮鎴︽煃?
      *
      * @param int[] $tagIds
      */
@@ -236,6 +238,62 @@ final class MemberEntity
     {
         $this->phone = $phone;
         $this->markDirty('phone');
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(?string $password): void
+    {
+        if ($password === null || trim($password) === '') {
+            return;
+        }
+
+        $this->password = password_hash($password, PASSWORD_DEFAULT);
+        $this->markDirty('password');
+    }
+
+    public function setHashedPassword(?string $password): void
+    {
+        $this->password = $password;
+        if ($password !== null) {
+            $this->markDirty('password');
+        }
+    }
+
+    public function hasPassword(): bool
+    {
+        return $this->password !== null && $this->password !== '';
+    }
+
+    public function verifyPassword(string $password): bool
+    {
+        return $this->hasPassword() && password_verify($password, (string) $this->password);
+    }
+
+
+    public function resetLoginPassword(string $password): self
+    {
+        $this->setPassword($password);
+
+        return $this;
+    }
+
+    public function loginByPassword(string $password, ?string $ip = null): self
+    {
+        if (! $this->verifyPassword($password)) {
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Invalid phone or password');
+        }
+
+        $this->setLastLoginAt(now());
+        if ($ip !== null && trim($ip) !== '') {
+            $this->setLastLoginIp($ip);
+        }
+        $this->setSource($this->source ?? 'h5');
+
+        return $this;
     }
 
     public function getBirthday(): ?Carbon
@@ -454,7 +512,7 @@ final class MemberEntity
     public function bindPhone(string $phone): self
     {
         if (trim($phone) === '') {
-            throw new \DomainException('手机号不能为空');
+            throw new \DomainException('Phone number is required');
         }
 
         $this->setPhone($phone);
@@ -462,7 +520,7 @@ final class MemberEntity
     }
 
     /**
-     * 授权头像昵称行为方法.
+     * 闂傚倸鍊烽懗鍫曞箠閹捐绠规い鎰堕檮閸嬪鈹戦悩鎻掍簽闁绘帊绮欓弻娑㈩敃閵堝懏鐎荤紓浣稿閸嬨倝寮婚埄鍐ㄧ窞閻庯綆浜炴禒鎾⒑閸涘﹥灏柕鍫熸倐瀵鏁撻悩鑼槹濡炪倖鎸鹃崰鎰掗崟顖涘仩婵ǜ鍎辨慨鍌炴煙椤旀寧纭鹃柍钘夘槸铻ｅ〒姘煎灡椤斿嫰姊洪懡銈呅ｉ柛鏃€顨婂畷浼村冀瑜滈崵鏇熴亜閹烘垵鈧綊宕伴崱娑欑厱闁哄洢鍔岄獮鎴︽煃?
      */
     public function authorizeProfile(ProfileAuthorizeInput $input): self
     {
@@ -484,7 +542,7 @@ final class MemberEntity
     }
 
     /**
-     * 修改个人资料行为方法.
+     * 濠电姷鏁搁崕鎴犲緤閽樺褰掑磼閻愯尙鐛ュ┑掳鍊曢幊搴ㄥ几娓氣偓閺屾稖绠涘顑挎睏闂佸磭绮褰掑Φ閸曨喚鐤€闁规崘娅曞▓鏌ユ⒑濞茶绨风紒顔界懇楠炲啰娑甸崪浣剐╅梺璇插閸戝綊宕ｉ崘顭戝殨闁归棿鐒﹂弲顒勬煕閺囥劌澧ù鐘冲浮閺岋綀绠涢弴鐐板摋婵犮垻鎳撻悧蹇曞垝閸懇鍋撻敐搴℃灍闁绘挻鐩弻娑氫沪閸撗咁吋濠电偛鍚嬮崝妤呮儉?
      */
     public function updateProfile(ProfileUpdateInput $input): self
     {
@@ -522,6 +580,7 @@ final class MemberEntity
                 'avatar' => $this->avatar,
                 'gender' => $this->gender,
                 'phone' => $this->phone,
+                'password' => $this->password,
                 'birthday' => $this->birthday?->toDateString(),
                 'city' => $this->city,
                 'province' => $this->province,

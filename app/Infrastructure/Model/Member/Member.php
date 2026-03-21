@@ -30,6 +30,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $avatar
  * @property string $gender
  * @property null|string $phone
+ * @property null|string $password
  * @property null|Carbon $birthday
  * @property null|string $city
  * @property null|string $province
@@ -65,6 +66,7 @@ class Member extends Model
         'avatar',
         'gender',
         'phone',
+        'password',
         'birthday',
         'city',
         'province',
@@ -97,6 +99,8 @@ class Member extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    protected array $hidden = ['password'];
 
     protected array $appends = [
         'points_balance',

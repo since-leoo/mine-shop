@@ -1,0 +1,15 @@
+{
+    "name": "since/sms",
+    "version": "1.0.0",
+    "description": "短信验证码插件，提供基于 Redis 的验证码存储、频率限制与 EasySms 发送能力",
+    "author": "since",
+    "namespace": "Plugin\\Sms",
+    "priority": 10,
+    "enabled": true,
+    "dependencies": [],
+    "composer_require": {
+        "overtrue/easy-sms": "^3.0"
+    },
+    "rollback_on_uninstall": false,
+    "configProvider": "Plugin\\Sms\\ConfigProvider"
+}

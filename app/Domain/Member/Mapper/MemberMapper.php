@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Mapper;
 
+use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Contract\MemberInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Infrastructure\Model\Member\Member;
@@ -34,6 +35,27 @@ final class MemberMapper
     {
         $entity = new MemberEntity();
         $entity->create($dto);
+        return $entity;
+    }
+
+    public static function fromRegisterInput(RegisterInput $input): MemberEntity
+    {
+        $entity = new MemberEntity();
+        self::fillRegisterInput($entity, $input);
+
+        return $entity;
+    }
+
+    public static function fillRegisterInput(MemberEntity $entity, RegisterInput $input): MemberEntity
+    {
+        $entity->setPhone($input->getPhone());
+        if ($entity->getNickname() === null || trim((string) $entity->getNickname()) === '') {
+            $entity->setNickname('用户' . substr($input->getPhone(), -4));
+        }
+        $entity->setSource('h5');
+        $entity->setStatus($entity->getStatus() ?? 'active');
+        $entity->setPassword($input->getPassword());
+
         return $entity;
     }
 
@@ -63,6 +85,7 @@ final class MemberMapper
         $entity->setAvatar($member->avatar);
         $entity->setGender($member->gender);
         $entity->setPhone($member->phone);
+        $entity->setHashedPassword($member->password);
         if ($member->birthday instanceof Carbon) {
             $entity->setBirthday($member->birthday);
         }

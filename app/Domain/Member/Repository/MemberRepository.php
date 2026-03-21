@@ -124,6 +124,13 @@ final class MemberRepository extends IRepository
         return $member ? MemberMapper::fromModel($member) : null;
     }
 
+    public function findModelByPhone(string $phone): ?Member
+    {
+        /** @var null|Member $member */
+        $member = $this->getQuery()->where('phone', $phone)->first();
+        return $member;
+    }
+
     public function findByInviteCode(string $inviteCode): ?MemberEntity
     {
         /** @var null|Member $member */

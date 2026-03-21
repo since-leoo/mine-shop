@@ -24,6 +24,7 @@
     "ext-pdo_mysql": "*",
     "ext-redis": "*",
     "ext-swoole": ">=5.0",
+    "ext-xlswriter": "*",
     "friendsofhyperf/tinker": "^3.1",
     "hyperf/async-queue": "3.1.*",
     "hyperf/cache": "3.1.*",
@@ -65,13 +66,13 @@
     "mineadmin/jwt": "~3.0",
     "mineadmin/support": "~3.0",
     "mineadmin/upload": "~3.0",
+    "overtrue/easy-sms": "*",
     "overtrue/flysystem-qiniu": "^3.2",
     "phpoffice/phpspreadsheet": "^2.0",
     "since-leoo/hyperf-plugin": "^1.0",
     "tangwei/dto": "*",
     "w7corp/easywechat": "^6.5",
-    "yansongda/pay": "^3.6",
-    "ext-xlswriter": "*"
+    "yansongda/pay": "^3.6"
   },
   "require-dev": {
     "dg/bypass-finals": "^1.9",
