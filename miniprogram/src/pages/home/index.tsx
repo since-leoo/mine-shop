@@ -349,6 +349,42 @@ function HomeDefaultView(props: {
         ))}
       </View>
 
+      <View className="home-activity-info">
+        <View className="home-activity-info__head">
+          <View className="home-activity-info__head-left">
+            <View className="home-activity-info__bar" />
+            <Text className="home-activity-info__title">今日活动直达</Text>
+          </View>
+          <Text className="home-activity-info__note">{loading ? '加载中...' : '精选会场'}</Text>
+        </View>
+        <View className="home-activity-info__cards">
+          <View className="home-activity-info__card home-activity-info__card--seckill" onClick={openSeckillTopic}>
+            <Text className="home-activity-info__card-title">限时秒杀</Text>
+            <Text className="home-activity-info__card-sub">爆款低价专场 点击直达秒杀会场</Text>
+            {seckillCountdown.overDay ? (
+              <Text className="home-activity-info__long">
+                {seckillCountdown.days}天{seckillCountdown.hours}小时{seckillCountdown.minutes}分{seckillCountdown.seconds}秒
+              </Text>
+            ) : (
+              <View className="home-activity-info__countdown">
+                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.hours}</Text></View>
+                <Text className="home-activity-info__countdown-sep">:</Text>
+                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.minutes}</Text></View>
+                <Text className="home-activity-info__countdown-sep">:</Text>
+                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.seconds}</Text></View>
+              </View>
+            )}
+          </View>
+          <View className="home-activity-info__card home-activity-info__card--group" onClick={openGroupBuyTopic}>
+            <Text className="home-activity-info__card-title">拼团活动</Text>
+            <Text className="home-activity-info__card-sub">多人拼团更划算 热门好物持续开团</Text>
+            <View className="home-activity-info__chip">
+              <Text className="home-activity-info__chip-text">立即开团</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
       {seckillList.length > 0 ? (
         <View className="home-seckill">
           <View className="home-seckill__header">
