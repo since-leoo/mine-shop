@@ -29,7 +29,7 @@ final class AppApiProductQueryService
      */
     public function page(array $filters, int $page = 1, int $pageSize = 20): array
     {
-        return $this->productQueryService->page($filters, $page, $pageSize);
+        return $this->productQueryService->pageForList($filters, $page, $pageSize);
     }
 
     /**

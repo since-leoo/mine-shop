@@ -62,6 +62,9 @@
         <div class="setting-card__body">
             <div v-if="isStandaloneDialog(item)" class="dialog-card">
               <p class="dialog-card__desc">{{ item.description || t('mall.system.clickToConfig') }}</p>
+              <div v-if="standaloneDialogSummary(item)" class="dialog-card__summary">
+                {{ standaloneDialogSummary(item) }}
+              </div>
               <el-button type="primary" @click="openDialog(item)">
                 {{ dialogButtonLabel(item) }}
               </el-button>
@@ -126,7 +129,7 @@
               v-else-if="isUpload(item)"
               v-model="formValues[item.key]"
               :limit="1"
-              :size="item.meta?.preview_size ?? 90"
+              :size="resolveUploadPreviewSize(item)"
             />
 
             <div
@@ -648,7 +651,19 @@ const dialogTriggerMap = computed<Record<string, SystemSettingItem[]>>(() => {
 })
 const displaySettings = computed(() => {
   const items = settings.value.filter(item => item.meta?.display !== 'dialog' || !item.meta?.trigger_key)
-  return items.sort((a, b) => Number(isWideCard(a)) - Number(isWideCard(b)))
+  return items.sort((a, b) => {
+    const sortDiff = (a.sort ?? 0) - (b.sort ?? 0)
+    if (sortDiff !== 0) {
+      return sortDiff
+    }
+
+    const widthDiff = Number(isWideCard(a)) - Number(isWideCard(b))
+    if (widthDiff !== 0) {
+      return widthDiff
+    }
+
+    return a.key.localeCompare(b.key)
+  })
 })
 const dialogSetting = ref<SystemSettingItem | null>(null)
 const dialogVisible = ref(false)
@@ -778,6 +793,11 @@ const isUpload = (item: SystemSettingItem) => {
   return item.meta?.component === 'upload'
 }
 
+const resolveUploadPreviewSize = (item: SystemSettingItem) => {
+  void item
+  return 72
+}
+
 const isWideCard = (item: SystemSettingItem) => {
   if (Array.isArray(item.meta?.display_span)) {
     if (item.meta.display_span.includes('full')) {
@@ -789,6 +809,9 @@ const isWideCard = (item: SystemSettingItem) => {
     if (item.meta.display_span.includes('compact')) {
       return false
     }
+  }
+  if (isStandaloneDialog(item)) {
+    return false
   }
   if (isStructuredForm(item) || isCollectionForm(item) || isTagList(item)) {
     return true
@@ -824,6 +847,16 @@ const dialogButtonLabel = (dialogItem: SystemSettingItem) => {
     return dialogItem.meta.button_label
   }
   return t('mall.system.configLabel')
+}
+
+const standaloneDialogSummary = (item: SystemSettingItem) => {
+  if (isCollectionForm(item)) {
+    const rows = Array.isArray(formValues[item.key]) ? formValues[item.key] : []
+    const count = rows.filter(row => isPlainObject(row) && Object.values(row).some(value => String(value ?? '').trim() !== '')).length
+    const meta = getCollectionMeta(item)
+    return `已配置 ${count} 项，建议 ${meta.minItems}-${Number.isFinite(meta.maxItems) ? meta.maxItems : count || meta.minItems} 项`
+  }
+  return ''
 }
 
 const isDialogTriggerActive = (triggerKey: string, dialogItem: SystemSettingItem) => {
@@ -1407,10 +1440,13 @@ onActivated(async () => {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 14px;
   grid-auto-flow: dense;
+  align-items: stretch;
 }
 
 .setting-grid__item {
-  align-self: flex-start;
+  display: flex;
+  min-height: 100%;
+  align-self: stretch;
 }
 
 .setting-grid__item--full {
@@ -1436,12 +1472,22 @@ onActivated(async () => {
 }
 
 .setting-card {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 100%;
   border-radius: 16px;
   border: 1px solid var(--setting-card-border);
   background: var(--setting-card-bg);
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
+
+  :deep(.el-card__body) {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -1493,16 +1539,22 @@ onActivated(async () => {
 
   &__body {
     width: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 0;
   }
 
   &__footer {
-    margin-top: 14px;
-    padding-top: 12px;
+    margin-top: auto;
+    padding-top: 16px;
     border-top: 1px dashed var(--el-border-color-lighter);
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   &__key {
@@ -1642,6 +1694,15 @@ onActivated(async () => {
   &__desc {
     font-size: 13px;
     color: var(--el-text-color-regular);
+  }
+
+  &__summary {
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--el-color-primary) 8%, var(--el-fill-color-light));
+    color: var(--el-color-primary);
+    font-size: 13px;
+    font-weight: 600;
   }
 }
 </style>

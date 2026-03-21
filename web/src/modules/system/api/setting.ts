@@ -25,6 +25,7 @@ export interface SystemSettingItemVo {
   description?: string | null
   meta?: Record<string, any>
   is_sensitive?: boolean
+  sort?: number
   default?: any
   value?: any
 }

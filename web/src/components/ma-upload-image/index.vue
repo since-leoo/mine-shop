@@ -78,12 +78,12 @@ function btnRender() {
             isOpenResource.value = true
           }}
         >
-          <ma-svg-icon name="material-symbols:folder-open-outline-rounded" size={18} />
+          <ma-svg-icon name="material-symbols:folder-open-outline-rounded" size={14} />
         </a>
       </el-tooltip>
-      <div class="mt-18% flex flex-col items-center">
-        <ma-svg-icon name="ep:plus" size={20} />
-        <span class="mt-1 text-[14px]">{ title ?? t('uploadImage') }</span>
+      <div class="ma-upload-placeholder">
+        <ma-svg-icon name="ep:plus" size={18} />
+        <span class="ma-upload-placeholder__text">{ title ?? t('uploadImage') }</span>
       </div>
     </a>
   )
@@ -269,14 +269,21 @@ watch(
 }
 .ma-upload-container {
   @apply flex items-center justify-center bg-gray-50 b-1 b-dashed rounded-md b-gray-3 dark-b-dark-50
-    transition-all duration-300 text-gray-5 dark-bg-dark-5 relative;
+    transition-all duration-300 text-gray-5 dark-bg-dark-5 relative overflow-hidden;
   ;
 
   .ma-resource-btn {
-    @apply absolute top-0 b-1 b-dashed b-gray-3 dark-b-dark-50 transition-all duration-300 rounded-t-md
-      w-[calc(100%)] mx-auto b-t-0 b-l-0 b-r-0 text-gray-5 dark-bg-dark-8 bg-gray-1 h-[calc(100%-80%)]
-      flex items-center justify-center
+    @apply absolute top-1.5 right-1.5 z-2 transition-all duration-300 rounded-md text-gray-5 dark-bg-dark-8 bg-white/92
+      w-6 h-6 flex items-center justify-center shadow-sm border border-solid border-gray-2
     ;
+  }
+
+  .ma-upload-placeholder {
+    @apply flex h-full w-full flex-col items-center justify-center gap-1 px-2 text-center;
+  }
+
+  .ma-upload-placeholder__text {
+    @apply text-[12px] leading-[1.2] text-gray-6 break-all;
   }
 
   .ma-preview-mask {

@@ -23,7 +23,40 @@ use Hyperf\Database\Model\Builder;
  */
 final class ProductRepository extends IRepository
 {
+    /**
+     * @var string[]
+     */
+    private const API_LIST_COLUMNS = [
+        'id',
+        'name',
+        'sub_title',
+        'main_image',
+        'min_price',
+        'max_price',
+        'real_sales',
+        'virtual_sales',
+        'is_recommend',
+        'is_hot',
+        'is_new',
+        'status',
+    ];
+
     public function __construct(protected readonly Product $model) {}
+
+    /**
+     * @param array<string, mixed> $params
+     * @return array{list: array<int, array<string, mixed>>, total: int}
+     */
+    public function pageForApiList(array $params = [], ?int $page = null, ?int $pageSize = null): array
+    {
+        $result = $this->buildApiListQuery($params)->paginate(
+            perPage: $pageSize,
+            pageName: static::PER_PAGE_PARAM_NAME,
+            page: $page,
+        );
+
+        return $this->handlePage($result);
+    }
 
     public function findById(int $id): ?object
     {
@@ -143,6 +176,14 @@ final class ProductRepository extends IRepository
             ->when(isset($params['max_price']) && $params['max_price'] !== '', static fn (Builder $q) => $q->where('max_price', '<=', (int) $params['max_price']))
             ->when(isset($params['sales_min']) && $params['sales_min'] !== '', static fn (Builder $q) => $q->where('real_sales', '>=', (int) $params['sales_min']))
             ->when(isset($params['sales_max']) && $params['sales_max'] !== '', static fn (Builder $q) => $q->where('real_sales', '<=', (int) $params['sales_max']))
-            ->with(['category', 'brand', 'skus']);
+            ->with(['skus' => static fn ($relation) => $relation->select(['id', 'product_id'])]);
+    }
+
+    /**
+     * @param array<string, mixed> $params
+     */
+    private function buildApiListQuery(array $params): Builder
+    {
+        return $this->perQuery($this->getQuery(), $params)->select(self::API_LIST_COLUMNS);
     }
 }

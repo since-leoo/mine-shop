@@ -14,6 +14,10 @@ namespace App\Interface\Api\Transformer;
 
 final class HomeTransformer
 {
+    public function __construct(
+        private readonly ProductTransformer $productTransformer
+    ) {}
+
     /**
      * @param array<string, mixed> $payload
      * @return array<string, mixed>
@@ -25,13 +29,13 @@ final class HomeTransformer
             'tabList' => [],
             'activityImg' => $payload['activity_image'] ?? null,
             'sections' => [
-                'featured' => $payload['featured_products'] ?? [],
-                'hot' => $payload['hot_products'] ?? [],
-                'new' => $payload['new_products'] ?? [],
+                'featured' => $this->transformProductSection($payload['featured_products'] ?? []),
+                'hot' => $this->transformProductSection($payload['hot_products'] ?? []),
+                'new' => $this->transformProductSection($payload['new_products'] ?? []),
             ],
             'headline' => $payload['headline'] ?? '',
             'categoryList' => $this->transformCategories($payload['categories'] ?? []),
-            'seckillList' => $payload['seckill']['list'] ?? [],
+            'seckillList' => $this->transformProductSection($payload['seckill']['list'] ?? []),
             'seckillEndTime' => $payload['seckill']['endTime'] ?? 0,
             'seckillTitle' => $payload['seckill']['title'] ?? '',
             'seckillActivityId' => $payload['seckill']['activityId'] ?? 0,
@@ -61,5 +65,17 @@ final class HomeTransformer
                 'icon' => ($category->icon ?? null) ?: null,
             ];
         }, $categories));
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $products
+     * @return array<int, array<string, mixed>>
+     */
+    private function transformProductSection(array $products): array
+    {
+        return array_values(array_map(
+            fn (array $product): array => $this->productTransformer->transformListItem($product),
+            $products
+        ));
     }
 }

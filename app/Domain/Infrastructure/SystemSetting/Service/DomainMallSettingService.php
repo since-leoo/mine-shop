@@ -57,6 +57,8 @@ final class DomainMallSettingService extends IService
             (string) $this->value('mall.basic.miniapp_logo', '/logo.svg'),
             (string) $this->value('mall.basic.favicon', '/favicon.ico'),
             (string) $this->value('mall.basic.logo', '/logo.svg'),
+            (string) $this->value('mall.basic.user_agreement', ''),
+            (string) $this->value('mall.basic.privacy_policy', ''),
             (string) $this->value('mall.basic.support_email', 'support@minemall.local'),
             (string) $this->value('mall.basic.hotline', '400-888-0000'),
         );

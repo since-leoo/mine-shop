@@ -25,6 +25,8 @@ final class BasicSetting
         private readonly string $miniappLogo,
         private readonly string $favicon,
         private readonly string $logo,
+        private readonly string $userAgreement,
+        private readonly string $privacyPolicy,
         private readonly string $supportEmail,
         private readonly string $hotline,
     ) {}
@@ -65,6 +67,16 @@ final class BasicSetting
     public function logo(): string
     {
         return $this->logo;
+    }
+
+    public function userAgreement(): string
+    {
+        return $this->userAgreement;
+    }
+
+    public function privacyPolicy(): string
+    {
+        return $this->privacyPolicy;
     }
 
     public function supportEmail(): string

@@ -5,18 +5,29 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1;
 
 use App\Application\Api\Auth\AppApiAuthCommandService;
+use App\Application\Api\Auth\AppApiAuthQueryService;
 use App\Interface\Api\Request\V1\ForgotPasswordRequest;
 use App\Interface\Api\Request\V1\RegisterRequest;
 use App\Interface\Api\Request\V1\SendVerificationCodeRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
+use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\PostMapping;
 
 #[Controller(prefix: '/api/v1/auth')]
 final class AuthController extends AbstractController
 {
-    public function __construct(private readonly AppApiAuthCommandService $authService) {}
+    public function __construct(
+        private readonly AppApiAuthCommandService $authService,
+        private readonly AppApiAuthQueryService $authQueryService,
+    ) {}
+
+    #[GetMapping(path: 'register/protocols')]
+    public function registerProtocols(): Result
+    {
+        return $this->success($this->authQueryService->registerProtocols());
+    }
 
     #[PostMapping(path: 'captcha')]
     public function captcha(SendVerificationCodeRequest $request): Result

@@ -31,7 +31,7 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 90,
+                        'preview_size' => 72,
                     ],
                     'default' => '/logo.svg',
                     'sort' => 15,
@@ -55,7 +55,7 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 90,
+                        'preview_size' => 72,
                     ],
                     'default' => '/logo.svg',
                     'sort' => 17,
@@ -67,7 +67,7 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 60,
+                        'preview_size' => 52,
                     ],
                     'default' => '',
                     'sort' => 18,
@@ -92,12 +92,32 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 60,
+                        'preview_size' => 52,
                     ],
                     'default' => '/logo.svg',
                     'sort' => 20,
                 ],
                 // 语言与时区相关能力暂不开放
+                'mall.basic.user_agreement' => [
+                    'label' => '用户协议',
+                    'description' => 'H5 注册页用于展示的用户协议内容。',
+                    'type' => 'text',
+                    'meta' => [
+                        'display_span' => ['wide'],
+                    ],
+                    'default' => '欢迎您使用 MineMall 商城服务。用户在注册、登录及使用本平台服务前，应当仔细阅读并同意本协议全部内容。用户完成注册后，即视为已具备相应民事行为能力，并同意遵守平台关于商品浏览、下单支付、售后服务、账号安全及内容发布等相关规则。用户应妥善保管账号信息，不得将账号出借、转让或用于任何违法违规用途；因用户自身原因造成的账号泄露、交易风险或损失，由用户自行承担。平台有权在法律法规允许范围内对服务内容、活动规则及协议条款进行调整，并通过站内公告或页面公示方式通知用户。',
+                    'sort' => 90,
+                ],
+                'mall.basic.privacy_policy' => [
+                    'label' => '隐私政策',
+                    'description' => 'H5 注册页用于展示的隐私政策内容。',
+                    'type' => 'text',
+                    'meta' => [
+                        'display_span' => ['wide'],
+                    ],
+                    'default' => 'MineMall 重视您的个人信息与隐私安全。为了向您提供注册登录、商品购买、订单履约、售后服务及通知提醒等功能，我们可能会收集您的手机号、账号信息、收货信息、订单信息及设备基础信息，并仅在提供服务、保障交易安全、优化体验及符合法律法规要求的范围内使用。未经您的明确同意，我们不会将您的个人信息用于与本平台服务无关的用途，也不会向无关第三方出售您的个人信息。您有权依法查阅、更正、删除相关信息，并可通过平台客服与我们联系。我们将采取合理的技术与管理措施保护您的信息安全。',
+                    'sort' => 95,
+                ],
                 'mall.basic.support_email' => [
                     'label' => '客服邮箱',
                     'description' => '用于系统通知与工单回复的官方邮箱。',
@@ -118,7 +138,9 @@ return [
                     'type' => 'json',
                     'meta' => [
                         'component' => 'collection',
-                        'display_span' => ['full'],
+                        'display_span' => ['compact'],
+                        'display' => 'dialog',
+                        'button_label' => '配置 Banner',
                         'add_label' => '新增 Banner',
                         'min_items' => 3,
                         'max_items' => 6,
@@ -146,7 +168,7 @@ return [
                     'meta' => [
                         'component' => 'upload',
                         'display_span' => ['compact'],
-                        'preview_size' => 120,
+                        'preview_size' => 84,
                     ],
                     'default' => '',
                     'sort' => 80,
@@ -167,6 +189,7 @@ return [
                         'options' => [
                             ['label' => '阿里云短信', 'value' => 'aliyun'],
                             ['label' => '腾讯云短信', 'value' => 'tencent'],
+                            ['label' => '云片短信', 'value' => 'yunpian'],
                             ['label' => '关闭短信', 'value' => 'disabled'],
                         ],
                     ],

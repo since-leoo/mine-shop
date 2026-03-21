@@ -89,8 +89,13 @@ final class DomainSystemSettingService extends IService
      */
     public function groups(): array
     {
+        $definitions = $this->configGroups();
+        uasort($definitions, static function (array $a, array $b): int {
+            return ((int) ($a['sort'] ?? 0)) <=> ((int) ($b['sort'] ?? 0));
+        });
+
         $groups = [];
-        foreach ($this->configGroups() as $key => $group) {
+        foreach ($definitions as $key => $group) {
             $groups[] = [
                 'key' => (string) $key,
                 'label' => (string) ($group['label'] ?? $key),
@@ -115,6 +120,9 @@ final class DomainSystemSettingService extends IService
         }
 
         $items = $definition['settings'] ?? [];
+        uasort($items, static function (array $a, array $b): int {
+            return ((int) ($a['sort'] ?? 0)) <=> ((int) ($b['sort'] ?? 0));
+        });
         $values = $this->indexByKey($this->getGroup($group));
 
         $result = [];
@@ -130,6 +138,7 @@ final class DomainSystemSettingService extends IService
                 'description' => $item['description'] ?? null,
                 'meta' => \is_array($meta) ? $meta : [],
                 'is_sensitive' => $isSensitive,
+                'sort' => (int) ($item['sort'] ?? 0),
                 'default' => $item['default'] ?? null,
                 'value' => $value,
             ];

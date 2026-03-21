@@ -16,11 +16,6 @@ use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Catalog\Product\Repository\ProductRepository;
 use App\Infrastructure\Abstract\IService;
 
-/**
- * 面向 API 场景的商品查询领域服务.
- *
- * 继承 IService 获得 page()、count() 等基类方法.
- */
 final class DomainApiProductQueryService extends IService
 {
     public function __construct(
@@ -29,8 +24,15 @@ final class DomainApiProductQueryService extends IService
     ) {}
 
     /**
-     * 商品详情（含快照缓存）.
-     *
+     * @param array<string, mixed> $filters
+     * @return array{list: array<int, array<string, mixed>>, total: int}
+     */
+    public function pageForList(array $filters, int $page = 1, int $pageSize = 20): array
+    {
+        return $this->repository->pageForApiList($filters, $page, $pageSize);
+    }
+
+    /**
      * @return null|array<string, mixed>
      */
     public function findById(mixed $id): ?array
