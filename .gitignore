@@ -25,3 +25,5 @@ storage/uploads
 .qoder
 .kiro
 web/*.lock
+docs/superpowers
+web/.codex
