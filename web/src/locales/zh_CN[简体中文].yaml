@@ -1276,6 +1276,7 @@ member:
     sourceManual: 手动
     memberIdLabel: 会员ID
     memberIdPlaceholder: 请输入会员ID
+    memberSelectPlaceholder: 请选择会员
     walletType: 钱包类型
     balanceWallet: 余额钱包
     pointsWallet: 积分钱包
@@ -1300,6 +1301,7 @@ member:
     walletTypePlaceholder: 请选择钱包类型
     changeValue: 变动金额
     changeValueRequired: 请输入变动值
+    memberLoadFailed: 加载会员失败
     memberIdRequired: 请输入会员ID
     walletTypeRequired: 请选择钱包类型
     sourceRequired: 请选择来源

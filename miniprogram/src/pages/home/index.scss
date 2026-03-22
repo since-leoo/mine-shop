@@ -14,6 +14,10 @@
   background: $warm-gradient-header;
   padding-top: 16rpx;
   padding-bottom: 20rpx;
+
+  &--with-quick {
+    padding-bottom: 28rpx;
+  }
 }
 
 // ========= 搜索栏 =========
@@ -183,6 +187,7 @@
   align-items: flex-start;
   padding: 28rpx 16rpx 20rpx;
   margin: 0 32rpx;
+  margin-top: 8rpx;
   background: #fff;
   border-radius: 32rpx;
   box-shadow: $warm-shadow-sm;

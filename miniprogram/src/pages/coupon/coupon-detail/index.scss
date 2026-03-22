@@ -1,121 +1,241 @@
-@use '../../../styles/variables' as *;
-
 .coupon-detail-page {
   min-height: 100vh;
-  background-color: $warm-bg-page;
-  padding-bottom: 160rpx;
+  background: #FAF3ED;
+  padding: 0 32rpx 180rpx;
 
   &__state {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 120rpx 0;
+    background: #FAF3ED;
   }
 
   &__state-text {
-    font-size: $warm-font-md;
-    color: $warm-text-hint;
+    font-size: 28rpx;
+    color: #A89088;
   }
 
-  // ===== Header card =====
-  &__header {
+  &__hero-wrap {
+    margin: 0 -32rpx;
+    padding: 0 32rpx 28rpx;
+    background: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 72%, #FAF3ED 100%);
+  }
+
+  &__hero {
     position: relative;
-    margin: $warm-spacing-md;
-    border-radius: $warm-radius-lg;
     overflow: hidden;
-    box-shadow: $warm-shadow-md;
+    margin-top: 20rpx;
+    border-radius: 48rpx;
+    padding: 36rpx 30rpx 40rpx;
+    background: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 45%, #E8836B 100%);
+    box-shadow: 0 8rpx 30rpx rgba(200,140,110,0.16);
   }
 
-  &__header-bg {
+  &__hero-glow {
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: $warm-gradient-primary;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.14);
+
+    &--left {
+      left: -48rpx;
+      top: -60rpx;
+      width: 240rpx;
+      height: 240rpx;
+    }
+
+    &--right {
+      right: -60rpx;
+      bottom: -80rpx;
+      width: 300rpx;
+      height: 300rpx;
+    }
   }
 
-  &__header-content {
+  &__hero-label,
+  &__hero-amount,
+  &__hero-title,
+  &__hero-time {
     position: relative;
-    padding: $warm-spacing-xl $warm-spacing-lg;
+    z-index: 1;
+    display: block;
+  }
+
+  &__hero-label {
+    font-size: 24rpx;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.88);
+  }
+
+  &__hero-amount {
+    margin-top: 20rpx;
+    font-size: 52rpx;
+    line-height: 1.3;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  &__hero-title {
+    margin-top: 20rpx;
+    font-size: 28rpx;
+    line-height: 1.5;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.94);
+  }
+
+  &__hero-time {
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  &__ticket,
+  &__panel {
+    margin-top: 20rpx;
+    background: #FFFFFF;
+    border-radius: 44rpx;
+    box-shadow: 0 4rpx 16rpx rgba(200,140,110,0.12);
+  }
+
+  &__ticket {
+    display: flex;
+    overflow: hidden;
+  }
+
+  &__ticket-left {
+    width: 224rpx;
+    padding: 36rpx 24rpx;
+    background: linear-gradient(160deg, #f6c8b2 0%, #e68e75 100%);
+  }
+
+  &__ticket-key {
+    display: block;
+    font-size: 22rpx;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  &__ticket-value {
+    display: block;
+    margin-top: 18rpx;
+    font-size: 36rpx;
+    line-height: 1.4;
+    font-weight: 800;
+    color: #fff;
+  }
+
+  &__ticket-divider {
+    width: 28rpx;
+    background:
+      radial-gradient(circle at left center, #FAF3ED 14rpx, transparent 14.5rpx) left top / 28rpx 52rpx repeat-y,
+      linear-gradient(to bottom, #F0DDD4 0, #F0DDD4 10rpx, transparent 10rpx, transparent 18rpx) center / 2rpx 18rpx repeat-y;
+  }
+
+  &__ticket-right {
+    flex: 1;
+    padding: 32rpx 32rpx 28rpx 8rpx;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    justify-content: center;
   }
 
-  &__amount {
-    font-size: $warm-font-xxl;
-    font-weight: bold;
-    color: $warm-text-white;
-    margin-bottom: $warm-spacing-sm;
+  &__ticket-title {
+    font-size: 30rpx;
+    line-height: 1.45;
+    font-weight: 700;
+    color: #40291f;
   }
 
-  &__title {
-    font-size: $warm-font-md;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: $warm-spacing-xs;
+  &__ticket-desc {
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    line-height: 1.6;
+    color: #6B5248;
   }
 
-  &__time {
-    font-size: $warm-font-sm;
-    color: rgba(255, 255, 255, 0.7);
+  &__ticket-status {
+    margin-top: 20rpx;
+    align-self: flex-start;
+    padding: 8rpx 16rpx;
+    border-radius: 999rpx;
+    background: rgba(216, 106, 82, 0.12);
+    font-size: 20rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #D4654D;
   }
 
-  // ===== Info cells =====
-  &__info {
-    margin: $warm-spacing-md;
-    background: $warm-bg-white;
-    border-radius: $warm-radius-lg;
-    overflow: hidden;
-    box-shadow: $warm-shadow-sm;
+  &__panel-item {
+    padding: 32rpx;
+    border-bottom: 1rpx solid #F8EDE5;
+
+    &--last {
+      border-bottom: 0;
+    }
   }
 
-  &__cell {
-    --nutui-cell-title-color: #{$warm-text-primary};
-    --nutui-cell-desc-color: #{$warm-text-secondary};
+  &__panel-label {
+    display: block;
+    font-size: 24rpx;
+    font-weight: 700;
+    color: #40291f;
   }
 
-  // ===== Actions =====
-  &__actions {
+  &__panel-value {
+    display: block;
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    line-height: 1.75;
+    color: #6B5248;
+  }
+
+  &__footer {
     position: fixed;
-    bottom: 0;
     left: 0;
     right: 0;
+    bottom: 0;
+    padding: 0 32rpx 24rpx;
+    background: linear-gradient(180deg, rgba(250, 243, 237, 0) 0%, rgba(250, 243, 237, 0.92) 24%, rgba(250, 243, 237, 1) 100%);
+  }
+
+  &__footer-inner {
     display: flex;
-    gap: $warm-spacing-md;
-    padding: $warm-spacing-md;
-    background: $warm-bg-white;
-    box-shadow: 0 -2rpx 12rpx rgba(200, 140, 110, 0.08);
+    gap: 20rpx;
+    padding: 20rpx;
+    border-radius: 48rpx;
+    background: #FFFFFF;
+    box-shadow: 0 4rpx 16rpx rgba(200,140,110,0.12);
   }
 
   &__btn {
     flex: 1;
-    height: 88rpx;
+    height: 84rpx;
+    border-radius: 999rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: $warm-radius-round;
 
-    &--outline {
-      border: 2rpx solid $warm-primary;
-      background: $warm-bg-white;
+    &--plain {
+      background: #FFF1E8;
+      border: 1rpx solid rgba(232, 131, 107, 0.22);
     }
 
     &--primary {
-      background: $warm-gradient-primary;
+      background: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 45%, #E8836B 100%);
+      box-shadow: 0 4rpx 14rpx rgba(232,131,107,0.24);
     }
   }
 
   &__btn-text {
-    font-size: $warm-font-md;
-    font-weight: bold;
+    font-size: 26rpx;
+    font-weight: 700;
 
-    &--outline {
-      color: $warm-primary;
+    &--plain {
+      color: #D4654D;
     }
 
     &--primary {
-      color: $warm-text-white;
+      color: #fff;
     }
   }
 }

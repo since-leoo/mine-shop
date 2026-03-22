@@ -5,7 +5,7 @@
 page {
   // 主色调
   --nutui-brand-color: #E8836B;
-  --nutui-brand-color-start: #FDDCC8;
+  --nutui-brand-color-start: #F09E8B;
   --nutui-brand-color-end: #E8836B;
   --nutui-brand-link-color: #E8836B;
 
@@ -18,7 +18,7 @@ page {
   --nutui-tabbar-inactive-color: #A89088;
 
   // 按钮
-  --nutui-button-primary-background-color: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+  --nutui-button-primary-background-color: linear-gradient(135deg, #F8C8AF 0%, #F09E8B 48%, #E8836B 100%);
   --nutui-button-primary-border-color: #E8836B;
   --nutui-button-primary-color: #FFFFFF;
 
@@ -44,11 +44,11 @@ page {
 
   // SearchBar
   --nutui-searchbar-background: transparent;
-  --nutui-searchbar-input-background: rgba(255, 255, 255, 0.9);
+  --nutui-searchbar-input-background: #FFFDFC;
 
   // Popup
   --nutui-popup-border-radius: 24rpx;
 
   // Toast
-  --nutui-toast-background: rgba(74, 50, 40, 0.88);
+  --nutui-toast-background: rgba(74, 50, 40, 0.95);
 }

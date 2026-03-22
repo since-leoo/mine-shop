@@ -1,8 +1,8 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { getCurrentInstance, usePullDownRefresh, useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
-import { Tabs } from '@nutui/nutui-react-taro';
 import { fetchCouponList } from '../../../services/coupon';
+import CouponNav from '../../../components/coupon-nav';
 import './index.scss';
 
 const TAB_LIST = [
@@ -10,6 +10,12 @@ const TAB_LIST = [
   { text: '已使用', key: 1 },
   { text: '已过期', key: 2 },
 ];
+
+const STATUS_TEXT_MAP: Record<string, string> = {
+  default: '可使用',
+  useless: '已使用',
+  disabled: '已过期',
+};
 
 const STATUS_MAP: Record<number, string> = {
   0: 'default',
@@ -47,12 +53,14 @@ function resolveCouponId(item: any): string {
     item?.couponInfo?.id,
     item?.userCoupon?.id,
   ];
+
   for (const value of candidates) {
     if (value === null || value === undefined || value === '') continue;
     const id = String(value);
     if (!id || /^idx_/i.test(id)) continue;
     return id;
   }
+
   return '';
 }
 
@@ -96,14 +104,10 @@ export default function CouponList() {
     Taro.stopPullDownRefresh();
   });
 
-  const handleTabChange = useCallback(
-    (value: string | number, index?: number) => {
-      const tabIndex = typeof index === 'number' ? index : Number(value);
-      setActiveTab(tabIndex);
-      fetchList(tabIndex);
-    },
-    [fetchList],
-  );
+  const handleTabChange = useCallback((tabIndex: number) => {
+    setActiveTab(tabIndex);
+    fetchList(tabIndex);
+  }, [fetchList]);
 
   const handleGoCenter = useCallback(() => {
     Taro.navigateTo({ url: '/pages/coupon/coupon-center/index' });
@@ -123,6 +127,7 @@ export default function CouponList() {
       Taro.navigateBack();
       return;
     }
+
     Taro.navigateTo({ url: `/pages/coupon/coupon-detail/index?id=${coupon.key}` });
   }, [isSelectMode]);
 
@@ -142,72 +147,94 @@ export default function CouponList() {
   };
 
   return (
-    <View className="coupon-list-page">
-      {/* Tabs */}
-      <View className="coupon-list-page__tabs">
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          activeType="simple"
-          className="coupon-tabs"
-        >
+    <View className="coupon-page coupon-list-page">
+            <View className="coupon-page__header coupon-list-page__header">
+        <CouponNav title="我的优惠券" /><View className="coupon-list-page__header-panel"><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--right" /><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--left" />
+        <View className="coupon-page__header-glow coupon-page__header-glow--right" />
+        <View className="coupon-page__header-glow coupon-page__header-glow--left" />
+        <Text className="coupon-page__title">我的优惠券</Text>
+        <Text className="coupon-page__subtitle">精选权益已按状态整理，结算时可直接选择抵扣，购物更省一点。</Text>
+        <View className="coupon-page__tabs">
           {TAB_LIST.map((tab) => (
-            <Tabs.TabPane key={tab.key} title={tab.text} value={tab.key} />
+            <View
+              key={tab.key}
+              className={`coupon-page__tab ${activeTab === tab.key ? 'coupon-page__tab--active' : ''}`}
+              onClick={() => handleTabChange(tab.key)}
+            >
+              <Text className={`coupon-page__tab-text ${activeTab === tab.key ? 'coupon-page__tab-text--active' : ''}`}>{tab.text}</Text>
+            </View>
           ))}
-        </Tabs>
-      </View>
+        </View>
+      </View></View>
 
-      {/* Coupon cards */}
-      <View className="coupon-list-page__list">
+      <View className="coupon-list-page__content">
         {loading && (
-          <View className="coupon-list-page__state">
-            <Text className="coupon-list-page__state-text">加载中...</Text>
+          <View className="coupon-page__state">
+            <Text className="coupon-page__state-text">加载中...</Text>
           </View>
         )}
 
         {!loading && couponList.length === 0 && (
-          <View className="coupon-list-page__state">
-            <Text className="coupon-list-page__state-text">暂无优惠券</Text>
+          <View className="coupon-empty">
+            <View className="coupon-empty__art">
+              <View className="coupon-empty__ticket coupon-empty__ticket--back" />
+              <View className="coupon-empty__ticket coupon-empty__ticket--front">
+                <View className="coupon-empty__notch coupon-empty__notch--left" />
+                <View className="coupon-empty__notch coupon-empty__notch--right" />
+                <View className="coupon-empty__dot" />
+                <View className="coupon-empty__line" />
+                <View className="coupon-empty__line coupon-empty__line--short" />
+              </View>
+            </View>
+            <Text className="coupon-empty__title">暂无优惠券</Text>
+            <Text className="coupon-empty__desc">去领券中心逛逛，活动券和店铺券都在那边</Text>
+            <View className="coupon-empty__button" onClick={handleGoCenter}>
+              <Text className="coupon-empty__button-text">去领券中心</Text>
+            </View>
           </View>
         )}
 
-        {couponList.map((coupon) => {
-          const isDisabled = coupon.status !== 'default';
-          return (
-            <View
-              key={coupon.key}
-              className={`coupon-card ${isDisabled ? 'coupon-card--disabled' : ''}`}
-              onClick={() => !isDisabled && handleCouponClick(coupon)}
-            >
-              <View className="coupon-card__left">
-                {coupon.type === 2 ? (
-                  <Text className="coupon-card__value">{formatValue(coupon)}</Text>
-                ) : (
-                  <View className="coupon-card__amount-row">
-                    <Text className="coupon-card__currency">¥</Text>
-                    <Text className="coupon-card__value">{formatValue(coupon)}</Text>
+        {!loading && couponList.length > 0 && (
+          <View className="coupon-list-page__list">
+            {couponList.map((coupon) => {
+              const isDisabled = coupon.status !== 'default';
+              const statusText = STATUS_TEXT_MAP[coupon.status] || '可使用';
+              return (
+                <View
+                  key={coupon.key}
+                  className={`coupon-ticket ${isDisabled ? 'coupon-ticket--disabled' : ''}`}
+                  onClick={() => !isDisabled && handleCouponClick(coupon)}
+                >
+                  <View className="coupon-ticket__left">
+                    <View className="coupon-ticket__shine" />
+                    {coupon.type === 2 ? (
+                      <Text className="coupon-ticket__value coupon-ticket__value--discount">{formatValue(coupon)}</Text>
+                    ) : (
+                      <View className="coupon-ticket__amount-row">
+                        <Text className="coupon-ticket__currency">¥</Text>
+                        <Text className="coupon-ticket__value">{formatValue(coupon)}</Text>
+                      </View>
+                    )}
+                    <Text className="coupon-ticket__condition">{formatCondition(coupon)}</Text>
                   </View>
-                )}
-                <Text className="coupon-card__condition">{formatCondition(coupon)}</Text>
-              </View>
-              <View className="coupon-card__divider" />
-              <View className="coupon-card__right">
-                <Text className="coupon-card__title">{coupon.title}</Text>
-                {coupon.tag && <Text className="coupon-card__tag">{coupon.tag}</Text>}
-                <Text className="coupon-card__desc">{coupon.desc}</Text>
-                {coupon.timeLimit && (
-                  <Text className="coupon-card__time">{coupon.timeLimit}</Text>
-                )}
-              </View>
-            </View>
-          );
-        })}
-      </View>
-
-      {/* Go to coupon center */}
-      <View className="coupon-list-page__center-entry" onClick={handleGoCenter}>
-        <Text className="coupon-list-page__center-text">领券中心</Text>
-        <Text className="coupon-list-page__center-arrow">&rsaquo;</Text>
+                  <View className="coupon-ticket__divider" />
+                  <View className="coupon-ticket__right">
+                    <View className="coupon-ticket__top">
+                      <Text className="coupon-ticket__title">{coupon.title}</Text>
+                      <Text className={`coupon-ticket__status ${isDisabled ? 'coupon-ticket__status--disabled' : ''}`}>{statusText}</Text>
+                    </View>
+                    <View className="coupon-ticket__meta">
+                      {coupon.tag ? <Text className="coupon-ticket__tag">{coupon.tag}</Text> : null}
+                      <Text className="coupon-ticket__desc">{coupon.desc || '下单结算时自动抵扣，优惠实时生效'}</Text>
+                    </View>
+                    {coupon.timeLimit ? <Text className="coupon-ticket__time">有效期至 {coupon.timeLimit}</Text> : null}
+                    {!isDisabled && !isSelectMode ? <Text className="coupon-ticket__action">立即使用</Text> : null}
+                  </View>
+                </View>
+              );
+            })}
+          </View>
+        )}
       </View>
     </View>
   );

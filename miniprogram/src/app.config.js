@@ -73,7 +73,7 @@
   window: {
     backgroundTextStyle: 'light',
     navigationBarBackgroundColor: '#fff',
-    navigationBarTitleText: '温馨商城',
+    navigationBarTitleText: 'MineShop',
     navigationBarTextStyle: 'black'
   }
 };

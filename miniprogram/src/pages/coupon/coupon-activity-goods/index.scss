@@ -1,34 +1,172 @@
-@use '../../../styles/variables' as *;
-
 .coupon-goods-page {
   min-height: 100vh;
-  background-color: $warm-bg-page;
+  background: #FAF3ED;
+  padding: 0 32rpx 32rpx;
 
-  &__banner {
-    background: $warm-gradient-primary;
-    padding: $warm-spacing-md $warm-spacing-lg;
-    text-align: center;
+  &__header-wrap {
+    margin: 0 -32rpx;
+    padding: 0 32rpx 28rpx;
+    background: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 72%, #FAF3ED 100%);
   }
 
-  &__banner-text {
-    font-size: $warm-font-md;
-    color: $warm-text-white;
-    font-weight: bold;
+  &__header {
+    position: relative;
+    overflow: hidden;
+    margin-top: 20rpx;
+    border-radius: 42rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 248, 243, 0.92) 100%);
+    box-shadow: 0 8rpx 30rpx rgba(200,140,110,0.16);
+    padding: 34rpx 28rpx 28rpx;
+  }
+
+  &__header-glow {
+    position: absolute;
+    border-radius: 50%;
+
+    &--right {
+      top: -36rpx;
+      right: -48rpx;
+      width: 220rpx;
+      height: 220rpx;
+      background: rgba(253, 220, 200, 0.6);
+    }
+
+    &--left {
+      left: -32rpx;
+      bottom: -84rpx;
+      width: 240rpx;
+      height: 240rpx;
+      background: rgba(245, 197, 163, 0.22);
+    }
+  }
+
+  &__eyebrow,
+  &__title,
+  &__desc {
+    position: relative;
+    z-index: 1;
+    display: block;
+  }
+
+  &__eyebrow {
+    font-size: 24rpx;
+    font-weight: 700;
+    color: #D4654D;
+  }
+
+  &__title {
+    margin-top: 18rpx;
+    font-size: 44rpx;
+    line-height: 1.35;
+    font-weight: 800;
+    color: #40291f;
+  }
+
+  &__desc {
+    margin-top: 14rpx;
+    font-size: 26rpx;
+    line-height: 1.6;
+    color: #6B5248;
   }
 
   &__state {
+    min-height: 70vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 120rpx 0;
   }
 
   &__state-text {
-    font-size: $warm-font-md;
-    color: $warm-text-hint;
+    font-size: 28rpx;
+    color: #A89088;
   }
 
-  &__list {
-    padding: $warm-spacing-md;
+  &__content {
+    padding-top: 32rpx;
+  }
+
+  &__section-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20rpx;
+  }
+
+  &__section-title {
+    font-size: 30rpx;
+    font-weight: 700;
+    color: #40291f;
+  }
+
+  &__section-count {
+    font-size: 22rpx;
+    color: #A89088;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24rpx;
+  }
+
+  &__card {
+    background: #FFFFFF;
+    border-radius: 36rpx;
+    padding: 20rpx;
+    box-shadow: 0 4rpx 16rpx rgba(200,140,110,0.12);
+  }
+
+  &__thumb-wrap {
+    height: 276rpx;
+    border-radius: 28rpx;
+    overflow: hidden;
+    background: linear-gradient(135deg, #FFF1E8, #FFE8D6);
+  }
+
+  &__thumb {
+    width: 100%;
+    height: 100%;
+    display: block;
+
+    &--empty {
+      background: linear-gradient(135deg, #FFF1E8, #FFE8D6);
+    }
+  }
+
+  &__name {
+    display: block;
+    margin-top: 20rpx;
+    font-size: 24rpx;
+    line-height: 1.45;
+    font-weight: 700;
+    color: #40291f;
+  }
+
+  &__tag {
+    display: block;
+    margin-top: 12rpx;
+    font-size: 20rpx;
+    line-height: 1;
+    color: #A89088;
+  }
+
+  &__price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8rpx;
+    margin-top: 16rpx;
+  }
+
+  &__price {
+    font-size: 30rpx;
+    line-height: 1;
+    font-weight: 800;
+    color: #E8836B;
+  }
+
+  &__origin {
+    font-size: 20rpx;
+    color: #C4B0A6;
+    text-decoration: line-through;
   }
 }

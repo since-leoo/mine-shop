@@ -108,9 +108,9 @@
 }
 
 .usercenter__qrcode-icon {
-  font-size: 44rpx;
-  font-weight: 700;
-  line-height: 1;
+  width: 44rpx;
+  height: 44rpx;
+  display: block;
 }
 
 // ===== 钱包卡片 =====
@@ -214,12 +214,7 @@
 .usercenter__order-tag-icon {
   width: 48rpx;
   height: 48rpx;
-  font-size: 42rpx;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: $warm-text-body;
+  display: block;
 }
 
 .usercenter__order-tag-badge {
@@ -242,6 +237,16 @@
   line-height: 1;
   color: #fff;
   font-weight: 700;
+}
+
+.usercenter__order-tag-dot {
+  position: absolute;
+  top: 8rpx;
+  right: 18rpx;
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: #ff4646;
 }
 
 // .order-icon-item .label { font-size:11px; color:var(--text-body); }
@@ -280,15 +285,11 @@
 
 // .menu-item .icon { font-size:20px; margin-right:12px; width:24px; text-align:center; }
 .usercenter__menu-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 36rpx;
-  line-height: 1;
+  display: block;
   margin-right: 24rpx;
   width: 48rpx;
   height: 48rpx;
-  text-align: center;
+  flex-shrink: 0;
 }
 
 // .menu-item .text { flex:1; font-size:14px; color:var(--text-dark); font-weight:600; }

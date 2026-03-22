@@ -1,4 +1,15 @@
 ﻿import { View, Text, Image } from '@tarojs/components';
+import orderPayIcon from '../../assets/usercenter/order-pay.svg';
+import orderDeliverIcon from '../../assets/usercenter/order-deliver.svg';
+import orderReceiveIcon from '../../assets/usercenter/order-receive.svg';
+import orderReviewIcon from '../../assets/usercenter/order-review.svg';
+import orderServiceIcon from '../../assets/usercenter/order-service.svg';
+import menuAddressIcon from '../../assets/usercenter/menu-address.svg';
+import menuCouponIcon from '../../assets/usercenter/menu-coupon.svg';
+import menuWalletIcon from '../../assets/usercenter/menu-wallet.svg';
+import menuHelpIcon from '../../assets/usercenter/menu-help.svg';
+import menuSettingsIcon from '../../assets/usercenter/menu-settings.svg';
+import profileQrcodeIcon from '../../assets/usercenter/profile-qrcode.svg';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useRef, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
@@ -144,7 +155,23 @@ function H5UserCenterView(props: {
   );
 }
 
-function DefaultUserCenterView(props: {
+const orderIconMap: Record<number, string> = {
+  5: orderPayIcon,
+  10: orderDeliverIcon,
+  40: orderReceiveIcon,
+  60: orderReviewIcon,
+  0: orderServiceIcon,
+};
+
+const menuIconMap: Record<string, string> = {
+  address: menuAddressIcon,
+  coupon: menuCouponIcon,
+  wallet: menuWalletIcon,
+  help: menuHelpIcon,
+  settings: menuSettingsIcon,
+};
+
+function MiniProgramUserCenterView(props: {
   userInfo: UserInfo;
   walletItems: WalletItem[];
   orderTags: OrderTagInfo[];
@@ -176,7 +203,7 @@ function DefaultUserCenterView(props: {
               </Text>
             </View>
             <View className="usercenter__qrcode">
-              <Text className="usercenter__qrcode-icon">›</Text>
+              <Image className="usercenter__qrcode-icon" src={profileQrcodeIcon} mode="aspectFit" />
             </View>
           </View>
         </View>
@@ -202,11 +229,15 @@ function DefaultUserCenterView(props: {
           {orderTags.map((tag) => (
             <View key={tag.tabType} className="usercenter__order-tag" onClick={() => onOrderTagClick(tag)}>
               <View className="usercenter__order-tag-icon-wrap">
-                <Text className="usercenter__order-tag-icon">{tag.icon}</Text>
+                <Image className="usercenter__order-tag-icon" src={orderIconMap[tag.tabType] || orderServiceIcon} mode="aspectFit" />
                 {tag.orderNum > 0 ? (
-                  <View className="usercenter__order-tag-badge">
-                    <Text className="usercenter__order-tag-badge-text">{tag.orderNum > 99 ? '99+' : tag.orderNum}</Text>
-                  </View>
+                  tag.orderNum > 1 ? (
+                    <View className="usercenter__order-tag-badge">
+                      <Text className="usercenter__order-tag-badge-text">{tag.orderNum > 99 ? '99+' : tag.orderNum}</Text>
+                    </View>
+                  ) : (
+                    <View className="usercenter__order-tag-dot" />
+                  )
                 ) : null}
               </View>
               <Text className="usercenter__order-tag-text">{tag.title}</Text>
@@ -219,7 +250,7 @@ function DefaultUserCenterView(props: {
         <View key={groupIndex} className="usercenter__menu-card">
           {group.map((item) => (
             <View key={item.type} className="usercenter__menu-item" onClick={() => onMenuClick(item.type)}>
-              <Text className="usercenter__menu-icon">{item.icon}</Text>
+              <Image className="usercenter__menu-icon" src={menuIconMap[item.type] || menuSettingsIcon} mode="aspectFit" />
               <Text className="usercenter__menu-text">{item.title}</Text>
               {item.note ? <Text className="usercenter__menu-note">{item.note}</Text> : null}
               <Text className="usercenter__menu-arrow">›</Text>
@@ -382,7 +413,7 @@ export default function UserCenter() {
   }
 
   return (
-    <DefaultUserCenterView
+    <MiniProgramUserCenterView
       userInfo={userInfo}
       walletItems={walletItems}
       orderTags={orderTags}

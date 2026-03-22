@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchAvailableCoupons, receiveCoupon } from '../../../services/coupon';
+import CouponNav from '../../../components/coupon-nav';
 import './index.scss';
 
 interface CouponItem {
@@ -92,68 +93,69 @@ export default function CouponCenter() {
   };
 
   return (
-    <View className="coupon-center">
-      {/* Header */}
-      <View className="coupon-center__header">
-        <View className="coupon-center__header-bg" />
-        <View className="coupon-center__header-content">
-          <Text className="coupon-center__header-title">领券中心</Text>
-          <Text className="coupon-center__header-desc">精选优惠券等你来领</Text>
+    <View className="coupon-page coupon-center-page">
+            <View className="coupon-page__header coupon-center-page__header">
+        <CouponNav title="领券中心" />
+        <View className="coupon-center-page__header-panel">
+          <View className="coupon-center-page__panel-blob coupon-center-page__panel-blob--right" />
+          <View className="coupon-center-page__panel-blob coupon-center-page__panel-blob--left" />
+          <Text className="coupon-page__title">领券中心</Text>
+          <Text className="coupon-page__subtitle">精选优惠券等你来领，先领后买，下单时自动抵扣更省心。</Text>
         </View>
       </View>
 
-      {/* Loading */}
       {loading && (
-        <View className="coupon-center__state">
-          <Text className="coupon-center__state-text">加载中...</Text>
+        <View className="coupon-page__state">
+          <Text className="coupon-page__state-text">加载中...</Text>
         </View>
       )}
 
-      {/* Empty */}
       {!loading && couponList.length === 0 && (
-        <View className="coupon-center__state">
-          <Text className="coupon-center__state-text">暂无可领优惠券</Text>
+        <View className="coupon-page__state">
+          <Text className="coupon-page__state-text">暂无可领优惠券</Text>
         </View>
       )}
 
-      {/* Coupon list */}
-      <View className="coupon-center__list">
-        {couponList.map((coupon, index) => (
-          <View key={coupon.id || index} className="coupon-center__card">
-            <View className="coupon-center__card-left">
-              {coupon.type === 2 ? (
-                <Text className="coupon-center__card-value">{formatValue(coupon)}</Text>
-              ) : (
-                <View className="coupon-center__card-amount-row">
-                  <Text className="coupon-center__card-currency">¥</Text>
-                  <Text className="coupon-center__card-value">{formatValue(coupon)}</Text>
+      {!loading && couponList.length > 0 && (
+        <View className="coupon-center-page__list">
+          {couponList.map((coupon, index) => {
+            const disabled = !coupon.isReceivable;
+            return (
+              <View key={coupon.id || index} className={`coupon-ticket ${disabled ? 'coupon-ticket--disabled' : ''}`}>
+                <View className="coupon-ticket__left">
+                  <View className="coupon-ticket__shine" />
+                  {coupon.type === 2 ? (
+                    <Text className="coupon-ticket__value coupon-ticket__value--discount">{formatValue(coupon)}</Text>
+                  ) : (
+                    <View className="coupon-ticket__amount-row">
+                      <Text className="coupon-ticket__currency">¥</Text>
+                      <Text className="coupon-ticket__value">{formatValue(coupon)}</Text>
+                    </View>
+                  )}
+                  <Text className="coupon-ticket__condition">{formatCondition(coupon)}</Text>
                 </View>
-              )}
-              <Text className="coupon-center__card-condition">{formatCondition(coupon)}</Text>
-            </View>
-            <View className="coupon-center__card-right">
-              <View className="coupon-center__card-info">
-                <Text className="coupon-center__card-title">{coupon.title}</Text>
-                {coupon.tag && (
-                  <Text className="coupon-center__card-tag">{coupon.tag}</Text>
-                )}
-                <Text className="coupon-center__card-desc">{coupon.desc}</Text>
-                {coupon.timeLimit && (
-                  <Text className="coupon-center__card-time">{coupon.timeLimit}</Text>
-                )}
+                <View className="coupon-ticket__divider" />
+                <View className="coupon-ticket__right">
+                  <View className="coupon-ticket__top">
+                    <Text className="coupon-ticket__title">{coupon.title}</Text>
+                    <Text className={`coupon-ticket__status ${disabled ? 'coupon-ticket__status--disabled' : ''}`}>{disabled ? '已领取' : '可领取'}</Text>
+                  </View>
+                  <View className="coupon-ticket__meta">
+                    {coupon.tag ? <Text className="coupon-ticket__tag">{coupon.tag}</Text> : null}
+                    <Text className="coupon-ticket__desc">{coupon.desc || '领取后下单自动抵扣，优惠实时生效'}</Text>
+                  </View>
+                  <View className="coupon-ticket__bottom-row">
+                    <Text className="coupon-ticket__stock">剩余 {coupon.availableQuantity || 0} 张</Text>
+                    <View className={`coupon-ticket__receive-btn ${disabled ? 'coupon-ticket__receive-btn--disabled' : ''}`} onClick={() => handleReceive(coupon, index)}>
+                      <Text className={`coupon-ticket__receive-text ${disabled ? 'coupon-ticket__receive-text--disabled' : ''}`}>{disabled ? '已领取' : '立即领取'}</Text>
+                    </View>
+                  </View>
+                </View>
               </View>
-              <View
-                className={`coupon-center__receive-btn ${!coupon.isReceivable ? 'coupon-center__receive-btn--disabled' : ''}`}
-                onClick={() => handleReceive(coupon, index)}
-              >
-                <Text className="coupon-center__receive-btn-text">
-                  {coupon.isReceivable ? '领取' : '已领取'}
-                </Text>
-              </View>
-            </View>
-          </View>
-        ))}
-      </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }

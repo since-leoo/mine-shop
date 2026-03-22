@@ -1,160 +1,405 @@
-@use '../../../styles/variables' as *;
-
-.coupon-list-page {
+.coupon-page {
   min-height: 100vh;
-  background-color: $warm-bg-page;
-  padding-bottom: 120rpx;
+  background: #FAF3ED;
+
+  &__header {
+    position: relative;
+    margin: 0;
+    padding: 0 32rpx 28rpx;
+    background: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 72%, #FAF3ED 100%);
+    overflow: hidden;
+  }
+
+  &__header-glow {
+    position: absolute;
+    border-radius: 50%;
+    display: none;
+  }
+
+  &__title,
+  &__subtitle,
+  &__tabs {
+    position: relative;
+    z-index: 1;
+  }
+
+  &__title {
+    display: block;
+    padding: 34rpx 30rpx 0;
+    font-size: 52rpx;
+    line-height: 1.15;
+    font-weight: 800;
+    color: #4A3228;
+    letter-spacing: 1rpx;
+  }
+
+  &__subtitle {
+    display: block;
+    padding: 22rpx 30rpx 0;
+    font-size: 26rpx;
+    line-height: 1.75;
+    font-weight: 700;
+    color: #6B5248;
+  }
 
   &__tabs {
-    background: $warm-bg-white;
-    position: sticky;
-    top: 0;
-    z-index: 10;
+    display: flex;
+    gap: 16rpx;
+    margin: 34rpx 18rpx 22rpx;
+    padding: 12rpx;
+    border-radius: 32rpx;
+    background: rgba(255,255,255,0.92);
+    box-shadow: inset 0 2rpx 0 rgba(255,255,255,0.5);
+  }
 
-    .coupon-tabs {
-      --nutui-tabs-titles-background-color: #{$warm-bg-white};
-      --nutui-tabs-title-color: #{$warm-text-secondary};
-      --nutui-tabs-title-color-active: #{$warm-primary};
-      --nutui-tabs-line-bottom-color: #{$warm-primary};
+  &__tab {
+    flex: 1;
+    height: 72rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 26rpx;
+
+    &--active {
+      background: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+      box-shadow: 0 4rpx 16rpx rgba(232,131,107,0.3);
     }
   }
 
-  &__list {
-    padding: $warm-spacing-md;
+  &__tab-text {
+    font-size: 26rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #6B5248;
+
+    &--active {
+      color: #FFFFFF;
+    }
   }
 
   &__state {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 120rpx 0;
+    padding: 240rpx 0;
   }
 
   &__state-text {
-    font-size: $warm-font-md;
-    color: $warm-text-hint;
-  }
-
-  &__center-entry {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: $warm-spacing-md;
-    background: $warm-bg-white;
-    box-shadow: 0 -2rpx 12rpx rgba(200, 140, 110, 0.08);
-  }
-
-  &__center-text {
-    font-size: $warm-font-md;
-    color: $warm-primary;
-    font-weight: bold;
-  }
-
-  &__center-arrow {
-    font-size: $warm-font-xl;
-    color: $warm-primary;
-    margin-left: 4rpx;
+    font-size: 28rpx;
+    color: #A89088;
   }
 }
 
-// ===== Coupon card =====
-.coupon-card {
-  display: flex;
-  align-items: stretch;
-  background: $warm-bg-white;
-  border-radius: $warm-radius-lg;
-  margin-bottom: $warm-spacing-md;
-  overflow: hidden;
-  box-shadow: $warm-shadow-sm;
-
-  &--disabled {
-    opacity: 0.55;
+.coupon-list-page {
+  &__header {
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 96rpx;
+      background: linear-gradient(180deg, rgba(245,197,163,0) 0%, rgba(250,243,237,0.86) 100%);
+      pointer-events: none;
+    }
   }
 
+  &__header-panel {
+    position: relative;
+    overflow: hidden;
+    margin-top: 20rpx;
+    border-radius: 40rpx;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,248,243,0.92) 100%);
+    box-shadow: 0 8rpx 30rpx rgba(200,140,110,0.16);
+  }
+
+  &__panel-blob {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(253,220,200,0.48);
+
+    &--right {
+      top: -12rpx;
+      right: -22rpx;
+      width: 180rpx;
+      height: 180rpx;
+    }
+
+    &--left {
+      left: -30rpx;
+      bottom: -56rpx;
+      width: 210rpx;
+      height: 210rpx;
+      background: rgba(245,197,163,0.20);
+    }
+  }
+
+  &__content {
+    min-height: calc(100vh - 40rpx);
+    background: #FAF3ED;
+  }
+
+  &__list {
+    padding: 24rpx 32rpx 32rpx;
+  }
+}
+
+.coupon-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 168rpx;
+  text-align: center;
+
+  &__art {
+    position: relative;
+    width: 220rpx;
+    height: 170rpx;
+  }
+
+  &__ticket {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 28rpx;
+    transform: translate(-50%, -50%);
+
+    &--back {
+      width: 170rpx;
+      height: 100rpx;
+      background: linear-gradient(135deg, rgba(245, 216, 154, 0.34) 0%, rgba(242, 169, 154, 0.42) 100%);
+      transform: translate(-50%, -50%) rotate(-8deg);
+    }
+
+    &--front {
+      width: 170rpx;
+      height: 100rpx;
+      background: #FFFFFF;
+      box-shadow: 0 10rpx 26rpx rgba(200,140,110,0.12);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10rpx;
+    }
+  }
+
+  &__notch {
+    position: absolute;
+    top: 50%;
+    width: 22rpx;
+    height: 22rpx;
+    margin-top: -11rpx;
+    border-radius: 50%;
+    background: #FAF3ED;
+
+    &--left { left: -11rpx; }
+    &--right { right: -11rpx; }
+  }
+
+  &__dot {
+    width: 42rpx;
+    height: 42rpx;
+    border-radius: 14rpx;
+    background: linear-gradient(135deg, #F2A99A 0%, #E8836B 100%);
+  }
+
+  &__line {
+    width: 70rpx;
+    height: 8rpx;
+    border-radius: 999rpx;
+    background: rgba(232,131,107,0.18);
+
+    &--short { width: 48rpx; }
+  }
+
+  &__title {
+    margin-top: 30rpx;
+    font-size: 48rpx;
+    line-height: 1.2;
+    font-weight: 800;
+    color: #4A3228;
+  }
+
+  &__desc {
+    margin-top: 18rpx;
+    font-size: 26rpx;
+    line-height: 1.7;
+    font-weight: 700;
+    color: #6B5248;
+  }
+
+  &__button {
+    margin-top: 34rpx;
+    min-width: 260rpx;
+    height: 72rpx;
+    padding: 0 44rpx;
+    border-radius: 999rpx;
+    background: linear-gradient(135deg, #F2A99A 0%, #E8836B 100%);
+    box-shadow: 0 8rpx 20rpx rgba(232,131,107,0.24);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__button-text {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+}
+
+.coupon-ticket {
+  display: flex;
+  min-height: 268rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  border-radius: 44rpx;
+  background: #FFFFFF;
+  box-shadow: 0 4rpx 16rpx rgba(200,140,110,0.12);
+
+  &--disabled { opacity: 0.72; }
+
   &__left {
+    position: relative;
+    width: 236rpx;
+    padding: 28rpx 16rpx;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 200rpx;
-    flex-shrink: 0;
-    padding: $warm-spacing-md $warm-spacing-sm;
-    background: linear-gradient(135deg, rgba(232, 131, 107, 0.08) 0%, rgba(232, 131, 107, 0.04) 100%);
+    background: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
+  }
+
+  &__shine {
+    position: absolute;
+    top: -20rpx;
+    left: 28rpx;
+    width: 144rpx;
+    height: 144rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
   }
 
   &__amount-row {
+    position: relative;
+    z-index: 1;
     display: flex;
-    align-items: baseline;
+    align-items: flex-end;
   }
 
   &__currency {
-    font-size: $warm-font-md;
-    font-weight: bold;
-    color: $warm-primary;
+    font-size: 32rpx;
+    line-height: 1;
+    font-weight: 800;
+    color: #FFFFFF;
   }
 
   &__value {
-    font-size: 56rpx;
-    font-weight: bold;
-    color: $warm-primary;
-    line-height: 1.1;
+    position: relative;
+    z-index: 1;
+    font-size: 72rpx;
+    line-height: 1;
+    font-weight: 800;
+    color: #FFFFFF;
+
+    &--discount { font-size: 64rpx; }
   }
 
   &__condition {
-    font-size: $warm-font-xs;
-    color: $warm-text-secondary;
-    margin-top: $warm-spacing-xs;
+    position: relative;
+    z-index: 1;
+    margin-top: 20rpx;
+    padding: 8rpx 18rpx;
+    border-radius: 999rpx;
+    font-size: 22rpx;
+    line-height: 1;
+    color: #FFFFFF;
+    background: rgba(255, 255, 255, 0.18);
   }
 
   &__divider {
-    width: 2rpx;
-    background: repeating-linear-gradient(
-      to bottom,
-      $warm-divider 0,
-      $warm-divider 8rpx,
-      transparent 8rpx,
-      transparent 16rpx
-    );
+    width: 28rpx;
+    background:
+      radial-gradient(circle at left center, #FAF3ED 14rpx, transparent 14.5rpx) left top / 28rpx 52rpx repeat-y,
+      linear-gradient(to bottom, #F0DDD4 0, #F0DDD4 10rpx, transparent 10rpx, transparent 18rpx) center / 2rpx 18rpx repeat-y;
   }
 
   &__right {
     flex: 1;
-    padding: $warm-spacing-md;
+    padding: 28rpx 24rpx 24rpx 4rpx;
     display: flex;
     flex-direction: column;
     justify-content: center;
   }
 
+  &__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 16rpx;
+    align-items: flex-start;
+  }
+
   &__title {
-    font-size: $warm-font-md;
-    font-weight: bold;
-    color: $warm-text-primary;
-    margin-bottom: $warm-spacing-xs;
+    flex: 1;
+    font-size: 30rpx;
+    line-height: 1.45;
+    font-weight: 700;
+    color: #4A3228;
+  }
+
+  &__status {
+    padding: 8rpx 14rpx;
+    border-radius: 999rpx;
+    background: rgba(232,131,107,0.1);
+    font-size: 20rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #D4654D;
+
+    &--disabled {
+      background: rgba(173,173,173,0.16);
+      color: #A89088;
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10rpx;
+    align-items: center;
+    margin-top: 18rpx;
   }
 
   &__tag {
-    display: inline-block;
-    font-size: $warm-font-xs;
-    color: $warm-primary;
-    border: 1rpx solid $warm-primary;
-    padding: 2rpx 8rpx;
-    border-radius: $warm-radius-sm;
-    margin-bottom: $warm-spacing-xs;
-    align-self: flex-start;
+    padding: 6rpx 14rpx;
+    border-radius: 999rpx;
+    background: #FFF1E8;
+    border: 1rpx solid #F0DDD4;
+    font-size: 20rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #D4654D;
   }
 
   &__desc {
-    font-size: $warm-font-sm;
-    color: $warm-text-secondary;
-    margin-bottom: 4rpx;
+    font-size: 24rpx;
+    line-height: 1.5;
+    color: #6B5248;
   }
 
   &__time {
-    font-size: $warm-font-xs;
-    color: $warm-text-hint;
+    margin-top: 18rpx;
+    font-size: 22rpx;
+    line-height: 1.4;
+    color: #A89088;
+  }
+
+  &__action {
+    margin-top: 18rpx;
+    font-size: 24rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #E8836B;
   }
 }

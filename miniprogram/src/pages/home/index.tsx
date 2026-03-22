@@ -313,7 +313,7 @@ function HomeDefaultView(props: {
 
   return (
     <View className="home home--default">
-      <View className="home-top-bg">
+      <View className="home-top-bg home-top-bg--with-quick">
         <View className="home-search" onClick={() => Taro.navigateTo({ url: '/pages/goods/search/index' })}>
           <Image className="home-search__icon-img" src={searchIcon} mode="aspectFit" />
           <Text className="home-search__placeholder">搜索商品名称、品牌或关键词</Text>
@@ -336,17 +336,17 @@ function HomeDefaultView(props: {
             <Text className="home-banner-fallback__btn">立即查看</Text>
           </View>
         )}
-      </View>
 
-      <View className="home-quick-entries">
-        {quickEntries.map((item) => (
-          <View key={item.key} className="home-quick-entries__item" onClick={() => openLink(item.url)}>
-            <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
-              <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
+        <View className="home-quick-entries">
+          {quickEntries.map((item) => (
+            <View key={item.key} className="home-quick-entries__item" onClick={() => openLink(item.url)}>
+              <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
+                <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
+              </View>
+              <Text className="home-quick-entries__name">{item.name}</Text>
             </View>
-            <Text className="home-quick-entries__name">{item.name}</Text>
-          </View>
-        ))}
+          ))}
+        </View>
       </View>
 
       <View className="home-activity-info">
@@ -360,20 +360,7 @@ function HomeDefaultView(props: {
         <View className="home-activity-info__cards">
           <View className="home-activity-info__card home-activity-info__card--seckill" onClick={openSeckillTopic}>
             <Text className="home-activity-info__card-title">限时秒杀</Text>
-            <Text className="home-activity-info__card-sub">爆款低价专场 点击直达秒杀会场</Text>
-            {seckillCountdown.overDay ? (
-              <Text className="home-activity-info__long">
-                {seckillCountdown.days}天{seckillCountdown.hours}小时{seckillCountdown.minutes}分{seckillCountdown.seconds}秒
-              </Text>
-            ) : (
-              <View className="home-activity-info__countdown">
-                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.hours}</Text></View>
-                <Text className="home-activity-info__countdown-sep">:</Text>
-                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.minutes}</Text></View>
-                <Text className="home-activity-info__countdown-sep">:</Text>
-                <View className="home-activity-info__countdown-box"><Text>{seckillCountdown.seconds}</Text></View>
-              </View>
-            )}
+            <Text className="home-activity-info__card-sub">爆款低价专场 点击直达秒杀会场，热门商品限量放价，每天都有精选好物持续更新。</Text>
           </View>
           <View className="home-activity-info__card home-activity-info__card--group" onClick={openGroupBuyTopic}>
             <Text className="home-activity-info__card-title">拼团活动</Text>

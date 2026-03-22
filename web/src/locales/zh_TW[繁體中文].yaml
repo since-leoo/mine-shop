@@ -819,6 +819,7 @@ member:
     sourceManual: 手動
     memberIdLabel: 會員ID
     memberIdPlaceholder: 請輸入會員ID
+    memberSelectPlaceholder: 請選擇會員
     walletType: 錢包類型
     balanceWallet: 餘額錢包
     pointsWallet: 積分錢包
@@ -843,6 +844,7 @@ member:
     walletTypePlaceholder: 請選擇錢包類型
     changeValue: 變動金額
     changeValueRequired: 請輸入變動值
+    memberLoadFailed: 載入會員失敗
     memberIdRequired: 請輸入會員ID
     walletTypeRequired: 請選擇錢包類型
     sourceRequired: 請選擇來源

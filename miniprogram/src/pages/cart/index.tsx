@@ -1,4 +1,4 @@
-﻿import { View, Text, Image } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useCallback, useMemo, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
@@ -8,6 +8,8 @@ import { deleteCartItem, fetchCartGroupData, updateCartItem } from '../../servic
 import './index.scss';
 
 interface CartGoods {
+  storeId: string;
+  storeName: string;
   spuId: string;
   skuId: string;
   title: string;
@@ -16,6 +18,13 @@ interface CartGoods {
   quantity: number;
   stockQuantity: number;
   specInfo?: string;
+  selected: boolean;
+}
+
+interface CartStore {
+  id: string;
+  name: string;
+  items: CartGoods[];
 }
 
 function normalizePrice(value: any): number {
@@ -24,8 +33,33 @@ function normalizePrice(value: any): number {
   return price > 999 ? price / 100 : price;
 }
 
-function normalizeGoods(raw: any): CartGoods {
+function formatSpecInfo(specInfo: any): string {
+  if (!specInfo) return '';
+  if (typeof specInfo === 'string') return specInfo;
+  if (Array.isArray(specInfo)) {
+    return specInfo
+      .map((item) => {
+        if (!item) return '';
+        if (typeof item === 'string') return item;
+        const title = item.specTitle || item.title || '';
+        const value = item.specValue || item.value || '';
+        return [title, value].filter(Boolean).join('：');
+      })
+      .filter(Boolean)
+      .join(' / ');
+  }
+  if (typeof specInfo === 'object') {
+    const title = specInfo.specTitle || specInfo.title || '';
+    const value = specInfo.specValue || specInfo.value || '';
+    return [title, value].filter(Boolean).join('：');
+  }
+  return String(specInfo);
+}
+
+function normalizeGoods(raw: any, store: any): CartGoods {
   return {
+    storeId: String(raw?.storeId || raw?.store_id || store?.storeId || store?.id || ''),
+    storeName: String(store?.storeName || store?.name || '官方店铺'),
     spuId: String(raw?.spuId || raw?.spu_id || raw?.id || ''),
     skuId: String(raw?.skuId || raw?.sku_id || raw?.id || ''),
     title: raw?.title || raw?.goodsName || raw?.name || '商品',
@@ -33,7 +67,8 @@ function normalizeGoods(raw: any): CartGoods {
     price: normalizePrice(raw?.price ?? raw?.salePrice ?? raw?.minSalePrice),
     quantity: Number(raw?.quantity || 1),
     stockQuantity: Number(raw?.stockQuantity ?? raw?.stock ?? 99),
-    specInfo: raw?.specInfo || raw?.specText || '',
+    specInfo: formatSpecInfo(raw?.specInfo || raw?.specText || raw?.spec_info || ''),
+    selected: Boolean(raw?.isSelected ?? raw?.selected ?? true),
   };
 }
 
@@ -42,28 +77,36 @@ function formatAmount(value: number): string {
 }
 
 export default function Cart() {
-  const [items, setItems] = useState<CartGoods[]>([]);
+  const [stores, setStores] = useState<CartStore[]>([]);
   const [loading, setLoading] = useState(false);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
       const res: any = await fetchCartGroupData();
-      const stores = res?.data?.storeGoods || [];
-      const next: CartGoods[] = [];
-
-      stores.forEach((store: any) => {
-        (store.promotionGoodsList || []).forEach((promotion: any) => {
-          (promotion.goodsPromotionList || []).forEach((goods: any) => {
-            next.push(normalizeGoods(goods));
+      const rawStores = res?.data?.storeGoods || [];
+      const nextStores: CartStore[] = rawStores
+        .map((store: any) => {
+          const items: CartGoods[] = [];
+          (store.promotionGoodsList || []).forEach((promotion: any) => {
+            (promotion.goodsPromotionList || []).forEach((goods: any) => {
+              items.push(normalizeGoods(goods, store));
+            });
           });
-        });
-      });
+          return {
+            id: String(store?.storeId || store?.id || ''),
+            name: String(store?.storeName || store?.name || '官方店铺'),
+            items,
+          };
+        })
+        .filter((store: CartStore) => store.items.length > 0);
 
-      setItems(next);
-    } catch (error: any) {
+      setStores(nextStores);
+    }
+    catch (error: any) {
       Taro.showToast({ title: error?.msg || '购物车加载失败', icon: 'none' });
-    } finally {
+    }
+    finally {
       setLoading(false);
       Taro.stopPullDownRefresh();
     }
@@ -81,8 +124,44 @@ export default function Cart() {
     refreshData();
   });
 
-  const totalAmount = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
-  const totalCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const items = useMemo(() => stores.flatMap(store => store.items), [stores]);
+  const selectedItems = useMemo(() => items.filter(item => item.selected), [items]);
+  const totalAmount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [selectedItems]);
+  const totalCount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.quantity, 0), [selectedItems]);
+  const isAllSelected = useMemo(() => items.length > 0 && selectedItems.length === items.length, [items, selectedItems]);
+
+  const updateLocalQuantity = useCallback((skuId: string, quantity: number) => {
+    setStores(prev => prev.map(store => ({
+      ...store,
+      items: store.items.map(item => (item.skuId === skuId ? { ...item, quantity } : item)),
+    })));
+  }, []);
+
+  const toggleItemSelected = useCallback((skuId: string) => {
+    setStores(prev => prev.map(store => ({
+      ...store,
+      items: store.items.map(item => (item.skuId === skuId ? { ...item, selected: !item.selected } : item)),
+    })));
+  }, []);
+
+  const toggleStoreSelected = useCallback((storeId: string) => {
+    setStores((prev) => prev.map((store) => {
+      if (store.id !== storeId) return store;
+      const nextSelected = !store.items.every(item => item.selected);
+      return {
+        ...store,
+        items: store.items.map(item => ({ ...item, selected: nextSelected })),
+      };
+    }));
+  }, []);
+
+  const toggleAllSelected = useCallback(() => {
+    const nextSelected = !isAllSelected;
+    setStores(prev => prev.map(store => ({
+      ...store,
+      items: store.items.map(item => ({ ...item, selected: nextSelected })),
+    })));
+  }, [isAllSelected]);
 
   const changeQuantity = async (item: CartGoods, delta: number) => {
     const next = item.quantity + delta;
@@ -92,10 +171,13 @@ export default function Cart() {
       return;
     }
 
+    updateLocalQuantity(item.skuId, next);
     try {
       await updateCartItem(item.skuId, { quantity: next });
       refreshData();
-    } catch (error: any) {
+    }
+    catch (error: any) {
+      updateLocalQuantity(item.skuId, item.quantity);
       Taro.showToast({ title: error?.msg || '更新数量失败', icon: 'none' });
     }
   };
@@ -134,42 +216,62 @@ export default function Cart() {
   }
 
   return (
-    <View className="cart-page">
+    <View className="cart-page cart-page--filled">
       <View className="cart-list">
-        {items.map((item) => (
-          <View key={`${item.spuId}-${item.skuId}`} className="cart-item-row">
-            <View className="cart-item">
-              <View className="cart-item__thumb" onClick={() => Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${item.spuId}` })}>
-                <Image className="cart-item__img" src={item.thumb} mode="aspectFill" />
+        {stores.map((store) => {
+          const storeSelected = store.items.every(item => item.selected);
+          return (
+            <View key={store.id} className="cart-store">
+              <View className="cart-store__header" onClick={() => toggleStoreSelected(store.id)}>
+                <View className={`cart-check-circle ${storeSelected ? 'cart-check-circle--checked' : ''}`}>
+                  {storeSelected ? <Text className="cart-check-circle__tick">✓</Text> : null}
+                </View>
+                <Text className="cart-store__title">{store.name}</Text>
               </View>
-              <View className="cart-item__info">
-                <Text className="cart-item__title">{item.title}</Text>
-                {item.specInfo ? <Text className="cart-item__spec">{item.specInfo}</Text> : null}
-                <View className="cart-item__bottom">
-                  <Text className="cart-item__price">{formatAmount(item.price)}</Text>
-                  <View className="qty-stepper">
-                    <View className="qty-stepper__btn" onClick={() => changeQuantity(item, -1)}>
-                      <Text className="qty-stepper__btn-text">-</Text>
+
+              {store.items.map((item, index) => (
+                <View key={`${item.spuId}-${item.skuId}`} className={`cart-goods-item ${index === 0 ? 'cart-goods-item--first' : ''}`}>
+                  <View className="cart-goods-item__check-col" onClick={() => toggleItemSelected(item.skuId)}>
+                    <View className={`cart-check-circle ${item.selected ? 'cart-check-circle--checked' : ''}`}>
+                      {item.selected ? <Text className="cart-check-circle__tick">✓</Text> : null}
                     </View>
-                    <Text className="qty-stepper__value">{item.quantity}</Text>
-                    <View className="qty-stepper__btn" onClick={() => changeQuantity(item, 1)}>
-                      <Text className="qty-stepper__btn-text">+</Text>
+                  </View>
+                  <View className="cart-goods-item__image" onClick={() => Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${item.spuId}` })}>
+                    <Image className="cart-goods-item__img" src={item.thumb} mode="aspectFill" />
+                  </View>
+                  <View className="cart-goods-item__info">
+                    <Text className="cart-goods-item__title">{item.title}</Text>
+                    {item.specInfo ? <Text className="cart-goods-item__spec">{item.specInfo}</Text> : null}
+                    <View className="cart-goods-item__bottom">
+                      <View>
+                        <Text className="cart-goods-item__price">{formatAmount(item.price)}</Text>
+                        <Text className="cart-goods-item__remove" onClick={() => handleDelete(item)}>删除</Text>
+                      </View>
+                      <View className="qty-stepper">
+                        <View className="qty-stepper__btn" onClick={() => changeQuantity(item, -1)}>
+                          <Text className="qty-stepper__btn-text">-</Text>
+                        </View>
+                        <Text className="qty-stepper__value">{item.quantity}</Text>
+                        <View className="qty-stepper__btn" onClick={() => changeQuantity(item, 1)}>
+                          <Text className="qty-stepper__btn-text">+</Text>
+                        </View>
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
+              ))}
             </View>
-            <View className="cart-item__delete" onClick={() => handleDelete(item)}>
-              <Text className="cart-item__delete-text">删除</Text>
-            </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       <View className="cart-bottom-spacer" />
       <View className="cart-bar">
-        <View className="cart-bar__left">
-          <Text className="cart-bar__all-text">共 {totalCount} 件</Text>
+        <View className="cart-bar__left" onClick={toggleAllSelected}>
+          <View className={`cart-check-circle ${isAllSelected ? 'cart-check-circle--checked' : ''}`}>
+            {isAllSelected ? <Text className="cart-check-circle__tick">✓</Text> : null}
+          </View>
+          <Text className="cart-bar__all-text">全选</Text>
         </View>
         <View className="cart-bar__right">
           <View className="cart-bar__total">

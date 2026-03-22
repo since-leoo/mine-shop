@@ -124,7 +124,24 @@
     <el-dialog v-model="adjustDialogVisible" :title="t('member.points.adjustTitle')" width="480px">
       <el-form ref="adjustFormRef" :model="adjustForm" :rules="adjustRules" label-width="90px">
         <el-form-item :label="t('member.points.memberIdLabel')" prop="member_id">
-          <el-input v-model="adjustForm.member_id" :placeholder="t('member.points.memberIdPlaceholder')" />
+          <el-select
+            v-model="adjustForm.member_id"
+            :placeholder="t('member.points.memberSelectPlaceholder')"
+            class="w-full"
+            clearable
+            filterable
+            remote
+            reserve-keyword
+            :remote-method="loadMemberOptions"
+            :loading="memberOptionsLoading"
+          >
+            <el-option
+              v-for="option in memberOptions"
+              :key="option.id"
+              :label="option.label"
+              :value="option.id"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item :label="t('member.points.walletType')" prop="type">
           <el-select v-model="adjustForm.type" :placeholder="t('member.points.walletTypePlaceholder')" class="w-full">
@@ -179,12 +196,14 @@ import { computed, reactive, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage } from 'element-plus'
-import { Check, Coin, Link, Refresh, Search, User } from '@element-plus/icons-vue'
+import { Check, Coin, Refresh, Search, User } from '@element-plus/icons-vue'
 import {
   memberAccountApi,
+  memberApi,
   type MemberAccountAdjustPayload,
   type MemberAccountLogParams,
   type MemberWalletLog,
+  type MemberVo,
 } from '~/member/api/member'
 import { formatYuan, yuanToCents } from '@/utils/price'
 
@@ -217,7 +236,11 @@ const pagination = reactive({
 const adjustDialogVisible = ref(false)
 const adjustFormRef = ref<FormInstance>()
 const adjustLoading = ref(false)
-const adjustForm = reactive<MemberAccountAdjustPayload>({
+const memberOptionsLoading = ref(false)
+const memberOptions = ref<Array<{ id: number, label: string }>>([])
+type AdjustFormModel = Omit<MemberAccountAdjustPayload, 'member_id'> & { member_id?: number }
+
+const adjustForm = reactive<AdjustFormModel>({
   member_id: 0,
   value: 0,
   type: 'balance',
@@ -226,7 +249,7 @@ const adjustForm = reactive<MemberAccountAdjustPayload>({
 })
 
 const adjustRules = computed<FormRules>(() => ({
-  member_id: [{ required: true, message: t('member.points.memberIdRequired'), trigger: 'blur' }],
+  member_id: [{ required: true, message: t('member.points.memberIdRequired'), trigger: 'change' }],
   type: [{ required: true, message: t('member.points.walletTypeRequired'), trigger: 'change' }],
   value: [{ required: true, message: t('member.points.changeValueRequired'), trigger: 'blur' }],
   source: [{ required: true, message: t('member.points.sourceRequired'), trigger: ['change', 'blur'] }],
@@ -284,15 +307,43 @@ const resetFilters = () => {
   loadLogs()
 }
 
-const openAdjust = () => {
+const formatMemberOptionLabel = (member: MemberVo) => {
+  const nickname = member.nickname?.trim() || t('member.list.noNickname')
+  const phone = member.phone?.trim() || '-'
+  return `${nickname} (ID: ${member.id} / ${phone})`
+}
+
+const loadMemberOptions = async (keyword = '') => {
+  memberOptionsLoading.value = true
+  try {
+    const res = await memberApi.list({
+      page: 1,
+      page_size: 20,
+      keyword: keyword.trim(),
+    })
+    memberOptions.value = res.data.list.map(member => ({
+      id: member.id,
+      label: formatMemberOptionLabel(member),
+    }))
+  }
+  catch (error: any) {
+    ElMessage.error(error?.message || t('member.points.memberLoadFailed'))
+  }
+  finally {
+    memberOptionsLoading.value = false
+  }
+}
+
+const openAdjust = async () => {
   Object.assign(adjustForm, {
-    member_id: filters.member_id ?? 0,
+    member_id: filters.member_id ?? undefined,
     type: filters.wallet_type || 'balance',
     value: 0,
     source: 'manual',
     remark: '',
   })
   adjustDialogVisible.value = true
+  await loadMemberOptions(filters.member_id ? String(filters.member_id) : '')
 }
 
 const submitAdjust = async () => {
@@ -300,7 +351,13 @@ const submitAdjust = async () => {
   await adjustFormRef.value.validate()
   adjustLoading.value = true
   try {
-    const payload = { ...adjustForm }
+    const payload: MemberAccountAdjustPayload = {
+      member_id: Number(adjustForm.member_id),
+      value: adjustForm.value,
+      type: adjustForm.type,
+      source: adjustForm.source,
+      remark: adjustForm.remark,
+    }
     // 余额钱包：表单输入元，提交转换为分
     if (payload.type === 'balance') {
       payload.value = yuanToCents(payload.value)

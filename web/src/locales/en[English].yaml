@@ -1260,6 +1260,7 @@ member:
     sourceManual: Manual
     memberIdLabel: Member ID
     memberIdPlaceholder: Member ID
+    memberSelectPlaceholder: Select member
     walletType: Wallet
     balanceWallet: Balance
     pointsWallet: Points
@@ -1284,6 +1285,7 @@ member:
     walletTypePlaceholder: Select wallet
     changeValue: Amount
     changeValueRequired: Enter amount
+    memberLoadFailed: Load members failed
     memberIdRequired: Enter member ID
     walletTypeRequired: Select wallet
     sourceRequired: Select source

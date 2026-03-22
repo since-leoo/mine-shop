@@ -1,175 +1,86 @@
-@use '../../../styles/variables' as *;
+@use '../coupon-list/index.scss';
 
-.coupon-center {
-  min-height: 100vh;
-  background-color: $warm-bg-page;
-
-  // ===== Header =====
+.coupon-center-page {
   &__header {
+    margin: 0;
+    padding: 0 32rpx 28rpx;
+    background: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 72%, #FAF3ED 100%);
     position: relative;
-    overflow: hidden;
-    border-radius: 0 0 $warm-radius-xl $warm-radius-xl;
-  }
 
-  &__header-bg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: $warm-gradient-primary;
-  }
-
-  &__header-content {
-    position: relative;
-    padding: $warm-spacing-xl $warm-spacing-lg $warm-spacing-lg;
-    text-align: center;
-  }
-
-  &__header-title {
-    font-size: $warm-font-xxl;
-    font-weight: bold;
-    color: $warm-text-white;
-    display: block;
-  }
-
-  &__header-desc {
-    font-size: $warm-font-sm;
-    color: rgba(255, 255, 255, 0.85);
-    margin-top: $warm-spacing-xs;
-    display: block;
-  }
-
-  // ===== State =====
-  &__state {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 120rpx 0;
-  }
-
-  &__state-text {
-    font-size: $warm-font-md;
-    color: $warm-text-hint;
-  }
-
-  // ===== List =====
-  &__list {
-    padding: $warm-spacing-md;
-  }
-
-  // ===== Card =====
-  &__card {
-    display: flex;
-    align-items: stretch;
-    background: $warm-bg-white;
-    border-radius: $warm-radius-lg;
-    margin-bottom: $warm-spacing-md;
-    overflow: hidden;
-    box-shadow: $warm-shadow-sm;
-  }
-
-  &__card-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: 200rpx;
-    flex-shrink: 0;
-    padding: $warm-spacing-md $warm-spacing-sm;
-    background: linear-gradient(135deg, rgba(232, 131, 107, 0.1) 0%, rgba(232, 131, 107, 0.05) 100%);
-  }
-
-  &__card-amount-row {
-    display: flex;
-    align-items: baseline;
-  }
-
-  &__card-currency {
-    font-size: $warm-font-md;
-    font-weight: bold;
-    color: $warm-primary;
-  }
-
-  &__card-value {
-    font-size: 52rpx;
-    font-weight: bold;
-    color: $warm-primary;
-    line-height: 1.1;
-  }
-
-  &__card-condition {
-    font-size: $warm-font-xs;
-    color: $warm-text-secondary;
-    margin-top: $warm-spacing-xs;
-  }
-
-  &__card-right {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    padding: $warm-spacing-md;
-    gap: $warm-spacing-sm;
-  }
-
-  &__card-info {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  &__card-title {
-    font-size: $warm-font-md;
-    font-weight: bold;
-    color: $warm-text-primary;
-    margin-bottom: $warm-spacing-xs;
-  }
-
-  &__card-tag {
-    display: inline-block;
-    font-size: $warm-font-xs;
-    color: $warm-primary;
-    border: 1rpx solid $warm-primary;
-    padding: 2rpx 8rpx;
-    border-radius: $warm-radius-sm;
-    margin-bottom: $warm-spacing-xs;
-    align-self: flex-start;
-  }
-
-  &__card-desc {
-    font-size: $warm-font-sm;
-    color: $warm-text-secondary;
-    margin-bottom: 4rpx;
-  }
-
-  &__card-time {
-    font-size: $warm-font-xs;
-    color: $warm-text-hint;
-  }
-
-  // ===== Receive button =====
-  &__receive-btn {
-    width: 120rpx;
-    height: 64rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: $warm-radius-round;
-    background: $warm-gradient-primary;
-    flex-shrink: 0;
-
-    &--disabled {
-      background: $warm-bg-warm-gray;
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 96rpx;
+      background: linear-gradient(180deg, rgba(245,197,163,0) 0%, rgba(250,243,237,0.86) 100%);
     }
   }
 
-  &__receive-btn-text {
-    font-size: $warm-font-sm;
-    font-weight: bold;
-    color: $warm-text-white;
+  &__header-panel {
+    position: relative;
+    overflow: hidden;
+    margin-top: 20rpx;
+    border-radius: 40rpx;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96) 0%, rgba(255,248,243,0.92) 100%);
+    box-shadow: 0 8rpx 30rpx rgba(200,140,110,0.16);
+  }
 
-    .coupon-center__receive-btn--disabled & {
-      color: $warm-text-hint;
+  &__panel-blob {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(253,220,200,0.48);
+
+    &--right { top: -12rpx; right: -22rpx; width: 180rpx; height: 180rpx; }
+    &--left { left: -30rpx; bottom: -56rpx; width: 210rpx; height: 210rpx; background: rgba(245,197,163,0.20); }
+  }
+
+  &__list {
+    padding: 34rpx 30rpx 30rpx;
+  }
+}
+
+.coupon-ticket {
+  &__bottom-row {
+    margin-top: 22rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16rpx;
+  }
+
+  &__stock {
+    font-size: 22rpx;
+    line-height: 1;
+    color: #A89088;
+  }
+
+  &__receive-btn {
+    min-width: 162rpx;
+    height: 66rpx;
+    padding: 0 24rpx;
+    border-radius: 999rpx;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 45%, #E8836B 100%);
+    box-shadow: 0 4rpx 14rpx rgba(232,131,107,0.24);
+
+    &--disabled {
+      background: #E9DDD7;
+      box-shadow: none;
+    }
+  }
+
+  &__receive-text {
+    font-size: 24rpx;
+    line-height: 1;
+    font-weight: 700;
+    color: #fff;
+
+    &--disabled {
+      color: #A89088;
     }
   }
 }
