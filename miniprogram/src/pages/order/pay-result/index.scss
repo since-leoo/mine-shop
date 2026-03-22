@@ -6,11 +6,12 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 160rpx $warm-spacing-md $warm-spacing-xl;
+  padding: 0 32rpx 48rpx;
   box-sizing: border-box;
   overflow: hidden;
 
   &__icon-wrap {
+    margin-top: 160rpx;
     width: 120rpx;
     height: 120rpx;
     border-radius: 50%;
@@ -18,7 +19,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: $warm-spacing-lg;
+    margin-bottom: 60rpx;
     box-shadow: 0 8rpx 24rpx rgba(126, 184, 162, 0.3);
   }
 
@@ -38,13 +39,14 @@
     font-size: $warm-font-xl;
     font-weight: bold;
     color: $warm-text-primary;
-    margin-bottom: $warm-spacing-md;
+    margin-bottom: 16rpx;
   }
 
   &__amount {
     display: flex;
     align-items: center;
-    margin-bottom: 72rpx;
+    margin-top: 16rpx;
+    margin-bottom: 80rpx;
   }
 
   &__amount-label {
@@ -60,11 +62,11 @@
 
   &__buttons {
     display: flex;
-    gap: $warm-spacing-lg;
+    gap: 32rpx;
     padding: 0 $warm-spacing-lg;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 40rpx;
+    margin-bottom: 60rpx;
   }
 
   &__btn {
@@ -108,8 +110,8 @@
   &__recommend-title-row {
     display: flex;
     align-items: center;
-    gap: 10rpx;
-    margin-bottom: $warm-spacing-sm;
+    gap: 16rpx;
+    margin-bottom: 24rpx;
   }
 
   &__recommend-bar {
@@ -134,7 +136,7 @@
 
   &__goods-card {
     background: $warm-bg-white;
-    border-radius: $warm-radius-md;
+    border-radius: 32rpx;
     overflow: hidden;
     box-shadow: $warm-shadow-sm;
   }
@@ -167,4 +169,75 @@
     color: $warm-primary;
     font-weight: 700;
   }
+}
+
+.pay-result--h5 {
+  background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
+  padding: 0 16px 40px;
+}
+
+.pay-result--h5 .pay-result__icon-wrap {
+  margin-top: 56px;
+  width: 88px;
+  height: 88px;
+  box-shadow: 0 12px 28px rgba(126, 184, 162, 0.22);
+}
+
+.pay-result--h5 .pay-result__icon {
+  font-size: 40px;
+}
+
+.pay-result--h5 .pay-result__title {
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.pay-result--h5 .pay-result__amount {
+  margin-top: 8px;
+  margin-bottom: 32px;
+}
+
+.pay-result--h5 .pay-result__amount-label {
+  font-size: 14px;
+}
+
+.pay-result--h5 .pay-result__price {
+  font-size: 18px;
+}
+
+.pay-result--h5 .pay-result__buttons {
+  width: 100%;
+  padding: 0;
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.pay-result--h5 .pay-result__btn {
+  height: 46px;
+  border-radius: 23px;
+}
+
+.pay-result--h5 .pay-result__btn-text,
+.pay-result--h5 .pay-result__recommend-title {
+  font-size: 14px;
+}
+
+.pay-result--h5 .pay-result__recommend {
+  padding: 18px 16px 20px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+}
+
+.pay-result--h5 .pay-result__goods-card {
+  border-radius: 20px;
+}
+
+.pay-result--h5 .pay-result__goods-img {
+  height: 132px;
+}
+
+.pay-result--h5 .pay-result__goods-name,
+.pay-result--h5 .pay-result__goods-price {
+  font-size: 13px;
 }

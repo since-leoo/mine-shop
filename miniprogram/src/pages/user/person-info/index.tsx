@@ -6,6 +6,7 @@ import { redirectToLogin } from '../../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../../common/platform';
 import { fetchPerson, updateProfile, uploadImage } from '../../../services/usercenter/fetchPerson';
 import { authorizeProfile, bindPhoneNumber } from '../../../services/usercenter/authorizeProfile';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 interface PersonInfo {
@@ -164,6 +165,7 @@ export default function PersonInfo() {
 
   return (
     <View className="person-info warm-page-enter">
+      <PageNav title="个人信息" />
       {isMiniProgram() && (
         <View className="person-info__auth-card">
           <View className="person-info__auth-title-row">

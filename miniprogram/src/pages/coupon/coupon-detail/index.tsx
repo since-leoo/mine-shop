@@ -3,6 +3,7 @@ import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchCouponDetail } from '../../../services/coupon';
 import CouponNav from '../../../components/coupon-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 interface CouponDetailData {
@@ -63,7 +64,7 @@ export default function CouponDetail() {
   }
 
   return (
-    <View className="coupon-detail-page">
+    <View className={`coupon-detail-page ${isH5() ? 'coupon-detail-page--h5' : ''}`}>
             <View className="coupon-detail-page__hero-wrap">
         <CouponNav title="优惠券详情" />
         <View className="coupon-detail-page__hero">

@@ -16,6 +16,8 @@ import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../common/platform';
 import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
+import PageNav from '../../components/page-nav';
+import H5TabBar from '../../components/h5-tab-bar';
 import './index.scss';
 
 interface UserInfo {
@@ -151,6 +153,8 @@ function H5UserCenterView(props: {
       <View className="usercenter__version">
         <Text className="usercenter__version-text">当前版本 {versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
       </View>
+
+      <H5TabBar current="/pages/usercenter/index" />
     </View>
   );
 }
@@ -187,6 +191,7 @@ function MiniProgramUserCenterView(props: {
     <View className="usercenter usercenter--default">
       <View className="usercenter__header">
         <View className="usercenter__header-bg">
+          <PageNav showBack={false} showTitle={false} light background="transparent" />
           <View className="usercenter__header-circle" />
           <View className="usercenter__header-content" onClick={onAvatarClick}>
             <View className="usercenter__avatar-wrap">
@@ -262,6 +267,8 @@ function MiniProgramUserCenterView(props: {
       <View className="usercenter__version">
         <Text className="usercenter__version-text">当前版本 {versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
       </View>
+
+      <H5TabBar current="/pages/usercenter/index" />
     </View>
   );
 }

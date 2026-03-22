@@ -6,6 +6,7 @@ import {
   updateAddress,
   fetchDeliveryAddress,
 } from '../../../../services/address/fetchAddress';
+import PageNav from '../../../../components/page-nav';
 import './index.scss';
 
 interface AddressForm {
@@ -161,6 +162,7 @@ export default function AddressEdit() {
   if (loading) {
     return (
       <View className="address-edit">
+        <PageNav title={isEdit ? '编辑地址' : '新增地址'} />
         <View className="address-edit__state">
           <Text className="address-edit__state-text">加载中...</Text>
         </View>
@@ -170,6 +172,7 @@ export default function AddressEdit() {
 
   return (
     <View className="address-edit">
+      <PageNav title={isEdit ? '编辑地址' : '新增地址'} />
       <View className="address-edit__form">
         {/* Name */}
         <View className="address-edit__field">

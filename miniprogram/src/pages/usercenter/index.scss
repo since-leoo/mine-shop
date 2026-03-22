@@ -17,7 +17,7 @@
 
 .usercenter__header-bg {
   background: $warm-gradient-header;
-  padding: 24rpx 40rpx 72rpx;
+  padding: 0 32rpx 60rpx;
   border-radius: 0 0 60rpx 60rpx;
   position: relative;
   overflow: hidden;
@@ -42,7 +42,7 @@
   align-items: center;
   gap: 28rpx;
   justify-content: space-between;
-  padding-top: 16rpx;
+  padding-top: 40rpx;
 }
 
 // .user-avatar { width:64px; height:64px; border-radius:50%; background:rgba(255,255,255,0.3); display:flex; align-items:center; justify-content:center; font-size:32px; border:3px solid rgba(255,255,255,0.5); box-shadow:0 4px 16px rgba(0,0,0,0.1); }
@@ -108,8 +108,8 @@
 }
 
 .usercenter__qrcode-icon {
-  width: 44rpx;
-  height: 44rpx;
+  width: 40rpx;
+  height: 40rpx;
   display: block;
 }
 
@@ -118,9 +118,9 @@
 .usercenter__wallet-card {
   position: relative;
   z-index: 2;
-  margin: -28rpx 32rpx 0;
+  margin: -40rpx 32rpx 0;
   background: #fff;
-  border-radius: $warm-radius-md; // 16rpx = var(--radius)
+  border-radius: 32rpx;
   padding: 32rpx;
   display: flex;
   justify-content: space-around;
@@ -151,9 +151,9 @@
 // ===== 我的订单 =====
 // .order-section { margin:14px 16px; background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
 .usercenter__orders-card {
-  margin: 28rpx 32rpx 0;
+  margin: 32rpx 32rpx 0;
   background: #fff;
-  border-radius: $warm-radius-md;
+  border-radius: 32rpx;
   box-shadow: $warm-shadow-sm;
   overflow: hidden;
 }
@@ -212,8 +212,8 @@
 }
 
 .usercenter__order-tag-icon {
-  width: 48rpx;
-  height: 48rpx;
+  width: 52rpx;
+  height: 52rpx;
   display: block;
 }
 
@@ -261,7 +261,7 @@
 .usercenter__menu-card {
   margin: 0 32rpx 28rpx;
   background: #fff;
-  border-radius: $warm-radius-md;
+  border-radius: 32rpx;
   box-shadow: $warm-shadow-sm;
   overflow: hidden;
 
@@ -585,4 +585,8 @@
   color: #8f7b73;
   font-size: 12px;
   line-height: 1.7;
+}
+
+.usercenter--h5 {
+  padding-bottom: calc(112px + env(safe-area-inset-bottom));
 }

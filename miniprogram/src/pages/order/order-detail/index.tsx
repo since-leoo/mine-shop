@@ -6,6 +6,8 @@ import { fetchAfterSaleList, type AfterSaleItem } from '../../../services/order/
 import { fetchOrderDetail } from '../../../services/order/orderDetail';
 import { cancelOrder, confirmReceipt } from '../../../services/order/orderList';
 import Price from '../../../components/Price';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 interface OrderGoods {
@@ -272,7 +274,7 @@ export default function OrderDetail() {
 
   if (loading) {
     return (
-      <View className="order-detail order-detail--loading">
+      <View className={`order-detail order-detail--loading ${isH5() ? 'order-detail--h5' : ''}`}>
         <Text className="order-detail__loading-text">加载中...</Text>
       </View>
     );
@@ -329,7 +331,8 @@ export default function OrderDetail() {
     .filter(Boolean) as Array<{ key: string; text: string; className: string; onClick: () => void }>;
 
   return (
-    <View className="order-detail">
+    <View className={`order-detail ${isH5() ? 'order-detail--h5' : ''}`}>
+      <PageNav title="订单详情" />
       <View className="order-detail__status-banner">
         <View className="order-detail__status-circle" />
         <Text className="order-detail__status">{statusDesc}</Text>

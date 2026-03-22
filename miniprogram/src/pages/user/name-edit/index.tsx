@@ -2,6 +2,7 @@ import { View, Text, Input } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useCallback } from 'react';
 import { updateProfile } from '../../../services/usercenter/fetchPerson';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 export default function NameEdit() {
@@ -37,6 +38,7 @@ export default function NameEdit() {
 
   return (
     <View className="name-edit">
+      <PageNav title="修改昵称" />
       <View className="name-edit__card">
         <Text className="name-edit__label">昵称</Text>
         <Input

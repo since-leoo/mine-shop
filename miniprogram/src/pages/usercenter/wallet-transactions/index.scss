@@ -14,8 +14,8 @@
   }
 
   &__summary {
-    margin: 16rpx $warm-spacing-md 6rpx;
-    padding: 20rpx 22rpx;
+    margin: 20rpx 32rpx 8rpx;
+    padding: 24rpx 24rpx;
     border-radius: $warm-radius-lg;
     background: linear-gradient(130deg, #fff5ed 0%, #ffe9de 48%, #ffe2d6 100%);
     box-shadow: $warm-shadow-sm;
@@ -73,7 +73,7 @@
   }
 
   &__list {
-    padding: 6rpx $warm-spacing-md;
+    padding: 8rpx 32rpx;
   }
 
   &__group {

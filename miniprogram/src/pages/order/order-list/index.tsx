@@ -5,6 +5,8 @@ import { fetchAfterSaleList, type AfterSaleItem } from '../../../services/order/
 import { fetchOrders, fetchOrdersCount, cancelOrder, confirmReceipt } from '../../../services/order/orderList';
 import Price from '../../../components/Price';
 import LoadMore from '../../../components/LoadMore';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 const OrderStatus = {
@@ -340,7 +342,8 @@ export default function OrderList() {
   }, [handleApplyService, handleCancelOrder, handleConfirmReceipt, handlePayOrder, handleRepurchase, handleReview, handleViewAfterSale, handleViewDelivery]);
 
   return (
-    <View className="order-list-page">
+    <View className={`order-list-page ${isH5() ? 'order-list-page--h5' : ''}`}>
+      <PageNav title="我的订单" />
       <View className="order-list-page__tabs">
         <View className="order-tabs">
           {TABS.map((tab) => (

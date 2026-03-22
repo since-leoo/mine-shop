@@ -1,4 +1,4 @@
-﻿import { View, Text, Image, Swiper, SwiperItem } from '@tarojs/components';
+﻿import { View, Text, Image, Swiper, SwiperItem, RootPortal } from '@tarojs/components';
 import Taro, { useShareAppMessage } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchGood } from '../../../services/good/fetchGood';
@@ -11,6 +11,8 @@ import {
 } from '../../../services/good/fetchGoodsDetailsComments';
 import homeIcon from '../../../assets/detail-bottom/home-line.svg';
 import cartIcon from '../../../assets/detail-bottom/cart-line.svg';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 interface SkuItem {
@@ -506,7 +508,8 @@ export default function GoodsDetails() {
     imageUrl: primaryImage || images[0] || '',
   }));
   return (
-    <View className={`goods-detail-page ${isGroupBuyMode ? 'goods-detail-page--group' : ''} ${isSeckillMode ? 'goods-detail-page--seckill' : ''}`}>
+    <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : ''} ${isGroupBuyMode ? 'goods-detail-page--group' : ''} ${isSeckillMode ? 'goods-detail-page--seckill' : ''}`}>
+      {!isH5() ? <PageNav title="商品详情" /> : null}
       {images.length > 0 && (
         <View className={`goods-swiper ${isGroupBuyMode ? 'goods-swiper--group' : ''}`}>
           <Swiper className="goods-swiper__inner" indicatorDots={!isGroupBuyMode} autoplay circular indicatorActiveColor="#E8836B" current={swiperCurrent} onChange={(e) => setSwiperCurrent(e.detail.current)}>
@@ -722,7 +725,32 @@ export default function GoodsDetails() {
 
       <View className="goods-bottom-placeholder" />
 
-      {!isGroupBuyMode && (
+      {!isGroupBuyMode && (isH5() ? (
+        <RootPortal>
+          <View className={`goods-bottom-bar ${showSpecPopup ? 'goods-bottom-bar--hidden' : ''}`}>
+            <View className="goods-bottom-bar__icons">
+              <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
+                <Image className="goods-bottom-bar__icon-emoji" src={homeIcon} mode="aspectFit" />
+                <Text className="goods-bottom-bar__icon-text">首页</Text>
+              </View>
+              <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}>
+                <Image className="goods-bottom-bar__icon-emoji" src={cartIcon} mode="aspectFit" />
+                <Text className="goods-bottom-bar__icon-text">购物车</Text>
+              </View>
+            </View>
+            <View className="goods-bottom-bar__btns">
+              {!isSeckillMode && (
+                <View className="goods-bottom-bar__btn goods-bottom-bar__btn--cart" onClick={() => showSkuSelectPopup(2)}>
+                  <Text className="goods-bottom-bar__btn-text">加入购物车</Text>
+                </View>
+              )}
+              <View className="goods-bottom-bar__btn goods-bottom-bar__btn--buy" onClick={() => showSkuSelectPopup(1)}>
+                <Text className="goods-bottom-bar__btn-text">{isSeckillMode ? '立即抢购' : '立即购买'}</Text>
+              </View>
+            </View>
+          </View>
+        </RootPortal>
+      ) : (
         <View className={`goods-bottom-bar ${showSpecPopup ? 'goods-bottom-bar--hidden' : ''}`}>
           <View className="goods-bottom-bar__icons">
             <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
@@ -745,9 +773,22 @@ export default function GoodsDetails() {
             </View>
           </View>
         </View>
-      )}
+      ))}
 
-      {isGroupBuyMode && (
+      {isGroupBuyMode && (isH5() ? (
+        <RootPortal>
+          <View className={`goods-group-bottom ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
+            <View className="goods-group-bottom__origin" onClick={() => handleGroupBottomClick('origin')}>
+              <Text className="goods-group-bottom__origin-price">¥{formatPrice(originPriceCent)}</Text>
+              <Text className="goods-group-bottom__origin-text">原价购买</Text>
+            </View>
+            <View className="goods-group-bottom__group" onClick={() => handleGroupBottomClick('group')}>
+              <Text className="goods-group-bottom__group-price">¥{formatPrice(groupPriceCent)}</Text>
+              <Text className="goods-group-bottom__group-text">立即开团</Text>
+            </View>
+          </View>
+        </RootPortal>
+      ) : (
         <View className={`goods-group-bottom ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
           <View className="goods-group-bottom__origin" onClick={() => handleGroupBottomClick('origin')}>
             <Text className="goods-group-bottom__origin-price">¥{formatPrice(originPriceCent)}</Text>
@@ -758,7 +799,7 @@ export default function GoodsDetails() {
             <Text className="goods-group-bottom__group-text">立即开团</Text>
           </View>
         </View>
-      )}
+      ))}
 
       {showSpecPopup && (
         <View className={`spec-mask ${specPopupVisible ? 'spec-mask--show' : ''}`} onClick={closeSpecPopup}>

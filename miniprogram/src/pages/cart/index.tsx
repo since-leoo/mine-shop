@@ -5,6 +5,8 @@ import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5 } from '../../common/platform';
 import { deleteCartItem, fetchCartGroupData, updateCartItem } from '../../services/cart/cart';
+import PageNav from '../../components/page-nav';
+import H5TabBar from '../../components/h5-tab-bar';
 import './index.scss';
 
 interface CartGoods {
@@ -203,7 +205,8 @@ export default function Cart() {
 
   if (!loading && items.length === 0) {
     return (
-      <View className="cart-page cart-page--empty">
+      <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : ''}`}>
+        <PageNav title="购物车" showBack={false} />
         <View className="cart-empty">
           <Text className="cart-empty__icon">🛒</Text>
           <Text className="cart-empty__desc">购物车还是空的，先去挑点喜欢的商品吧</Text>
@@ -211,12 +214,14 @@ export default function Cart() {
             <Text className="cart-empty__btn-text">去逛逛</Text>
           </View>
         </View>
+      {isH5() ? <H5TabBar current="/pages/cart/index" /> : null}
       </View>
     );
   }
 
   return (
-    <View className="cart-page cart-page--filled">
+    <View className={`cart-page cart-page--filled ${isH5() ? 'cart-page--h5' : ''}`}>
+      <PageNav title="购物车" showBack={false} />
       <View className="cart-list">
         {stores.map((store) => {
           const storeSelected = store.items.every(item => item.selected);
@@ -245,7 +250,6 @@ export default function Cart() {
                     <View className="cart-goods-item__bottom">
                       <View>
                         <Text className="cart-goods-item__price">{formatAmount(item.price)}</Text>
-                        <Text className="cart-goods-item__remove" onClick={() => handleDelete(item)}>删除</Text>
                       </View>
                       <View className="qty-stepper">
                         <View className="qty-stepper__btn" onClick={() => changeQuantity(item, -1)}>
@@ -282,13 +286,29 @@ export default function Cart() {
             className={`cart-bar__settle ${totalCount === 0 ? 'cart-bar__settle--disabled' : ''}`}
             onClick={() => {
               if (totalCount === 0) return;
+              const goodsRequestList = stores
+                .flatMap((store) => store.items)
+                .filter((item) => item.selected)
+                .map((item) => ({
+                  skuId: item.skuId,
+                  quantity: item.quantity,
+                  spuId: item.spuId,
+                  storeId: item.storeId,
+                }));
+              if (goodsRequestList.length === 0) {
+                Taro.showToast({ title: '请选择结算商品', icon: 'none' });
+                return;
+              }
+              Taro.setStorageSync('order.goodsRequestList', JSON.stringify(goodsRequestList));
               Taro.navigateTo({ url: '/pages/order/order-confirm/index?type=cart' });
             }}
           >
-            <Text className="cart-bar__settle-text">去结算</Text>
+            <Text className="cart-bar__settle-text">去结算({totalCount})</Text>
           </View>
         </View>
       </View>
+
+      {isH5() ? <H5TabBar current="/pages/cart/index" /> : null}
     </View>
   );
 }

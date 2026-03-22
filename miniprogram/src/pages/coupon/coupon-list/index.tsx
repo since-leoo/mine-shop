@@ -1,8 +1,9 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { getCurrentInstance, usePullDownRefresh, useRouter } from '@tarojs/taro';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchCouponList } from '../../../services/coupon';
 import CouponNav from '../../../components/coupon-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 const TAB_LIST = [
@@ -39,19 +40,26 @@ interface CouponItem {
 
 function resolveCouponId(item: any): string {
   const candidates = [
+    item?.coupon_id,
     item?.couponId,
-    item?.id,
+    item?.coupon?.coupon_id,
+    item?.coupon?.couponId,
+    item?.couponInfo?.coupon_id,
+    item?.couponInfo?.couponId,
+    item?.userCoupon?.coupon_id,
+    item?.userCoupon?.couponId,
     item?.userCouponId,
     item?.memberCouponId,
     item?.couponRecordId,
     item?.couponReceiveId,
+    item?.id,
+    item?.coupon?.id,
+    item?.couponInfo?.id,
+    item?.userCoupon?.id,
     item?.couponCodeId,
     item?.couponTemplateId,
     item?.templateId,
     item?.key,
-    item?.coupon?.id,
-    item?.couponInfo?.id,
-    item?.userCoupon?.id,
   ];
 
   for (const value of candidates) {
@@ -64,9 +72,42 @@ function resolveCouponId(item: any): string {
   return '';
 }
 
+function resolveCouponName(item: any): string {
+  return String(
+    item?.couponName ||
+      item?.couponTitle ||
+      item?.name ||
+      item?.title ||
+      item?.coupon?.couponName ||
+      item?.coupon?.couponTitle ||
+      item?.coupon?.name ||
+      item?.coupon?.title ||
+      item?.couponInfo?.couponName ||
+      item?.couponInfo?.couponTitle ||
+      item?.couponInfo?.name ||
+      item?.couponInfo?.title ||
+      item?.userCoupon?.couponName ||
+      item?.userCoupon?.couponTitle ||
+      item?.userCoupon?.name ||
+      item?.userCoupon?.title ||
+      ''
+  );
+}
+
 export default function CouponList() {
   const router = useRouter();
   const isSelectMode = router.params.selectMode === '1';
+  const selectedCouponId = String(router.params.selectedCouponId || '');
+  const rawAvailableCouponIds = String(router.params.availableCouponIds || '');
+  const availableCouponIds = useMemo(() => {
+    if (!rawAvailableCouponIds) return [] as string[];
+    try {
+      const parsed = JSON.parse(decodeURIComponent(rawAvailableCouponIds));
+      return Array.isArray(parsed) ? parsed.map((item) => String(item || '')).filter(Boolean) : [];
+    } catch (error) {
+      return [];
+    }
+  }, [rawAvailableCouponIds]);
   const [activeTab, setActiveTab] = useState(0);
   const [couponList, setCouponList] = useState<CouponItem[]>([]);
   const [loading, setLoading] = useState(false);
@@ -76,10 +117,10 @@ export default function CouponList() {
     const statusInFetch = STATUS_MAP[status] || 'default';
     fetchCouponList(statusInFetch)
       .then((list: any) => {
-        const mapped = (list || []).map((item: any, idx: number) => ({
+        let mapped = (list || []).map((item: any, idx: number) => ({
           couponId: resolveCouponId(item),
           key: String(item?.key || resolveCouponId(item) || `idx_${idx}`),
-          title: item.name || item.title || '',
+          title: resolveCouponName(item),
           type: item.type === 'discount' ? 2 : 1,
           value: item.discountValue || item.value || 0,
           desc: item.label || item.desc || '',
@@ -89,11 +130,14 @@ export default function CouponList() {
           base: item.base || 0,
           raw: item,
         }));
+        if (isSelectMode && availableCouponIds.length > 0) {
+          mapped = mapped.filter((item: CouponItem) => availableCouponIds.includes(String(item.couponId || '')));
+        }
         setCouponList(mapped);
       })
       .catch(() => setCouponList([]))
       .finally(() => setLoading(false));
-  }, []);
+  }, [availableCouponIds, isSelectMode]);
 
   useEffect(() => {
     fetchList(0);
@@ -117,11 +161,14 @@ export default function CouponList() {
     if (isSelectMode) {
       const eventChannel = getCurrentInstance().page?.getOpenerEventChannel?.();
       eventChannel?.emit('couponSelected', {
+        selected: true,
+        coupon_id: coupon.couponId || '',
         couponId: coupon.couponId || '',
-        id: coupon.couponId || '',
+        id: coupon.raw?.id || coupon.couponId || '',
         key: coupon.key,
         title: coupon.title || '',
         name: coupon.title || '',
+        couponName: coupon.title || '',
         raw: coupon.raw,
       });
       Taro.navigateBack();
@@ -147,13 +194,13 @@ export default function CouponList() {
   };
 
   return (
-    <View className="coupon-page coupon-list-page">
+    <View className={`coupon-page coupon-list-page ${isH5() ? 'coupon-list-page--h5' : ''}`}>
             <View className="coupon-page__header coupon-list-page__header">
-        <CouponNav title="我的优惠券" /><View className="coupon-list-page__header-panel"><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--right" /><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--left" />
+        <CouponNav title={isSelectMode ? '选择优惠券' : '我的优惠券'} /><View className="coupon-list-page__header-panel"><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--right" /><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--left" />
         <View className="coupon-page__header-glow coupon-page__header-glow--right" />
         <View className="coupon-page__header-glow coupon-page__header-glow--left" />
-        <Text className="coupon-page__title">我的优惠券</Text>
-        <Text className="coupon-page__subtitle">精选权益已按状态整理，结算时可直接选择抵扣，购物更省一点。</Text>
+        <Text className="coupon-page__title">{isSelectMode ? '选择优惠券' : '我的优惠券'}</Text>
+        <Text className="coupon-page__subtitle">{isSelectMode ? '仅展示当前订单可用的优惠券，选中后会自动回填到结算页。' : '精选权益已按状态整理，结算时可直接选择抵扣，购物更省一点。'}</Text>
         <View className="coupon-page__tabs">
           {TAB_LIST.map((tab) => (
             <View
@@ -202,7 +249,7 @@ export default function CouponList() {
               return (
                 <View
                   key={coupon.key}
-                  className={`coupon-ticket ${isDisabled ? 'coupon-ticket--disabled' : ''}`}
+                  className={`coupon-ticket ${isDisabled ? 'coupon-ticket--disabled' : ''} ${selectedCouponId && String(coupon.couponId) === selectedCouponId ? 'coupon-ticket--selected' : ''}`}
                   onClick={() => !isDisabled && handleCouponClick(coupon)}
                 >
                   <View className="coupon-ticket__left">

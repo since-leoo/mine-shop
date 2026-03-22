@@ -1,12 +1,12 @@
 @use './variables' as *;
 
-// 温馨商城全局样式 - 匹配 design-mockup.html
+// 温馨商城全局样式 - 匹配 miniprogram/design.html
 
 // === 页面基础 ===
 page {
   background-color: $warm-bg-page;
   color: $warm-text-primary;
-  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', sans-serif;
+  font-family: 'PingFang SC', 'Helvetica Neue', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 // === 工具类 ===
@@ -206,7 +206,7 @@ page {
 }
 
 .warm-skeleton {
-  background: linear-gradient(90deg, #f5dfd1 25%, #fff7f1 40%, #f5dfd1 60%);
+  background: linear-gradient(90deg, #f5e8df 25%, #fff8f3 40%, #f5e8df 60%);
   background-size: 200% 100%;
   animation: warm-skeleton 1.2s linear infinite;
   border-radius: 12rpx;

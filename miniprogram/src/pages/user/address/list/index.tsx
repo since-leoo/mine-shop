@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useCallback } from 'react';
 import { fetchDeliveryAddressList, deleteAddress } from '../../../../services/address/fetchAddress';
+import PageNav from '../../../../components/page-nav';
 import './index.scss';
 
 const ORDER_CONFIRM_SELECTED_ADDRESS_KEY = 'order.confirm.selectedAddress';
@@ -102,6 +103,7 @@ export default function AddressList() {
 
   return (
     <View className="address-list">
+      <PageNav title={isSelectMode ? '选择地址' : '收货地址'} />
       {/* Loading */}
       {loading && (
         <View className="address-list__state">

@@ -403,3 +403,36 @@
     color: #E8836B;
   }
 }
+
+.coupon-ticket--selected {
+  box-shadow: 0 0 0 3rpx rgba(232,131,107,0.24), 0 8rpx 24rpx rgba(200,140,110,0.16);
+}
+
+.coupon-list-page--h5 {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
+}
+
+.coupon-list-page--h5 .coupon-page__header,
+.coupon-list-page--h5 .coupon-list-page__content {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.coupon-list-page--h5 .coupon-list-page__header-panel {
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+}
+
+.coupon-list-page--h5 .coupon-page__title { font-size: 24px; }
+.coupon-list-page--h5 .coupon-page__subtitle { font-size: 13px; }
+.coupon-list-page--h5 .coupon-page__tab-text { font-size: 13px; }
+.coupon-list-page--h5 .coupon-ticket { border-radius: 22px; box-shadow: 0 12px 28px rgba(197,145,114,.1); }
+.coupon-list-page--h5 .coupon-ticket__title,
+.coupon-list-page--h5 .coupon-ticket__value { font-size: 18px; }
+.coupon-list-page--h5 .coupon-ticket__condition,
+.coupon-list-page--h5 .coupon-ticket__desc,
+.coupon-list-page--h5 .coupon-ticket__time,
+.coupon-list-page--h5 .coupon-ticket__action,
+.coupon-list-page--h5 .coupon-ticket__status,
+.coupon-list-page--h5 .coupon-ticket__tag { font-size: 12px; }

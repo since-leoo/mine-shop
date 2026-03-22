@@ -3,6 +3,7 @@ import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchAvailableCoupons, receiveCoupon } from '../../../services/coupon';
 import CouponNav from '../../../components/coupon-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 interface CouponItem {
@@ -93,7 +94,7 @@ export default function CouponCenter() {
   };
 
   return (
-    <View className="coupon-page coupon-center-page">
+    <View className={`coupon-page coupon-center-page ${isH5() ? 'coupon-center-page--h5' : ''}`}>
             <View className="coupon-page__header coupon-center-page__header">
         <CouponNav title="领券中心" />
         <View className="coupon-center-page__header-panel">

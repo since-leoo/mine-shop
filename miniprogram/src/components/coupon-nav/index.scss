@@ -52,3 +52,42 @@
     height: 1px;
   }
 }
+
+.coupon-nav--h5 {
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  width: 100%;
+  background: linear-gradient(180deg, #f4d4c4 0%, #f7e4d7 48%, #faf3ed 100%);
+  backdrop-filter: blur(14px);
+  padding-bottom: 0;
+}
+
+.coupon-nav--h5 .coupon-nav__bar {
+  min-height: 56px;
+  padding: 0 14px;
+}
+
+.coupon-nav--h5 .coupon-nav__back {
+  width: 44px;
+  height: 44px;
+}
+
+.coupon-nav--h5 .coupon-nav__back-icon {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.coupon-nav--h5 .coupon-nav__title {
+  width: calc(100% - 120px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 19px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.coupon-nav--h5 .coupon-nav__capsule-space {
+  width: 44px !important;
+}

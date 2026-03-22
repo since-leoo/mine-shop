@@ -12,3 +12,19 @@ page {
   line-height: 1.6;
   animation: warm-page-fade-in 220ms ease both;
 }
+
+html, body {
+  margin: 0;
+  background: var(--warm-bg-page);
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.taro_page {
+  width: 100%;
+  min-height: 100vh;
+}

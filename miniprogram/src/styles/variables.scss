@@ -14,9 +14,9 @@ $warm-warm-pink: #F7B8B8;
 // Backgrounds
 $warm-bg-cream: #FFF8F3;
 $warm-bg-warm: #FFF1E8;
-$warm-bg-section: #FDEEE3;
-$warm-bg-page: #F7EADF;
-$warm-bg-warm-gray: #F7EADF;
+$warm-bg-section: #FFF5EE;
+$warm-bg-page: #FAF3ED;
+$warm-bg-warm-gray: #FAF3ED;
 $warm-bg-white: #FFFFFF;
 $warm-bg-card: #FFFFFF;
 
@@ -36,9 +36,9 @@ $warm-error: #E8836B;
 $warm-info: #89B8D6;
 
 // Borders and divider
-$warm-border: #E8D0C3;
-$warm-border-light: #EFDCCF;
-$warm-divider: #ECD8CB;
+$warm-border: #F0DDD4;
+$warm-border-light: #F8EDE5;
+$warm-divider: #F5E8DF;
 
 // Radius
 $warm-radius-xs: 6rpx;
@@ -49,13 +49,13 @@ $warm-radius-xl: 32rpx;
 $warm-radius-round: 999rpx;
 
 // Shadows
-$warm-shadow-sm: 0 6rpx 18rpx rgba(200, 140, 110, 0.13);
-$warm-shadow-md: 0 10rpx 30rpx rgba(200, 140, 110, 0.18);
-$warm-shadow-lg: 0 16rpx 42rpx rgba(200, 140, 110, 0.22);
+$warm-shadow-sm: 0 4rpx 16rpx rgba(200, 140, 110, 0.12);
+$warm-shadow-md: 0 8rpx 30rpx rgba(200, 140, 110, 0.16);
+$warm-shadow-lg: 0 16rpx 42rpx rgba(200, 140, 110, 0.18);
 
 // Gradients
 $warm-gradient-primary: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
-$warm-gradient-header: linear-gradient(180deg, #E8836B 0%, #F0A18F 38%, #F4BE98 68%, #F7EADF 100%);
+$warm-gradient-header: linear-gradient(180deg, #E8836B 0%, #F2A99A 40%, #F5C5A3 70%, #FAF3ED 100%);
 $warm-gradient-soft: linear-gradient(180deg, #FFF1E8 0%, #FFF8F3 100%);
 $warm-gradient-mint: linear-gradient(135deg, #B5DDD0 0%, #7EB8A2 100%);
 

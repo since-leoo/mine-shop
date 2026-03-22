@@ -3,9 +3,10 @@
 .person-info {
   min-height: 100vh;
   background-color: $warm-bg-page;
+  padding-bottom: 40rpx;
 
   &__auth-card {
-    margin: $warm-spacing-md;
+    margin: 20rpx 32rpx;
     background: linear-gradient(135deg, rgba(232, 131, 107, 0.14), rgba(245, 197, 163, 0.2));
     border-radius: $warm-radius-lg;
     padding: $warm-spacing-lg;
@@ -74,7 +75,7 @@
 
   // ===== Avatar section =====
   &__avatar-section {
-    margin: $warm-spacing-md;
+    margin: 20rpx 32rpx;
     background: $warm-bg-white;
     border-radius: $warm-radius-lg;
     overflow: hidden;
@@ -125,7 +126,7 @@
 
   // ===== Info cells =====
   &__cells {
-    margin: 0 $warm-spacing-md;
+    margin: 0 32rpx;
     background: $warm-bg-white;
     border-radius: $warm-radius-lg;
     overflow: hidden;
@@ -133,7 +134,7 @@
   }
 
   &__loading-wrap {
-    margin: 0 $warm-spacing-md;
+    margin: 0 32rpx;
     background: $warm-bg-white;
     border-radius: $warm-radius-lg;
     box-shadow: $warm-shadow-sm;

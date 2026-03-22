@@ -71,8 +71,9 @@
     ]
   },
   window: {
+    backgroundColor: '#FAF3ED',
     backgroundTextStyle: 'light',
-    navigationBarBackgroundColor: '#fff',
+    navigationBarBackgroundColor: '#FFF8F3',
     navigationBarTitleText: 'MineShop',
     navigationBarTextStyle: 'black'
   }

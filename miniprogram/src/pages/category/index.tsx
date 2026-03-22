@@ -1,7 +1,10 @@
 import { View, Text, ScrollView, Image } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
+import { isH5 } from '../../common/platform';
 import { useState, useEffect } from 'react';
 import { getCategoryList } from '../../services/good/fetchCategoryList';
+import PageNav from '../../components/page-nav';
+import H5TabBar from '../../components/h5-tab-bar';
 import './index.scss';
 
 interface CategoryChild {
@@ -95,16 +98,22 @@ export default function Category() {
 
   if (loading) {
     return (
-      <View className="category-page">
-        <View className="category-loading">
-          <Text className="category-loading__text">Loading...</Text>
+      <View className={`category-page ${isH5() ? 'category-page--h5' : ''}`}>
+        <PageNav title="商品分类" showBack={false} />
+        <View className="category-page__body">
+          <View className="category-loading">
+            <Text className="category-loading__text">Loading...</Text>
+          </View>
         </View>
+        {isH5() ? <H5TabBar current="/pages/category/index" /> : null}
       </View>
     );
   }
 
   return (
-    <View className="category-page">
+    <View className={`category-page ${isH5() ? 'category-page--h5' : ''}`}>
+      <PageNav title="商品分类" showBack={false} />
+      <View className="category-page__body">
       {/* Left Sidebar */}
       <ScrollView
         className="category-sidebar"
@@ -163,6 +172,8 @@ export default function Category() {
           </View>
         )}
       </ScrollView>
+      </View>
+      {isH5() ? <H5TabBar current="/pages/category/index" /> : null}
     </View>
   );
 }

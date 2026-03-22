@@ -6,8 +6,17 @@
 // .category-page { display:flex; flex:1; }
 .category-page {
   display: flex;
-  height: 100vh;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
+
+  &__body {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    overflow: hidden;
+    background: #FFF5EE;
+  }
 }
 
 // === Loading State ===
@@ -27,8 +36,9 @@
 // .category-sidebar { width:88px; background:var(--bg-section); overflow-y:auto; flex-shrink:0; }
 .category-sidebar {
   width: 176rpx; // 88px * 2
-  height: 100vh;
-  background-color: $warm-bg-section; // #FFF5EE
+  padding-top: 8rpx;
+  height: 100%;
+  background: #FFF5EE;
   flex-shrink: 0;
 
   // .sidebar-item { padding:14px 0; text-align:center; font-size:12px; color:var(--text-muted); font-weight:600; position:relative; border-left:3px solid transparent; }
@@ -67,13 +77,13 @@
 .category-content {
   flex: 1;
   height: 100vh;
-  padding: 24rpx;
+  padding: 20rpx 24rpx 24rpx;
   box-sizing: border-box;
   background-color: #fff;
 
   // .cate-group-title { font-size:14px; font-weight:700; color:var(--text-dark); padding:8px 0 10px; display:flex; align-items:center; gap:6px; }
   &__header {
-    padding: 16rpx 0 20rpx;
+    padding: 12rpx 0 20rpx;
     display: flex;
     align-items: center;
     gap: 12rpx;
@@ -99,7 +109,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 20rpx;
-    margin-bottom: 32rpx;
+    margin-bottom: 28rpx;
   }
 
   &__empty {
@@ -152,4 +162,54 @@
     max-width: 100%;
     box-sizing: border-box;
   }
+}
+
+.category-page--h5 {
+  background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 18%, #faf3ed 34%, #faf3ed 100%);
+  padding-bottom: calc(108px + env(safe-area-inset-bottom));
+}
+
+.category-page--h5 .category-page__body {
+  margin: 16px 16px 0;
+  border-radius: 28px 28px 0 0;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+}
+
+.category-page--h5 .category-sidebar {
+  width: 108px;
+  padding-top: 8px;
+}
+
+.category-page--h5 .category-sidebar__item {
+  min-height: 58px;
+  padding: 0 12px;
+  border-left-width: 4px;
+}
+
+.category-page--h5 .category-sidebar__text {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.category-page--h5 .category-content {
+  height: auto;
+  padding: 16px 16px 28px;
+}
+
+.category-page--h5 .category-content__title {
+  font-size: 18px;
+}
+
+.category-page--h5 .category-content__grid {
+  gap: 14px;
+}
+
+.category-page--h5 .category-card {
+  width: calc((100% - 28px) / 3);
+}
+
+.category-page--h5 .category-card__name {
+  margin-top: 8px;
+  font-size: 12px;
 }

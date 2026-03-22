@@ -31,7 +31,7 @@ final class CouponTransformer
         $value = (int) ($coupon['value'] ?? 0);
 
         return [
-            'key' => (string) ($couponUser['id'] ?? ''),
+            'key' => (string) ($couponUser['coupon_id'] ?? ''),
             'status' => $this->mapMemberCouponStatus($couponUser['status'] ?? 'unused'),
             'type' => $type,
             'value' => $type === 'discount' ? $value : $value,

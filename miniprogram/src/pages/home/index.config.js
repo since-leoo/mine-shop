@@ -1,4 +1,5 @@
-﻿module.exports = {
+module.exports = {
+  navigationStyle: 'custom',
   navigationBarTitleText: 'MineShop',
   enablePullDownRefresh: true,
 };

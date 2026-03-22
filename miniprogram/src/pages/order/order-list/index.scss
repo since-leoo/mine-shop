@@ -5,15 +5,14 @@
   background: $warm-bg-page;
 
   &__tabs {
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    position: relative;
+    z-index: 5;
     background: $warm-bg-white;
     box-shadow: 0 2rpx 8rpx rgba(200, 140, 110, 0.06);
   }
 
   &__content {
-    padding: 8rpx $warm-spacing-md $warm-spacing-lg;
+    padding: 20rpx 32rpx 32rpx;
   }
 
   &__empty {
@@ -43,11 +42,12 @@
 .order-tabs {
   display: flex;
   align-items: center;
+  padding: 0 16rpx;
   background: $warm-bg-white;
 
   &__item {
     flex: 1;
-    height: 88rpx;
+    height: 84rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -58,14 +58,14 @@
     content: '';
     position: absolute;
     bottom: 0;
-    width: 32rpx;
+    width: 36rpx;
     height: 4rpx;
     border-radius: 4rpx;
     background: $warm-primary;
   }
 
   &__text {
-    font-size: 26rpx;
+    font-size: 28rpx;
     color: $warm-text-secondary;
     white-space: nowrap;
   }
@@ -78,7 +78,7 @@
 
 .order-card {
   background: $warm-bg-white;
-  border-radius: $warm-radius-lg;
+  border-radius: 32rpx;
   overflow: hidden;
   margin-bottom: $warm-spacing-md;
   box-shadow: $warm-shadow-sm;
@@ -218,9 +218,9 @@
   }
 
   &__action-btn {
-    height: 52rpx;
+    height: 64rpx;
     padding: 0 32rpx;
-    border-radius: 26rpx;
+    border-radius: 32rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -246,6 +246,7 @@
 
   &__action-text {
     font-size: 24rpx;
+    font-weight: 600;
 
     &--primary {
       color: $warm-text-white;
@@ -261,4 +262,77 @@
       font-weight: 700;
     }
   }
+}
+
+.order-list-page--h5 {
+  background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
+}
+
+.order-list-page--h5 .order-list-page__tabs {
+  margin: 12px 16px 0;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+  overflow: hidden;
+}
+
+.order-list-page--h5 .order-tabs {
+  padding: 0 8px;
+  background: transparent;
+}
+
+.order-list-page--h5 .order-tabs__item {
+  height: 52px;
+}
+
+.order-list-page--h5 .order-tabs__text {
+  font-size: 13px;
+}
+
+.order-list-page--h5 .order-list-page__content {
+  padding: 16px 16px 28px;
+}
+
+.order-list-page--h5 .order-card {
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+}
+
+.order-list-page--h5 .order-card__header,
+.order-list-page--h5 .order-card__goods,
+.order-list-page--h5 .order-card__footer {
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.order-list-page--h5 .order-card__goods {
+  gap: 14px;
+}
+
+.order-list-page--h5 .order-card__goods-img {
+  width: 92px;
+  height: 92px;
+  border-radius: 16px;
+}
+
+.order-list-page--h5 .order-card__no,
+.order-list-page--h5 .order-card__status,
+.order-list-page--h5 .order-card__goods-title,
+.order-list-page--h5 .order-card__total-price {
+  font-size: 14px;
+}
+
+.order-list-page--h5 .order-card__goods-specs,
+.order-list-page--h5 .order-card__goods-num,
+.order-list-page--h5 .order-card__total-label,
+.order-list-page--h5 .order-card__action-text,
+.order-list-page--h5 .order-card__service-link-text,
+.order-list-page--h5 .order-list-page__empty-text {
+  font-size: 12px;
+}
+
+.order-list-page--h5 .order-card__action-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
 }

@@ -102,6 +102,7 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
             return;
         }
 
+        var_dump($couponId);
         $couponData = $this->couponServiceInterface->findUsableCoupon($orderEntity->getMemberId(), $couponId);
         if (! $couponData) {
             throw new \RuntimeException(\sprintf('优惠券 %d 不可用或已使用', $couponId));

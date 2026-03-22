@@ -3,6 +3,8 @@ import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
 import { fetchHotGoods } from '../../../services/good/fetchGoods';
 import Price from '../../../components/Price';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 export default function PayResult() {
@@ -45,7 +47,8 @@ export default function PayResult() {
   }, []);
 
   return (
-    <View className="pay-result">
+    <View className={`pay-result ${isH5() ? 'pay-result--h5' : ''}`}>
+      <PageNav title="支付结果" />
       <View className="pay-result__icon-wrap">
         <View className="pay-result__icon">✓</View>
       </View>

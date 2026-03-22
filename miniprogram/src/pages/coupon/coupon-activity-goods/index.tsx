@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchCouponDetail } from '../../../services/coupon';
 import { fetchGoodsList } from '../../../services/good/fetchGoods';
 import CouponNav from '../../../components/coupon-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 export default function CouponActivityGoods() {
@@ -46,7 +47,7 @@ export default function CouponActivityGoods() {
   }, []);
 
   return (
-    <View className="coupon-goods-page">
+    <View className={`coupon-goods-page ${isH5() ? 'coupon-goods-page--h5' : ''}`}>
             <View className="coupon-goods-page__header-wrap">
         <CouponNav title="适用商品" />
         <View className="coupon-goods-page__header">

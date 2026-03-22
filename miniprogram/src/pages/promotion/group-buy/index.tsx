@@ -2,6 +2,7 @@ import { View, Text, Image } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchGroupBuyList } from '../../../services/promotion/groupBuy';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 interface GroupItem {
@@ -119,6 +120,7 @@ export default function GroupBuy() {
 
   return (
     <View className="group-buy">
+      <PageNav title="拼团特惠" light background="transparent" />
       {/* Header banner */}
       <View className="group-buy__header">
         <View className="group-buy__header-circle group-buy__header-circle--right" />

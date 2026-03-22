@@ -1,11 +1,11 @@
 // NutUI 主题覆盖 - 温馨风格
-// 覆盖 NutUI CSS 变量以匹配温馨设计系统 (design-mockup.html)
+// 覆盖 NutUI CSS 变量以匹配 miniprogram/design.html
 
 :root,
 page {
   // 主色调
   --nutui-brand-color: #E8836B;
-  --nutui-brand-color-start: #F09E8B;
+  --nutui-brand-color-start: #F2A99A;
   --nutui-brand-color-end: #E8836B;
   --nutui-brand-link-color: #E8836B;
 
@@ -18,7 +18,7 @@ page {
   --nutui-tabbar-inactive-color: #A89088;
 
   // 按钮
-  --nutui-button-primary-background-color: linear-gradient(135deg, #F8C8AF 0%, #F09E8B 48%, #E8836B 100%);
+  --nutui-button-primary-background-color: linear-gradient(135deg, #FDDCC8 0%, #F2A99A 50%, #E8836B 100%);
   --nutui-button-primary-border-color: #E8836B;
   --nutui-button-primary-color: #FFFFFF;
 

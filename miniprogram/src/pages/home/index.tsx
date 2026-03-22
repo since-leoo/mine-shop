@@ -10,6 +10,8 @@ import giftIcon from '../../assets/home-quick/gift.svg';
 import fireIcon from '../../assets/home-quick/fire.svg';
 import gridIcon from '../../assets/home-quick/grid.svg';
 import groupIcon from '../../assets/home-quick/group.svg';
+import PageNav from '../../components/page-nav';
+import H5TabBar from '../../components/h5-tab-bar';
 import './index.scss';
 
 interface BannerItem {
@@ -208,21 +210,9 @@ function HomeH5View(props: {
         </View>
         <View className="home-promo-hub__ads">
           <View className="home-promo-hub__ad-card home-promo-hub__ad-card--seckill" onClick={openSeckillTopic}>
-            <Text className="home-promo-hub__ad-title">限时秒杀</Text>
-            <Text className="home-promo-hub__ad-sub">爆款低价专场 点击直达秒杀会场</Text>
-            {seckillCountdown.overDay ? (
-              <Text className="home-promo-hub__ad-long home-promo-hub__ad-long--light">
-                {seckillCountdown.days}天{seckillCountdown.hours}小时{seckillCountdown.minutes}分{seckillCountdown.seconds}秒
-              </Text>
-            ) : (
-              <View className="home-promo-hub__ad-cd home-promo-hub__ad-cd--light">
-                <View className="home-promo-hub__ad-cd-box"><Text className="home-promo-hub__ad-cd-num">{seckillCountdown.hours}</Text></View>
-                <Text className="home-promo-hub__ad-cd-sep">:</Text>
-                <View className="home-promo-hub__ad-cd-box"><Text className="home-promo-hub__ad-cd-num">{seckillCountdown.minutes}</Text></View>
-                <Text className="home-promo-hub__ad-cd-sep">:</Text>
-                <View className="home-promo-hub__ad-cd-box"><Text className="home-promo-hub__ad-cd-num">{seckillCountdown.seconds}</Text></View>
-              </View>
-            )}
+            <Text className="home-promo-hub__ad-title">秒杀专场</Text>
+            <Text className="home-promo-hub__ad-sub">爆款低价专场 点击直达秒杀会场，热门商品限量放价，每天都有精选好物持续更新。</Text>
+            <Text className="home-promo-hub__ad-long home-promo-hub__ad-long--light">点击进入专题页</Text>
           </View>
           <View className="home-promo-hub__ad-card home-promo-hub__ad-card--group" onClick={openGroupBuyTopic}>
             <Text className="home-promo-hub__ad-title">拼团活动</Text>
@@ -237,8 +227,8 @@ function HomeH5View(props: {
       <View className="home-mid-banner">
         <View className="home-mid-banner__content">
           <View>
-            <Text className="home-mid-banner__title">满 199 减 30</Text>
-            <Text className="home-mid-banner__desc">全场跨店可用 · 24小时限时</Text>
+            <Text className="home-mid-banner__title">满199减40</Text>
+            <Text className="home-mid-banner__desc">全场跨店可用 · 今日有效</Text>
           </View>
           <View className="home-mid-banner__btn">
             <Text className="home-mid-banner__btn-text">立即领券</Text>
@@ -278,6 +268,8 @@ function HomeH5View(props: {
           </View>
         </View>
       ) : null}
+
+      <H5TabBar current="/pages/home/index" />
     </View>
   );
 }
@@ -314,6 +306,7 @@ function HomeDefaultView(props: {
   return (
     <View className="home home--default">
       <View className="home-top-bg home-top-bg--with-quick">
+        <PageNav showBack={false} showTitle={false} light background="transparent" />
         <View className="home-search" onClick={() => Taro.navigateTo({ url: '/pages/goods/search/index' })}>
           <Image className="home-search__icon-img" src={searchIcon} mode="aspectFit" />
           <Text className="home-search__placeholder">搜索商品名称、品牌或关键词</Text>
@@ -378,23 +371,9 @@ function HomeDefaultView(props: {
             <View className="home-seckill__title-row">
               <View className="home-seckill__title-left">
                 <View className="home-seckill__title-bar" />
-                <Text className="home-seckill__title">限时秒杀</Text>
+                <Text className="home-seckill__title">秒杀专题</Text>
               </View>
-              <View className="home-seckill__countdown">
-                {seckillCountdown.overDay ? (
-                  <Text className="home-seckill__countdown-text">
-                    {seckillCountdown.days}天{seckillCountdown.hours}:{seckillCountdown.minutes}:{seckillCountdown.seconds}
-                  </Text>
-                ) : (
-                  <>
-                    <View className="home-seckill__countdown-block"><Text>{seckillCountdown.hours}</Text></View>
-                    <Text className="home-seckill__countdown-sep">:</Text>
-                    <View className="home-seckill__countdown-block"><Text>{seckillCountdown.minutes}</Text></View>
-                    <Text className="home-seckill__countdown-sep">:</Text>
-                    <View className="home-seckill__countdown-block"><Text>{seckillCountdown.seconds}</Text></View>
-                  </>
-                )}
-              </View>
+              <Text className="home-seckill__countdown-text">限量好物持续更新</Text>
             </View>
             <Text className="home-group-buy__more" onClick={openSeckillTopic}>{loading ? '加载中...' : '查看更多'}</Text>
           </View>

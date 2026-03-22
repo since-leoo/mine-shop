@@ -3,7 +3,7 @@
 .address-list {
   min-height: 100vh;
   background-color: $warm-bg-page;
-  padding-bottom: 140rpx;
+  padding-bottom: 180rpx;
 
   &__state {
     display: flex;
@@ -11,7 +11,7 @@
     align-items: stretch;
     justify-content: center;
     padding: 120rpx 0;
-    margin: 0 $warm-spacing-md;
+    margin: 0 32rpx;
   }
 
   &__state-text {
@@ -28,7 +28,7 @@
   }
 
   &__items {
-    padding: $warm-spacing-md;
+    padding: 20rpx 32rpx;
   }
 
   // ===== Card =====
@@ -127,7 +127,7 @@
     left: 0;
     right: 0;
     z-index: 30;
-    padding: $warm-spacing-md;
+    padding: 20rpx 32rpx;
     background: transparent;
   }
 

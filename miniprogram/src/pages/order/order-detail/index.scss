@@ -3,7 +3,8 @@
 .order-detail {
   min-height: 100vh;
   background: $warm-bg-page;
-  padding-bottom: 160rpx;
+  padding-bottom: calc(176rpx + env(safe-area-inset-bottom));
+  padding-bottom: calc(176rpx + constant(safe-area-inset-bottom));
 
   &--loading {
     display: flex;
@@ -18,8 +19,8 @@
 
   // Status banner
   &__status-banner {
-    margin: 20rpx 32rpx 0;
-    border-radius: 24rpx;
+    margin: 20rpx 32rpx 20rpx;
+    border-radius: 32rpx;
     padding: 48rpx 40rpx;
     background: $warm-gradient-primary;
     position: relative;
@@ -57,7 +58,7 @@
   &__logistics {
     margin: 20rpx 32rpx 20rpx;
     background: $warm-bg-white;
-    border-radius: $warm-radius-md;
+    border-radius: 32rpx;
     padding: 28rpx 32rpx;
     display: flex;
     align-items: flex-start;
@@ -115,7 +116,7 @@
   &__address {
     margin: 0 32rpx 20rpx;
     background: $warm-bg-white;
-    border-radius: $warm-radius-md;
+    border-radius: 32rpx;
     padding: 28rpx 32rpx;
     display: flex;
     align-items: flex-start;
@@ -173,9 +174,9 @@
 
   // Goods card
   &__goods-card {
-    margin: 20rpx 32rpx 0;
+    margin: 0 32rpx 20rpx;
     background: $warm-bg-white;
-    border-radius: $warm-radius-md;
+    border-radius: 32rpx;
     box-shadow: $warm-shadow-sm;
     overflow: hidden;
   }
@@ -227,7 +228,7 @@
     min-width: 144rpx;
     height: 48rpx;
     padding: 0 24rpx;
-    border-radius: 24rpx;
+    border-radius: 32rpx;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -276,7 +277,7 @@
   // Price section
   &__price-section {
     margin-top: 0;
-    padding: 16rpx 32rpx;
+    padding: 20rpx 32rpx 16rpx;
     border-top: 1rpx solid $warm-divider;
   }
 
@@ -333,8 +334,8 @@
   &__info-card {
     margin: 20rpx 32rpx 0;
     background: $warm-bg-white;
-    border-radius: $warm-radius-md;
-    padding: 16rpx 32rpx 12rpx;
+    border-radius: 32rpx;
+    padding: 20rpx 32rpx 16rpx;
     box-shadow: $warm-shadow-sm;
   }
 
@@ -398,7 +399,8 @@
 
   // Bottom spacer & bar
   &__bottom-spacer {
-    height: 140rpx;
+    height: calc(160rpx + env(safe-area-inset-bottom));
+    height: calc(160rpx + constant(safe-area-inset-bottom));
   }
 
   &__bottom-bar {
@@ -411,15 +413,16 @@
     align-items: center;
     justify-content: flex-end;
     padding: 16rpx 32rpx calc(16rpx + env(safe-area-inset-bottom));
-    gap: $warm-spacing-sm;
+    padding: 16rpx 32rpx calc(16rpx + constant(safe-area-inset-bottom));
+    gap: 16rpx;
     box-shadow: 0 -2rpx 10rpx rgba(200, 140, 110, 0.08);
     z-index: 100;
   }
 
   &__btn {
-    height: 60rpx;
+    height: 64rpx;
     padding: 0 40rpx;
-    border-radius: 30rpx;
+    border-radius: 32rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -456,4 +459,103 @@
       font-weight: 700;
     }
   }
+}
+
+.order-detail--h5 {
+  background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
+  padding-bottom: calc(132px + env(safe-area-inset-bottom));
+}
+
+.order-detail--h5 .order-detail__status-banner,
+.order-detail--h5 .order-detail__logistics,
+.order-detail--h5 .order-detail__address,
+.order-detail--h5 .order-detail__goods-card,
+.order-detail--h5 .order-detail__info-card {
+  margin-left: 16px;
+  margin-right: 16px;
+  border-radius: 24px;
+  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+}
+
+.order-detail--h5 .order-detail__status-banner {
+  margin-top: 16px;
+  padding: 28px 22px;
+}
+
+.order-detail--h5 .order-detail__status {
+  font-size: 24px;
+}
+
+.order-detail--h5 .order-detail__status-sub,
+.order-detail--h5 .order-detail__logistics-title,
+.order-detail--h5 .order-detail__address-detail,
+.order-detail--h5 .order-detail__price-label,
+.order-detail--h5 .order-detail__info-label,
+.order-detail--h5 .order-detail__info-value,
+.order-detail--h5 .order-detail__btn-text {
+  font-size: 12px;
+}
+
+.order-detail--h5 .order-detail__logistics,
+.order-detail--h5 .order-detail__address,
+.order-detail--h5 .order-detail__info-card {
+  padding: 16px;
+}
+
+.order-detail--h5 .order-detail__address-name,
+.order-detail--h5 .order-detail__goods-title,
+.order-detail--h5 .order-detail__service-text,
+.order-detail--h5 .order-detail__price-value,
+.order-detail--h5 .order-detail__goods-price {
+  font-size: 14px;
+}
+
+.order-detail--h5 .order-detail__goods {
+  gap: 14px;
+  padding: 16px;
+}
+
+.order-detail--h5 .order-detail__goods-img {
+  width: 92px;
+  height: 92px;
+  border-radius: 16px;
+}
+
+.order-detail--h5 .order-detail__goods-specs,
+.order-detail--h5 .order-detail__goods-num,
+.order-detail--h5 .order-detail__goods-action-text,
+.order-detail--h5 .order-detail__info-copy {
+  font-size: 12px;
+}
+
+.order-detail--h5 .order-detail__goods-action,
+.order-detail--h5 .order-detail__btn {
+  min-width: 88px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 18px;
+}
+
+.order-detail--h5 .order-detail__price-section {
+  padding: 14px 16px 12px;
+}
+
+.order-detail--h5 .order-detail__price-total {
+  font-size: 22px;
+}
+
+.order-detail--h5 .order-detail__bottom-spacer {
+  height: 116px;
+}
+
+.order-detail--h5 .order-detail__bottom-bar {
+  left: 50%;
+  right: auto;
+  bottom: 12px;
+  width: calc(100% - 24px);
+  max-width: 406px;
+  transform: translateX(-50%);
+  border-radius: 24px;
+  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+  box-shadow: 0 16px 32px rgba(183, 128, 98, 0.16);
 }

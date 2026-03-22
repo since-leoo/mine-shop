@@ -2,6 +2,7 @@
 import Taro, { useRouter, usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchPromotion } from '../../../services/promotion/detail';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 interface CountdownState {
@@ -182,6 +183,7 @@ export default function PromotionDetail() {
 
   return (
     <View className="promotion-detail">
+      <PageNav title="秒杀专题" light background="transparent" />
       <View className="promotion-detail__banner-wrap">
         <View className="promotion-detail__banner-circle promotion-detail__banner-circle--right" />
         <View className="promotion-detail__banner-circle promotion-detail__banner-circle--left" />

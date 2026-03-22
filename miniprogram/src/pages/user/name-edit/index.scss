@@ -3,12 +3,13 @@
 .name-edit {
   min-height: 100vh;
   background-color: $warm-bg-page;
+  padding-bottom: 180rpx;
 
   &__card {
-    margin: $warm-spacing-md;
+    margin: 20rpx 32rpx;
     background: $warm-bg-white;
-    border-radius: $warm-radius-lg;
-    padding: $warm-spacing-lg;
+    border-radius: 32rpx;
+    padding: 32rpx;
     box-shadow: $warm-shadow-sm;
   }
 
@@ -36,7 +37,12 @@
   }
 
   &__btn-wrap {
-    padding: $warm-spacing-xl $warm-spacing-md;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 12rpx;
+    bottom: calc(env(safe-area-inset-bottom) + 12rpx);
+    padding: 20rpx 32rpx;
   }
 
   &__save-btn {

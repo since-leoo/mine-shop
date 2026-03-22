@@ -3,7 +3,7 @@
 .address-edit {
   min-height: 100vh;
   background-color: $warm-bg-page;
-  padding-bottom: 140rpx;
+  padding-bottom: 180rpx;
 
   &__state {
     display: flex;
@@ -19,9 +19,9 @@
 
   // ===== Form =====
   &__form {
-    margin: $warm-spacing-md;
+    margin: 20rpx 32rpx;
     background: $warm-bg-white;
-    border-radius: $warm-radius-lg;
+    border-radius: 32rpx;
     overflow: hidden;
     box-shadow: $warm-shadow-sm;
   }
@@ -106,7 +106,7 @@
     left: 0;
     right: 0;
     z-index: 30;
-    padding: $warm-spacing-md;
+    padding: 20rpx 32rpx;
     background: transparent;
   }
 

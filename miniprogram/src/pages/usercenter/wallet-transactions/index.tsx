@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components';
 import Taro, { useRouter, usePullDownRefresh, useReachBottom } from '@tarojs/taro';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { fetchWalletTransactions } from '../../../services/usercenter/fetchWalletTransactions';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 const TYPE_LABELS: Record<string, string> = {
@@ -205,6 +206,7 @@ export default function WalletTransactions() {
 
   return (
     <View className="wallet-page">
+      <PageNav title={walletType === 'points' ? '积分明细' : '余额明细'} />
       {/* Tabs */}
       <View className="wallet-page__tabs">
         <View className="wallet-tabs">

@@ -138,7 +138,7 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20rpx;
-    padding: 0 32rpx 24rpx;
+    padding: 0 24rpx 24rpx;
     margin-top: -24rpx;
     position: relative;
     z-index: 2;
@@ -259,7 +259,7 @@
 
   &__btn {
     background: linear-gradient(135deg, #7eb8a2, #4f8f76);
-    height: 44rpx;
+    height: 48rpx;
     padding: 0 28rpx;
     border-radius: 32rpx;
     box-shadow: 0 4rpx 16rpx rgba(126, 184, 162, 0.3);
