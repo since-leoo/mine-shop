@@ -226,9 +226,20 @@ function requestUserByDept(node: any) {
     <component :is="maDialog.Dialog">
       <template #default="{ formType, data }">
         <!-- 新增、编辑表单 -->
-        <UserForm v-if="formType !== 'setRole'" ref="formRef" :form-type="formType" :data="data" />
+        <UserForm
+          v-if="formType === 'add' || formType === 'edit'"
+          :key="`${formType}-${data?.id ?? 'new'}`"
+          ref="formRef"
+          :form-type="formType"
+          :data="data"
+        />
         <!-- 赋予角色表单 -->
-        <SetRoleForm v-else ref="setFormRef" :data="data" />
+        <SetRoleForm
+          v-else-if="formType === 'setRole'"
+          :key="`setRole-${data?.id ?? 'unknown'}`"
+          ref="setFormRef"
+          :data="data"
+        />
       </template>
     </component>
   </div>

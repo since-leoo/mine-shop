@@ -14,13 +14,17 @@ namespace App\Domain\Permission\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Permission\Role;
+use App\Infrastructure\Model\Permission\User;
 use Hyperf\Collection\Arr;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
 final class RoleRepository extends IRepository
 {
-    public function __construct(protected readonly Role $model) {}
+    public function __construct(
+        protected readonly Role $model,
+        private readonly User $userModel,
+    ) {}
 
     public function listByCodes(array $roleCodes): Collection
     {
@@ -42,9 +46,9 @@ final class RoleRepository extends IRepository
      */
     public function syncRoles(int $id, array $roleIds): void
     {
-        $userModel = $this->findById($id);
+        $userModel = $this->userModel->newQuery()->whereKey($id)->first();
 
-        $userModel->roles()->sync($roleIds);
+        $userModel?->roles()->sync($roleIds);
     }
 
     public function handleSearch(Builder $query, array $params): Builder
