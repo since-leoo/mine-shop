@@ -38,6 +38,12 @@ final class MemberMapper
         return $entity;
     }
 
+    /**
+     * 从注册输入创建新实体.
+     *
+     * @param RegisterInput $input 注册输入
+     * @return MemberEntity 会员实体
+     */
     public static function fromRegisterInput(RegisterInput $input): MemberEntity
     {
         $entity = new MemberEntity();

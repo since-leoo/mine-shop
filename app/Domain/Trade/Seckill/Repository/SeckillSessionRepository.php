@@ -54,6 +54,18 @@ final class SeckillSessionRepository extends IRepository
         return SeckillSession::where('activity_id', $activityId)->withCount('products')->orderBy('sort_order')->orderBy('start_time')->get()->all();
     }
 
+    public function findEnabledByActivityIdOrderByStartTime(int $activityId): array
+    {
+        return SeckillSession::query()
+            ->where('activity_id', $activityId)
+            ->where('is_enabled', true)
+            ->withCount('products')
+            ->orderBy('start_time')
+            ->orderBy('id')
+            ->get()
+            ->all();
+    }
+
     public function countByActivityId(int $activityId): int
     {
         return SeckillSession::where('activity_id', $activityId)->count();

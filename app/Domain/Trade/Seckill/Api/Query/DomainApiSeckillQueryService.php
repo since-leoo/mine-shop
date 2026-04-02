@@ -97,6 +97,24 @@ final class DomainApiSeckillQueryService
         return ['list' => $list, 'endTime' => $session->end_time?->toDateTimeString(), 'title' => $activity->title ?: '限时秒杀', 'activityId' => $activity->id, 'sessionId' => $session->id];
     }
 
+    /**
+     * 获取秒杀活动全部场次（按开始时间升序）.
+     *
+     * @return array<int, mixed>
+     */
+    public function getSessionList(?int $activityId = null): array
+    {
+        $activity = $activityId && $activityId > 0
+            ? $this->activityRepository->findById($activityId)
+            : $this->activityRepository->findLatestEnabledActiveOrPending();
+
+        if (! $activity) {
+            return [];
+        }
+
+        return $this->sessionRepository->findEnabledByActivityIdOrderByStartTime((int) $activity->id);
+    }
+
     private function resolveTopicBanner(): string
     {
         $custom = $this->systemSettingService->get('mall.seckill.topic_banner', null);

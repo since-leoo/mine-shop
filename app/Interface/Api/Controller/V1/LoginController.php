@@ -28,6 +28,9 @@ final class LoginController extends AbstractController
         private readonly AppApiAuthCommandService $authService,
     ) {}
 
+    /**
+     * 小程序授权登录.
+     */
     public function miniApp(LoginRequest $request): Result
     {
         $payload = $request->validated();
@@ -43,6 +46,9 @@ final class LoginController extends AbstractController
         return $this->success($result, '授权登录成功');
     }
 
+    /**
+     * H5密码登录.
+     */
     public function h5Password(H5PasswordLoginRequest $request): Result
     {
         $result = $this->authService->loginByPassword($request->toDto(ip()));
