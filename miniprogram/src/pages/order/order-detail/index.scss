@@ -1,4 +1,4 @@
-@use '../../../styles/variables' as *;
+﻿@use '../../../styles/variables' as *;
 
 .order-detail {
   min-height: 100vh;
@@ -463,7 +463,7 @@
 
 .order-detail--h5 {
   background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
-  padding-bottom: calc(132px + env(safe-area-inset-bottom));
+  padding-bottom: calc(132PX + env(safe-area-inset-bottom));
 }
 
 .order-detail--h5 .order-detail__status-banner,
@@ -471,19 +471,19 @@
 .order-detail--h5 .order-detail__address,
 .order-detail--h5 .order-detail__goods-card,
 .order-detail--h5 .order-detail__info-card {
-  margin-left: 16px;
-  margin-right: 16px;
-  border-radius: 24px;
-  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
+  margin-left: 16PX;
+  margin-right: 16PX;
+  border-radius: 24PX;
+  box-shadow: 0 12PX 28PX rgba(197, 145, 114, 0.1);
 }
 
 .order-detail--h5 .order-detail__status-banner {
-  margin-top: 16px;
-  padding: 28px 22px;
+  margin-top: 16PX;
+  padding: 28PX 22PX;
 }
 
 .order-detail--h5 .order-detail__status {
-  font-size: 24px;
+  font-size: 24PX;
 }
 
 .order-detail--h5 .order-detail__status-sub,
@@ -493,13 +493,13 @@
 .order-detail--h5 .order-detail__info-label,
 .order-detail--h5 .order-detail__info-value,
 .order-detail--h5 .order-detail__btn-text {
-  font-size: 12px;
+  font-size: 12PX;
 }
 
 .order-detail--h5 .order-detail__logistics,
 .order-detail--h5 .order-detail__address,
 .order-detail--h5 .order-detail__info-card {
-  padding: 16px;
+  padding: 16PX;
 }
 
 .order-detail--h5 .order-detail__address-name,
@@ -507,55 +507,56 @@
 .order-detail--h5 .order-detail__service-text,
 .order-detail--h5 .order-detail__price-value,
 .order-detail--h5 .order-detail__goods-price {
-  font-size: 14px;
+  font-size: 14PX;
 }
 
 .order-detail--h5 .order-detail__goods {
-  gap: 14px;
-  padding: 16px;
+  gap: 14PX;
+  padding: 16PX;
 }
 
 .order-detail--h5 .order-detail__goods-img {
-  width: 92px;
-  height: 92px;
-  border-radius: 16px;
+  width: 92PX;
+  height: 92PX;
+  border-radius: 16PX;
 }
 
 .order-detail--h5 .order-detail__goods-specs,
 .order-detail--h5 .order-detail__goods-num,
 .order-detail--h5 .order-detail__goods-action-text,
 .order-detail--h5 .order-detail__info-copy {
-  font-size: 12px;
+  font-size: 12PX;
 }
 
 .order-detail--h5 .order-detail__goods-action,
 .order-detail--h5 .order-detail__btn {
-  min-width: 88px;
-  height: 36px;
-  padding: 0 16px;
-  border-radius: 18px;
+  min-width: 88PX;
+  height: 36PX;
+  padding: 0 16PX;
+  border-radius: 18PX;
 }
 
 .order-detail--h5 .order-detail__price-section {
-  padding: 14px 16px 12px;
+  padding: 14PX 16PX 12PX;
 }
 
 .order-detail--h5 .order-detail__price-total {
-  font-size: 22px;
+  font-size: 22PX;
 }
 
 .order-detail--h5 .order-detail__bottom-spacer {
-  height: 116px;
+  height: 116PX;
 }
 
 .order-detail--h5 .order-detail__bottom-bar {
   left: 50%;
   right: auto;
-  bottom: 12px;
-  width: calc(100% - 24px);
-  max-width: 406px;
+  bottom: 12PX;
+  width: calc(100% - 24PX);
+  max-width: 406PX;
   transform: translateX(-50%);
-  border-radius: 24px;
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
-  box-shadow: 0 16px 32px rgba(183, 128, 98, 0.16);
+  border-radius: 24PX;
+  padding: 12PX 16PX calc(env(safe-area-inset-bottom) + 12PX);
+  box-shadow: 0 16PX 32PX rgba(183, 128, 98, 0.16);
 }
+

@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components';
+﻿import { View, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { isH5 } from '../../common/platform';
 import './index.scss';
@@ -26,11 +26,18 @@ export default function PageNav({
   const capsuleWidth = h5 ? 0 : (menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176);
 
   const handleBack = () => {
-    if (getCurrentPages().length > 1) {
-      Taro.navigateBack();
+    const pages = Taro.getCurrentPages();
+    if (pages.length > 1) {
+      Taro.navigateBack().catch(() => {
+        Taro.switchTab({ url: '/pages/home/index' }).catch(() => {
+          Taro.reLaunch({ url: '/pages/home/index' });
+        });
+      });
       return;
     }
-    Taro.switchTab({ url: '/pages/home/index' });
+    Taro.switchTab({ url: '/pages/home/index' }).catch(() => {
+      Taro.reLaunch({ url: '/pages/home/index' });
+    });
   };
 
   return (
@@ -38,7 +45,7 @@ export default function PageNav({
       <View className="page-nav__bar" style={{ height: `${navHeight}px` }}>
         {showBack ? (
           <View className="page-nav__back" onClick={handleBack}>
-            <Text className={`page-nav__back-icon ${light ? 'page-nav__back-icon--light' : ''}`}>‹</Text>
+            <Text className={`page-nav__back-icon ${light ? 'page-nav__back-icon--light' : ''}`}>鈥?/Text>
           </View>
         ) : (
           <View className="page-nav__back page-nav__back--placeholder" />
@@ -49,3 +56,4 @@ export default function PageNav({
     </View>
   );
 }
+

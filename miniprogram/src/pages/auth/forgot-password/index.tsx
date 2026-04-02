@@ -95,7 +95,7 @@ export default function ForgotPasswordPage() {
               <Text className="auth-hero__mark-text">R</Text>
             </View>
             <Text className="auth-hero__title">先校验手机{`\n`}再重置登录密码</Text>
-            <Text className="auth-hero__desc">沿用 design.html 的暖色视觉语言，把“手机验证 + 重设密码”的路径做成更清晰、更可信赖的 H5 表单流程。</Text>
+            <Text className="auth-hero__desc">把“手机验证 + 重设密码”的路径做成更清晰、更可信赖的 H5 表单流程。</Text>
           </View>
         </View>
 

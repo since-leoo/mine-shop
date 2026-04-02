@@ -1,4 +1,4 @@
-@use '../../../styles/variables' as *;
+﻿@use '../../../styles/variables' as *;
 
 .order-list-page {
   min-height: 100vh;
@@ -272,56 +272,56 @@
   margin: 0;
   border-radius: 0;
   background: #fff;
-  box-shadow: 0 1px 4px rgba(200, 140, 110, 0.06);
+  box-shadow: 0 1PX 4PX rgba(200, 140, 110, 0.06);
 }
 
 .order-list-page--h5 .order-tabs {
-  padding: 0 8px;
+  padding: 0 8PX;
   background: transparent;
 }
 
 .order-list-page--h5 .order-tabs__item {
-  height: 48px;
+  height: 48PX;
 }
 
 .order-list-page--h5 .order-tabs__text {
-  font-size: 14px;
+  font-size: 14PX;
 }
 
 .order-list-page--h5 .order-list-page__content {
-  padding: 0 0 28px;
+  padding: 0 0 28PX;
 }
 
 .order-list-page--h5 .order-card {
-  margin: 10px 16px;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(200, 140, 110, 0.08);
+  margin: 10PX 16PX;
+  border-radius: 16PX;
+  box-shadow: 0 2PX 8PX rgba(200, 140, 110, 0.08);
 }
 
 .order-list-page--h5 .order-card__header,
 .order-list-page--h5 .order-card__goods,
 .order-list-page--h5 .order-card__footer {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 16PX;
+  padding-right: 16PX;
 }
 
 .order-list-page--h5 .order-card__goods {
-  gap: 12px;
+  gap: 12PX;
 }
 
 .order-list-page--h5 .order-card__goods-img {
-  width: 76px;
-  height: 76px;
-  border-radius: 10px;
+  width: 76PX;
+  height: 76PX;
+  border-radius: 10PX;
 }
 
 .order-list-page--h5 .order-card__no,
 .order-list-page--h5 .order-card__status {
-  font-size: 12px;
+  font-size: 12PX;
 }
 
 .order-list-page--h5 .order-card__goods-title {
-  font-size: 13px;
+  font-size: 13PX;
 }
 
 .order-list-page--h5 .order-card__goods-specs,
@@ -329,24 +329,25 @@
 .order-list-page--h5 .order-card__total-label,
 .order-list-page--h5 .order-card__service-link-text,
 .order-list-page--h5 .order-list-page__empty-text {
-  font-size: 12px;
+  font-size: 12PX;
 }
 
 .order-list-page--h5 .order-card__goods-price {
-  font-size: 14px;
+  font-size: 14PX;
 }
 
 .order-list-page--h5 .order-card__total-price {
-  font-size: 15px;
+  font-size: 15PX;
 }
 
 .order-list-page--h5 .order-card__action-btn {
-  height: 32px;
-  padding: 0 16px;
-  border-radius: 20px;
+  height: 32PX;
+  padding: 0 16PX;
+  border-radius: 20PX;
 }
 
 .order-list-page--h5 .order-card__action-text,
 .order-list-page--h5 .order-card__service-link-text {
-  font-size: 12px;
+  font-size: 12PX;
 }
+
