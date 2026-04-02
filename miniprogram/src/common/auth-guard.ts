@@ -45,7 +45,9 @@ export function navigateAfterLogin(target?: string) {
   const path = cleanUrl.split('?')[0];
 
   if (TAB_PAGES.has(path)) {
-    Taro.switchTab({ url: path });
+    Taro.switchTab({ url: path }).catch(() => {
+      Taro.reLaunch({ url: path });
+    });
     return;
   }
 

@@ -211,14 +211,27 @@ function HomeH5View(props: {
         <View className="home-promo-hub__ads">
           <View className="home-promo-hub__ad-card home-promo-hub__ad-card--seckill" onClick={openSeckillTopic}>
             <Text className="home-promo-hub__ad-title">秒杀专场</Text>
-            <Text className="home-promo-hub__ad-sub">爆款低价专场 点击直达秒杀会场，热门商品限量放价，每天都有精选好物持续更新。</Text>
-            <Text className="home-promo-hub__ad-long home-promo-hub__ad-long--light">点击进入专题页</Text>
+            <Text className="home-promo-hub__ad-sub">点击进入专题页。</Text>
+            <View className="home-promo-hub__ad-cd home-promo-hub__ad-cd--light">
+              <Text className="home-promo-hub__ad-cd-label">距下一场</Text>
+              <View className="home-promo-hub__ad-cd-box">
+                <Text className="home-promo-hub__ad-cd-num">{seckillCountdown.hours}</Text>
+              </View>
+              <Text className="home-promo-hub__ad-cd-sep">:</Text>
+              <View className="home-promo-hub__ad-cd-box">
+                <Text className="home-promo-hub__ad-cd-num">{seckillCountdown.minutes}</Text>
+              </View>
+              <Text className="home-promo-hub__ad-cd-sep">:</Text>
+              <View className="home-promo-hub__ad-cd-box">
+                <Text className="home-promo-hub__ad-cd-num">{seckillCountdown.seconds}</Text>
+              </View>
+            </View>
           </View>
           <View className="home-promo-hub__ad-card home-promo-hub__ad-card--group" onClick={openGroupBuyTopic}>
-            <Text className="home-promo-hub__ad-title">拼团活动</Text>
-            <Text className="home-promo-hub__ad-sub">多人拼团更划算 热门好物持续开团</Text>
+            <Text className="home-promo-hub__ad-title">拼团会场</Text>
+            <Text className="home-promo-hub__ad-sub">精选拼团，每天上新</Text>
             <View className="home-promo-hub__ad-chip">
-              <Text className="home-promo-hub__ad-chip-text">立即开团</Text>
+              <Text className="home-promo-hub__ad-chip-text">3人团最低5折起</Text>
             </View>
           </View>
         </View>

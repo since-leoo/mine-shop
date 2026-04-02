@@ -129,3 +129,59 @@
     color: $warm-text-white;
   }
 }
+
+
+.address-edit {
+  &__region-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    display: flex;
+    align-items: flex-end;
+    background: rgba(0, 0, 0, 0.36);
+  }
+
+  &__region-sheet {
+    width: 100%;
+    background: #fff;
+    border-radius: 32rpx 32rpx 0 0;
+    padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -8rpx 24rpx rgba(0, 0, 0, 0.08);
+  }
+
+  &__region-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 28rpx 32rpx 20rpx;
+    border-bottom: 1rpx solid $warm-divider;
+  }
+
+  &__region-title {
+    font-size: $warm-font-md;
+    font-weight: 700;
+    color: $warm-text-primary;
+  }
+
+  &__region-action {
+    font-size: $warm-font-md;
+    color: $warm-text-secondary;
+
+    &--confirm {
+      color: $warm-primary;
+      font-weight: 700;
+    }
+  }
+
+  &__region-view {
+    height: 520rpx;
+  }
+
+  &__region-option {
+    height: 88rpx;
+    line-height: 88rpx;
+    text-align: center;
+    font-size: $warm-font-md;
+    color: $warm-text-primary;
+  }
+}

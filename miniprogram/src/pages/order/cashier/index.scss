@@ -1,4 +1,4 @@
-@use '../../../styles/variables' as *;
+﻿@use '../../../styles/variables' as *;
 
 .cashier {
   min-height: 100vh;
@@ -152,4 +152,117 @@
     font-size: $warm-font-md;
     color: $warm-text-hint;
   }
+}
+
+.cashier--h5 {
+  background: #FAF3ED;
+  padding: 0 16PX 24PX;
+}
+
+.cashier--h5 .cashier__amount-card {
+  margin: 10PX 0 12PX;
+  border-radius: 16PX;
+  padding: 18PX 16PX;
+  box-shadow: 0 2PX 8PX rgba(200, 140, 110, 0.08);
+}
+
+.cashier--h5 .cashier__amount-label {
+  font-size: 12PX;
+  margin-bottom: 8PX;
+  color: #A89088;
+}
+
+.cashier--h5 .cashier__price {
+  font-size: 22PX;
+  color: #E8836B;
+  font-weight: 800;
+}
+
+.cashier--h5 .cashier__price .price__symbol {
+  font-size: 14PX;
+}
+
+.cashier--h5 .cashier__methods {
+  border-radius: 16PX;
+  padding: 14PX 16PX;
+  box-shadow: 0 2PX 8PX rgba(200, 140, 110, 0.08);
+}
+
+.cashier--h5 .cashier__methods-title {
+  font-size: 15PX;
+  margin-bottom: 8PX;
+  color: #4A3228;
+}
+
+.cashier--h5 .cashier__loading-text,
+.cashier--h5 .cashier__cancel-text {
+  font-size: 12PX;
+}
+
+.cashier--h5 .cashier__method {
+  padding: 14PX 0;
+}
+
+.cashier--h5 .cashier__method + .cashier__method {
+  border-top: 1PX solid #F8EDE5;
+}
+
+.cashier--h5 .cashier__method-icon {
+  width: 24PX;
+  height: 24PX;
+  border-radius: 50%;
+  font-size: 13PX;
+  font-weight: 700;
+  color: #FFFFFF;
+  margin-right: 10PX;
+}
+
+.cashier--h5 .cashier__method-icon--wechat {
+  background: linear-gradient(135deg, #7AD66D 0%, #2DBE60 100%);
+}
+
+.cashier--h5 .cashier__method-icon--alipay {
+  background: linear-gradient(135deg, #6EC5FF 0%, #198CFF 100%);
+}
+
+.cashier--h5 .cashier__method-icon--balance,
+.cashier--h5 .cashier__method-icon--default {
+  background: linear-gradient(135deg, #F2A99A 0%, #E8836B 100%);
+}
+
+.cashier--h5 .cashier__method-name {
+  font-size: 14PX;
+  color: #4A3228;
+  font-weight: 600;
+}
+
+.cashier--h5 .cashier__radio {
+  width: 18PX;
+  height: 18PX;
+  border-width: 2PX;
+}
+
+.cashier--h5 .cashier__radio--checked::after {
+  width: 6PX;
+  height: 6PX;
+}
+
+.cashier--h5 .cashier__footer {
+  margin-top: 16PX;
+}
+
+.cashier--h5 .cashier__pay-btn {
+  height: 44PX;
+  border-radius: 24PX;
+  margin-bottom: 10PX;
+  box-shadow: 0 4PX 16PX rgba(232, 131, 107, 0.3);
+}
+
+.cashier--h5 .cashier__pay-btn-text {
+  font-size: 15PX;
+  font-weight: 700;
+}
+
+.cashier--h5 .cashier__cancel-btn {
+  padding: 8PX;
 }

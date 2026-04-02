@@ -45,7 +45,7 @@ export default function PageNav({
       <View className="page-nav__bar" style={{ height: `${navHeight}px` }}>
         {showBack ? (
           <View className="page-nav__back" onClick={handleBack}>
-            <Text className={`page-nav__back-icon ${light ? 'page-nav__back-icon--light' : ''}`}>鈥?/Text>
+            <Text className={`page-nav__back-icon ${light ? 'page-nav__back-icon--light' : ''}`}>‹</Text>
           </View>
         ) : (
           <View className="page-nav__back page-nav__back--placeholder" />
@@ -56,4 +56,3 @@ export default function PageNav({
     </View>
   );
 }
-

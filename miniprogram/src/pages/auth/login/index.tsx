@@ -27,7 +27,7 @@ function UnsupportedAuthEntry() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const redirect = useMemo(() => decodeURIComponent(router.params?.redirect || '/pages/usercenter/index'), [router.params]);
+  const redirect = useMemo(() => decodeURIComponent(router.params?.redirect || '/pages/home/index'), [router.params]);
   const [activeTab, setActiveTab] = useState<LoginTab>('password');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');

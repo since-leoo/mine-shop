@@ -1,8 +1,10 @@
-import { View, Text } from '@tarojs/components';
+﻿import { View, Text } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { requestOrderPayment, fetchOrderPayInfo } from '../../../services/order/orderConfirm';
 import Price from '../../../components/Price';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 interface PayMethod {
@@ -16,6 +18,20 @@ interface PayMethod {
 
 const PAY_INFO_POLL_INTERVAL = 1500;
 const PAY_INFO_POLL_MAX_RETRY = 20;
+
+const resolveMethodBadge = (channel?: string) => {
+  const normalized = String(channel || '').toLowerCase();
+  if (normalized.includes('wechat') || normalized.includes('wx')) {
+    return { text: 'W', modifier: 'wechat' };
+  }
+  if (normalized.includes('ali')) {
+    return { text: 'A', modifier: 'alipay' };
+  }
+  if (normalized.includes('balance')) {
+    return { text: 'B', modifier: 'balance' };
+  }
+  return { text: 'Y', modifier: 'default' };
+};
 
 function normalizePayMethods(input: any): PayMethod[] {
   const list = Array.isArray(input) ? input : [];
@@ -163,7 +179,8 @@ export default function Cashier() {
   }, []);
 
   return (
-    <View className="cashier warm-page-enter">
+    <View className={`cashier ${isH5() ? 'cashier--h5' : ''} warm-page-enter`}>
+      {isH5() ? <PageNav title="支付方式" /> : null}
       <View className="cashier__amount-card">
         <Text className="cashier__amount-label">{'\u652f\u4ed8\u91d1\u989d'}</Text>
         <View className="cashier__amount-value">
@@ -178,6 +195,7 @@ export default function Cashier() {
         {!creating && !failed && payMethods.map((method) => {
           const active = payMethod === method.channel;
           const disabled = method.enabled === false;
+          const badge = resolveMethodBadge(method.channel);
           return (
             <View
               key={method.channel}
@@ -185,7 +203,7 @@ export default function Cashier() {
               onClick={() => !disabled && setPayMethod(method.channel)}
             >
               <View className="cashier__method-left">
-                <View className="cashier__method-icon">{'\u{1F4B0}'}</View>
+                <View className={`cashier__method-icon cashier__method-icon--${badge.modifier}`}>{badge.text}</View>
                 <Text className="cashier__method-name">
                   {method.name || method.channelName || (method.channel === 'wechat' ? '\u5fae\u4fe1\u652f\u4ed8' : method.channel)}
                 </Text>

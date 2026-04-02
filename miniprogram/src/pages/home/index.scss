@@ -1470,23 +1470,85 @@
 }
 
 .home--h5 .home-top-bg {
-  padding-top: 10px;
+  padding-top: 20rpx;
 }
 
-.home--h5 .home-quick-entries,
-.home--h5 .home-promo-hub,
 .home--h5 .home-recommend {
-  padding-left: 16px;
-  padding-right: 16px;
+  padding-left: 32rpx;
+  padding-right: 32rpx;
 }
 
 .home--h5 .home-swiper,
 .home--h5 .home-banner-fallback,
 .home--h5 .home-search {
-  margin-left: 16px;
-  margin-right: 16px;
+  margin-left: 32rpx;
+  margin-right: 32rpx;
 }
 
 .home--h5 .home-quick-entries {
-  margin-top: -10px;
+  margin: -20rpx 32rpx 0;
+  padding: 28rpx 16rpx 20rpx;
+  border-radius: 32rpx;
+}
+
+.home--h5 .home-quick-entries__icon-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 32rpx;
+}
+
+.home--h5 .home-quick-entries__icon-img {
+  width: 58rpx;
+  height: 58rpx;
+}
+
+.home--h5 .home-promo-hub {
+  margin: 16rpx 32rpx 0;
+  border-radius: 32rpx;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.home--h5 .home-promo-hub__ad-chip {
+  margin-top: 20rpx;
+  min-height: 40rpx;
+  border-radius: 20rpx;
+  padding: 4rpx 16rpx;
+}
+
+.home--h5 .home-promo-hub__ad-chip-text {
+  font-size: 22rpx;
+}
+
+.home--h5 .home-promo-hub__ad-cd {
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.home--h5 .home-promo-hub__ad-cd-label {
+  margin-right: 4rpx;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.home--h5 .home-promo-hub__ad-cd-box {
+  width: auto;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 8rpx;
+  border-radius: 8rpx;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.home--h5 .home-promo-hub__ad-cd-num,
+.home--h5 .home-promo-hub__ad-cd-sep {
+  font-size: 20rpx;
+  line-height: 1;
+  color: #fff;
+}
+
+.home--h5 .home-promo-hub__ad-cd-sep {
+  color: rgba(255, 255, 255, 0.9);
 }

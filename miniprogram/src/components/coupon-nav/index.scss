@@ -59,35 +59,35 @@
   z-index: 90;
   width: 100%;
   background: linear-gradient(180deg, #f4d4c4 0%, #f7e4d7 48%, #faf3ed 100%);
-  backdrop-filter: blur(14px);
+  backdrop-filter: blur(14PX);
   padding-bottom: 0;
 }
 
 .coupon-nav--h5 .coupon-nav__bar {
-  min-height: 56px;
-  padding: 0 14px;
+  min-height: 56PX;
+  padding: 0 14PX;
 }
 
 .coupon-nav--h5 .coupon-nav__back {
-  width: 44px;
-  height: 44px;
+  width: 44PX;
+  height: 44PX;
 }
 
 .coupon-nav--h5 .coupon-nav__back-icon {
-  font-size: 28px;
+  font-size: 28PX;
   font-weight: 600;
 }
 
 .coupon-nav--h5 .coupon-nav__title {
-  width: calc(100% - 120px);
+  width: calc(100% - 120PX);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  font-size: 19px;
+  font-size: 19PX;
   line-height: 1;
   font-weight: 800;
 }
 
 .coupon-nav--h5 .coupon-nav__capsule-space {
-  width: 44px !important;
+  width: 44PX !important;
 }

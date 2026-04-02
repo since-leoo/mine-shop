@@ -22,7 +22,8 @@ export default function AddressList() {
   const [list, setList] = useState<AddressItem[]>([]);
   const [loading, setLoading] = useState(true);
   const routerParams = Taro.getCurrentInstance().router?.params || {};
-  const isSelectMode = routerParams.selectMode === '1' || routerParams.isOrderSure === '1';
+  const isOrderSure = routerParams.isOrderSure === '1';
+  const isSelectMode = routerParams.selectMode === '1' || isOrderSure;
 
   const normalizeList = (res: any): any[] => {
     if (Array.isArray(res)) return res;
@@ -59,11 +60,18 @@ export default function AddressList() {
     loadData();
   });
 
+  const buildEditUrl = useCallback((addressId?: string) => {
+    const query = `selectMode=${isSelectMode ? 1 : 0}&isOrderSure=${isOrderSure ? 1 : 0}`;
+    return addressId
+      ? `/pages/user/address/edit/index?id=${addressId}&${query}`
+      : `/pages/user/address/edit/index?${query}`;
+  }, [isOrderSure, isSelectMode]);
+
   const handleEdit = useCallback((addr: AddressItem) => {
     Taro.navigateTo({
-      url: `/pages/user/address/edit/index?id=${addr.id}`,
+      url: buildEditUrl(addr.id),
     });
-  }, []);
+  }, [buildEditUrl]);
 
   const handleSelectAddress = useCallback((addr: AddressItem) => {
     Taro.setStorageSync(ORDER_CONFIRM_SELECTED_ADDRESS_KEY, JSON.stringify(addr));
@@ -92,8 +100,8 @@ export default function AddressList() {
   );
 
   const handleAdd = useCallback(() => {
-    Taro.navigateTo({ url: '/pages/user/address/edit/index' });
-  }, []);
+    Taro.navigateTo({ url: buildEditUrl() });
+  }, [buildEditUrl]);
 
   const buildFullAddress = (addr: AddressItem) => {
     return [addr.provinceName, addr.cityName, addr.districtName, addr.detailAddress]

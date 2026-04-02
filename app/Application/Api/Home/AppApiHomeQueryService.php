@@ -41,7 +41,6 @@ final class AppApiHomeQueryService
             'featured_products' => $this->productQueryService->page(['is_recommend' => true, 'status' => 'active'], 1, 10)['list'],
             'hot_products' => $this->productQueryService->page(['is_hot' => true, 'status' => 'active'], 1, 10)['list'],
             'new_products' => $this->productQueryService->page(['is_new' => true, 'status' => 'active'], 1, 10)['list'],
-            'seckill' => $this->seckillQueryService->getHomeSeckill(6),
         ];
     }
 

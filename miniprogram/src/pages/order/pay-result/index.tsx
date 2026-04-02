@@ -9,6 +9,7 @@ import './index.scss';
 
 export default function PayResult() {
   const router = useRouter();
+  const h5 = isH5();
   const [totalPaid, setTotalPaid] = useState(0);
   const [orderNo, setOrderNo] = useState('');
   const [recommendList, setRecommendList] = useState<any[]>([]);
@@ -47,15 +48,17 @@ export default function PayResult() {
   }, []);
 
   return (
-    <View className={`pay-result ${isH5() ? 'pay-result--h5' : ''}`}>
+    <View className={`pay-result ${h5 ? 'pay-result--h5' : ''}`}>
       <PageNav title="支付结果" />
-      <View className="pay-result__icon-wrap">
-        <View className="pay-result__icon">✓</View>
-      </View>
-      <Text className="pay-result__title">支付成功</Text>
-      <View className="pay-result__amount">
-        <Text className="pay-result__amount-label">微信支付：</Text>
-        <Price price={totalPaid} className="pay-result__price" fill />
+      <View className="pay-result__status">
+        <View className="pay-result__icon-wrap">
+          <View className="pay-result__icon">✓</View>
+        </View>
+        <Text className="pay-result__title">支付成功</Text>
+        <View className="pay-result__amount">
+          <Text className="pay-result__amount-label">微信支付：</Text>
+          <Price price={totalPaid} className="pay-result__price" fill />
+        </View>
       </View>
 
       <View className="pay-result__buttons">
@@ -69,9 +72,11 @@ export default function PayResult() {
 
       {recommendList.length > 0 && (
         <View className="pay-result__recommend">
-          <View className="pay-result__recommend-title-row">
-            <View className="pay-result__recommend-bar" />
-            <Text className="pay-result__recommend-title">猜你喜欢</Text>
+          <View className="pay-result__recommend-header">
+            <View className="pay-result__recommend-title-row">
+              <View className="pay-result__recommend-bar" />
+              <Text className="pay-result__recommend-title">猜你喜欢</Text>
+            </View>
           </View>
           <View className="pay-result__recommend-grid">
             {recommendList.map((item) => (
@@ -80,10 +85,13 @@ export default function PayResult() {
                 className="pay-result__goods-card"
                 onClick={() => handleTapGoods(item)}
               >
-                <Image className="pay-result__goods-img" src={item.thumb} mode="aspectFill" />
+                <Image className="pay-result__goods-img" src={item.thumb || item.primaryImage || ''} mode="aspectFill" />
                 <View className="pay-result__goods-info">
                   <Text className="pay-result__goods-name">{item.title}</Text>
-                  <Price price={item.price || 0} className="pay-result__goods-price" fill />
+                  <View className="pay-result__goods-price-row">
+                    <Price price={item.price || 0} className="pay-result__goods-price" fill />
+                    <View className="pay-result__goods-plus">+</View>
+                  </View>
                 </View>
               </View>
             ))}
