@@ -1137,16 +1137,22 @@ public function create(DepartmentCreateInput $dto): Department
    - ✅ 缓存清理
    - ❌ 不要包含业务逻辑
 
-4. **简单 CRUD 使用 DTO::toArray()**
+4. **接口返回结构由 Interface/Api/Transformer 负责**
+   - ✅ Controller 调用 Transformer 组装小程序/开放接口返回结构
+   - ✅ Domain / DomainApi 只返回领域查询结果或模型数据
+   - ❌ 不要在 Application 层组装接口展示字段
+   - ❌ 不要在 DomainApi Query 中直接拼装面向前端的响应结构
+
+5. **简单 CRUD 使用 DTO::toArray()**
    - ✅ DTO 提供 `toArray()` 方法
    - ✅ Contract 接口声明 `toArray()`
    - ✅ Domain Service 直接使用
 
-5. **使用 dirty 追踪机制**
+6. **使用 dirty 追踪机制**
    - ✅ Entity 使用 `markDirty()` 标记修改
    - ✅ `toArray()` 只返回修改过的字段
 
-6. **Domain Service 必须提供 getEntity() 方法**
+7. **Domain Service 必须提供 getEntity() 方法**
    - ✅ 用于通过 ID 获取实体
    - ✅ 内部调用 `Repository::findById()` 获取 Model
    - ✅ 通过 `Mapper::fromModel()` 转换为 Entity
