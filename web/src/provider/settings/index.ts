@@ -50,9 +50,9 @@ const defaultGlobalConfigSettings: RecursiveRequired<SystemSettings.all> = {
   copyright: {
     enable: true,
     dates: useDayjs().format('YYYY'),
-    company: 'MineAdmin Team',
-    website: 'https://www.mineadmin.com',
-    putOnRecord: '豫ICP备00000000号-1',
+    company: 'MineShop Team',
+    website: 'https://www.mineshop.club',
+    putOnRecord: '豫ICP备2026007306号',
   },
 }
 

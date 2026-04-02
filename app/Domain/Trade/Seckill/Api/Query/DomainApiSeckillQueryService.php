@@ -74,6 +74,11 @@ final class DomainApiSeckillQueryService
         ];
     }
 
+    /**
+     * 获取秒杀活动首页数据.
+     *
+     * @return array{list: array, endTime: ?string, title: string, activityId: ?int, sessionId: ?int}
+     */
     public function getHomeSeckill(int $productLimit = 6): array
     {
         $empty = ['list' => [], 'endTime' => null, 'title' => '', 'activityId' => null, 'sessionId' => null];
@@ -104,17 +109,18 @@ final class DomainApiSeckillQueryService
      */
     public function getSessionList(?int $activityId = null): array
     {
-        $activity = $activityId && $activityId > 0
-            ? $this->activityRepository->findById($activityId)
-            : $this->activityRepository->findLatestEnabledActiveOrPending();
-
-        if (! $activity) {
-            return [];
+        if ($activityId) {
+            return $this->sessionRepository->findEnabledByActivityIdOrderByStartTime($activityId);
         }
 
-        return $this->sessionRepository->findEnabledByActivityIdOrderByStartTime((int) $activity->id);
+        return $this->sessionRepository->findAllEnabledOrderByStartTime();
     }
 
+    /**
+     * 获取秒杀活动详情.
+     *
+     * @return string
+     */
     private function resolveTopicBanner(): string
     {
         $custom = $this->systemSettingService->get('mall.seckill.topic_banner', null);

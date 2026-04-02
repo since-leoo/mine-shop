@@ -6,11 +6,12 @@ namespace App\Application\Api\Seckill;
 
 use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillQueryService;
 
-final class AppApiSeckillSessionQueryService
+final readonly class AppApiSeckillSessionQueryService
 {
-    public function __construct(private readonly DomainApiSeckillQueryService $queryService) {}
+    public function __construct(private DomainApiSeckillQueryService $queryService) {}
 
     /**
+     * @param int|null $activityId
      * @return array
      */
     public function getSessionList(?int $activityId = null): array
