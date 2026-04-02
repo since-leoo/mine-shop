@@ -1611,6 +1611,76 @@ class MenuSeeder20240926 extends Seeder
                     ],
                 ],
             ],
+            [
+                'name' => 'export:center',
+                'path' => '/export',
+                'redirect' => '/export/task',
+                'meta' => new Meta([
+                    'title' => '导出中心',
+                    'i18n' => 'exportMenu.exportCenter',
+                    'icon' => 'mdi:download-box',
+                    'type' => 'M',
+                    'hidden' => 0,
+                    'breadcrumbEnable' => 1,
+                    'copyright' => 1,
+                    'cache' => 1,
+                    'affix' => 0,
+                ]),
+                'children' => [
+                    [
+                        'name' => 'export:task',
+                        'path' => '/export/task',
+                        'component' => 'since/export-center/views/task/index',
+                        'meta' => new Meta([
+                            'title' => '下载中心',
+                            'i18n' => 'exportMenu.downloadCenter',
+                            'icon' => 'mdi:file-download',
+                            'type' => 'M',
+                            'hidden' => 0,
+                            'componentPath' => 'plugins/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'export:task:list',
+                                'meta' => new Meta([
+                                    'title' => '导出任务列表',
+                                    'type' => 'B',
+                                    'i18n' => 'exportMenu.exportTaskList',
+                                ]),
+                            ],
+                            [
+                                'name' => 'export:task:create',
+                                'meta' => new Meta([
+                                    'title' => '创建导出任务',
+                                    'type' => 'B',
+                                    'i18n' => 'exportMenu.exportTaskCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'export:task:download',
+                                'meta' => new Meta([
+                                    'title' => '下载导出文件',
+                                    'type' => 'B',
+                                    'i18n' => 'exportMenu.exportTaskDownload',
+                                ]),
+                            ],
+                            [
+                                'name' => 'export:task:delete',
+                                'meta' => new Meta([
+                                    'title' => '删除导出记录',
+                                    'type' => 'B',
+                                    'i18n' => 'exportMenu.exportTaskDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
