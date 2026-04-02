@@ -287,7 +287,7 @@ final class MemberEntity
             throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Invalid phone or password');
         }
 
-        $this->setLastLoginAt(now());
+        $this->setLastLoginAt(Carbon::now());
         if ($ip !== null && trim($ip) !== '') {
             $this->setLastLoginIp($ip);
         }

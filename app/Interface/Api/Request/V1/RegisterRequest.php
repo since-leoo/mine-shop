@@ -23,7 +23,7 @@ final class RegisterRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'phone' => ['required', 'regex:/^1[3-9]\d{9}$/', Rule::unique('member', 'phone')],
+            'phone' => ['required', 'regex:/^1[3-9]\d{9}$/', Rule::unique('members', 'phone')],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
             'password_confirmation' => ['required', 'string', 'min:6'],
             'code' => ['required', 'digits:6'],

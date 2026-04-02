@@ -2,7 +2,8 @@
 import Taro, { useShareAppMessage } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchGood } from '../../../services/good/fetchGood';
-import { addCartItem } from '../../../services/cart/cart';
+import { isLoggedIn } from '../../../common/auth';
+import { addCartItem, fetchCartGroupData } from '../../../services/cart/cart';
 import { fetchGroupBuyProductDetail, fetchOngoingGroups } from '../../../services/promotion/groupBuy';
 import { trackEvent } from '../../../common/analytics';
 import {
@@ -106,6 +107,22 @@ function parseCountdownSegments(input: string): CountdownSegment[] {
   ];
 }
 
+function resolveCartBadgeCount(cartData: any): number {
+  const stores = Array.isArray(cartData?.storeGoods) ? cartData.storeGoods : [];
+  const totalCount = stores.reduce((storeSum: number, store: any) => {
+    const promotionList = Array.isArray(store?.promotionGoodsList) ? store.promotionGoodsList : [];
+    return storeSum + promotionList.reduce((promotionSum: number, promotion: any) => {
+      const goodsList = Array.isArray(promotion?.goodsPromotionList) ? promotion.goodsPromotionList : [];
+      return promotionSum + goodsList.reduce((goodsSum: number, item: any) => goodsSum + (Number(item?.quantity) || 0), 0);
+    }, 0);
+  }, 0);
+
+  if (totalCount > 0) return totalCount;
+
+  const fallbackCount = Number(cartData?.selectedGoodsCount || cartData?.goodsCount || 0);
+  return Number.isFinite(fallbackCount) && fallbackCount > 0 ? fallbackCount : 0;
+}
+
 function formatPrice(price: number) {
   return (price / 100).toFixed(2);
 }
@@ -143,6 +160,7 @@ export default function GoodsDetails() {
   const [groupBuyId, setGroupBuyId] = useState('');
   const [groupTeams, setGroupTeams] = useState<GroupTeam[]>([]);
   const [seckillCountdown, setSeckillCountdown] = useState('');
+  const [cartBadgeCount, setCartBadgeCount] = useState(0);
 
   const selectItemRef = useRef<SkuItem | null>(null);
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -224,6 +242,21 @@ export default function GoodsDetails() {
     }
   }, []);
 
+  const refreshCartBadge = useCallback(async () => {
+    if (!isLoggedIn()) {
+      setCartBadgeCount(0);
+      return;
+    }
+
+    try {
+      const res: any = await fetchCartGroupData();
+      setCartBadgeCount(resolveCartBadgeCount(res?.data || res));
+    } catch (error) {
+      console.error('cart badge error:', error);
+      setCartBadgeCount(0);
+    }
+  }, []);
+
   useEffect(() => {
     const instance = Taro.getCurrentInstance();
     const id = instance.router?.params?.spuId || '';
@@ -242,6 +275,10 @@ export default function GoodsDetails() {
       getCommentsStatistics(id);
     }
   }, [getDetail, getCommentsList, getCommentsStatistics]);
+
+  useEffect(() => {
+    refreshCartBadge();
+  }, [refreshCartBadge]);
 
   useEffect(() => {
     if (!spuId || hasTrackViewRef.current) return;
@@ -389,6 +426,7 @@ export default function GoodsDetails() {
     }
     try {
       await addCartItem({ skuId: Number(skuId), quantity: buyNum });
+      await refreshCartBadge();
       trackEvent('goods_add_cart_success', { spuId, skuId, quantity: buyNum, orderType: orderType || 'normal' });
       Taro.showToast({ title: '已加入购物车', icon: 'success' });
       closeSpecPopup();
@@ -730,11 +768,16 @@ export default function GoodsDetails() {
           <View className={`goods-bottom-bar ${showSpecPopup ? 'goods-bottom-bar--hidden' : ''}`}>
             <View className="goods-bottom-bar__icons">
               <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
-                <Image className="goods-bottom-bar__icon-emoji" src={homeIcon} mode="aspectFit" />
+                <View className="goods-bottom-bar__icon-wrap">
+                  <Image className="goods-bottom-bar__icon-emoji" src={homeIcon} mode="aspectFit" />
+                </View>
                 <Text className="goods-bottom-bar__icon-text">首页</Text>
               </View>
               <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}>
-                <Image className="goods-bottom-bar__icon-emoji" src={cartIcon} mode="aspectFit" />
+                <View className="goods-bottom-bar__icon-wrap">
+                  <Image className="goods-bottom-bar__icon-emoji" src={cartIcon} mode="aspectFit" />
+                  {cartBadgeCount > 0 && <Text className="goods-bottom-bar__badge">{cartBadgeCount > 99 ? '99+' : cartBadgeCount}</Text>}
+                </View>
                 <Text className="goods-bottom-bar__icon-text">购物车</Text>
               </View>
             </View>
@@ -754,11 +797,16 @@ export default function GoodsDetails() {
         <View className={`goods-bottom-bar ${showSpecPopup ? 'goods-bottom-bar--hidden' : ''}`}>
           <View className="goods-bottom-bar__icons">
             <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
-              <Image className="goods-bottom-bar__icon-emoji" src={homeIcon} mode="aspectFit" />
+              <View className="goods-bottom-bar__icon-wrap">
+                <Image className="goods-bottom-bar__icon-emoji" src={homeIcon} mode="aspectFit" />
+              </View>
               <Text className="goods-bottom-bar__icon-text">首页</Text>
             </View>
             <View className="goods-bottom-bar__icon-item" onClick={() => Taro.switchTab({ url: '/pages/cart/index' })}>
-              <Image className="goods-bottom-bar__icon-emoji" src={cartIcon} mode="aspectFit" />
+              <View className="goods-bottom-bar__icon-wrap">
+                <Image className="goods-bottom-bar__icon-emoji" src={cartIcon} mode="aspectFit" />
+                {cartBadgeCount > 0 && <Text className="goods-bottom-bar__badge">{cartBadgeCount > 99 ? '99+' : cartBadgeCount}</Text>}
+              </View>
               <Text className="goods-bottom-bar__icon-text">购物车</Text>
             </View>
           </View>

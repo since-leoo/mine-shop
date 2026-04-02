@@ -168,8 +168,7 @@ npm run dev
 - 密码：123456
 
 **小程序演示(暂未部署)**
-- 微信扫码体验（二维码）
-- 仓库地址：https://github.com/since-leoo/mine-shop-miniprogram
+- 代码在 该项目的miniprogram目录下
 
 > 请勿添加脏数据
 

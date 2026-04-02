@@ -1,7 +1,7 @@
 @use '../../../styles/variables' as *;
 
-// 严格按照 design-mockup.html 商品详情页 CSS 一比一还原
-// 设计稿 375px 宽，1px = 2rpx
+// 娑撱儲鐗搁幐澶屽弾 design-mockup.html 閸熷棗鎼х拠锔藉剰閿?CSS 娑撯偓濮ｆ柧绔存潻妯哄斧
+// 鐠佹崘顓搁敓?375px 鐎规枻绱?px = 2rpx
 
 .goods-detail-page {
   min-height: 100vh;
@@ -26,8 +26,8 @@
   }
 }
 
-// ===== 商品大图轮播 =====
-// 设计稿: width:100%;height:375px;position:relative;
+// ===== 閸熷棗鎼ф径褍娴樻潪顔芥尡 =====
+// 鐠佹崘顓搁敓? width:100%;height:375px;position:relative;
 .goods-swiper {
   position: relative;
   width: 100%;
@@ -43,7 +43,7 @@
     height: 750rpx;
   }
 
-  // 设计稿: position:absolute;bottom:12px;display:flex;gap:6px;justify-content:center;width:100%;
+  // 鐠佹崘顓搁敓? position:absolute;bottom:12px;display:flex;gap:6px;justify-content:center;width:100%;
   // active dot: width:18px;height:5px;border-radius:3px;background:var(--primary);
   // dot: width:5px;height:5px;border-radius:3px;background:rgba(255,255,255,0.6);
   &__counter {
@@ -71,49 +71,49 @@
   }
 }
 
-// ===== 价格区 =====
-// 设计稿: background:#fff;padding:16px 16px 12px;
+// ===== 娴犻攱鐗搁敓?=====
+// 鐠佹崘顓搁敓? background:#fff;padding:16px 16px 12px;
 .goods-info {
   background: #fff;
   border-radius: 32rpx;
   padding: 32rpx 32rpx 24rpx;
   margin: 0 32rpx 16rpx;
 
-  // 设计稿: display:flex;align-items:baseline;justify-content:space-between;
+  // 鐠佹崘顓搁敓? display:flex;align-items:baseline;justify-content:space-between;
   &__price-row {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
   }
 
-  // 设计稿: display:flex;align-items:baseline;gap:4px;
+  // 鐠佹崘顓搁敓? display:flex;align-items:baseline;gap:4px;
   &__price-left {
     display: flex;
     align-items: baseline;
     gap: 8rpx; // 4px * 2
   }
 
-  // 设计稿: font-size:16px; (¥ 符号)
+  // 鐠佹崘顓搁敓? font-size:16px; (妤?缁楋箑褰?
   &__currency {
     font-size: 32rpx; // 16px * 2
     color: $warm-primary;
     font-weight: 800;
   }
 
-  // 设计稿: font-size:28px;font-weight:800;color:var(--primary);
+  // 鐠佹崘顓搁敓? font-size:28px;font-weight:800;color:var(--primary);
   &__price {
     font-size: 56rpx; // 28px * 2
     font-weight: 800;
     color: $warm-primary;
   }
 
-  // 设计稿: font-size:12px;color:var(--primary);
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--primary);
   &__price-up {
     font-size: 24rpx; // 12px * 2
     color: $warm-primary;
   }
 
-  // 设计稿: font-size:14px;color:var(--text-light);text-decoration:line-through;margin-left:4px;
+  // 鐠佹崘顓搁敓? font-size:14px;color:var(--text-light);text-decoration:line-through;margin-left:4px;
   &__origin-price {
     font-size: 28rpx; // 14px * 2
     color: $warm-text-light;
@@ -121,20 +121,20 @@
     margin-left: 8rpx; // 4px * 2
   }
 
-  // 设计稿: font-size:12px;color:var(--text-muted);
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--text-muted);
   &__sold {
     font-size: 24rpx; // 12px * 2
     color: $warm-text-muted;
   }
 
-  // 设计稿: 活动标签 display:flex;gap:8px;margin-top:10px;
+  // 鐠佹崘顓搁敓? 濞茶濮╅弽鍥╊劮 display:flex;gap:8px;margin-top:10px;
   &__tags-row {
     display: flex;
     gap: 16rpx; // 8px * 2
     margin-top: 20rpx; // 10px * 2
   }
 
-  // 设计稿: font-size:10px;color:var(--primary);background:var(--bg-warm);padding:2px 8px;border-radius:8px;font-weight:600;
+  // 鐠佹崘顓搁敓? font-size:10px;color:var(--primary);background:var(--bg-warm);padding:2px 8px;border-radius:8px;font-weight:600;
   &__tag {
     font-size: 20rpx; // 10px * 2
     color: $warm-primary;
@@ -149,7 +149,7 @@
     }
   }
 
-  // 设计稿: display:flex;align-items:flex-start;margin-top:12px;gap:10px;
+  // 鐠佹崘顓搁敓? display:flex;align-items:flex-start;margin-top:12px;gap:10px;
   &__title-row {
     display: flex;
     align-items: flex-start;
@@ -157,7 +157,7 @@
     gap: 20rpx; // 10px * 2
   }
 
-  // 设计稿: font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.4;
+  // 鐠佹崘顓搁敓? font-size:16px;font-weight:700;color:var(--text-dark);line-height:1.4;
   &__title {
     flex: 1;
     font-size: 32rpx; // 16px * 2
@@ -171,7 +171,7 @@
     word-break: break-all;
   }
 
-  // 设计稿: font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.4;
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--text-muted);margin-top:4px;line-height:1.4;
   &__intro {
     font-size: 24rpx; // 12px * 2
     color: $warm-text-muted;
@@ -183,7 +183,7 @@
     overflow: hidden;
   }
 
-  // 设计稿: 分享按钮 display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-muted);font-size:10px;flex-shrink:0;
+  // 鐠佹崘顓搁敓? 閸掑棔闊╅幐澶愭尦 display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--text-muted);font-size:10px;flex-shrink:0;
   &__share {
     display: flex;
     flex-direction: column;
@@ -227,25 +227,25 @@
   }
 }
 
-// ===== 已选规格 =====
-// 设计稿: background:#fff;margin-top:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
+// ===== 瀹告煡鈧顫夐敓?=====
+// 鐠佹崘顓搁敓? background:#fff;margin-top:8px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;
 .goods-spec-select {
   background: #fff;
-  margin: 16rpx 32rpx; // 8px * 2 (此处实际用 margin-bottom 上方区域)
+  margin: 16rpx 32rpx; // 8px * 2 (濮濄倕顦╃€圭偤妾敓?margin-bottom 娑撳﹥鏌熼崠鍝勭厵)
   padding: 28rpx 32rpx; // 14px 16px * 2
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16rpx;
 
-  // 设计稿: font-size:13px;color:var(--text-muted);
+  // 鐠佹崘顓搁敓? font-size:13px;color:var(--text-muted);
   &__label {
     font-size: 26rpx; // 13px * 2
     color: $warm-text-muted;
     flex-shrink: 0;
   }
 
-  // 设计稿: flex:1;margin-left:16px;display:flex;align-items:center;justify-content:space-between;
+  // 鐠佹崘顓搁敓? flex:1;margin-left:16px;display:flex;align-items:center;justify-content:space-between;
   &__content {
     flex: 1;
     margin-left: 32rpx; // 16px * 2
@@ -254,7 +254,7 @@
     justify-content: space-between;
   }
 
-  // 设计稿: font-size:13px;color:var(--text-dark);
+  // 鐠佹崘顓搁敓? font-size:13px;color:var(--text-dark);
   &__value {
     font-size: 26rpx; // 13px * 2
     color: $warm-text-primary;
@@ -264,7 +264,7 @@
     }
   }
 
-  // 设计稿: color:var(--text-light);font-size:14px;
+  // 鐠佹崘顓搁敓? color:var(--text-light);font-size:14px;
   &__arrow {
     font-size: 28rpx; // 14px * 2
     color: $warm-text-light;
@@ -534,14 +534,14 @@
   }
 }
 
-// ===== 评价区 =====
-// 设计稿: background:#fff;margin-top:8px;padding:14px 16px;
+// ===== 鐠囧嫪鐜敓?=====
+// 鐠佹崘顓搁敓? background:#fff;margin-top:8px;padding:14px 16px;
 .goods-comments {
   background: #fff;
   margin: 0 32rpx 16rpx;
   padding: 28rpx 32rpx; // 14px 16px * 2
 
-  // 设计稿: display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
+  // 鐠佹崘顓搁敓? display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
   &__header {
     display: flex;
     justify-content: space-between;
@@ -549,46 +549,46 @@
     margin-bottom: 24rpx; // 12px * 2
   }
 
-  // 设计稿: display:flex;align-items:center;gap:4px;
+  // 鐠佹崘顓搁敓? display:flex;align-items:center;gap:4px;
   &__title-wrap {
     display: flex;
     align-items: center;
     gap: 8rpx; // 4px * 2
   }
 
-  // 设计稿: font-size:14px;font-weight:700;color:var(--text-dark);
+  // 鐠佹崘顓搁敓? font-size:14px;font-weight:700;color:var(--text-dark);
   &__title {
     font-size: 28rpx; // 14px * 2
     font-weight: 700;
     color: $warm-text-primary;
   }
 
-  // 设计稿: font-size:13px;color:var(--text-muted);
+  // 鐠佹崘顓搁敓? font-size:13px;color:var(--text-muted);
   &__count {
     font-size: 26rpx; // 13px * 2
     color: $warm-text-muted;
   }
 
-  // 设计稿: display:flex;align-items:center;gap:4px;
+  // 鐠佹崘顓搁敓? display:flex;align-items:center;gap:4px;
   &__rate-wrap {
     display: flex;
     align-items: center;
     gap: 8rpx; // 4px * 2
   }
 
-  // 设计稿: font-size:12px;color:var(--accent);
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--accent);
   &__good-rate {
     font-size: 24rpx; // 12px * 2
     color: $warm-accent-mint;
   }
 
-  // 设计稿: color:var(--text-light);font-size:14px;
+  // 鐠佹崘顓搁敓? color:var(--text-light);font-size:14px;
   &__arrow {
     font-size: 28rpx; // 14px * 2
     color: $warm-text-light;
   }
 
-  // 设计稿: display:flex;align-items:flex-start;gap:10px;
+  // 鐠佹崘顓搁敓? display:flex;align-items:flex-start;gap:10px;
   &__item {
     display: flex;
     align-items: flex-start;
@@ -606,7 +606,7 @@
     gap: 20rpx; // 10px * 2
   }
 
-  // 设计稿: width:32px;height:32px;border-radius:50%;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+  // 鐠佹崘顓搁敓? width:32px;height:32px;border-radius:50%;background:var(--bg-warm);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
   &__avatar {
     width: 64rpx; // 32px * 2
     height: 64rpx;
@@ -619,20 +619,20 @@
     flex: 1;
   }
 
-  // 设计稿: font-size:12px;color:var(--text-dark);font-weight:600;
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--text-dark);font-weight:600;
   &__username {
     font-size: 24rpx; // 12px * 2
     color: $warm-text-primary;
     font-weight: 600;
   }
 
-  // 设计稿: display:flex;gap:1px;margin:2px 0;
+  // 鐠佹崘顓搁敓? display:flex;gap:1px;margin:2px 0;
   &__stars {
     display: flex;
     gap: 2rpx; // 1px * 2
     margin: 4rpx 0; // 2px * 2
 
-    // 设计稿: color:#F5D89A;font-size:10px;
+    // 鐠佹崘顓搁敓? color:#F5D89A;font-size:10px;
     .star {
       font-size: 20rpx; // 10px * 2
       color: #ddd;
@@ -643,7 +643,7 @@
     }
   }
 
-  // 设计稿: font-size:12px;color:var(--text-body);line-height:1.5;
+  // 鐠佹崘顓搁敓? font-size:12px;color:var(--text-body);line-height:1.5;
   &__content {
     margin-top: 8rpx;
     font-size: 24rpx; // 12px * 2
@@ -684,15 +684,15 @@
   }
 }
 
-// ===== 详情介绍 =====
-// 设计稿: background:#fff;margin-top:8px;padding:16px;
+// ===== 鐠囷附鍎忔禒瀣矝 =====
+// 鐠佹崘顓搁敓? background:#fff;margin-top:8px;padding:16px;
 .goods-desc {
   background: #fff;
   margin: 16rpx 32rpx 0; // 8px * 2
   padding: 32rpx; // 16px * 2
   padding-bottom: 120rpx;
 
-  // 设计稿: text-align:center;font-size:13px;font-weight:600;color:var(--text-dark);padding:8px 0;display:flex;align-items:center;justify-content:center;gap:12px;
+  // 鐠佹崘顓搁敓? text-align:center;font-size:13px;font-weight:600;color:var(--text-dark);padding:8px 0;display:flex;align-items:center;justify-content:center;gap:12px;
   &__title-row {
     display: flex;
     justify-content: center;
@@ -701,21 +701,21 @@
     padding: 16rpx 0; // 8px * 2
   }
 
-  // 设计稿: width:60px;height:1px;background:var(--border);display:inline-block;
+  // 鐠佹崘顓搁敓? width:60px;height:1px;background:var(--border);display:inline-block;
   &__line {
     width: 120rpx; // 60px * 2
     height: 2rpx; // 1px * 2
     background: $warm-border;
   }
 
-  // 设计稿: font-size:13px;font-weight:600;color:var(--text-dark);
+  // 鐠佹崘顓搁敓? font-size:13px;font-weight:600;color:var(--text-dark);
   &__title-text {
     font-size: 26rpx; // 13px * 2
     font-weight: 600;
     color: $warm-text-primary;
   }
 
-  // 设计稿: width:100%;border-radius:12px;margin-top:8px;
+  // 鐠佹崘顓搁敓? width:100%;border-radius:12px;margin-top:8px;
   &__img {
     width: 100%;
     height: auto;
@@ -725,13 +725,13 @@
   }
 }
 
-// ===== 底部购买栏 =====
+// ===== 鎼存洟鍎寸拹顓濇嫳閿?=====
 .goods-bottom-placeholder {
   height: calc(144rpx + env(safe-area-inset-bottom));
   height: calc(144rpx + constant(safe-area-inset-bottom));
 }
 
-// 设计稿: position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;padding:0 12px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;
+// 鐠佹崘顓搁敓? position:absolute;bottom:0;left:0;right:0;height:56px;background:#fff;display:flex;align-items:center;padding:0 12px;box-shadow:0 -2px 10px rgba(200,140,110,0.08);z-index:10;
 .goods-bottom-bar {
   position: fixed;
   left: 0;
@@ -754,14 +754,14 @@
     pointer-events: none;
   }
 
-  // 底部快捷入口容器。
+  // 鎼存洟鍎磋箛顐ｅ祹閸忋儱褰涚€圭懓娅掗敓?
   &__icons {
     display: flex;
     gap: 28rpx; // 14px * 2
     margin-right: 24rpx; // 12px * 2
   }
 
-  // 单个快捷入口，图标与文字纵向排列。
+  // 閸楁洑閲滆箛顐ｅ祹閸忋儱褰涢敍灞芥禈閺嶅洣绗岄弬鍥х摟缁鹃潧鎮滈幒鎺戝灙閿?
   &__icon-item {
     display: flex;
     flex-direction: column;
@@ -769,20 +769,46 @@
     gap: 2rpx; // 1px * 2
   }
 
-  // 快捷入口图标尺寸。
+  &__icon-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  // 韫囶偅宓庨崗銉ュ經閸ョ偓鐖ｇ亸鍝勵嚟閿?
   &__icon-emoji {
     width: 44rpx;
     height: 44rpx;
     display: block;
   }
 
-  // 快捷入口文案样式。
+  // 韫囶偅宓庨崗銉ュ經閺傚洦顢嶉弽宄扮础閿?
   &__icon-text {
     font-size: 20rpx; // 10px * 2
     color: $warm-text-muted;
   }
 
-  // 底部主按钮组。
+  &__badge {
+    position: absolute;
+    top: -6rpx;
+    right: -12rpx;
+    min-width: 28rpx;
+    height: 28rpx;
+    padding: 0 6rpx;
+    border-radius: 999rpx;
+    background: #FF4646;
+    color: #fff;
+    font-size: 16rpx;
+    font-weight: 700;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  // 鎼存洟鍎存稉缁樺瘻闁筋喚绮嶉敓?
   &__btns {
     flex: 1;
     display: flex;
@@ -792,14 +818,14 @@
     box-shadow: 0 4rpx 20rpx rgba(232, 131, 107, 0.2);
   }
 
-  // 购物车和立即购买按钮的基础布局。
+  // 鐠愵厾澧挎潪锕€鎷扮粩瀣祮鐠愵厺鎷遍幐澶愭尦閻ㄥ嫬鐔€绾偓鐢啫鐪敓?
   &__btn {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    // 加入购物车按钮。
+    // 閸旂姴鍙嗙拹顓犲⒖鏉烇附瀵滈柦顕嗘嫹?
     &--cart {
       background: $warm-warm-yellow;
 
@@ -808,13 +834,13 @@
       }
     }
 
-    // 立即购买按钮。
+    // 缁斿宓嗙拹顓濇嫳閹稿鎸抽敓?
     &--buy {
       background: $warm-gradient-primary;
     }
   }
 
-  // 底部主按钮文字样式。
+  // 鎼存洟鍎存稉缁樺瘻闁筋喗鏋冪€涙鐗卞蹇ユ嫹?
   &__btn-text {
     font-size: 26rpx; // 13px * 2
     font-weight: 700;
@@ -877,7 +903,7 @@
   }
 }
 
-// ===== 规格弹窗 =====
+// ===== 鐟欏嫭鐗稿鍦崶 =====
 .spec-mask {
   position: fixed;
   inset: 0;
@@ -1247,7 +1273,7 @@
 
 .goods-detail-page--h5 {
   background: #faf3ed;
-  padding-bottom: calc(140px + env(safe-area-inset-bottom));
+  padding-bottom: 0;
 }
 
 .goods-detail-page--h5 .goods-swiper,
@@ -1293,7 +1319,8 @@
 }
 
 .goods-detail-page--h5 .goods-bottom-placeholder {
-  height: calc(132px + env(safe-area-inset-bottom));
+  height: calc(136px + env(safe-area-inset-bottom));
+  height: calc(136px + constant(safe-area-inset-bottom));
 }
 
 .goods-detail-page--h5 .goods-bottom-bar,
@@ -1314,46 +1341,63 @@
 }
 
 .goods-detail-page--h5 .goods-bottom-bar {
-  min-height: 96px;
-  height: calc(96px + env(safe-area-inset-bottom));
-  padding: 12px 16px calc(env(safe-area-inset-bottom) + 12px);
+  min-height: 112px;
+  height: calc(112px + env(safe-area-inset-bottom));
+  height: calc(112px + constant(safe-area-inset-bottom));
+  padding: 14px 24px calc(env(safe-area-inset-bottom) + 14px);
+  padding: 14px 24px calc(constant(safe-area-inset-bottom) + 14px);
   box-shadow: 0 -8px 28px rgba(183, 128, 98, 0.14);
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__icons {
-  gap: 30px;
-  margin-right: 22px;
+  gap: 36px;
+  margin-right: 24px;
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__icon-item {
-  gap: 8px;
-  min-width: 40px;
+  gap: 10px;
+  min-width: 68px;
+}
+
+.goods-detail-page--h5 .goods-bottom-bar__icon-wrap {
+  width: 56px;
+  height: 56px;
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__icon-emoji {
-  width: 36px;
-  height: 36px;
+  width: 56px;
+  height: 56px;
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__icon-text {
-  font-size: 15px;
+  font-size: 20px;
   line-height: 1;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.goods-detail-page--h5 .goods-bottom-bar__badge {
+  top: -8px;
+  right: -16px;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  font-size: 12px;
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__btns {
-  height: 52px;
-  border-radius: 26px;
+  height: 72px;
+  border-radius: 36px;
+  box-shadow: 0 10px 24px rgba(232, 131, 107, 0.18);
 }
 
 .goods-detail-page--h5 .goods-bottom-bar__btn-text {
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
 }
 
 .goods-detail-page--h5 .goods-group-bottom {
-  min-height: 96px;
-  height: calc(96px + env(safe-area-inset-bottom));
+  min-height: 112px;
+  height: calc(112px + env(safe-area-inset-bottom));
 }
 
 .goods-detail-page--h5 .goods-group-bottom__origin,
@@ -1368,7 +1412,7 @@
 
 .goods-detail-page--h5 .goods-group-bottom__origin-text,
 .goods-detail-page--h5 .goods-group-bottom__group-text {
-  font-size: 12px;
+  font-size: 16px;
 }
 
 .goods-detail-page--h5 .spec-popup__spec-title {
@@ -1399,7 +1443,7 @@
 
 .goods-detail-page--h5 .goods-desc {
   margin: 0;
-  padding: 0 0 calc(104px + env(safe-area-inset-bottom));
+  padding: 0;
   background: #fff;
 }
 
@@ -1412,7 +1456,7 @@
 }
 
 .goods-detail-page--h5 .goods-desc__title-text {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .goods-detail-page--h5 .goods-desc__img {
@@ -1428,3 +1472,6 @@
 html, body {
   overflow-x: hidden;
 }
+
+
+

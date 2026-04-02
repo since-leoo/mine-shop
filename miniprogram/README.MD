@@ -1,4 +1,4 @@
-# Warm Shop MiniProgram
+# MineShop MiniProgram
 
 一个基于 **Taro + React + TypeScript** 的开源商城小程序项目，覆盖从商品浏览到下单支付、订单履约、用户中心的核心电商流程。
 

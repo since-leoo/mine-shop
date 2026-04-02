@@ -1,12 +1,14 @@
-import { View, Text, Image } from '@tarojs/components';
+﻿import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useCallback, useMemo, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5 } from '../../common/platform';
 import { deleteCartItem, fetchCartGroupData, updateCartItem } from '../../services/cart/cart';
+import { fetchRecommendGoods } from '../../services/good/fetchGoods';
 import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
+
 import './index.scss';
 
 interface CartGoods {
@@ -27,6 +29,15 @@ interface CartStore {
   id: string;
   name: string;
   items: CartGoods[];
+}
+
+interface RecommendGoods {
+  id?: string | number;
+  spuId?: string | number;
+  thumb?: string;
+  title?: string;
+  price?: number;
+  originPrice?: number;
 }
 
 function normalizePrice(value: any): number {
@@ -61,10 +72,10 @@ function formatSpecInfo(specInfo: any): string {
 function normalizeGoods(raw: any, store: any): CartGoods {
   return {
     storeId: String(raw?.storeId || raw?.store_id || store?.storeId || store?.id || ''),
-    storeName: String(store?.storeName || store?.name || '官方店铺'),
+    storeName: String(store?.storeName || store?.name || '瀹樻柟搴楅摵'),
     spuId: String(raw?.spuId || raw?.spu_id || raw?.id || ''),
     skuId: String(raw?.skuId || raw?.sku_id || raw?.id || ''),
-    title: raw?.title || raw?.goodsName || raw?.name || '商品',
+    title: raw?.title || raw?.goodsName || raw?.name || '鍟嗗搧',
     thumb: raw?.thumb || raw?.primaryImage || raw?.image || '',
     price: normalizePrice(raw?.price ?? raw?.salePrice ?? raw?.minSalePrice),
     quantity: Number(raw?.quantity || 1),
@@ -74,19 +85,23 @@ function normalizeGoods(raw: any, store: any): CartGoods {
   };
 }
 
-function formatAmount(value: number): string {
-  return `¥${value.toFixed(2)}`;
+function formatAmountValue(value: number): string {
+  return value.toFixed(2);
 }
 
 export default function Cart() {
   const [stores, setStores] = useState<CartStore[]>([]);
   const [loading, setLoading] = useState(false);
+  const [recommendList, setRecommendList] = useState<RecommendGoods[]>([]);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const res: any = await fetchCartGroupData();
-      const rawStores = res?.data?.storeGoods || [];
+      const [cartRes, recommendRes] = await Promise.all([
+        fetchCartGroupData(),
+        fetchRecommendGoods(4).catch(() => []),
+      ]);
+      const rawStores = cartRes?.data?.storeGoods || [];
       const nextStores: CartStore[] = rawStores
         .map((store: any) => {
           const items: CartGoods[] = [];
@@ -97,16 +112,27 @@ export default function Cart() {
           });
           return {
             id: String(store?.storeId || store?.id || ''),
-            name: String(store?.storeName || store?.name || '官方店铺'),
+            name: String(store?.storeName || store?.name || '\u5b98\u65b9\u5e97\u94fa'),
             items,
           };
         })
         .filter((store: CartStore) => store.items.length > 0);
 
       setStores(nextStores);
+      setRecommendList(
+        (Array.isArray(recommendRes) ? recommendRes : []).slice(0, 4).map((item: any) => ({
+          id: item?.spuId || item?.id,
+          spuId: item?.spuId || item?.id,
+          thumb: item?.thumb || item?.primaryImage || '',
+          title: item?.title || item?.name || '',
+          price: normalizePrice(item?.price ?? item?.minSalePrice ?? 0),
+          originPrice: normalizePrice(item?.originPrice ?? item?.maxLinePrice ?? item?.price ?? 0),
+          tags: Array.isArray(item?.tags) ? item.tags : [],
+        })),
+      );
     }
     catch (error: any) {
-      Taro.showToast({ title: error?.msg || '购物车加载失败', icon: 'none' });
+      Taro.showToast({ title: error?.msg || '\u8d2d\u7269\u8f66\u52a0\u8f7d\u5931\u8d25', icon: 'none' });
     }
     finally {
       setLoading(false);
@@ -169,7 +195,7 @@ export default function Cart() {
     const next = item.quantity + delta;
     if (next < 1) return;
     if (next > item.stockQuantity) {
-      Taro.showToast({ title: '库存不足', icon: 'none' });
+      Taro.showToast({ title: '搴撳瓨涓嶈冻', icon: 'none' });
       return;
     }
 
@@ -180,7 +206,7 @@ export default function Cart() {
     }
     catch (error: any) {
       updateLocalQuantity(item.skuId, item.quantity);
-      Taro.showToast({ title: error?.msg || '更新数量失败', icon: 'none' });
+      Taro.showToast({ title: error?.msg || '鏇存柊鏁伴噺澶辫触', icon: 'none' });
     }
   };
 
@@ -194,21 +220,27 @@ export default function Cart() {
       if (!res.confirm) return;
       deleteCartItem(item.skuId)
         .then(() => {
-          Taro.showToast({ title: '删除成功', icon: 'success' });
+          Taro.showToast({ title: '鍒犻櫎鎴愬姛', icon: 'success' });
           refreshData();
         })
         .catch((error: any) => {
-          Taro.showToast({ title: error?.msg || '删除失败', icon: 'none' });
+          Taro.showToast({ title: error?.msg || '鍒犻櫎澶辫触', icon: 'none' });
         });
     });
   };
+
+  const openRecommendGoods = useCallback((goods: RecommendGoods) => {
+    const spuId = goods?.spuId || goods?.id;
+    if (!spuId) return;
+    Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
+  }, []);
 
   if (!loading && items.length === 0) {
     return (
       <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : ''}`}>
         <PageNav title="购物车" showBack={false} />
         <View className="cart-empty">
-          <Text className="cart-empty__icon">🛒</Text>
+          <Text className="cart-empty__icon">馃洅</Text>
           <Text className="cart-empty__desc">购物车还是空的，先去挑点喜欢的商品吧</Text>
           <View className="cart-empty__btn" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
             <Text className="cart-empty__btn-text">去逛逛</Text>
@@ -249,7 +281,9 @@ export default function Cart() {
                     {item.specInfo ? <Text className="cart-goods-item__spec">{item.specInfo}</Text> : null}
                     <View className="cart-goods-item__bottom">
                       <View>
-                        <Text className="cart-goods-item__price">{formatAmount(item.price)}</Text>
+                        <Text className="cart-goods-item__price">
+                          <Text className="cart-goods-item__price-symbol">{'\u00A5'}</Text>{formatAmountValue(item.price)}
+                        </Text>
                       </View>
                       <View className="qty-stepper">
                         <View className="qty-stepper__btn" onClick={() => changeQuantity(item, -1)}>
@@ -269,6 +303,46 @@ export default function Cart() {
         })}
       </View>
 
+      {isH5() && recommendList.length > 0 ? (
+        <View className="cart-recommend">
+          <Text className="cart-recommend__title">{'\u731c\u4f60\u559c\u6b22'}</Text>
+          <View className="cart-recommend__grid">
+            {recommendList.map((item) => (
+              <View
+                key={String(item.id || item.spuId || item.title)}
+                className="cart-recommend__card"
+                onClick={() => openRecommendGoods(item)}
+              >
+                <View className="cart-recommend__thumb">
+                  {item.thumb ? (
+                    <Image className="cart-recommend__img" src={item.thumb} mode="aspectFill" />
+                  ) : (
+                    <Text className="cart-recommend__placeholder">\u597d\u7269</Text>
+                  )}
+                </View>
+                <View className="cart-recommend__body">
+                  <Text className="cart-recommend__name">{item.title}</Text>
+                  <View className="cart-recommend__price-row">
+                    <Text className="cart-recommend__price">
+                      <Text className="cart-recommend__price-symbol">{'\u00A5'}</Text>{formatAmountValue(item.price || 0)}
+                    </Text>
+                    <View
+                      className="cart-recommend__add-btn"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        openRecommendGoods(item);
+                      }}
+                    >
+                      <Text className="cart-recommend__add-icon">+</Text>
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
       <View className="cart-bottom-spacer" />
       <View className="cart-bar">
         <View className="cart-bar__left" onClick={toggleAllSelected}>
@@ -279,8 +353,10 @@ export default function Cart() {
         </View>
         <View className="cart-bar__right">
           <View className="cart-bar__total">
-            <Text className="cart-bar__total-label">合计：</Text>
-            <Text className="cart-bar__total-price">{formatAmount(totalAmount)}</Text>
+            <Text className="cart-bar__total-label">合计 </Text>
+            <Text className="cart-bar__total-price">
+              <Text className="cart-bar__price-symbol">{'\u00A5'}</Text>{formatAmountValue(totalAmount)}
+            </Text>
           </View>
           <View
             className={`cart-bar__settle ${totalCount === 0 ? 'cart-bar__settle--disabled' : ''}`}
@@ -296,7 +372,7 @@ export default function Cart() {
                   storeId: item.storeId,
                 }));
               if (goodsRequestList.length === 0) {
-                Taro.showToast({ title: '请选择结算商品', icon: 'none' });
+                Taro.showToast({ title: '璇烽€夋嫨缁撶畻鍟嗗搧', icon: 'none' });
                 return;
               }
               Taro.setStorageSync('order.goodsRequestList', JSON.stringify(goodsRequestList));
@@ -312,3 +388,9 @@ export default function Cart() {
     </View>
   );
 }
+
+
+
+
+
+

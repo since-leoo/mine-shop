@@ -87,71 +87,83 @@ function H5UserCenterView(props: {
 
   return (
     <View className="usercenter usercenter--h5">
-      <View className="usercenter-h5__hero">
-        <View className="usercenter-h5__hero-orb" />
-        <View className="usercenter-h5__hero-card" onClick={onAvatarClick}>
-          <View className="usercenter-h5__avatar-wrap">
-            {userInfo.avatarUrl ? (
-              <Image className="usercenter-h5__avatar" src={userInfo.avatarUrl} mode="aspectFill" />
-            ) : (
-              <Text className="usercenter-h5__avatar-text">我</Text>
-            )}
+      <View className="usercenter__header">
+        <View className="usercenter__header-bg">
+          <View className="usercenter__header-spacer" />
+          <View className="usercenter__header-circle" />
+          <View className="usercenter__header-content" onClick={onAvatarClick}>
+            <View className="usercenter__avatar-wrap">
+              {userInfo.avatarUrl ? (
+                <Image className="usercenter__avatar" src={userInfo.avatarUrl} mode="aspectFill" />
+              ) : (
+                <Text className="usercenter__avatar-emoji">{'\u6211'}</Text>
+              )}
+            </View>
+            <View className="usercenter__info">
+              <Text className="usercenter__nickname">{userInfo.nickName}</Text>
+              <Text className="usercenter__phone">
+                {userInfo.phoneNumber ? `\u624b\u673a\u53f7\uff1a${userInfo.phoneNumber}` : `\u9080\u8bf7\u7801\uff1a${userInfo.inviteCode || 'WARM2026'}`}
+              </Text>
+            </View>
+            <View className="usercenter__qrcode">
+              <Image className="usercenter__qrcode-icon" src={profileQrcodeIcon} mode="aspectFit" />
+            </View>
           </View>
-          <View className="usercenter-h5__info">
-            <Text className="usercenter-h5__name">{userInfo.nickName}</Text>
-            <Text className="usercenter-h5__sub">{userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : `邀请码：${userInfo.inviteCode || 'WARM2026'}`}</Text>
-          </View>
-          <Text className="usercenter-h5__arrow">›</Text>
         </View>
       </View>
 
-      <View className="usercenter-h5__wallet">
+      <View className="usercenter__wallet-card">
         {walletItems.map((item) => (
-          <View key={item.type} className="usercenter-h5__wallet-item">
-            <Text className="usercenter-h5__wallet-num">{item.num}</Text>
-            <Text className="usercenter-h5__wallet-label">{item.label}</Text>
+          <View key={item.type} className="usercenter__wallet-item">
+            <Text className="usercenter__wallet-num">{item.num}</Text>
+            <Text className="usercenter__wallet-label">{item.label}</Text>
           </View>
         ))}
       </View>
 
-      <View className="usercenter-h5__section">
-        <View className="usercenter-h5__section-head" onClick={() => Taro.navigateTo({ url: '/pages/order/order-list/index' })}>
-          <Text className="usercenter-h5__section-title">我的订单</Text>
-          <Text className="usercenter-h5__section-more">全部订单 ›</Text>
+      <View className="usercenter__orders-card">
+        <View className="usercenter__orders-header" onClick={() => Taro.navigateTo({ url: '/pages/order/order-list/index' })}>
+          <Text className="usercenter__orders-title">{'\u6211\u7684\u8ba2\u5355'}</Text>
+          <View className="usercenter__orders-all">
+            <Text className="usercenter__orders-all-text">{'\u5168\u90e8\u8ba2\u5355 \u203a'}</Text>
+          </View>
         </View>
-        <View className="usercenter-h5__order-grid">
+        <View className="usercenter__orders-tags">
           {orderTags.map((tag) => (
-            <View key={tag.tabType} className="usercenter-h5__order-item" onClick={() => onOrderTagClick(tag)}>
-              <View className="usercenter-h5__order-icon-wrap">
-                <Text className="usercenter-h5__order-icon">{tag.icon}</Text>
-                {tag.orderNum > 0 ? <Text className="usercenter-h5__order-badge">{tag.orderNum > 99 ? '99+' : tag.orderNum}</Text> : null}
+            <View key={tag.tabType} className="usercenter__order-tag" onClick={() => onOrderTagClick(tag)}>
+              <View className="usercenter__order-tag-icon-wrap">
+                <Image className="usercenter__order-tag-icon" src={orderIconMap[tag.tabType] || orderServiceIcon} mode="aspectFit" />
+                {tag.orderNum > 0 ? (
+                  tag.orderNum > 1 ? (
+                    <View className="usercenter__order-tag-badge">
+                      <Text className="usercenter__order-tag-badge-text">{tag.orderNum > 99 ? '99+' : tag.orderNum}</Text>
+                    </View>
+                  ) : (
+                    <View className="usercenter__order-tag-dot" />
+                  )
+                ) : null}
               </View>
-              <Text className="usercenter-h5__order-text">{tag.title}</Text>
+              <Text className="usercenter__order-tag-text">{tag.title}</Text>
             </View>
           ))}
         </View>
       </View>
 
       {menuGroups.map((group, groupIndex) => (
-        <View key={groupIndex} className="usercenter-h5__menu-card">
+        <View key={groupIndex} className="usercenter__menu-card">
           {group.map((item) => (
-            <View key={item.type} className="usercenter-h5__menu-item" onClick={() => onMenuClick(item.type)}>
-              <Text className="usercenter-h5__menu-icon">{item.icon}</Text>
-              <Text className="usercenter-h5__menu-text">{item.title}</Text>
-              {item.note ? <Text className="usercenter-h5__menu-note">{item.note}</Text> : null}
-              <Text className="usercenter-h5__menu-arrow">›</Text>
+            <View key={item.type} className="usercenter__menu-item" onClick={() => onMenuClick(item.type)}>
+              <Image className="usercenter__menu-icon" src={menuIconMap[item.type] || menuSettingsIcon} mode="aspectFit" />
+              <Text className="usercenter__menu-text">{item.title}</Text>
+              {item.note ? <Text className="usercenter__menu-note">{item.note}</Text> : null}
+              <Text className="usercenter__menu-arrow">{'\u203a'}</Text>
             </View>
           ))}
         </View>
       ))}
 
-      <View className="usercenter-h5__tip">
-        <Text className="usercenter-h5__tip-title">H5 资料入口说明</Text>
-        <Text className="usercenter-h5__tip-desc">H5 端不展示微信授权入口，资料修改统一进入资料设置页处理。</Text>
-      </View>
-
       <View className="usercenter__version">
-        <Text className="usercenter__version-text">当前版本 {versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
+        <Text className="usercenter__version-text">{'\u5f53\u524d\u7248\u672c '}{versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
       </View>
 
       <H5TabBar current="/pages/usercenter/index" />
