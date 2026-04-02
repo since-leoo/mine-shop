@@ -878,6 +878,335 @@ p.page-subtitle {
   line-height: 1.6;
 }
 .tip i { color: var(--primary); font-size: 16px; }
+
+/* ===== 专题页重设计 ===== */
+.special-page {
+  background:
+    radial-gradient(circle at top right, rgba(255,255,255,0.72), transparent 32%),
+    linear-gradient(180deg, #FFF7F1 0%, #FFFDFB 36%, #FAF4EE 100%);
+}
+.special-page .special-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 16px 20px;
+}
+.special-page .special-hero::before,
+.special-page .special-hero::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.special-page .special-hero::before {
+  width: 180px;
+  height: 180px;
+  right: -64px;
+  top: -64px;
+  background: rgba(255,255,255,0.14);
+}
+.special-page .special-hero::after {
+  width: 120px;
+  height: 120px;
+  left: -42px;
+  bottom: -46px;
+  background: rgba(255,255,255,0.10);
+}
+.special-page .hero-content { position: relative; z-index: 1; }
+.special-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  color: #fff;
+}
+.special-back,
+.special-action {
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.16);
+  backdrop-filter: blur(8px);
+  font-size: 15px;
+}
+.special-title { text-align: center; color: #fff; }
+.special-title .eyebrow { font-size: 11px; opacity: 0.82; letter-spacing: 2px; }
+.special-title .headline {
+  margin-top: 6px;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.special-title .subline { margin-top: 6px; font-size: 12px; opacity: 0.92; }
+.hero-pill-row,
+.session-strip,
+.chip-row,
+.group-chip-row,
+.floating-stats,
+.duo-metrics { display: flex; gap: 10px; }
+.hero-pill-row,
+.session-strip,
+.chip-row,
+.group-chip-row { overflow-x: auto; scrollbar-width: none; }
+.hero-pill-row::-webkit-scrollbar,
+.session-strip::-webkit-scrollbar,
+.chip-row::-webkit-scrollbar,
+.group-chip-row::-webkit-scrollbar { display: none; }
+.hero-pill {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  min-width: 88px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.16);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+.hero-pill .mini { font-size: 10px; opacity: 0.82; }
+.hero-pill .value { margin-top: 2px; font-size: 15px; font-weight: 800; }
+.content-stack { position: relative; margin-top: -14px; padding: 0 12px 18px; z-index: 2; }
+.floating-card,
+.special-card,
+.featured-card,
+.special-list-card {
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(255,255,255,0.7);
+  box-shadow: 0 10px 30px rgba(200,140,110,0.12);
+}
+.floating-card { border-radius: 20px; padding: 14px; }
+.floating-stats .stat-item,
+.duo-metrics .metric-item {
+  flex: 1;
+  min-width: 0;
+  border-radius: 16px;
+  padding: 12px;
+  background: linear-gradient(180deg, #FFFDFB 0%, #FFF5EE 100%);
+}
+.floating-stats .label,
+.duo-metrics .label { font-size: 10px; color: var(--text-muted); }
+.floating-stats .value,
+.duo-metrics .value { margin-top: 6px; font-size: 18px; font-weight: 800; color: var(--text-dark); }
+.floating-stats .hint,
+.duo-metrics .hint { margin-top: 4px; font-size: 10px; color: #C17C66; }
+.special-card { border-radius: 20px; padding: 14px; margin-top: 12px; }
+.section-headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-headline .left { display: flex; align-items: center; gap: 8px; }
+.section-headline .bar { width: 4px; height: 18px; border-radius: 999px; }
+.section-headline .title { font-size: 15px; font-weight: 800; color: var(--text-dark); }
+.section-headline .desc { font-size: 11px; color: var(--text-muted); }
+.section-headline .link { font-size: 11px; color: var(--text-muted); }
+.session-pill {
+  flex-shrink: 0;
+  min-width: 78px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: #FFF4EC;
+  border: 1px solid #F8E4D8;
+}
+.session-pill.active {
+  background: linear-gradient(135deg, #FF8F70 0%, #FF6D5A 100%);
+  border-color: transparent;
+  box-shadow: 0 10px 20px rgba(255,109,90,0.22);
+}
+.session-pill .time,
+.session-pill .state { display: block; }
+.session-pill .time { font-size: 14px; font-weight: 800; color: var(--text-dark); }
+.session-pill .state { margin-top: 4px; font-size: 10px; color: var(--text-muted); }
+.session-pill.active .time,
+.session-pill.active .state { color: #fff; }
+.featured-card { border-radius: 24px; padding: 14px; margin-top: 12px; }
+.featured-main { display: flex; gap: 12px; }
+.featured-visual {
+  width: 116px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: var(--text-dark);
+}
+.featured-badge {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+}
+.featured-info { flex: 1; min-width: 0; }
+.featured-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.featured-name {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text-dark);
+  line-height: 1.45;
+}
+.featured-sell { margin-top: 6px; font-size: 11px; color: var(--text-muted); }
+.price-band {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.price-band .now { font-size: 24px; font-weight: 900; }
+.price-band .now .sym { font-size: 12px; margin-right: 2px; }
+.price-band .old {
+  font-size: 11px;
+  color: var(--text-light);
+  text-decoration: line-through;
+  padding-bottom: 4px;
+}
+.progress-row { margin-top: 12px; }
+.progress-meta,
+.cta-row,
+.group-meta,
+.join-row,
+.avatar-row,
+.tag-row { display: flex; align-items: center; }
+.progress-meta,
+.cta-row,
+.group-meta,
+.join-row { justify-content: space-between; }
+.progress-meta { margin-bottom: 6px; font-size: 10px; color: var(--text-muted); }
+.progress-track { height: 8px; border-radius: 999px; background: #FCE8E0; overflow: hidden; }
+.progress-fill { height: 100%; border-radius: 999px; }
+.countdown-row { display: flex; gap: 6px; margin-top: 12px; }
+.time-block {
+  min-width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 800;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
+}
+.time-block .num { font-size: 15px; line-height: 1; }
+.time-block .unit { font-size: 9px; opacity: 0.82; margin-top: 3px; }
+.featured-cta { padding: 10px 18px; border-radius: 999px; color: #fff; font-size: 12px; font-weight: 800; }
+.chip {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #FFF4EC;
+  color: var(--text-body);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid #F5E2D6;
+}
+.chip.active { color: #fff; border-color: transparent; }
+.special-list-card { border-radius: 20px; padding: 12px; margin-top: 12px; }
+.list-item { display: flex; gap: 12px; }
+.list-item + .list-item {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-light);
+}
+.list-visual {
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  border-radius: 18px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 38px;
+}
+.list-visual .corner-badge {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 9px;
+  color: #fff;
+  font-weight: 800;
+}
+.list-info { flex: 1; min-width: 0; }
+.list-name { font-size: 13px; font-weight: 700; color: var(--text-dark); line-height: 1.5; }
+.mini-tag { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9px; font-weight: 700; }
+.tag-row { gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.mini-price-row { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.mini-price-row .now { font-size: 20px; font-weight: 900; }
+.mini-price-row .now .sym { font-size: 11px; }
+.mini-price-row .old { font-size: 10px; color: var(--text-light); text-decoration: line-through; }
+.cta-row { margin-top: 10px; }
+.tiny-progress { flex: 1; margin-right: 10px; }
+.tiny-progress .caption { margin-bottom: 5px; font-size: 10px; color: var(--text-muted); }
+.tiny-progress .track { height: 6px; border-radius: 999px; overflow: hidden; background: #F9E9E2; }
+.tiny-progress .fill { height: 100%; border-radius: 999px; }
+.tiny-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.group-chip {
+  flex-shrink: 0;
+  padding: 9px 12px;
+  border-radius: 16px;
+  background: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.9);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.group-chip.active { background: rgba(255,255,255,0.28); color: #fff; }
+.group-chip .top { font-size: 12px; font-weight: 800; }
+.group-chip .bottom { margin-top: 3px; font-size: 9px; opacity: 0.86; }
+.join-card {
+  border-radius: 20px;
+  padding: 14px;
+  margin-top: 12px;
+  background: linear-gradient(180deg, #FFFDFC 0%, #F7FBF9 100%);
+  box-shadow: 0 10px 30px rgba(106,163,141,0.12);
+}
+.join-row { gap: 12px; }
+.avatar-row { gap: 0; }
+.avatar-row span {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: -8px;
+  font-size: 13px;
+  box-shadow: 0 4px 10px rgba(90,154,132,0.14);
+}
+.join-note { margin-left: 12px; font-size: 11px; color: var(--text-body); }
+.join-button {
+  padding: 9px 16px;
+  border-radius: 999px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+}
 </style>
 </head>
 <body>
@@ -1015,89 +1344,6 @@ p.page-subtitle {
       <div class="tab-item"><span class="tab-icon ri-layout-grid-line"></span><span>分类</span></div>
       <div class="tab-item"><span class="tab-icon tab-badge ri-shopping-cart-2-line"></span><span>购物车</span></div>
       <div class="tab-item"><span class="tab-icon ri-user-3-line"></span><span>我的</span></div>
-    </div>
-  </div>
-</div>
-
-<!-- ===================================================
-     PAGE 10A : 秒杀专题页（场次版） SECKILL SESSIONS
-     =================================================== -->
-<div class="phone-wrapper">
-  <div class="phone-label">秒杀专题 Session Seckill</div>
-  <div class="phone">
-    <div class="status-bar light" style="position:relative;z-index:2;">
-      <span>9:41</span>
-      <span>⦿ ▮▮▮ ▮▮</span>
-    </div>
-    <div class="content" style="background:var(--bg-page);">
-      <div style="background:var(--gradient-warm);padding:0 16px 14px 16px;position:relative;overflow:hidden;">
-        <div style="position:absolute;right:-34px;top:-20px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,0.14);"></div>
-        <div style="position:absolute;left:20px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.08);"></div>
-        <div style="position:relative;z-index:1;padding-top:4px;">
-          <div style="display:flex;align-items:flex-end;justify-content:space-between;">
-            <div>
-              <div style="font-size:26px;font-weight:800;color:#fff;">秒杀专场</div>
-              <div style="font-size:12px;color:rgba(255,255,255,0.88);margin-top:4px;">整点开抢 爆款限量</div>
-            </div>
-            <div style="display:flex;align-items:center;gap:4px;">
-              <span style="font-size:11px;color:rgba(255,255,255,0.9);">距本场结束</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">00</span>
-              <span style="color:#fff;font-size:12px;font-weight:700;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">42</span>
-              <span style="color:#fff;font-size:12px;font-weight:700;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">19</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin:-10px 12px 0;background:#fff;border-radius:14px;box-shadow:var(--shadow-sm);position:relative;z-index:2;padding:8px;">
-        <div style="display:flex;gap:8px;overflow-x:auto;">
-          <div style="flex:1;min-width:80px;background:var(--gradient-warm);border-radius:10px;padding:8px 6px;color:#fff;text-align:center;">
-            <div style="font-size:13px;font-weight:700;">10:00</div>
-            <div style="font-size:10px;opacity:0.9;margin-top:2px;">抢购中</div>
-          </div>
-          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
-            <div style="font-size:13px;font-weight:700;">14:00</div>
-            <div style="font-size:10px;margin-top:2px;">即将开始</div>
-          </div>
-          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
-            <div style="font-size:13px;font-weight:700;">18:00</div>
-            <div style="font-size:10px;margin-top:2px;">即将开始</div>
-          </div>
-          <div style="flex:1;min-width:80px;background:#F7F1EC;border-radius:10px;padding:8px 6px;color:var(--text-muted);text-align:center;">
-            <div style="font-size:13px;font-weight:700;">22:00</div>
-            <div style="font-size:10px;margin-top:2px;">即将开始</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="margin:10px 12px 0;border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm);background:linear-gradient(135deg,#FFDCCB,#F8BBA0);padding:10px 12px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;">
-          <div>
-            <div style="font-size:15px;font-weight:800;color:#7B3F2D;">本场爆款推荐</div>
-            <div style="font-size:11px;color:#9A5F4D;margin-top:2px;">限量秒杀 · 售完即止</div>
-          </div>
-          <div style="font-size:12px;color:#7B3F2D;font-weight:700;">去会场 ›</div>
-        </div>
-      </div>
-
-      <div class="product-grid" style="margin-top:8px;">
-        <div class="product-card">
-          <div class="product-img" style="position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧴</div>
-          <div class="product-info">
-            <div class="name">温和氨基酸洗面奶</div>
-            <div class="price-row"><span class="price"><span class="sym">¥</span>29</span><span class="origin-price">¥89</span></div>
-          </div>
-        </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;"><span class="badge-new" style="background:var(--primary);">秒杀</span>🧣</div>
-          <div class="product-info">
-            <div class="name">冬日柔软羊毛围巾</div>
-            <div class="price-row"><span class="price"><span class="sym">¥</span>39</span><span class="origin-price">¥128</span></div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -2514,104 +2760,214 @@ p.page-subtitle {
       <span>⦿ ▮▮▮ ▮▮</span>
     </div>
 
-    <div class="content" style="background:var(--bg-page);">
-      <!-- 头部Banner -->
-      <div style="background:var(--gradient-warm);padding:0 20px 30px;position:relative;overflow:hidden;">
-        <div style="position:absolute;right:-40px;top:-20px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>
-        <div style="position:absolute;left:20px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
-        <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
-          <div>
-            <div style="font-size:26px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.1);">限时秒杀</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">好物低价 手慢无</div>
+    <div class="content special-page">
+      <div class="special-hero" style="background:linear-gradient(135deg,#FF8F70 0%,#FF6D5A 48%,#FFB26B 100%);">
+        <div class="hero-content">
+          <div class="special-topbar">
+            <div class="special-back"><i class="ri-arrow-left-s-line"></i></div>
+            <div class="special-title">
+              <div class="eyebrow">SECKILL FESTIVAL</div>
+              <div class="headline">秒杀狂欢日</div>
+              <div class="subline">整点开抢 · 爆款限量 · 手慢就没</div>
+            </div>
+            <div class="special-action"><i class="ri-share-forward-line"></i></div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <span style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:4px;">距结束</span>
-            <div style="display:flex;align-items:center;gap:3px;">
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">02</span>
-              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">18</span>
-              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">45</span>
+
+          <div class="hero-pill-row">
+            <div class="hero-pill">
+              <div class="mini">今日场次</div>
+              <div class="value">8 场</div>
+            </div>
+            <div class="hero-pill">
+              <div class="mini">最低折扣</div>
+              <div class="value">1.8 折</div>
+            </div>
+            <div class="hero-pill">
+              <div class="mini">已省金额</div>
+              <div class="value">¥18万+</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 商品列表 -->
-      <div class="product-grid" style="margin-top:-12px;position:relative;z-index:2;">
-        <div class="product-card">
-          <div class="product-img" style="position:relative;">
-            <span class="badge-new" style="background:var(--primary);">秒杀</span>
-            🧴
-          </div>
-          <div class="product-info">
-            <div class="name">温和氨基酸洗面奶 补水保湿</div>
-            <div class="price-row">
-              <span class="price"><span class="sym">¥</span>29</span>
-              <span class="origin-price">¥89</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
-                <div style="width:72%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+      <div class="content-stack">
+        <div class="floating-card">
+          <div class="section-headline" style="margin-bottom:10px;">
+            <div class="left">
+              <div class="bar" style="background:#FF6D5A;"></div>
+              <div>
+                <div class="title">场次切换</div>
+                <div class="desc">按整点节奏抢购，降低选择成本</div>
               </div>
-              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢72%</span>
+            </div>
+            <div class="link">今日共 8 场</div>
+          </div>
+          <div class="session-strip">
+            <div class="session-pill">
+              <span class="time">08:00</span>
+              <span class="state">已结束</span>
+            </div>
+            <div class="session-pill active">
+              <span class="time">12:00</span>
+              <span class="state">疯抢中</span>
+            </div>
+            <div class="session-pill">
+              <span class="time">16:00</span>
+              <span class="state">即将开始</span>
+            </div>
+            <div class="session-pill">
+              <span class="time">20:00</span>
+              <span class="state">今晚压轴</span>
+            </div>
+            <div class="session-pill">
+              <span class="time">22:00</span>
+              <span class="state">夜猫专享</span>
             </div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);position:relative;">
-            <span class="badge-new" style="background:var(--primary);">秒杀</span>
-            🍵
-          </div>
-          <div class="product-info">
-            <div class="name">有机绿茶龙井 明前特级新茶</div>
-            <div class="price-row">
-              <span class="price"><span class="sym">¥</span>19</span>
-              <span class="origin-price">¥58</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
-                <div style="width:45%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+
+        <div class="featured-card">
+          <div class="section-headline">
+            <div class="left">
+              <div class="bar" style="background:#FF6D5A;"></div>
+              <div>
+                <div class="title">头号爆款</div>
+                <div class="desc">把最值得抢的商品前置成焦点卡</div>
               </div>
-              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢45%</span>
             </div>
+            <div class="link">限量 200 份</div>
+          </div>
+
+          <div class="featured-main">
+            <div class="featured-visual" style="background:linear-gradient(135deg,#FFF0E5,#FFD7C2);">
+              <span class="featured-badge" style="background:#FF6D5A;">TOP 1</span>
+              🍲
+            </div>
+            <div class="featured-info">
+              <div class="featured-kicker" style="background:#FFF1EC;color:#FF6D5A;">直播间同款 · 今晚爆卖</div>
+              <div class="featured-name">多功能珐琅锅 24cm｜炖煮焖焗一锅搞定</div>
+              <div class="featured-sell">预计 12:30 售罄，剩余库存只够 58 人下单</div>
+              <div class="price-band">
+                <div class="now" style="color:#FF6D5A;"><span class="sym">¥</span>159</div>
+                <div class="old">¥399</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="progress-meta">
+              <span>已抢 71%</span>
+              <span>剩余 58 件</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill" style="width:71%;background:linear-gradient(90deg,#FF9A77 0%,#FF6D5A 100%);"></div>
+            </div>
+          </div>
+
+          <div class="cta-row" style="margin-top:12px;">
+            <div class="countdown-row" style="margin-top:0;">
+              <div class="time-block" style="background:linear-gradient(180deg,#FF8F70,#FF6D5A);"><span class="num">01</span><span class="unit">时</span></div>
+              <div class="time-block" style="background:linear-gradient(180deg,#FF8F70,#FF6D5A);"><span class="num">24</span><span class="unit">分</span></div>
+              <div class="time-block" style="background:linear-gradient(180deg,#FF8F70,#FF6D5A);"><span class="num">36</span><span class="unit">秒</span></div>
+            </div>
+            <div class="featured-cta" style="background:linear-gradient(135deg,#FF8F70 0%,#FF6D5A 100%);box-shadow:0 12px 24px rgba(255,109,90,0.26);">立即抢购</div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;">
-            <span class="badge-new" style="background:var(--primary);">秒杀</span>
-            🧣
-          </div>
-          <div class="product-info">
-            <div class="name">冬日柔软羊毛围巾 多色可选</div>
-            <div class="price-row">
-              <span class="price"><span class="sym">¥</span>39</span>
-              <span class="origin-price">¥128</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
-                <div style="width:88%;height:100%;background:linear-gradient(90deg,var(--primary),#FF5252);border-radius:3px;"></div>
+
+        <div class="special-card">
+          <div class="section-headline">
+            <div class="left">
+              <div class="bar" style="background:#FF6D5A;"></div>
+              <div>
+                <div class="title">精选筛选</div>
+                <div class="desc">强化“当前可买”的清晰度</div>
               </div>
-              <span style="font-size:10px;color:var(--primary);font-weight:600;white-space:nowrap;">即将售罄</span>
             </div>
+            <div class="link">默认按热度</div>
+          </div>
+          <div class="chip-row">
+            <div class="chip active" style="background:linear-gradient(135deg,#FF8F70,#FF6D5A);">疯抢中</div>
+            <div class="chip">19.9 封顶</div>
+            <div class="chip">居家日用</div>
+            <div class="chip">厨房爆款</div>
+            <div class="chip">母婴精选</div>
+            <div class="chip">临期清仓</div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);position:relative;">
-            <span class="badge-new" style="background:var(--primary);">秒杀</span>
-            🌸
-          </div>
-          <div class="product-info">
-            <div class="name">樱花限定护手霜 滋润不油腻</div>
-            <div class="price-row">
-              <span class="price"><span class="sym">¥</span>15</span>
-              <span class="origin-price">¥45</span>
+
+        <div class="special-list-card">
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#FFF3E5,#FFE2CE);">
+              <span class="corner-badge" style="background:#FF7A63;">秒杀</span>
+              🫖
             </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
-              <div style="flex:1;height:6px;border-radius:3px;background:var(--bg-warm);overflow:hidden;margin-right:8px;">
-                <div style="width:30%;height:100%;background:var(--gradient-warm);border-radius:3px;"></div>
+            <div class="list-info">
+              <div class="list-name">耐热玻璃冷泡壶 1.5L｜办公室冰饮神器</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#FFF1EC;color:#FF6D5A;">满 2 件再减</span>
+                <span class="mini-tag" style="background:#FFF8E7;color:#D88B2A;">仅剩 43 件</span>
               </div>
-              <span style="font-size:10px;color:var(--text-muted);white-space:nowrap;">已抢30%</span>
+              <div class="mini-price-row">
+                <span class="now" style="color:#FF6D5A;"><span class="sym">¥</span>39</span>
+                <span class="old">¥99</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">抢购进度 56%</div>
+                  <div class="track"><div class="fill" style="width:56%;background:linear-gradient(90deg,#FFB088,#FF6D5A);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#FF8F70,#FF6D5A);">去抢</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#EEF8EA,#DDF2D9);">
+              <span class="corner-badge" style="background:#FF7A63;">返场</span>
+              🧻
+            </div>
+            <div class="list-info">
+              <div class="list-name">原木抽纸 24 包整箱｜家庭囤货装，柔韧不易破</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#EEF8EA;color:#5A9A84;">复购率 92%</span>
+                <span class="mini-tag" style="background:#FFF1EC;color:#FF6D5A;">下单立减</span>
+              </div>
+              <div class="mini-price-row">
+                <span class="now" style="color:#FF6D5A;"><span class="sym">¥</span>29.9</span>
+                <span class="old">¥59.9</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">抢购进度 82%</div>
+                  <div class="track"><div class="fill" style="width:82%;background:linear-gradient(90deg,#FFB088,#FF6D5A);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#FF8F70,#FF6D5A);">马上抢</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#F4F0FF,#E6DDFF);">
+              <span class="corner-badge" style="background:#FF7A63;">预告</span>
+              🧸
+            </div>
+            <div class="list-info">
+              <div class="list-name">安抚抱抱熊礼盒｜今晚 20:00 加场，先收藏提醒</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#F3ECFF;color:#7A63D1;">20:00 开抢</span>
+                <span class="mini-tag" style="background:#FFF8E7;color:#D88B2A;">预约 1.2k+</span>
+              </div>
+              <div class="mini-price-row">
+                <span class="now" style="color:#FF6D5A;"><span class="sym">¥</span>69</span>
+                <span class="old">¥139</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">预约热度 68%</div>
+                  <div class="track"><div class="fill" style="width:68%;background:linear-gradient(90deg,#C1B0FF,#7A63D1);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#9C86FF,#7A63D1);">提醒我</div>
+              </div>
             </div>
           </div>
         </div>
@@ -2631,108 +2987,222 @@ p.page-subtitle {
       <span>⦿ ▮▮▮ ▮▮</span>
     </div>
 
-    <div class="content" style="background:var(--bg-page);">
-      <!-- 拼团头部Banner -->
-      <div style="background:linear-gradient(135deg,var(--accent-dark),var(--accent),var(--accent-light));padding:0 20px 30px;position:relative;overflow:hidden;">
-        <div style="position:absolute;right:-30px;top:-10px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,0.1);"></div>
-        <div style="position:absolute;left:30px;bottom:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.06);"></div>
-        <div style="position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;padding-top:4px;">
-          <div>
-            <div style="font-size:26px;font-weight:800;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,0.1);">拼团特惠</div>
-            <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;">好物拼着买 更划算</div>
+    <div class="content special-page">
+      <div class="special-hero" style="background:linear-gradient(135deg,#6EB99E 0%,#4FA78B 50%,#8DD3B8 100%);">
+        <div class="hero-content">
+          <div class="special-topbar">
+            <div class="special-back"><i class="ri-arrow-left-s-line"></i></div>
+            <div class="special-title">
+              <div class="eyebrow">GROUP BUY MARKET</div>
+              <div class="headline">一起拼更省</div>
+              <div class="subline">边逛边参团，把“社交氛围感”做出来</div>
+            </div>
+            <div class="special-action"><i class="ri-customer-service-2-line"></i></div>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:center;">
-            <span style="font-size:11px;color:rgba(255,255,255,0.8);margin-bottom:4px;">距结束</span>
-            <div style="display:flex;align-items:center;gap:3px;">
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">01</span>
-              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">05</span>
-              <span style="color:#fff;font-weight:700;font-size:12px;">:</span>
-              <span style="display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;background:rgba(0,0,0,0.3);color:#fff;font-size:12px;font-weight:700;border-radius:4px;padding:0 3px;">30</span>
+
+          <div class="group-chip-row">
+            <div class="group-chip active">
+              <div class="top">2人快拼</div>
+              <div class="bottom">低门槛转化</div>
+            </div>
+            <div class="group-chip">
+              <div class="top">3人爆款团</div>
+              <div class="bottom">价格更狠</div>
+            </div>
+            <div class="group-chip">
+              <div class="top">品牌福利团</div>
+              <div class="bottom">限时返场</div>
+            </div>
+            <div class="group-chip">
+              <div class="top">同城极速团</div>
+              <div class="bottom">当日发货</div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 拼团商品列表 -->
-      <div class="product-grid" style="margin-top:-12px;position:relative;z-index:2;">
-        <div class="product-card">
-          <div class="product-img" style="position:relative;">
-            <span class="badge-new" style="background:var(--accent);">3人团</span>
-            🌻
-          </div>
-          <div class="product-info">
-            <div class="name">北欧简约陶瓷花瓶 温暖日系装饰</div>
-            <div class="price-row" style="margin-top:6px;">
+      <div class="content-stack">
+        <div class="floating-card">
+          <div class="section-headline" style="margin-bottom:10px;">
+            <div class="left">
+              <div class="bar" style="background:#5A9A84;"></div>
               <div>
-                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
-                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>59</span>
+                <div class="title">拼团氛围卡</div>
+                <div class="desc">先展示价值，再放商品，提高参与感</div>
               </div>
             </div>
-            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥89</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-              <span style="font-size:10px;color:var(--text-muted);">已拼 326 件</span>
-              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            <div class="link">实时滚动更新</div>
+          </div>
+          <div class="duo-metrics">
+            <div class="metric-item">
+              <div class="label">今日已成团</div>
+              <div class="value">2,486 单</div>
+              <div class="hint">较昨日 +18%</div>
+            </div>
+            <div class="metric-item">
+              <div class="label">平均省下</div>
+              <div class="value">¥34 / 单</div>
+              <div class="hint">多人团更划算</div>
+            </div>
+          </div>
+          <div class="join-card">
+            <div class="join-row">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:800;color:var(--text-dark);">还有 126 个团正在冲刺成团</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:5px;">把“直接参团”入口提前，让用户不必重新开团</div>
+                <div style="display:flex;align-items:center;margin-top:12px;">
+                  <div class="avatar-row">
+                    <span style="background:#FFE9DF;">👩</span>
+                    <span style="background:#E7F8F1;">🧑</span>
+                    <span style="background:#F5EEFF;">👧</span>
+                    <span style="background:#FFF5D8;">🧔</span>
+                  </div>
+                  <div class="join-note">刚刚 2 分钟内，又有 36 人参团</div>
+                </div>
+              </div>
+              <div class="join-button" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);box-shadow:0 12px 24px rgba(79,167,139,0.22);">去捡漏</div>
             </div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);position:relative;">
-            <span class="badge-new" style="background:var(--accent);">2人团</span>
-            ☕
-          </div>
-          <div class="product-info">
-            <div class="name">手冲咖啡壶 木柄复古设计</div>
-            <div class="price-row" style="margin-top:6px;">
+
+        <div class="featured-card">
+          <div class="section-headline">
+            <div class="left">
+              <div class="bar" style="background:#5A9A84;"></div>
               <div>
-                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
-                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>88</span>
+                <div class="title">主推团长款</div>
+                <div class="desc">首页焦点位突出“原价/拼团价/差额”</div>
               </div>
             </div>
-            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥128</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-              <span style="font-size:10px;color:var(--text-muted);">已拼 158 件</span>
-              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+            <div class="link">2人即成团</div>
+          </div>
+
+          <div class="featured-main">
+            <div class="featured-visual" style="background:linear-gradient(135deg,#E9F8F2,#D4F0E6);">
+              <span class="featured-badge" style="background:#5A9A84;">团长推荐</span>
+              🧺
             </div>
+            <div class="featured-info">
+              <div class="featured-kicker" style="background:#EEF8F3;color:#5A9A84;">开团即送运费险 · 48 小时发货</div>
+              <div class="featured-name">藤编脏衣篮套装｜卧室收纳颜值款，近期复购高</div>
+              <div class="featured-sell">已有 864 人拼成，当前 19 个团可直接加入</div>
+              <div class="price-band">
+                <div class="now" style="color:#4FA78B;"><span class="sym">¥</span>79</div>
+                <div class="old">单买 ¥129</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="progress-row">
+            <div class="group-meta" style="font-size:10px;color:var(--text-muted);margin-bottom:6px;">
+              <span>拼团成功率 94%</span>
+              <span>立省 ¥50</span>
+            </div>
+            <div class="progress-track" style="background:#E3F3EC;">
+              <div class="progress-fill" style="width:94%;background:linear-gradient(90deg,#8DD3B8 0%,#4FA78B 100%);"></div>
+            </div>
+          </div>
+
+          <div class="cta-row" style="margin-top:12px;">
+            <div style="font-size:11px;color:var(--text-body);line-height:1.6;">19 个团正在拼 · 最快 12 分钟成团</div>
+            <div class="featured-cta" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);box-shadow:0 12px 24px rgba(79,167,139,0.22);">立即参团</div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#E8F5E9,#C8E6C9);position:relative;">
-            <span class="badge-new" style="background:var(--accent);">3人团</span>
-            🍃
-          </div>
-          <div class="product-info">
-            <div class="name">有机棉柔软毛巾 亲肤吸水</div>
-            <div class="price-row" style="margin-top:6px;">
+
+        <div class="special-card">
+          <div class="section-headline">
+            <div class="left">
+              <div class="bar" style="background:#5A9A84;"></div>
               <div>
-                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
-                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>22</span>
+                <div class="title">团购导航</div>
+                <div class="desc">让用户快速理解不同团型的差异</div>
               </div>
             </div>
-            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥35</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-              <span style="font-size:10px;color:var(--text-muted);">已拼 512 件</span>
-              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
-            </div>
+            <div class="link">默认按成团率</div>
+          </div>
+          <div class="chip-row">
+            <div class="chip active" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);">可直接参团</div>
+            <div class="chip">2人快团</div>
+            <div class="chip">3人神价</div>
+            <div class="chip">新客专享</div>
+            <div class="chip">品牌旗舰</div>
+            <div class="chip">同城次日达</div>
           </div>
         </div>
-        <div class="product-card">
-          <div class="product-img" style="background:linear-gradient(135deg,#FCE4EC,#F8BBD0);position:relative;">
-            <span class="badge-new" style="background:var(--accent);">2人团</span>
-            🧸
-          </div>
-          <div class="product-info">
-            <div class="name">萌趣毛绒公仔 柔软可爱</div>
-            <div class="price-row" style="margin-top:6px;">
-              <div>
-                <span style="font-size:10px;color:#fff;background:var(--accent);padding:1px 6px;border-radius:6px;font-weight:600;">拼团价</span>
-                <span class="price" style="color:var(--accent-dark);margin-left:4px;"><span class="sym">¥</span>32</span>
+
+        <div class="special-list-card">
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#E9F8F2,#D4F0E6);">
+              <span class="corner-badge" style="background:#5A9A84;">2人团</span>
+              🍵
+            </div>
+            <div class="list-info">
+              <div class="list-name">手工耐热茶具礼盒｜送礼自用都体面</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#EEF8F3;color:#5A9A84;">已有 9 团可直接拼</span>
+                <span class="mini-tag" style="background:#FFF5D8;color:#D88B2A;">团长返券</span>
+              </div>
+              <div class="mini-price-row">
+                <span class="now" style="color:#4FA78B;"><span class="sym">¥</span>59</span>
+                <span class="old">单买 ¥89</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">成团率 88%</div>
+                  <div class="track" style="background:#E3F3EC;"><div class="fill" style="width:88%;background:linear-gradient(90deg,#8DD3B8,#4FA78B);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);">直接参团</div>
               </div>
             </div>
-            <div style="font-size:10px;color:var(--text-light);text-decoration:line-through;margin-top:2px;">¥45</div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px;">
-              <span style="font-size:10px;color:var(--text-muted);">已拼 89 件</span>
-              <div style="padding:4px 14px;border-radius:16px;font-size:11px;font-weight:700;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;box-shadow:0 2px 8px rgba(126,184,162,0.3);">去拼团</div>
+          </div>
+
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#FFF6E7,#FFE7B8);">
+              <span class="corner-badge" style="background:#5A9A84;">3人团</span>
+              🧼
+            </div>
+            <div class="list-info">
+              <div class="list-name">家庭洗护补充装 4 瓶组｜拼团价比单买省更多</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#EEF8F3;color:#5A9A84;">成团后自动包邮</span>
+                <span class="mini-tag" style="background:#FFF1EC;color:#FF6D5A;">差 1 人成团</span>
+              </div>
+              <div class="mini-price-row">
+                <span class="now" style="color:#4FA78B;"><span class="sym">¥</span>69</span>
+                <span class="old">单买 ¥108</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">拼团热度 76%</div>
+                  <div class="track" style="background:#E3F3EC;"><div class="fill" style="width:76%;background:linear-gradient(90deg,#8DD3B8,#4FA78B);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);">去拼团</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="list-item">
+            <div class="list-visual" style="background:linear-gradient(135deg,#F5EEFF,#E6DFFF);">
+              <span class="corner-badge" style="background:#5A9A84;">新客团</span>
+              🛏️
+            </div>
+            <div class="list-info">
+              <div class="list-name">针织四件套床品｜新客开团再减 10 元，直播间同步热卖</div>
+              <div class="tag-row">
+                <span class="mini-tag" style="background:#F3ECFF;color:#7A63D1;">直播热卖榜</span>
+                <span class="mini-tag" style="background:#EEF8F3;color:#5A9A84;">48 小时内发货</span>
+              </div>
+              <div class="mini-price-row">
+                <span class="now" style="color:#4FA78B;"><span class="sym">¥</span>129</span>
+                <span class="old">单买 ¥189</span>
+              </div>
+              <div class="cta-row">
+                <div class="tiny-progress">
+                  <div class="caption">成团率 91%</div>
+                  <div class="track" style="background:#E3F3EC;"><div class="fill" style="width:91%;background:linear-gradient(90deg,#8DD3B8,#4FA78B);"></div></div>
+                </div>
+                <div class="tiny-btn" style="background:linear-gradient(135deg,#6EB99E,#4FA78B);">开团抢</div>
+              </div>
             </div>
           </div>
         </div>

@@ -23,14 +23,15 @@
   "dependencies": {
     "@nutui/icons-react": "^3.0.1",
     "@nutui/nutui-react-taro": "^2.7.15",
+    "@vant/area-data": "^2.1.0",
     "dayjs": "^1.11.19",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
-    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.1",
     "@babel/preset-react": "^7.28.5",
     "@babel/runtime": "^7.28.6",
+    "@pmmmwh/react-refresh-webpack-plugin": "^0.6.1",
     "@tarojs/cli": "^4.1.11",
     "@tarojs/components": "^4.1.11",
     "@tarojs/helper": "^4.1.11",
