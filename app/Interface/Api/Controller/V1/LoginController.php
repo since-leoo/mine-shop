@@ -40,13 +40,13 @@ final class LoginController extends AbstractController
             $payload['openid'] ?? null
         );
 
-        return $this->success($result, '授权登录失败');
+        return $this->success($result, '授权登录成功');
     }
 
     public function h5Password(H5PasswordLoginRequest $request): Result
     {
         $result = $this->authService->loginByPassword($request->toDto(ip()));
 
-        return $this->success($result, '登录失败');
+        return $this->success($result, '登录成功');
     }
 }

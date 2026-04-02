@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\Api\Query;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
@@ -22,7 +23,8 @@ final class DomainApiSeckillQueryService
     public function __construct(
         private readonly SeckillActivityRepository $activityRepository,
         private readonly SeckillSessionRepository $sessionRepository,
-        private readonly SeckillProductRepository $productRepository
+        private readonly SeckillProductRepository $productRepository,
+        private readonly DomainSystemSettingService $systemSettingService,
     ) {}
 
     /**
@@ -68,7 +70,7 @@ final class DomainApiSeckillQueryService
             'sessionId' => $session->id,
             'statusTag' => $statusTag,
             'time' => $remainMs,
-            'banner' => '',
+            'banner' => $this->resolveTopicBanner(),
         ];
     }
 
@@ -93,5 +95,11 @@ final class DomainApiSeckillQueryService
         ], $seckillProducts);
 
         return ['list' => $list, 'endTime' => $session->end_time?->toDateTimeString(), 'title' => $activity->title ?: '限时秒杀', 'activityId' => $activity->id, 'sessionId' => $session->id];
+    }
+
+    private function resolveTopicBanner(): string
+    {
+        $custom = $this->systemSettingService->get('mall.seckill.topic_banner', null);
+        return is_string($custom) ? trim($custom) : '';
     }
 }

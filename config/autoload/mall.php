@@ -173,6 +173,18 @@ return [
                     'default' => '',
                     'sort' => 80,
                 ],
+                'mall.seckill.topic_banner' => [
+                    'label' => '秒杀活动图',
+                    'description' => '秒杀活动卡片/运营位图片，建议 750×320，留空则回退到商城 LOGO。',
+                    'type' => 'string',
+                    'meta' => [
+                        'component' => 'upload',
+                        'display_span' => ['compact'],
+                        'preview_size' => 84,
+                    ],
+                    'default' => 'https://oss.mineshop.club/2026-04-02/2d8db190-60fc-4e43-9316-2086859df76e.png',
+                    'sort' => 80,
+                ],
             ],
         ],
         'integration' => [
