@@ -174,27 +174,10 @@
 .coupon-goods-page--h5 {
   min-height: 100vh;
   background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
-  padding: 0 16px 28px;
+  padding: 0 32rpx 32rpx;
 }
 
 .coupon-goods-page--h5 .coupon-goods-page__header-wrap {
-  margin: 0 -16px;
-  padding: 0 16px 20px;
+  margin: 0 -32rpx;
+  padding: 20rpx 32rpx 28rpx;
 }
-
-.coupon-goods-page--h5 .coupon-goods-page__header,
-.coupon-goods-page--h5 .coupon-goods-page__card {
-  border-radius: 24px;
-  box-shadow: 0 12px 28px rgba(197,145,114,.1);
-}
-
-.coupon-goods-page--h5 .coupon-goods-page__title { font-size: 24px; }
-.coupon-goods-page--h5 .coupon-goods-page__desc,
-.coupon-goods-page--h5 .coupon-goods-page__section-title,
-.coupon-goods-page--h5 .coupon-goods-page__price { font-size: 14px; }
-.coupon-goods-page--h5 .coupon-goods-page__section-count,
-.coupon-goods-page--h5 .coupon-goods-page__tag,
-.coupon-goods-page--h5 .coupon-goods-page__origin { font-size: 12px; }
-.coupon-goods-page--h5 .coupon-goods-page__name { font-size: 13px; }
-.coupon-goods-page--h5 .coupon-goods-page__grid { gap: 14px; }
-.coupon-goods-page--h5 .coupon-goods-page__thumb-wrap { height: 160px; }

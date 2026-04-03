@@ -40,7 +40,7 @@ final class GroupBuyProductController extends AbstractController
         $limit = (int) $this->request->query('limit', 20);
         $data = $this->queryService->getPromotionList($limit);
 
-        return $this->success($data);
+        return $this->success($this->transformer->transformPromotionList($data));
     }
 
     /**

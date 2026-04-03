@@ -20,10 +20,13 @@ export default function PageNav({
 }: Props) {
   const systemInfo = Taro.getSystemInfoSync();
   const h5 = isH5();
+  if (h5) {
+    return null;
+  }
   const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
-  const statusBarHeight = h5 ? 0 : (systemInfo.statusBarHeight || 20);
-  const navHeight = h5 ? 56 : (menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44);
-  const capsuleWidth = h5 ? 0 : (menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176);
+  const statusBarHeight = systemInfo.statusBarHeight || 20;
+  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
+  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
 
   const handleBack = () => {
     const pages = Taro.getCurrentPages();
@@ -41,7 +44,7 @@ export default function PageNav({
   };
 
   return (
-    <View className={`page-nav ${h5 ? 'page-nav--h5' : ''} ${background === 'transparent' ? 'page-nav--transparent' : ''}`} style={{ paddingTop: `${statusBarHeight}px` }}>
+    <View className={`page-nav ${background === 'transparent' ? 'page-nav--transparent' : ''}`} style={{ paddingTop: `${statusBarHeight}px` }}>
       <View className="page-nav__bar" style={{ height: `${navHeight}px` }}>
         {showBack ? (
           <View className="page-nav__back" onClick={handleBack}>

@@ -75,6 +75,51 @@ final class GroupBuyProductTransformer
         ]);
     }
 
+    /**
+     * @param array{list: array, statusTag: string, time: int, banner: string} $data
+     * @return array{list: array, statusTag: string, time: int, banner: string, navTabs: array<int, array{key: string, label: string, count: int}>}
+     */
+    public function transformPromotionList(array $data): array
+    {
+        $list = $data['list'] ?? [];
+        $sceneBuckets = [];
+
+        foreach ($list as $item) {
+            $minPeople = max(2, (int) ($item['minPeople'] ?? 0));
+            $tabKey = sprintf('people_%d', $minPeople);
+            if (! isset($sceneBuckets[$tabKey])) {
+                $sceneBuckets[$tabKey] = [
+                    'key' => $tabKey,
+                    'label' => sprintf('%d人快团', $minPeople),
+                    'count' => 0,
+                    'sort' => $minPeople,
+                ];
+            }
+            ++$sceneBuckets[$tabKey]['count'];
+        }
+
+        usort($sceneBuckets, static fn (array $left, array $right) => $left['sort'] <=> $right['sort']);
+        $sceneTabs = array_values(array_map(static fn (array $item): array => [
+            'key' => $item['key'],
+            'label' => $item['label'],
+            'count' => $item['count'],
+        ], $sceneBuckets));
+
+        $navTabs = array_merge([[
+            'key' => 'direct_join',
+            'label' => '可直接参团',
+            'count' => count($list),
+        ]], $sceneTabs);
+
+        return [
+            'list' => $list,
+            'statusTag' => (string) ($data['statusTag'] ?? 'expired'),
+            'time' => (int) ($data['time'] ?? 0),
+            'banner' => (string) ($data['banner'] ?? ''),
+            'navTabs' => $navTabs,
+        ];
+    }
+
     private function filterSpecList(array $specList, array $skuList): array
     {
         if ($skuList === []) {

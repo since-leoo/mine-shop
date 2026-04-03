@@ -195,24 +195,28 @@ export default function CouponList() {
 
   return (
     <View className={`coupon-page coupon-list-page ${isH5() ? 'coupon-list-page--h5' : ''}`}>
-            <View className="coupon-page__header coupon-list-page__header">
-        <CouponNav title={isSelectMode ? '选择优惠券' : '我的优惠券'} /><View className="coupon-list-page__header-panel"><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--right" /><View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--left" />
-        <View className="coupon-page__header-glow coupon-page__header-glow--right" />
-        <View className="coupon-page__header-glow coupon-page__header-glow--left" />
-        <Text className="coupon-page__title">{isSelectMode ? '选择优惠券' : '我的优惠券'}</Text>
-        <Text className="coupon-page__subtitle">{isSelectMode ? '仅展示当前订单可用的优惠券，选中后会自动回填到结算页。' : '精选权益已按状态整理，结算时可直接选择抵扣，购物更省一点。'}</Text>
-        <View className="coupon-page__tabs">
-          {TAB_LIST.map((tab) => (
-            <View
-              key={tab.key}
-              className={`coupon-page__tab ${activeTab === tab.key ? 'coupon-page__tab--active' : ''}`}
-              onClick={() => handleTabChange(tab.key)}
-            >
-              <Text className={`coupon-page__tab-text ${activeTab === tab.key ? 'coupon-page__tab-text--active' : ''}`}>{tab.text}</Text>
-            </View>
-          ))}
+      <View className="coupon-page__header coupon-list-page__header">
+        <CouponNav title={isSelectMode ? '选择优惠券' : '我的优惠券'} />
+        <View className="coupon-list-page__header-panel">
+          <View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--right" />
+          <View className="coupon-list-page__panel-blob coupon-list-page__panel-blob--left" />
+          <View className="coupon-page__header-glow coupon-page__header-glow--right" />
+          <View className="coupon-page__header-glow coupon-page__header-glow--left" />
+          <Text className="coupon-page__title">{isSelectMode ? '选择优惠券' : '我的优惠券'}</Text>
+          <Text className="coupon-page__subtitle">{isSelectMode ? '仅展示当前订单可用的优惠券，选中后会自动回填到结算页。' : '精选权益已按状态整理，结算时可直接选择抵扣，购物更省一点。'}</Text>
+          <View className="coupon-page__tabs">
+            {TAB_LIST.map((tab) => (
+              <View
+                key={tab.key}
+                className={`coupon-page__tab ${activeTab === tab.key ? 'coupon-page__tab--active' : ''}`}
+                onClick={() => handleTabChange(tab.key)}
+              >
+                <Text className={`coupon-page__tab-text ${activeTab === tab.key ? 'coupon-page__tab-text--active' : ''}`}>{tab.text}</Text>
+              </View>
+            ))}
+          </View>
         </View>
-      </View></View>
+      </View>
 
       <View className="coupon-list-page__content">
         {loading && (

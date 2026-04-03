@@ -31,7 +31,7 @@ final class AppApiGroupBuyProductQueryService
     }
 
     /**
-     * @return array{list: array, statusTag: string, time: int}
+     * @return array{list: array, statusTag: string, time: int, banner: string}
      */
     public function getPromotionList(int $limit = 20): array
     {

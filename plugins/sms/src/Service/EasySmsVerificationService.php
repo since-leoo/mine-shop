@@ -60,7 +60,7 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     private function assertCanSend(string $phone, string $scene): void
     {
         if ($this->redis()->get($this->resendKey($phone, $scene)) !== null) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '发送过于频繁，请稍后再试');
+            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '发送过于频繁，请稍后再试');
         }
 
         $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);

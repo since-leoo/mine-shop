@@ -176,7 +176,7 @@ export default function AfterServiceDetail() {
     <View className="after-service-detail">
       <View className="after-service-detail__hero">
         <Text className="after-service-detail__status">{getAfterSaleStatusText(detail)}</Text>
-        <Text className="after-service-detail__type">{AFTER_SALE_TYPE_TEXT_MAP[detail.type]} ? 售后单号：{detail.afterSaleNo || '--'}</Text>
+        <Text className="after-service-detail__type">{AFTER_SALE_TYPE_TEXT_MAP[detail.type]} · 售后单号：{detail.afterSaleNo || '--'}</Text>
       </View>
 
       <View className={`after-service-detail__progress after-service-detail__progress--${progress.tone}`}>

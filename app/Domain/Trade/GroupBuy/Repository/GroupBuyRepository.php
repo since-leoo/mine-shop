@@ -17,6 +17,7 @@ use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
+use Hyperf\Database\Model\Collection;
 
 /**
  * @extends IRepository<GroupBuy>
@@ -52,11 +53,13 @@ final class GroupBuyRepository extends IRepository
 
     public function getStatistics(): array
     {
+        $query = $this->getQuery();
+
         return [
-            'total' => GroupBuy::count(),
-            'enabled' => GroupBuy::where('is_enabled', true)->count(),
-            'disabled' => GroupBuy::where('is_enabled', false)->count(),
-            'active' => GroupBuy::where('status', 'active')->count(),
+            'total' => (clone $query)->count(),
+            'enabled' => (clone $query)->where('is_enabled', true)->count(),
+            'disabled' => (clone $query)->where('is_enabled', false)->count(),
+            'active' => (clone $query)->where('status', GroupBuyStatus::ACTIVE->value)->count(),
         ];
     }
 
@@ -64,7 +67,8 @@ final class GroupBuyRepository extends IRepository
     public function findPendingActivitiesWithinMinutes(int $minutes): array
     {
         $deadline = Carbon::now()->addMinutes($minutes);
-        return GroupBuy::where('status', GroupBuyStatus::PENDING->value)
+        return $this->getQuery()
+            ->where('status', GroupBuyStatus::PENDING->value)
             ->where('is_enabled', true)
             ->where('start_time', '<=', $deadline)
             ->get()->all();
@@ -73,8 +77,35 @@ final class GroupBuyRepository extends IRepository
     /** @return GroupBuy[] */
     public function findActiveExpiredActivities(): array
     {
-        return GroupBuy::where('status', GroupBuyStatus::ACTIVE->value)
+        return $this->getQuery()
+            ->where('status', GroupBuyStatus::ACTIVE->value)
             ->where('end_time', '<', Carbon::now())
             ->get()->all();
+    }
+
+    public function findPromotionActivities(int $limit = 20): Collection
+    {
+        $now = Carbon::now();
+
+        return $this->getQuery()
+            ->with('product:id,name,main_image')
+            ->where('is_enabled', 1)
+            ->where(static function (Builder $query) use ($now) {
+                $query->whereIn('status', [GroupBuyStatus::ACTIVE->value, GroupBuyStatus::PENDING->value])
+                    ->orWhere(static function (Builder $orQuery) use ($now) {
+                        $orQuery
+                            ->where('start_time', '<=', $now)
+                            ->where('end_time', '>=', $now)
+                            ->whereNotIn('status', [
+                                GroupBuyStatus::ENDED->value,
+                                GroupBuyStatus::CANCELLED->value,
+                                GroupBuyStatus::SOLD_OUT->value,
+                            ]);
+                    });
+            })
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->limit($limit)
+            ->get();
     }
 }

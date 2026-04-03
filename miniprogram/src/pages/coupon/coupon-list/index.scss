@@ -415,60 +415,10 @@
   background: $warm-bg-page;
 }
 
-.coupon-list-page--h5 .coupon-page__header,
-.coupon-list-page--h5 .coupon-list-page__content {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.coupon-list-page--h5 .coupon-list-page__header-panel {
-  margin: 10PX 16PX 0;
-  border-radius: 26PX;
-  box-shadow: 0 4PX 16PX rgba(200, 140, 110, 0.12);
+.coupon-list-page--h5 .coupon-page__header {
+  padding-top: 20rpx;
 }
 
 .coupon-list-page--h5 .coupon-list-page__list {
-  padding-top: 12PX;
-}
-
-.coupon-list-page--h5 .coupon-page__title {
-  font-size: 26PX;
-}
-
-.coupon-list-page--h5 .coupon-page__subtitle {
-  font-size: 13PX;
-}
-
-.coupon-list-page--h5 .coupon-page__tab-text {
-  font-size: 12PX;
-}
-
-.coupon-list-page--h5 .coupon-ticket {
-  margin: 0 16PX 12PX;
-  border-radius: 22PX;
-  box-shadow: 0 2PX 8PX rgba(200, 140, 110, 0.08);
-}
-
-.coupon-list-page--h5 .coupon-ticket__title {
-  font-size: 15PX;
-}
-
-.coupon-list-page--h5 .coupon-ticket__value {
-  font-size: 40PX;
-}
-
-.coupon-list-page--h5 .coupon-ticket__value--discount {
-  font-size: 34PX;
-}
-
-.coupon-list-page--h5 .coupon-ticket__condition,
-.coupon-list-page--h5 .coupon-ticket__desc,
-.coupon-list-page--h5 .coupon-ticket__time,
-.coupon-list-page--h5 .coupon-ticket__action {
-  font-size: 11PX;
-}
-
-.coupon-list-page--h5 .coupon-ticket__status,
-.coupon-list-page--h5 .coupon-ticket__tag {
-  font-size: 10PX;
+  padding-top: 24rpx;
 }

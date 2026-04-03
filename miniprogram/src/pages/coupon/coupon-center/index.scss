@@ -37,8 +37,18 @@
   }
 
   &__list {
-    padding: 34rpx 30rpx 30rpx;
+    padding: 24rpx 32rpx 32rpx;
   }
+}
+
+.coupon-center-page--h5 .coupon-page__state {
+  padding: 220rpx 0 0;
+}
+
+.coupon-center-page--h5 .coupon-page__state-text {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #A89088;
 }
 
 .coupon-ticket {
@@ -90,26 +100,6 @@
   background: linear-gradient(180deg, #f4d3c3 0%, #f8e4d7 16%, #faf3ed 34%, #faf3ed 100%);
 }
 
-.coupon-center-page--h5 .coupon-page__header,
-.coupon-center-page--h5 .coupon-center-page__list {
-  padding-left: 16px;
-  padding-right: 16px;
+.coupon-center-page--h5 .coupon-page__header {
+  padding-top: 20rpx;
 }
-
-.coupon-center-page--h5 .coupon-center-page__header-panel {
-  border-radius: 24px;
-  box-shadow: 0 12px 28px rgba(197, 145, 114, 0.1);
-}
-
-.coupon-center-page--h5 .coupon-page__title { font-size: 24px; }
-.coupon-center-page--h5 .coupon-page__subtitle { font-size: 13px; }
-.coupon-center-page--h5 .coupon-ticket { border-radius: 22px; box-shadow: 0 12px 28px rgba(197,145,114,.1); }
-.coupon-center-page--h5 .coupon-ticket__title,
-.coupon-center-page--h5 .coupon-ticket__value { font-size: 18px; }
-.coupon-center-page--h5 .coupon-ticket__condition,
-.coupon-center-page--h5 .coupon-ticket__desc,
-.coupon-center-page--h5 .coupon-ticket__time,
-.coupon-center-page--h5 .coupon-ticket__stock,
-.coupon-center-page--h5 .coupon-ticket__receive-text,
-.coupon-center-page--h5 .coupon-ticket__status,
-.coupon-center-page--h5 .coupon-ticket__tag { font-size: 12px; }
