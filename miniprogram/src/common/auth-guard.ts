@@ -9,6 +9,14 @@ const TAB_PAGES = new Set([
   '/pages/usercenter/index',
 ]);
 
+function safeDecodeUrl(url: string): string {
+  try {
+    return decodeURIComponent(url);
+  } catch {
+    return url;
+  }
+}
+
 function buildCurrentRoute(): string {
   const pages = Taro.getCurrentPages();
   const current = pages[pages.length - 1] as any;
@@ -41,7 +49,7 @@ export function redirectToLogin(redirect?: string) {
 
 export function navigateAfterLogin(target?: string) {
   const url = target || '/pages/usercenter/index';
-  const cleanUrl = decodeURIComponent(url);
+  const cleanUrl = safeDecodeUrl(url);
   const path = cleanUrl.split('?')[0];
 
   if (TAB_PAGES.has(path)) {

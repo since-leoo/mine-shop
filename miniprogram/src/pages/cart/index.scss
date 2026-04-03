@@ -374,13 +374,13 @@
 }
 
 .cart-page--h5 .cart-bottom-spacer {
-  height: 116PX;
+  height: 160PX;
 }
 
 .cart-page--h5 .cart-bar {
   left: 50%;
   right: auto;
-  bottom: 60PX;
+  bottom: calc(64PX + env(safe-area-inset-bottom));
   width: 100%;
   max-width: 430PX;
   transform: translateX(-50%);

@@ -28,7 +28,7 @@ function UnsupportedAuthEntry() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const redirect = useMemo(() => decodeURIComponent(router.params?.redirect || '/pages/home/index'), [router.params]);
+  const redirect = useMemo(() => router.params?.redirect || '/pages/home/index', [router.params]);
   const [activeTab, setActiveTab] = useState<LoginTab>('password');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -82,7 +82,7 @@ export default function LoginPage() {
       const response = await passwordLogin(phone, password);
       persistAuth(response);
       Taro.showToast({ title: '登录成功', icon: 'success' });
-      setTimeout(() => navigateAfterLogin(redirect), 200);
+      navigateAfterLogin(redirect);
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '登录失败', icon: 'none' });
     } finally {
