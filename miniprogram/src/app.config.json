@@ -31,6 +31,7 @@
     "pages/coupon/coupon-activity-goods/index",
     "pages/coupon/coupon-center/index",
     "pages/promotion/detail/index",
+    "pages/promotion/hot-ranking/index",
     "pages/promotion/group-buy/index",
     "pages/usercenter/wallet-transactions/index",
     "pages/user/person-info/index",

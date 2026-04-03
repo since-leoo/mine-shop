@@ -240,7 +240,7 @@ export default function Cart() {
       <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : ''}`}>
         <PageNav title="购物车" showBack={false} />
         <View className="cart-empty">
-          <Text className="cart-empty__icon">馃洅</Text>
+          <Text className="cart-empty__icon">🛒</Text>
           <Text className="cart-empty__desc">购物车还是空的，先去挑点喜欢的商品吧</Text>
           <View className="cart-empty__btn" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
             <Text className="cart-empty__btn-text">去逛逛</Text>

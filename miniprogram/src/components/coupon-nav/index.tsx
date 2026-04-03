@@ -10,13 +10,7 @@ interface Props {
 export default function CouponNav({ title }: Props) {
   const systemInfo = Taro.getSystemInfoSync();
   const h5 = isH5();
-  if (h5) {
-    return null;
-  }
-  const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
   const statusBarHeight = systemInfo.statusBarHeight || 20;
-  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
-  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
 
   const handleBack = () => {
     const pages = Taro.getCurrentPages();
@@ -32,6 +26,23 @@ export default function CouponNav({ title }: Props) {
       Taro.reLaunch({ url: '/pages/usercenter/index' });
     });
   };
+
+  if (h5) {
+    return (
+      <View className="coupon-nav coupon-nav--h5" style={{ paddingTop: `${statusBarHeight}px` }}>
+        <View className="coupon-nav__bar">
+          <View className="coupon-nav__back" onClick={handleBack}>
+            <Text className="coupon-nav__back-icon">‹</Text>
+          </View>
+          <Text className="coupon-nav__title">{title}</Text>
+          <View className="coupon-nav__capsule-space" />
+        </View>
+      </View>
+    );
+  }
+  const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
+  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
+  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
 
   return (
     <View className="coupon-nav" style={{ paddingTop: `${statusBarHeight}px` }}>

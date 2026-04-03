@@ -54,13 +54,12 @@
 }
 
 .coupon-nav--h5 {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 90;
   width: 100%;
-  background: linear-gradient(180deg, #f4d4c4 0%, #f7e4d7 48%, #faf3ed 100%);
-  backdrop-filter: blur(14PX);
   padding-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .coupon-nav--h5 .coupon-nav__bar {

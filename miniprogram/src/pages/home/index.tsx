@@ -189,7 +189,11 @@ function HomeH5View(props: {
 
       <View className="home-quick-entries">
         {quickEntries.map((item) => (
-          <View key={item.key} className="home-quick-entries__item" onClick={() => openLink(item.url)}>
+          <View
+            key={item.key}
+            className="home-quick-entries__item"
+            onClick={() => openLink(item.key === 'hot' ? '/pages/promotion/hot-ranking/index' : item.url)}
+          >
             <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
               <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
             </View>
@@ -345,7 +349,11 @@ function HomeDefaultView(props: {
 
         <View className="home-quick-entries">
           {quickEntries.map((item) => (
-            <View key={item.key} className="home-quick-entries__item" onClick={() => openLink(item.url)}>
+            <View
+              key={item.key}
+              className="home-quick-entries__item"
+              onClick={() => openLink(item.key === 'hot' ? '/pages/promotion/hot-ranking/index' : item.url)}
+            >
               <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
                 <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
               </View>

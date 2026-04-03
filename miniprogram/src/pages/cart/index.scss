@@ -8,12 +8,14 @@
 
   &--empty {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
   }
 }
 
 .cart-empty {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -420,7 +422,7 @@
 }
 
 .cart-page--h5 .cart-empty {
-  padding: 120PX 24PX 0;
+  padding: 84PX 24PX 0;
 }
 
 .cart-page--h5 .cart-empty__icon {

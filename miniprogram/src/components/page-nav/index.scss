@@ -77,18 +77,15 @@
 }
 
 .page-nav--h5 {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: relative;
   z-index: 90;
   padding-bottom: 0;
-  background: linear-gradient(180deg, #f4d4c4 0%, #f7e4d7 48%, #faf3ed 100%);
-  backdrop-filter: blur(14px);
+  background: transparent;
+  backdrop-filter: none;
 }
 
 .page-nav--h5.page-nav--transparent {
-  background: linear-gradient(180deg, rgba(232, 131, 107, 0.92) 0%, rgba(242, 169, 154, 0.72) 55%, rgba(250, 243, 237, 0) 100%);
+  background: transparent;
 }
 
 .page-nav--h5 .page-nav__bar {
@@ -117,5 +114,14 @@
 
 .page-nav--h5 .page-nav__capsule-space {
   width: 44PX !important;
+}
+
+.page-nav--h5-placeholder {
+  width: 100%;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top);
+  height: calc(env(safe-area-inset-top) + 66PX);
+  background: transparent;
+  pointer-events: none;
 }
 

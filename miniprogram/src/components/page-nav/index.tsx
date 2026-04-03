@@ -20,13 +20,7 @@ export default function PageNav({
 }: Props) {
   const systemInfo = Taro.getSystemInfoSync();
   const h5 = isH5();
-  if (h5) {
-    return null;
-  }
-  const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
   const statusBarHeight = systemInfo.statusBarHeight || 20;
-  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
-  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
 
   const handleBack = () => {
     const pages = Taro.getCurrentPages();
@@ -42,6 +36,34 @@ export default function PageNav({
       Taro.reLaunch({ url: '/pages/home/index' });
     });
   };
+
+  if (h5) {
+    if (!showBack && !showTitle) {
+      return <View className={`page-nav page-nav--h5-placeholder ${background === 'transparent' ? 'page-nav--transparent' : ''}`} />;
+    }
+
+    return (
+      <View
+        className={`page-nav page-nav--h5 ${background === 'transparent' ? 'page-nav--transparent' : ''}`}
+        style={{ paddingTop: `${statusBarHeight}px` }}
+      >
+        <View className="page-nav__bar">
+          {showBack ? (
+            <View className="page-nav__back" onClick={handleBack}>
+              <Text className={`page-nav__back-icon ${light ? 'page-nav__back-icon--light' : ''}`}>‹</Text>
+            </View>
+          ) : (
+            <View className="page-nav__back page-nav__back--placeholder" />
+          )}
+          {showTitle ? <Text className={`page-nav__title ${light ? 'page-nav__title--light' : ''}`}>{title}</Text> : null}
+          <View className="page-nav__capsule-space" />
+        </View>
+      </View>
+    );
+  }
+  const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
+  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
+  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
 
   return (
     <View className={`page-nav ${background === 'transparent' ? 'page-nav--transparent' : ''}`} style={{ paddingTop: `${statusBarHeight}px` }}>
