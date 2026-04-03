@@ -3,8 +3,7 @@
 .cart-page {
   min-height: 100vh;
   background: $warm-bg-page;
-  padding-bottom: calc(252rpx + env(safe-area-inset-bottom));
-  padding-bottom: calc(252rpx + constant(safe-area-inset-bottom));
+  padding-bottom: 0;
 
   &--empty {
     display: flex;
@@ -213,20 +212,20 @@
 }
 
 .cart-bottom-spacer {
-  height: 252rpx;
+  height: calc(112rpx + env(safe-area-inset-bottom));
+  height: calc(112rpx + constant(safe-area-inset-bottom));
 }
 
 .cart-bar {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(120rpx + env(safe-area-inset-bottom));
-  bottom: calc(120rpx + constant(safe-area-inset-bottom));
+  bottom: 0;
   min-height: 112rpx;
-  height: calc(112rpx + env(safe-area-inset-bottom));
-  height: calc(112rpx + constant(safe-area-inset-bottom));
+  height: 112rpx;
   padding: 0 32rpx;
-  border-radius: 28rpx 28rpx 0 0;
+  box-sizing: border-box;
+  border-radius: 0;
   background: #fff;
   border-top: 1rpx solid $warm-border-light;
   box-shadow: 0 -4rpx 20rpx rgba(200, 140, 110, 0.08);
@@ -290,7 +289,7 @@
 
 .cart-page--h5 {
   background: $warm-bg-page;
-  padding-bottom: calc(172PX + env(safe-area-inset-bottom));
+  padding-bottom: 172PX;
 }
 
 .cart-page--h5 .cart-list {
@@ -375,13 +374,13 @@
 }
 
 .cart-page--h5 .cart-bottom-spacer {
-  height: 150PX;
+  height: 116PX;
 }
 
 .cart-page--h5 .cart-bar {
   left: 50%;
   right: auto;
-  bottom: calc(52PX + env(safe-area-inset-bottom));
+  bottom: 60PX;
   width: 100%;
   max-width: 430PX;
   transform: translateX(-50%);

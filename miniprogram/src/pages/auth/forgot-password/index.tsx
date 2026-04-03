@@ -6,6 +6,7 @@ import { isH5 } from '../../../common/platform';
 import { resetPasswordByPhone, sendVerificationCode } from '../../../services/auth/h5Auth';
 import { getCodeButtonText, isValidCode, isValidPassword, isValidPhone, passwordsMatch } from '../shared/auth-form';
 import '../login/index.scss';
+import './page.scss';
 
 function UnsupportedForgotEntry() {
   return (
@@ -87,7 +88,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <View className="auth-page auth-page--h5 auth-page--forgot">
+    <View className="auth-page auth-page--h5 auth-page--forgot auth-forgot-page-entry">
       <View className="auth-h5-shell">
         <View className="auth-hero auth-hero--forgot">
           <View className="auth-hero__brand">

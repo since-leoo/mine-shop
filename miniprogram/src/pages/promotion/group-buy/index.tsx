@@ -2,6 +2,8 @@ import { View, Text, Image } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { fetchGroupBuyList } from '../../../services/promotion/groupBuy';
+import { isH5 } from '../../../common/platform';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 interface GroupItem {
@@ -51,6 +53,7 @@ function calcCountdown(ms: number): CountdownState | null {
 }
 
 export default function GroupBuy() {
+  const h5 = isH5();
   const [list, setList] = useState<GroupItem[]>([]);
   const [navTabs, setNavTabs] = useState<NavTabItem[]>([]);
   const [activeNavKey, setActiveNavKey] = useState('direct_join');
@@ -203,20 +206,29 @@ export default function GroupBuy() {
 
   return (
     <View className="group-buy group-buy--h5">
+      {!h5 ? <PageNav title="拼团特惠" light background="transparent" /> : null}
       <View className="group-buy__hero">
         <View className="group-buy__hero-content">
           <View className="group-buy__topbar">
-            <View className="group-buy__topbar-back" onClick={handleBack}>
-              <Text className="group-buy__icon-text">‹</Text>
-            </View>
+            {h5 ? (
+              <View className="group-buy__topbar-back" onClick={handleBack}>
+                <Text className="group-buy__icon-text">‹</Text>
+              </View>
+            ) : (
+              <View className="group-buy__topbar-back group-buy__topbar-back--placeholder" />
+            )}
             <View className="group-buy__topbar-title">
               <Text className="group-buy__eyebrow">GROUP BUY MARKET</Text>
               <Text className="group-buy__headline">一起拼更省</Text>
               <Text className="group-buy__subline">边逛边参团，把“社交氛围感”做出来</Text>
             </View>
-            <View className="group-buy__topbar-action">
-              <Text className="group-buy__icon-text">⋯</Text>
-            </View>
+            {h5 ? (
+              <View className="group-buy__topbar-action">
+                <Text className="group-buy__icon-text">⋯</Text>
+              </View>
+            ) : (
+              <View className="group-buy__topbar-action group-buy__topbar-action--placeholder" />
+            )}
           </View>
 
           <View className="group-buy__chip-row">

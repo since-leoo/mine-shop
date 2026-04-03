@@ -3,3 +3,4 @@ export default definePageConfig({
   navigationBarTitleText: '钱包明细',
   backgroundTextStyle: 'light',
 })
+

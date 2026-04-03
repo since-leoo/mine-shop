@@ -8,6 +8,7 @@ import { isH5 } from '../../../common/platform';
 import { fetchRegisterProtocols, registerByPhone, sendVerificationCode } from '../../../services/auth/h5Auth';
 import { getCodeButtonText, isValidCode, isValidPassword, isValidPhone, passwordsMatch } from '../shared/auth-form';
 import '../login/index.scss';
+import './page.scss';
 
 function UnsupportedRegisterEntry() {
   return (
@@ -116,7 +117,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <View className="auth-page auth-page--h5">
+    <View className="auth-page auth-page--h5 auth-register-page-entry">
       <View className="auth-h5-shell">
         <View className="auth-hero auth-hero--register">
           <View className="auth-hero__badge">H5 新会员注册</View>

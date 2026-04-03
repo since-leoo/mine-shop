@@ -8,6 +8,7 @@ import { isH5 } from '../../../common/platform';
 import { fetchRegisterProtocols, passwordLogin } from '../../../services/auth/h5Auth';
 import { isValidCode, isValidPassword, isValidPhone } from '../shared/auth-form';
 import './index.scss';
+import './page.scss';
 
 type LoginTab = 'password' | 'sms';
 
@@ -103,7 +104,7 @@ export default function LoginPage() {
   };
 
   return (
-    <View className="auth-page auth-page--h5 auth-page--login">
+    <View className="auth-page auth-page--h5 auth-page--login auth-login-page-entry">
       <View className="auth-h5-shell">
         <View className="auth-hero auth-hero--login">
           <View className="auth-hero__brand">

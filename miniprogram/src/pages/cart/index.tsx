@@ -72,7 +72,7 @@ function formatSpecInfo(specInfo: any): string {
 function normalizeGoods(raw: any, store: any): CartGoods {
   return {
     storeId: String(raw?.storeId || raw?.store_id || store?.storeId || store?.id || ''),
-    storeName: String(store?.storeName || store?.name || '瀹樻柟搴楅摵'),
+    storeName: String(store?.storeName || store?.name || '官方店铺'),
     spuId: String(raw?.spuId || raw?.spu_id || raw?.id || ''),
     skuId: String(raw?.skuId || raw?.sku_id || raw?.id || ''),
     title: raw?.title || raw?.goodsName || raw?.name || '鍟嗗搧',
@@ -195,7 +195,7 @@ export default function Cart() {
     const next = item.quantity + delta;
     if (next < 1) return;
     if (next > item.stockQuantity) {
-      Taro.showToast({ title: '搴撳瓨涓嶈冻', icon: 'none' });
+      Taro.showToast({ title: '库存不足', icon: 'none' });
       return;
     }
 
@@ -206,7 +206,7 @@ export default function Cart() {
     }
     catch (error: any) {
       updateLocalQuantity(item.skuId, item.quantity);
-      Taro.showToast({ title: error?.msg || '鏇存柊鏁伴噺澶辫触', icon: 'none' });
+      Taro.showToast({ title: error?.msg || '更新数量失败', icon: 'none' });
     }
   };
 
@@ -220,11 +220,11 @@ export default function Cart() {
       if (!res.confirm) return;
       deleteCartItem(item.skuId)
         .then(() => {
-          Taro.showToast({ title: '鍒犻櫎鎴愬姛', icon: 'success' });
+          Taro.showToast({ title: '删除成功', icon: 'success' });
           refreshData();
         })
         .catch((error: any) => {
-          Taro.showToast({ title: error?.msg || '鍒犻櫎澶辫触', icon: 'none' });
+          Taro.showToast({ title: error?.msg || '删除失败', icon: 'none' });
         });
     });
   };
@@ -372,7 +372,7 @@ export default function Cart() {
                   storeId: item.storeId,
                 }));
               if (goodsRequestList.length === 0) {
-                Taro.showToast({ title: '璇烽€夋嫨缁撶畻鍟嗗搧', icon: 'none' });
+                Taro.showToast({ title: '请选择结算商品', icon: 'none' });
                 return;
               }
               Taro.setStorageSync('order.goodsRequestList', JSON.stringify(goodsRequestList));
