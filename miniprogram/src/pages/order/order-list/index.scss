@@ -342,12 +342,39 @@
 
 .order-list-page--h5 .order-card__action-btn {
   height: 32PX;
+  min-width: 88PX;
   padding: 0 16PX;
   border-radius: 20PX;
+  box-sizing: border-box;
 }
 
 .order-list-page--h5 .order-card__action-text,
 .order-list-page--h5 .order-card__service-link-text {
   font-size: 12PX;
+}
+
+.order-list-page--h5 .order-card__action-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.order-list-page--h5 .order-card__service-link {
+  min-height: 32PX;
+  padding: 0 14PX;
+  border-radius: 20PX;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.order-list-page--h5 .order-card__service-link-text {
+  line-height: 1;
+  white-space: nowrap;
 }
 

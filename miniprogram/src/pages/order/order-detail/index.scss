@@ -530,10 +530,21 @@
 
 .order-detail--h5 .order-detail__goods-action,
 .order-detail--h5 .order-detail__btn {
-  min-width: 88PX;
-  height: 36PX;
-  padding: 0 16PX;
-  border-radius: 18PX;
+  min-width: 104PX;
+  height: 40PX;
+  padding: 0 18PX;
+  border-radius: 20PX;
+  box-sizing: border-box;
+}
+
+.order-detail--h5 .order-detail__btn-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13PX;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .order-detail--h5 .order-detail__price-section {
@@ -545,17 +556,19 @@
 }
 
 .order-detail--h5 .order-detail__bottom-spacer {
-  height: 116PX;
+  height: calc(116PX + env(safe-area-inset-bottom));
+  height: calc(116PX + constant(safe-area-inset-bottom));
 }
 
 .order-detail--h5 .order-detail__bottom-bar {
   left: 50%;
   right: auto;
-  bottom: 12PX;
-  width: calc(100% - 24PX);
-  max-width: 406PX;
+  bottom: 0;
+  width: 100%;
+  max-width: 430PX;
   transform: translateX(-50%);
-  border-radius: 24PX;
+  border-radius: 0;
+  box-sizing: border-box;
   padding: 12PX 16PX calc(env(safe-area-inset-bottom) + 12PX);
   box-shadow: 0 16PX 32PX rgba(183, 128, 98, 0.16);
 }

@@ -105,7 +105,7 @@
 }
 
 .page-nav--h5 .page-nav__title {
-  width: calc(100% - 120PX);
+  width: calc(100% - 116PX);
   font-size: 19PX;
   line-height: 1;
   font-weight: 800;
@@ -120,7 +120,7 @@
   width: 100%;
   box-sizing: border-box;
   padding-top: env(safe-area-inset-top);
-  height: calc(env(safe-area-inset-top) + 66PX);
+  height: calc(env(safe-area-inset-top) + 56PX);
   background: transparent;
   pointer-events: none;
 }

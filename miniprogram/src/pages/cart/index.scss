@@ -289,7 +289,7 @@
 
 .cart-page--h5 {
   background: $warm-bg-page;
-  padding-bottom: 172PX;
+  padding-bottom: 64PX;
 }
 
 .cart-page--h5 .cart-list {
@@ -374,7 +374,7 @@
 }
 
 .cart-page--h5 .cart-bottom-spacer {
-  height: 160PX;
+  height: 116PX;
 }
 
 .cart-page--h5 .cart-bar {
@@ -449,7 +449,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10PX;
-  padding: 0 22PX;
+  padding: 0 16PX;
 }
 
 

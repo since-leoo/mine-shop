@@ -707,7 +707,7 @@
 
 .auth-page--login .auth-hero {
   margin: 0 -24rpx;
-  padding: 52rpx 32rpx 42rpx;
+  padding: 52rpx 32rpx 184rpx;
   position: relative;
   overflow: hidden;
 }
@@ -772,7 +772,7 @@
 }
 
 .auth-page--login .auth-card--login {
-  margin-top: -4rpx;
+  margin-top: -112rpx;
   padding: 34rpx 28rpx 30rpx;
   border-radius: 32rpx;
   background: rgba(255, 255, 255, 0.96);
@@ -936,6 +936,10 @@
 
 .auth-page--login .auth-mini-switch {
   margin-top: 22rpx;
+  padding: 24rpx;
+  border: 2rpx solid #f4e3d9;
+  border-radius: 36rpx;
+  background: #fff9f5;
 }
 
 .auth-page--login .auth-mini-switch__head {
@@ -943,7 +947,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
-  margin-bottom: 4rpx;
+  margin-bottom: 20rpx;
 }
 
 .auth-page--login .auth-mini-switch__title {
@@ -1190,7 +1194,7 @@
 }
 
 .auth-page--forgot .auth-card--forgot {
-  margin-top: -4rpx;
+  margin-top: -112rpx;
   padding: 34rpx 28rpx 30rpx;
   border-radius: 32rpx;
   background: rgba(255, 255, 255, 0.96);

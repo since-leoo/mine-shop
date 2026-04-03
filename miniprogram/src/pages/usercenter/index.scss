@@ -326,7 +326,7 @@
 
 .usercenter--h5 {
   background-color: $warm-bg-page;
-  padding-bottom: calc(112px + env(safe-area-inset-bottom));
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 .usercenter--h5 .usercenter__header-bg {
@@ -365,6 +365,10 @@
   box-shadow: 0 4rpx 16rpx rgba(200, 140, 110, 0.08);
 }
 
+.usercenter--h5 .usercenter__orders-tags {
+  padding: 12rpx 0 52rpx;
+}
+
 .usercenter--h5 .usercenter__menu-card {
   margin: 0 32rpx 28rpx;
   background: rgba(255, 255, 255, 0.98);
@@ -372,7 +376,7 @@
   box-shadow: 0 4rpx 16rpx rgba(200, 140, 110, 0.08);
 }
 
-.usercenter--h5 .usercenter__menu-card:first-of-type {
+.usercenter--h5 .usercenter__orders-card + .usercenter__menu-card {
   margin-top: 28rpx;
 }
 
