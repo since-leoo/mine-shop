@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidHide, useDidShow } from '@tarojs/taro';
 import { useMemo, useState } from 'react';
+import { isH5 } from '../../common/platform';
 import homeIcon from '../../assets/tab/home.png';
 import homeActiveIcon from '../../assets/tab/home-active.png';
 import categoryIcon from '../../assets/tab/category.png';
@@ -23,6 +24,10 @@ interface Props {
 }
 
 export default function H5TabBar({ current = '' }: Props) {
+  if (!isH5()) {
+    return null;
+  }
+
   const [visible, setVisible] = useState(true);
   const route = current || `/${Taro.getCurrentInstance().router?.path || ''}`;
   const shouldRender = useMemo(

@@ -279,8 +279,6 @@ function MiniProgramUserCenterView(props: {
       <View className="usercenter__version">
         <Text className="usercenter__version-text">当前版本 {versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
       </View>
-
-      <H5TabBar current="/pages/usercenter/index" />
     </View>
   );
 }
