@@ -15,7 +15,12 @@ return [
         'auth' => env('REDIS_AUTH', null),
         'port' => (int) env('REDIS_PORT', 6379),
         'db' => (int) env('REDIS_DB', 0),
-        'prefix' => env('REDIS_PREFIX', 'mineshop:'),
+        'options' => [
+            // Redis 客户端 Options, 参照 https://github.com/phpredis/phpredis#setoption
+            Redis::OPT_PREFIX => env('REDIS_PREFIX', 'mineshop:'),
+            // scan
+            Redis::OPT_SCAN => Redis::SCAN_PREFIX,
+        ],
         'pool' => [
             'min_connections' => 1,
             'max_connections' => 10,
