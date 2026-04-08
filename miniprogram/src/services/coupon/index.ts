@@ -31,7 +31,16 @@ export function fetchCouponDetail(id: number | string) {
   if (config.useMock) {
     const { delay } = require('../_utils/delay');
     const { getCoupon } = require('../../model/coupon');
-    const { genAddressList } = require('../../model/address');
+    const genAddressList = () =>
+      new Array(5).fill(0).map((_, idx) => ({
+        id: idx,
+        name: `门店${idx + 1}`,
+        phone: '17612345678',
+        provinceName: '甘肃省',
+        cityName: '甘南藏族自治州',
+        districtName: '碌曲县',
+        detailAddress: `松日鼎盛大厦${idx + 1}层`,
+      }));
     return delay().then(() => {
       const result = { detail: getCoupon(id), storeInfoList: genAddressList() };
       result.detail.useNotes = `1个订单限用1张，不能与其它类型的优惠券叠加使用（运费券除外）\n2.仅适用于各区域正常售卖商品，不支持团购、抢购、预售类商品`;

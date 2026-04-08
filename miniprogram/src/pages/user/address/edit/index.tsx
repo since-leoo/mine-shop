@@ -1,14 +1,13 @@
-import { View, Text, Input, Picker, PickerView, PickerViewColumn, Switch } from '@tarojs/components';
+import { View, Text, Input, PickerView, PickerViewColumn, Switch } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useCascaderAreaData } from '@vant/area-data';
 import {
   createAddress,
   updateAddress,
   fetchDeliveryAddress,
 } from '../../../../services/address/fetchAddress';
+import { fetchGeoRegionChildren } from '../../../../services/geo/regions';
 import PageNav from '../../../../components/page-nav';
-import { isH5 } from '../../../../common/platform';
 import './index.scss';
 
 interface AddressForm {
@@ -28,7 +27,6 @@ interface AddressForm {
 interface RegionOption {
   text: string;
   value: string;
-  children?: RegionOption[];
 }
 
 const EMPTY_FORM: AddressForm = {
@@ -45,57 +43,17 @@ const EMPTY_FORM: AddressForm = {
   isDefault: false,
 };
 
-const getSafeChildren = (options?: RegionOption[]) => (Array.isArray(options) ? options : []);
-
-const resolveRegionIndexes = (
-  options: RegionOption[],
-  codes: string[] = [],
-  names: string[] = [],
-): number[] => {
-  if (!options.length) return [0, 0, 0];
-
-  let provinceIndex = 0;
-  if (codes[0]) {
-    provinceIndex = Math.max(options.findIndex((item) => item.value === codes[0]), 0);
-  } else if (names[0]) {
-    provinceIndex = Math.max(options.findIndex((item) => item.text === names[0]), 0);
+const getOptionIndex = (options: RegionOption[], code?: string, name?: string): number => {
+  if (!options.length) return 0;
+  if (code) {
+    const idx = options.findIndex((item) => item.value === code);
+    if (idx >= 0) return idx;
   }
-
-  const cityOptions = getSafeChildren(options[provinceIndex]?.children);
-  let cityIndex = 0;
-  if (cityOptions.length) {
-    if (codes[1]) {
-      cityIndex = Math.max(cityOptions.findIndex((item) => item.value === codes[1]), 0);
-    } else if (names[1]) {
-      cityIndex = Math.max(cityOptions.findIndex((item) => item.text === names[1]), 0);
-    }
+  if (name) {
+    const idx = options.findIndex((item) => item.text === name);
+    if (idx >= 0) return idx;
   }
-
-  const districtOptions = getSafeChildren(cityOptions[cityIndex]?.children);
-  let districtIndex = 0;
-  if (districtOptions.length) {
-    if (codes[2]) {
-      districtIndex = Math.max(districtOptions.findIndex((item) => item.value === codes[2]), 0);
-    } else if (names[2]) {
-      districtIndex = Math.max(districtOptions.findIndex((item) => item.text === names[2]), 0);
-    }
-  }
-
-  return [provinceIndex, cityIndex, districtIndex];
-};
-
-const resolveRegionSelection = (options: RegionOption[], indexes: number[]) => {
-  const [provinceIndex = 0, cityIndex = 0, districtIndex = 0] = indexes;
-  const province = options[provinceIndex];
-  const cityOptions = getSafeChildren(province?.children);
-  const city = cityOptions[cityIndex];
-  const districtOptions = getSafeChildren(city?.children);
-  const district = districtOptions[districtIndex];
-
-  return {
-    names: [province?.text || '', city?.text || '', district?.text || ''].filter(Boolean),
-    codes: [province?.value || '', city?.value || '', district?.value || ''].filter(Boolean),
-  };
+  return 0;
 };
 
 export default function AddressEdit() {
@@ -104,7 +62,6 @@ export default function AddressEdit() {
   const isEdit = !!addressId;
   const selectMode = router.params.selectMode === '1';
   const isOrderSure = router.params.isOrderSure === '1';
-  const h5 = isH5();
 
   const [form, setForm] = useState<AddressForm>({ ...EMPTY_FORM });
   const [regionValue, setRegionValue] = useState<string[]>([]);
@@ -113,8 +70,71 @@ export default function AddressEdit() {
   const [saving, setSaving] = useState(false);
   const [regionPopupVisible, setRegionPopupVisible] = useState(false);
   const [draftRegionIndex, setDraftRegionIndex] = useState<number[]>([0, 0, 0]);
+  const [provinceOptions, setProvinceOptions] = useState<RegionOption[]>([]);
+  const [cityOptions, setCityOptions] = useState<RegionOption[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<RegionOption[]>([]);
+  const [regionLoading, setRegionLoading] = useState(false);
+  const [regionCache, setRegionCache] = useState<Record<string, RegionOption[]>>({});
 
-  const regionOptions = useMemo(() => useCascaderAreaData() as RegionOption[], []);
+  const loadChildren = useCallback(async (parentCode: string): Promise<RegionOption[]> => {
+    const normalized = parentCode && parentCode !== '0' ? parentCode : '0';
+    if (regionCache[normalized]) {
+      return regionCache[normalized];
+    }
+
+    const list = await fetchGeoRegionChildren(normalized, 500);
+    const options = list.map((item) => ({
+      text: item.name,
+      value: item.code,
+    }));
+    setRegionCache((prev) => ({ ...prev, [normalized]: options }));
+    return options;
+  }, [regionCache]);
+
+  const syncDraftOptionsByIndex = useCallback(async (indexes: number[]) => {
+    const [provinceIndex = 0, cityIndex = 0, districtIndex = 0] = indexes;
+    const provinces = await loadChildren('0');
+    setProvinceOptions(provinces);
+
+    const province = provinces[provinceIndex];
+    const cities = province ? await loadChildren(province.value) : [];
+    setCityOptions(cities);
+
+    const city = cities[cityIndex];
+    const districts = city ? await loadChildren(city.value) : [];
+    setDistrictOptions(districts);
+
+    const safeProvince = Math.min(provinceIndex, Math.max(provinces.length - 1, 0));
+    const safeCity = Math.min(cityIndex, Math.max(cities.length - 1, 0));
+    const safeDistrict = Math.min(districtIndex, Math.max(districts.length - 1, 0));
+    setDraftRegionIndex([safeProvince, safeCity, safeDistrict]);
+  }, [loadChildren]);
+
+  const resolveCurrentIndexes = useCallback(async () => {
+    const provinces = await loadChildren('0');
+    const targetCodes = [
+      form.provinceCode || regionCodeValue[0] || '',
+      form.cityCode || regionCodeValue[1] || '',
+      form.districtCode || regionCodeValue[2] || '',
+    ];
+    const targetNames = [form.provinceName, form.cityName, form.districtName];
+
+    const provinceIndex = getOptionIndex(provinces, targetCodes[0], targetNames[0]);
+    const province = provinces[provinceIndex];
+    const cities = province ? await loadChildren(province.value) : [];
+    const cityIndex = getOptionIndex(cities, targetCodes[1], targetNames[1]);
+    const city = cities[cityIndex];
+    const districts = city ? await loadChildren(city.value) : [];
+    const districtIndex = getOptionIndex(districts, targetCodes[2], targetNames[2]);
+
+    return {
+      indexes: [provinceIndex, cityIndex, districtIndex],
+      provinces,
+      cities,
+      districts,
+    };
+  }, [form.cityCode, form.cityName, form.districtCode, form.districtName, form.provinceCode, form.provinceName, loadChildren, regionCodeValue]);
+
   const currentRegionText = useMemo(() => {
     const values = regionValue.length
       ? regionValue
@@ -122,15 +142,18 @@ export default function AddressEdit() {
     return values.length ? values.join(' ') : '请选择省 / 市 / 区';
   }, [form.cityName, form.districtName, form.provinceName, regionValue]);
 
-  const provinceOptions = regionOptions;
-  const cityOptions = getSafeChildren(provinceOptions[draftRegionIndex[0]]?.children);
-  const districtOptions = getSafeChildren(cityOptions[draftRegionIndex[1]]?.children);
-
   const buildAddressListUrl = () => {
     const baseUrl = '/pages/user/address/list/index';
     if (!selectMode && !isOrderSure) return baseUrl;
     return `${baseUrl}?selectMode=${selectMode ? 1 : 0}&isOrderSure=${isOrderSure ? 1 : 0}`;
   };
+
+  useEffect(() => {
+    setRegionLoading(true);
+    loadChildren('0')
+      .then((list) => setProvinceOptions(list))
+      .finally(() => setRegionLoading(false));
+  }, [loadChildren]);
 
   useEffect(() => {
     if (isEdit) {
@@ -174,31 +197,18 @@ export default function AddressEdit() {
     setForm((prev) => ({ ...prev, [field]: value }));
   }, []);
 
-  const handleRegionChange = useCallback((e: any) => {
-    const value = (e?.detail?.value || []) as string[];
-    const codes = (e?.detail?.code || []) as string[];
-    setRegionValue(value);
-    setRegionCodeValue(codes);
-    setForm((prev) => ({
-      ...prev,
-      provinceName: value[0] || '',
-      cityName: value[1] || '',
-      districtName: value[2] || '',
-      provinceCode: codes[0] || '',
-      cityCode: codes[1] || '',
-      districtCode: codes[2] || '',
-    }));
-  }, []);
-
   const openRegionPopup = useCallback(() => {
-    const indexes = resolveRegionIndexes(
-      regionOptions,
-      [form.provinceCode || regionCodeValue[0] || '', form.cityCode || regionCodeValue[1] || '', form.districtCode || regionCodeValue[2] || ''],
-      [form.provinceName, form.cityName, form.districtName],
-    );
-    setDraftRegionIndex(indexes);
-    setRegionPopupVisible(true);
-  }, [form.cityCode, form.cityName, form.districtCode, form.districtName, form.provinceCode, form.provinceName, regionCodeValue, regionOptions]);
+    setRegionLoading(true);
+    resolveCurrentIndexes()
+      .then(({ indexes, provinces, cities, districts }) => {
+        setProvinceOptions(provinces);
+        setCityOptions(cities);
+        setDistrictOptions(districts);
+        setDraftRegionIndex(indexes);
+        setRegionPopupVisible(true);
+      })
+      .finally(() => setRegionLoading(false));
+  }, [resolveCurrentIndexes]);
 
   const closeRegionPopup = useCallback(() => {
     setRegionPopupVisible(false);
@@ -206,19 +216,24 @@ export default function AddressEdit() {
 
   const handleDraftRegionChange = useCallback((e: any) => {
     const incoming = (e?.detail?.value || [0, 0, 0]) as number[];
-    let [provinceIndex = 0, cityIndex = 0, districtIndex = 0] = incoming;
-
-    const nextCityOptions = getSafeChildren(regionOptions[provinceIndex]?.children);
-    if (cityIndex >= nextCityOptions.length) cityIndex = 0;
-
-    const nextDistrictOptions = getSafeChildren(nextCityOptions[cityIndex]?.children);
-    if (districtIndex >= nextDistrictOptions.length) districtIndex = 0;
-
-    setDraftRegionIndex([provinceIndex, cityIndex, districtIndex]);
-  }, [regionOptions]);
+    setRegionLoading(true);
+    syncDraftOptionsByIndex(incoming).finally(() => setRegionLoading(false));
+  }, [syncDraftOptionsByIndex]);
 
   const handleConfirmRegion = useCallback(() => {
-    const selected = resolveRegionSelection(regionOptions, draftRegionIndex);
+    const [provinceIndex = 0, cityIndex = 0, districtIndex = 0] = draftRegionIndex;
+    const selected = {
+      names: [
+        provinceOptions[provinceIndex]?.text || '',
+        cityOptions[cityIndex]?.text || '',
+        districtOptions[districtIndex]?.text || '',
+      ].filter(Boolean),
+      codes: [
+        provinceOptions[provinceIndex]?.value || '',
+        cityOptions[cityIndex]?.value || '',
+        districtOptions[districtIndex]?.value || '',
+      ].filter(Boolean),
+    };
     setRegionValue(selected.names);
     setRegionCodeValue(selected.codes);
     setForm((prev) => ({
@@ -231,7 +246,7 @@ export default function AddressEdit() {
       districtCode: selected.codes[2] || '',
     }));
     setRegionPopupVisible(false);
-  }, [draftRegionIndex, regionOptions]);
+  }, [cityOptions, districtOptions, draftRegionIndex, provinceOptions]);
 
   const validate = (): boolean => {
     if (!form.name.trim()) {
@@ -326,23 +341,12 @@ export default function AddressEdit() {
 
         <View className="address-edit__field">
           <Text className="address-edit__label">所在地区</Text>
-          {h5 ? (
-            <View className="address-edit__region-picker" onClick={openRegionPopup}>
-              <Text className={`address-edit__region-text ${regionValue.length === 0 && !form.provinceName ? 'address-edit__region-text--placeholder' : ''}`}>
-                {currentRegionText}
-              </Text>
-              <Text className="address-edit__region-arrow">›</Text>
-            </View>
-          ) : (
-            <Picker mode="region" value={regionValue} onChange={handleRegionChange}>
-              <View className="address-edit__region-picker">
-                <Text className={`address-edit__region-text ${regionValue.length === 0 ? 'address-edit__region-text--placeholder' : ''}`}>
-                  {regionValue.length > 0 ? regionValue.join(' ') : '请选择省 / 市 / 区'}
-                </Text>
-                <Text className="address-edit__region-arrow">›</Text>
-              </View>
-            </Picker>
-          )}
+          <View className="address-edit__region-picker" onClick={openRegionPopup}>
+            <Text className={`address-edit__region-text ${regionValue.length === 0 && !form.provinceName ? 'address-edit__region-text--placeholder' : ''}`}>
+              {currentRegionText}
+            </Text>
+            <Text className="address-edit__region-arrow">›</Text>
+          </View>
         </View>
 
         <View className="address-edit__field">
@@ -376,7 +380,7 @@ export default function AddressEdit() {
         </View>
       </View>
 
-      {h5 && regionPopupVisible ? (
+      {regionPopupVisible ? (
         <View className="address-edit__region-mask" onClick={closeRegionPopup}>
           <View className="address-edit__region-sheet" onClick={(e) => e.stopPropagation()}>
             <View className="address-edit__region-toolbar">
@@ -384,6 +388,11 @@ export default function AddressEdit() {
               <Text className="address-edit__region-title">选择地区</Text>
               <Text className="address-edit__region-action address-edit__region-action--confirm" onClick={handleConfirmRegion}>确定</Text>
             </View>
+            {regionLoading ? (
+              <View className="address-edit__state">
+                <Text className="address-edit__state-text">加载地区中...</Text>
+              </View>
+            ) : null}
             <PickerView
               className="address-edit__region-view"
               indicatorStyle="height: 44px;"

@@ -20,7 +20,7 @@ use Psr\Log\LoggerInterface;
     name: 'geo-region-sync',
     rule: '30 3 * * 1',
     callback: 'execute',
-    memo: '每周一凌晨自动同步四级行政区划',
+    memo: 'Weekly automatic geo region sync',
     enable: true
 )]
 class GeoRegionSyncCrontab
@@ -38,12 +38,13 @@ class GeoRegionSyncCrontab
                 '[geo-region-sync] version=%s records=%d source=%s',
                 $summary['version'] ?? 'unknown',
                 $summary['records'] ?? 0,
-                $summary['source'] ?? 'modood'
+                $summary['source'] ?? 'areacity'
             ));
         } catch (\Throwable $throwable) {
-            $this->logger->error('[geo-region-sync] 同步失败：' . $throwable->getMessage(), [
+            $this->logger->error('[geo-region-sync] sync failed: ' . $throwable->getMessage(), [
                 'trace' => $throwable->getTraceAsString(),
             ]);
         }
     }
 }
+

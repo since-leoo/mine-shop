@@ -6,8 +6,12 @@ import { request } from '../request';
 function mockFetchPerson() {
   const { delay } = require('../_utils/delay');
   const { genSimpleUserInfo } = require('../../model/usercenter');
-  const { genAddress } = require('../../model/address');
-  const address = genAddress();
+  const address = {
+    provinceName: '甘肃省',
+    provinceCode: '620000',
+    cityName: '甘南藏族自治州',
+    cityCode: '623000',
+  };
   return delay().then(() => ({
     ...genSimpleUserInfo(),
     address: {

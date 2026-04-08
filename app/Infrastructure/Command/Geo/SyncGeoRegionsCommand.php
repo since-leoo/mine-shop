@@ -37,21 +37,24 @@ class SyncGeoRegionsCommand extends HyperfCommand
             'released_at' => $this->input->getOption('released-at') ?: null,
             'force' => (bool) $this->input->getOption('force'),
             'dry_run' => (bool) $this->input->getOption('dry-run'),
+            'parallel_workers' => (int) $this->input->getOption('parallel-workers'),
+            'batch_size' => (int) $this->input->getOption('batch-size'),
+            'chunk_size' => (int) $this->input->getOption('chunk-size'),
         ];
 
-        $this->info(\sprintf('开始同步行政区划（source=%s, version=%s）', $options['source'], $options['version']));
+        $this->info(\sprintf('Start syncing geo regions (source=%s, version=%s)', $options['source'], $options['version']));
 
         try {
             $summary = $this->syncService->sync($options);
         } catch (\Throwable $throwable) {
-            $this->error('同步失败：' . $throwable->getMessage());
+            $this->error('Sync failed: ' . $throwable->getMessage());
             return self::FAILURE;
         }
 
         if (! empty($summary['dry_run'])) {
-            $this->line(\sprintf('DRY-RUN：预计写入 %d 条记录（version=%s）', $summary['records'] ?? 0, $summary['version'] ?? $options['version']));
+            $this->line(\sprintf('DRY-RUN: would write %d records (version=%s)', $summary['records'] ?? 0, $summary['version'] ?? $options['version']));
         } else {
-            $this->info(\sprintf('同步完成，写入 %d 条记录（version=%s）', $summary['records'] ?? 0, $summary['version'] ?? $options['version']));
+            $this->info(\sprintf('Sync completed: wrote %d records (version=%s)', $summary['records'] ?? 0, $summary['version'] ?? $options['version']));
         }
 
         return self::SUCCESS;
@@ -60,11 +63,15 @@ class SyncGeoRegionsCommand extends HyperfCommand
     protected function configure()
     {
         parent::configure();
-        $this->setDescription('同步四级行政区划数据到 geo_regions 地址库');
-        $this->addOption('source', null, InputOption::VALUE_OPTIONAL, '数据来源标识', 'modood');
-        $this->addOption('url', null, InputOption::VALUE_OPTIONAL, '自定义数据源地址');
-        $this->addOption('released-at', null, InputOption::VALUE_OPTIONAL, '上游发布时间，YYYY-MM-DD');
-        $this->addOption('force', 'f', InputOption::VALUE_NONE, '存在相同版本时覆盖');
-        $this->addOption('dry-run', null, InputOption::VALUE_NONE, '仅解析不写入数据库');
+        $this->setDescription('Sync geo regions data into geo_regions');
+        $this->addOption('source', null, InputOption::VALUE_OPTIONAL, 'Data source key', 'areacity');
+        $this->addOption('url', null, InputOption::VALUE_OPTIONAL, 'Custom source URL');
+        $this->addOption('released-at', null, InputOption::VALUE_OPTIONAL, 'Upstream release date (YYYY-MM-DD)');
+        $this->addOption('force', 'f', InputOption::VALUE_NONE, 'Overwrite same version if exists');
+        $this->addOption('dry-run', null, InputOption::VALUE_NONE, 'Parse only, do not write DB');
+        $this->addOption('parallel-workers', null, InputOption::VALUE_OPTIONAL, 'Coroutine workers for parallel insert', 4);
+        $this->addOption('batch-size', null, InputOption::VALUE_OPTIONAL, 'Records per flush', 1000);
+        $this->addOption('chunk-size', null, InputOption::VALUE_OPTIONAL, 'Records per insert chunk', 200);
     }
 }
+
