@@ -643,6 +643,7 @@
 .home-activity-info__card-title {
   position: relative;
   z-index: 1;
+  order: 1;
   font-size: 26rpx;
   font-weight: 700;
 }
@@ -650,6 +651,7 @@
 .home-activity-info__card-sub {
   position: relative;
   z-index: 1;
+  order: 2;
   margin-top: 6rpx;
   font-size: 20rpx;
   line-height: 1.5;
@@ -659,10 +661,17 @@
 .home-activity-info__countdown {
   position: relative;
   z-index: 1;
+  order: 3;
   margin-top: auto;
   display: flex;
   align-items: center;
   gap: 6rpx;
+}
+
+.home-activity-info__countdown-label {
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 18rpx;
+  font-weight: 600;
 }
 
 .home-activity-info__countdown-box {

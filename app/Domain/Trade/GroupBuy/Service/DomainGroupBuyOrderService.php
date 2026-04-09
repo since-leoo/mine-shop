@@ -13,49 +13,69 @@ declare(strict_types=1);
 namespace App\Domain\Trade\GroupBuy\Service;
 
 use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
+use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
 use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Infrastructure\Model\GroupBuy\GroupBuyOrder;
+use App\Infrastructure\Abstract\IService;
 use Carbon\Carbon;
 
-final class DomainGroupBuyOrderService
+final class DomainGroupBuyOrderService extends IService
 {
     public function __construct(
         private readonly DomainGroupBuyService $groupBuyService,
+        private readonly GroupBuyOrderRepository $groupBuyOrderRepository,
     ) {}
 
+    /**
+     * 验证团购活动
+     * @param int $groupBuyId
+     * @param int $skuId
+     * @param int $quantity
+     * @param int $memberId
+     * @param string|null $groupNo
+     * @param bool $buyOriginal
+     * @return GroupBuyEntity
+     */
     public function validateActivity(int $groupBuyId, int $skuId, int $quantity, int $memberId, ?string $groupNo, bool $buyOriginal = false): GroupBuyEntity
     {
         try {
             $entity = $this->groupBuyService->getEntity($groupBuyId);
         } catch (\RuntimeException) {
-            throw new \RuntimeException('拼团活动不存在');
+            throw new \RuntimeException('Group buy activity not found');
         }
 
         if ($entity->getSkuId() !== $skuId) {
-            throw new \RuntimeException('该商品不在当前拼团活动中');
+            throw new \RuntimeException('SKU does not belong to current group buy activity');
         }
 
-        // 原价购买只需验证活动和 SKU 存在，不校验拼团资格/库存/参团限制
         if ($buyOriginal) {
             return $entity;
         }
 
         if (! $entity->canJoin()) {
-            throw new \RuntimeException('当前拼团活动不可参与');
+            throw new \RuntimeException('Current group buy activity is unavailable');
         }
+
         $remainingStock = $entity->getTotalQuantity() - $entity->getSoldQuantity();
         if ($remainingStock < $quantity) {
-            throw new \RuntimeException('拼团商品库存不足');
+            throw new \RuntimeException('Insufficient group buy stock');
         }
+
         if ($this->hasMemberJoined($groupBuyId, $memberId)) {
-            throw new \RuntimeException('每人每个活动限参一次');
+            throw new \RuntimeException('Member has already joined this activity');
         }
+
         if ($groupNo !== null) {
             $this->validateJoinGroup($groupNo, $entity->getMaxPeople());
         }
+
         return $entity;
     }
 
+    /**
+     * 创建团购订单
+     * @param OrderEntity $orderEntity
+     * @param GroupBuyEntity $entity
+     */
     public function createGroupBuyOrder(OrderEntity $orderEntity, GroupBuyEntity $entity): void
     {
         $item = $orderEntity->getItems()[0];
@@ -88,40 +108,52 @@ final class DomainGroupBuyOrderService
             $record['expire_time'] = $leaderOrder?->expire_time;
         }
 
-        GroupBuyOrder::create($record);
+        $this->groupBuyOrderRepository->createRecord($record);
         $this->groupBuyService->increaseSoldQuantity($entity->getId(), $item->getQuantity());
+
         if ($isLeader) {
             $this->groupBuyService->increaseGroupCount($entity->getId());
         }
     }
 
+    /**
+     * 判断会员是否已加入该活动
+     * @param int $groupBuyId
+     * @param int $memberId
+     * @return bool
+     */
     public function hasMemberJoined(int $groupBuyId, int $memberId): bool
     {
-        return GroupBuyOrder::where('group_buy_id', $groupBuyId)
-            ->where('member_id', $memberId)
-            ->whereNotIn('status', ['cancelled', 'failed'])
-            ->exists();
+        return $this->groupBuyOrderRepository->hasJoined($groupBuyId, $memberId);
     }
 
     public function validateJoinGroup(string $groupNo, int $maxPeople): void
     {
-        $groupOrders = GroupBuyOrder::where('group_no', $groupNo)
-            ->whereNotIn('status', ['cancelled', 'failed'])->get();
-        if ($groupOrders->isEmpty()) {
-            throw new \RuntimeException('无法加入该团（团不存在、已满员或已过期）');
+        $groupOrders = $this->groupBuyOrderRepository->findActiveByGroupNo($groupNo);
+        if ($groupOrders === []) {
+            throw new \RuntimeException('Unable to join this group');
         }
-        if ($groupOrders->count() >= $maxPeople) {
-            throw new \RuntimeException('无法加入该团（团不存在、已满员或已过期）');
+
+        if (\count($groupOrders) >= $maxPeople) {
+            throw new \RuntimeException('Unable to join this group');
         }
-        $leaderOrder = $groupOrders->firstWhere('is_leader', true);
+
+        $leaderOrder = null;
+        foreach ($groupOrders as $groupOrder) {
+            if ($groupOrder->is_leader) {
+                $leaderOrder = $groupOrder;
+                break;
+            }
+        }
+
         if ($leaderOrder && $leaderOrder->expire_time && Carbon::now()->greaterThan($leaderOrder->expire_time)) {
-            throw new \RuntimeException('无法加入该团（团不存在、已满员或已过期）');
+            throw new \RuntimeException('Unable to join this group');
         }
     }
 
-    private function findLeaderOrder(string $groupNo): ?GroupBuyOrder
+    private function findLeaderOrder(string $groupNo): ?object
     {
-        return GroupBuyOrder::where('group_no', $groupNo)->where('is_leader', true)->first();
+        return $this->groupBuyOrderRepository->findLeaderByGroupNo($groupNo);
     }
 
     private function generateGroupNo(): string

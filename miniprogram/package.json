@@ -12,7 +12,8 @@
     "build:weapp": "taro build --type weapp",
     "build:h5": "taro build --type h5",
     "dev:weapp": "npm run build:weapp -- --watch",
-    "dev:h5": "npm run build:h5 -- --watch"
+    "dev:h5": "npm run build:h5 -- --watch",
+    "test": "vitest run"
   },
   "browserslist": [
     "last 3 versions",
@@ -47,7 +48,8 @@
     "babel-preset-taro": "^4.1.11",
     "react-refresh": "^0.14.2",
     "sass": "^1.97.3",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.7"
   },
   "overrides": {
     "glob": "^11.0.0",

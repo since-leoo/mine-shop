@@ -1,5 +1,14 @@
 import { request } from '../request';
 
+export interface OngoingGroup {
+  groupNo: string;
+  leaderNickname: string;
+  leaderAvatar: string;
+  joinedCount: number;
+  needCount: number;
+  expireTime: string;
+}
+
 function pickArray(res: any): any[] {
   if (Array.isArray(res)) return res;
   if (Array.isArray(res?.list)) return res.list;
@@ -12,9 +21,6 @@ function pickArray(res: any): any[] {
   return [];
 }
 
-/**
- * 获取拼团活动商品列表
- */
 export function fetchGroupBuyList(limit = 20) {
   return request({
     url: '/api/v1/group-buy/products',
@@ -23,29 +29,21 @@ export function fetchGroupBuyList(limit = 20) {
   });
 }
 
-/**
- * 获取拼团活动正在进行中的团列表
- */
-export function fetchOngoingGroups(activityId: number | string, limit = 10) {
+export function fetchOngoingGroups(activityId: number | string, limit = 10): Promise<OngoingGroup[]> {
   return request({
     url: `/api/v1/group-buy/products/${activityId}/groups`,
     method: 'GET',
     data: { limit },
-  }).then((res: any) => {
-    return pickArray(res).map((g: any) => ({
-      groupNo: String(g.groupNo || g.groupId || g.id || ''),
-      leaderNickname: g.leaderNickname || g.nickname || g.userName || g.leaderName || '拼团用户',
-      leaderAvatar: g.leaderAvatar || g.avatar || g.userAvatar || g.headUrl || '',
-      joinedCount: Number(g.joinedCount ?? g.joinCount ?? g.currentCount ?? g.currentUserCount ?? 0),
-      needCount: Number(g.needCount ?? g.requireCount ?? g.targetCount ?? g.totalCount ?? 0),
-      expireTime: g.expireTime || g.endTime || g.deadline || '',
-    }));
-  });
+  }).then((res: any) => pickArray(res).map((g: any): OngoingGroup => ({
+    groupNo: String(g.groupNo || g.groupId || g.id || ''),
+    leaderNickname: String(g.leaderNickname || g.nickname || g.userName || g.leaderName || '拼团用户'),
+    leaderAvatar: String(g.leaderAvatar || g.avatar || g.userAvatar || g.headUrl || ''),
+    joinedCount: Number(g.joinedCount ?? g.joinCount ?? g.currentCount ?? g.currentUserCount ?? 0),
+    needCount: Number(g.needCount ?? g.requireCount ?? g.targetCount ?? g.totalCount ?? 0),
+    expireTime: String(g.expireTime || g.endTime || g.deadline || ''),
+  })));
 }
 
-/**
- * 获取拼团商品详情（拼团模式）
- */
 export function fetchGroupBuyProductDetail(activityId: number | string, spuId: number | string) {
   return request({
     url: `/api/v1/group-buy/products/${activityId}/${spuId}`,

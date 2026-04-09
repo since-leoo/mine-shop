@@ -40,46 +40,34 @@ class OrderCreateJob extends Job
 
     public function handle(): void
     {
-        try {
-            $container = ApplicationContext::getContainer();
-            $repository = $container->get(OrderRepository::class);
-            $strategyFactory = $container->get(OrderTypeStrategyFactory::class);
-            $mallSettingService = $container->get(DomainMallSettingService::class);
-            $pendingCache = $container->get(OrderPendingCacheService::class);
+        $container = ApplicationContext::getContainer();
+        $repository = $container->get(OrderRepository::class);
+        $strategyFactory = $container->get(OrderTypeStrategyFactory::class);
+        $mallSettingService = $container->get(DomainMallSettingService::class);
+        $pendingCache = $container->get(OrderPendingCacheService::class);
 
-            // 从快照重建 Entity
-            $entity = $this->rebuildEntity($container);
-            $entity->applySubmissionPolicy($mallSettingService->order());
+        $entity = $this->rebuildEntity($container);
+        $entity->applySubmissionPolicy($mallSettingService->order());
 
-            $strategy = $strategyFactory->make($this->orderType);
+        $strategy = $strategyFactory->make($this->orderType);
+        $strategy->rehydrate($entity, $container);
 
-            // 策略自行恢复活动实体
-            $strategy->rehydrate($entity, $container);
+        $entity = Db::transaction(static function () use ($entity, $strategy, $repository) {
+            $savedEntity = $repository->save($entity);
+            $strategy->postCreate($savedEntity);
 
-            // DB 事务：入库 + 后置逻辑（含优惠券核销）
-            $entity = Db::transaction(static function () use ($entity, $strategy, $repository) {
-                $savedEntity = $repository->save($entity);
-                $strategy->postCreate($savedEntity);
+            return $savedEntity;
+        });
 
-                return $savedEntity;
-            });
+        $pendingCache->markCreated($this->tradeNo);
+        event(new OrderCreatedEvent($entity));
 
-            // 标记成功
-            $pendingCache->markCreated($this->tradeNo);
-            event(new OrderCreatedEvent($entity));
-
-            logger()->info('OrderCreateJob: 订单创建成功', [
-                'trade_no' => $this->tradeNo,
-                'order_type' => $this->orderType,
-            ]);
-        } catch (\Exception $e) {
-            var_dump($e->getFile(), $e->getLine(), $e->getMessage());
-        }
+        logger()->info('OrderCreateJob: order created', [
+            'trade_no' => $this->tradeNo,
+            'order_type' => $this->orderType,
+        ]);
     }
 
-    /**
-     * 最终失败回调：回滚 Redis 库存，标记订单失败.
-     */
     public function fail(\Throwable $e): void
     {
         $container = ApplicationContext::getContainer();
@@ -89,17 +77,12 @@ class OrderCreateJob extends Job
         $stockService->rollback($this->itemsPayload, $this->stockHashKey);
         $pendingCache->markFailed($this->tradeNo, $e->getMessage());
 
-        logger()->error('OrderCreateJob: 最终失败，已回滚库存', [
+        logger()->error('OrderCreateJob: order create failed', [
             'trade_no' => $this->tradeNo,
             'error' => $e->getMessage(),
         ]);
     }
 
-    /**
-     * 从快照重建 OrderEntity.
-     *
-     * 秒杀/拼团订单需要重新加载活动实体，供 postCreate() 使用。
-     */
     private function rebuildEntity(ContainerInterface $container): OrderEntity
     {
         $entity = new OrderEntity();
@@ -115,15 +98,12 @@ class OrderCreateJob extends Job
         $entity->setCouponAmount((int) ($this->entitySnapshot['coupon_amount'] ?? 0));
         $entity->setAppliedCouponUserIds($this->couponUserIds);
 
-        // 重建 items
         $entity->replaceItemsFromPayload($this->itemsPayload);
 
-        // 重建地址
         if (! empty($this->addressPayload)) {
             $entity->useAddressPayload($this->addressPayload);
         }
 
-        // 重建 extras（标量值）
         foreach ($this->entitySnapshot['extras'] ?? [] as $key => $value) {
             $entity->setExtra($key, $value);
         }

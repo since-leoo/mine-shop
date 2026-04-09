@@ -1,11 +1,16 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchHotGoods } from '../../../services/good/fetchGoods';
+import { fetchOrderDetail } from '../../../services/order/orderDetail';
 import Price from '../../../components/Price';
 import PageNav from '../../../components/page-nav';
 import { isH5 } from '../../../common/platform';
+import { resolvePaymentResultState } from './result-flow';
 import './index.scss';
+
+const RESULT_POLL_INTERVAL = 1500;
+const RESULT_POLL_MAX_RETRY = 20;
 
 export default function PayResult() {
   const router = useRouter();
@@ -13,6 +18,9 @@ export default function PayResult() {
   const [totalPaid, setTotalPaid] = useState(0);
   const [orderNo, setOrderNo] = useState('');
   const [recommendList, setRecommendList] = useState<any[]>([]);
+  const [resultStatus, setResultStatus] = useState<'processing' | 'success' | 'failed'>('processing');
+  const [resultReason, setResultReason] = useState('');
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const { totalPaid: paid = '0', orderNo: no = '' } = router.params;
@@ -22,6 +30,63 @@ export default function PayResult() {
       .then((list: any[] = []) => setRecommendList(list.slice(0, 4)))
       .catch(() => {});
   }, [router.params]);
+
+  useEffect(() => {
+    if (pollTimerRef.current) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+
+    if (!orderNo) {
+      setResultStatus('success');
+      setResultReason('');
+      return undefined;
+    }
+
+    const pollOrderResult = (retryCount = 0) => {
+      fetchOrderDetail({ orderNo })
+        .then((res: any) => {
+          const data = res?.data || res || {};
+          const next = resolvePaymentResultState(data);
+
+          if (next.status === 'processing') {
+            if (retryCount >= RESULT_POLL_MAX_RETRY) {
+              setResultStatus('processing');
+              setResultReason('支付结果确认中，请稍后到订单列表查看');
+              return;
+            }
+
+            pollTimerRef.current = setTimeout(() => {
+              pollOrderResult(retryCount + 1);
+            }, RESULT_POLL_INTERVAL);
+            return;
+          }
+
+          setResultStatus(next.status);
+          setResultReason(next.reason);
+        })
+        .catch(() => {
+          if (retryCount >= RESULT_POLL_MAX_RETRY) {
+            setResultStatus('processing');
+            setResultReason('支付结果确认中，请稍后到订单列表查看');
+            return;
+          }
+
+          pollTimerRef.current = setTimeout(() => {
+            pollOrderResult(retryCount + 1);
+          }, RESULT_POLL_INTERVAL);
+        });
+    };
+
+    pollOrderResult();
+
+    return () => {
+      if (pollTimerRef.current) {
+        clearTimeout(pollTimerRef.current);
+        pollTimerRef.current = null;
+      }
+    };
+  }, [orderNo]);
 
   const handleViewOrder = useCallback(() => {
     if (orderNo) {
@@ -47,18 +112,27 @@ export default function PayResult() {
     });
   }, []);
 
+  const resultTitle = resultStatus === 'success'
+    ? '支付成功'
+    : resultStatus === 'failed'
+      ? '支付确认失败'
+      : '支付结果确认中';
+  const amountLabel = resultStatus === 'success' ? '已支付金额' : '订单金额';
+  const resultIcon = resultStatus === 'success' ? '✓' : resultStatus === 'failed' ? '!' : '...';
+
   return (
     <View className={`pay-result ${h5 ? 'pay-result--h5' : ''}`}>
       <PageNav title="支付结果" />
       <View className="pay-result__status">
         <View className="pay-result__icon-wrap">
-          <View className="pay-result__icon">✓</View>
+          <View className="pay-result__icon">{resultIcon}</View>
         </View>
-        <Text className="pay-result__title">支付成功</Text>
+        <Text className="pay-result__title">{resultTitle}</Text>
         <View className="pay-result__amount">
-          <Text className="pay-result__amount-label">微信支付：</Text>
+          <Text className="pay-result__amount-label">{amountLabel}</Text>
           <Price price={totalPaid} className="pay-result__price" fill />
         </View>
+        {!!resultReason && <Text className="pay-result__title">{resultReason}</Text>}
       </View>
 
       <View className="pay-result__buttons">

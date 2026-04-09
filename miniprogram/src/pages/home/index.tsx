@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isH5 } from '../../common/platform';
 import { addCartItem } from '../../services/cart/cart';
 import { fetchHome } from '../../services/home/home';
+import { fetchSeckillSessions } from '../../services/promotion/detail';
 import searchIcon from '../../assets/home-top/search-line.svg';
 import tagIcon from '../../assets/home-quick/tag.svg';
 import giftIcon from '../../assets/home-quick/gift.svg';
@@ -12,6 +13,7 @@ import gridIcon from '../../assets/home-quick/grid.svg';
 import groupIcon from '../../assets/home-quick/group.svg';
 import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
+import { resolveHomeSeckillTarget } from './seckill-timing';
 import './index.scss';
 
 interface BannerItem {
@@ -373,6 +375,20 @@ function HomeDefaultView(props: {
         </View>
         <View className="home-activity-info__cards">
           <View className="home-activity-info__card home-activity-info__card--seckill" onClick={openSeckillTopic}>
+            <View className="home-activity-info__countdown">
+              <Text className="home-activity-info__countdown-label">距最新场结束</Text>
+              <View className="home-activity-info__countdown-box">
+                <Text className="home-activity-info__countdown-num">{seckillCountdown.hours}</Text>
+              </View>
+              <Text className="home-activity-info__countdown-sep">:</Text>
+              <View className="home-activity-info__countdown-box">
+                <Text className="home-activity-info__countdown-num">{seckillCountdown.minutes}</Text>
+              </View>
+              <Text className="home-activity-info__countdown-sep">:</Text>
+              <View className="home-activity-info__countdown-box">
+                <Text className="home-activity-info__countdown-num">{seckillCountdown.seconds}</Text>
+              </View>
+            </View>
             <Text className="home-activity-info__card-title">限时秒杀</Text>
             <Text className="home-activity-info__card-sub">爆款低价专场 点击直达秒杀会场，热门商品限量放价，每天都有精选好物持续更新。</Text>
           </View>
@@ -489,7 +505,7 @@ export default function Home() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const data: any = await fetchHome();
+      const [data, sessions] = await Promise.all([fetchHome(), fetchSeckillSessions()]);
       const bannerList = Array.isArray(data?.swiper) ? data.swiper.map(toBannerItem) : [];
       const seckill = Array.isArray(data?.seckillList) ? data.seckillList.map((item: any, index: number) => toProductCard(item, index, '秒杀')) : [];
       const groupBuy = Array.isArray(data?.groupBuyList) ? data.groupBuyList.map((item: any, index: number) => toProductCard(item, index, '拼团')) : [];
@@ -499,13 +515,15 @@ export default function Home() {
           ? data.hotList
           : [...seckill, ...groupBuy];
 
+      const seckillTarget = resolveHomeSeckillTarget(data, sessions);
+
       setBanners(bannerList);
       setSeckillList(seckill);
       setGroupBuyList(groupBuy);
       setRecommendList(recommendSource.map((item: any, index: number) => toProductCard(item, index)));
-      setSeckillEndTime(data?.seckillEndTime ?? null);
-      setSeckillActivityId(data?.seckillActivityId ?? null);
-      setSeckillSessionId(data?.seckillSessionId ?? null);
+      setSeckillEndTime(seckillTarget.endTime);
+      setSeckillActivityId(seckillTarget.activityId);
+      setSeckillSessionId(seckillTarget.sessionId);
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '首页加载失败', icon: 'none' });
     } finally {

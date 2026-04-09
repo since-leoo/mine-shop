@@ -6,6 +6,7 @@ import { isLoggedIn } from '../../../common/auth';
 import { addCartItem, fetchCartGroupData } from '../../../services/cart/cart';
 import { fetchGroupBuyProductDetail, fetchOngoingGroups } from '../../../services/promotion/groupBuy';
 import { trackEvent } from '../../../common/analytics';
+import { buildGroupBuyOrderConfirmItem, type GroupBuyPurchaseIntent } from './purchase-flow';
 import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
@@ -163,6 +164,7 @@ export default function GoodsDetails() {
   const [cartBadgeCount, setCartBadgeCount] = useState(0);
 
   const selectItemRef = useRef<SkuItem | null>(null);
+  const groupBuyIntentRef = useRef<GroupBuyPurchaseIntent | null>(null);
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seckillTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTrackViewRef = useRef(false);
@@ -264,11 +266,15 @@ export default function GoodsDetails() {
     const actId = instance.router?.params?.activityId || '';
     const sId = instance.router?.params?.sessionId || '';
     const gbId = instance.router?.params?.groupBuyId || '';
+    const routeGroupNo = instance.router?.params?.groupNo || '';
     setSpuId(id);
     setOrderType(ot);
     setActivityId(actId);
     setSessionId(sId);
     setGroupBuyId(gbId);
+    groupBuyIntentRef.current = ot === 'group_buy' && routeGroupNo
+      ? { entry: 'join', buyOriginalPrice: false, groupNo: routeGroupNo }
+      : null;
     if (id) {
       getDetail(id, ot, gbId || actId);
       getCommentsList(id);
@@ -395,6 +401,9 @@ export default function GoodsDetails() {
   }, []);
 
   const showSkuSelectPopup = useCallback((type: number) => {
+    if (orderType !== 'group_buy') {
+      groupBuyIntentRef.current = null;
+    }
     setBuyType(type);
     trackEvent('goods_sku_popup_open', {
       spuId,
@@ -444,9 +453,8 @@ export default function GoodsDetails() {
     closeSpecPopup();
 
     const skuId = selectItemRef.current?.skuId || (details.skuList && details.skuList[0]?.skuId);
-    const query = {
+    const query = buildGroupBuyOrderConfirmItem({
       quantity: buyNum,
-      storeId: '1',
       spuId: details.spuId,
       goodsName: details.title,
       skuId,
@@ -454,13 +462,13 @@ export default function GoodsDetails() {
       price: selectSkuSellsPrice || details.minSalePrice,
       specInfo: selectItemRef.current?.specInfo || [],
       primaryImage: details.primaryImage,
-      thumb: details.primaryImage,
       title: details.title,
       orderType: orderType || 'normal',
       activityId: activityId || undefined,
       sessionId: sessionId || undefined,
       groupBuyId: orderType === 'group_buy' ? groupBuyId || undefined : undefined,
-    };
+      intent: orderType === 'group_buy' ? groupBuyIntentRef.current : null,
+    });
 
     const urlQueryStr = `goodsRequestList=${encodeURIComponent(JSON.stringify([query]))}`;
     trackEvent('goods_buy_now_click', {
@@ -503,11 +511,13 @@ export default function GoodsDetails() {
 
   const handleGroupJoinClick = useCallback((team: GroupTeam) => {
     trackEvent('group_team_join_click', { spuId, groupNo: team.groupNo || '', joinedCount: team.joinedCount || 0, needCount: team.needCount || 0 });
+    groupBuyIntentRef.current = { entry: 'join', buyOriginalPrice: false, groupNo: team.groupNo || null };
     showSkuSelectPopup(1);
   }, [spuId, showSkuSelectPopup]);
 
   const handleGroupBottomClick = useCallback((entry: 'origin' | 'group') => {
     trackEvent('group_bottom_click', { spuId, entry, orderType: orderType || 'group_buy', activityId: activityId || groupBuyId || '' });
+    groupBuyIntentRef.current = { entry, buyOriginalPrice: entry === 'origin', groupNo: null };
     showSkuSelectPopup(1);
   }, [spuId, orderType, activityId, groupBuyId, showSkuSelectPopup]);
 

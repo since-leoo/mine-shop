@@ -1,10 +1,11 @@
 ﻿import { View, Text } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { requestOrderPayment, fetchOrderPayInfo } from '../../../services/order/orderConfirm';
+import { requestOrderPayment, fetchOrderPayInfo, fetchSubmitResult } from '../../../services/order/orderConfirm';
 import Price from '../../../components/Price';
 import PageNav from '../../../components/page-nav';
 import { isH5 } from '../../../common/platform';
+import { resolveSubmitResultState } from './cashier-flow';
 import './index.scss';
 
 interface PayMethod {
@@ -16,8 +17,8 @@ interface PayMethod {
   enabled?: boolean;
 }
 
-const PAY_INFO_POLL_INTERVAL = 1500;
-const PAY_INFO_POLL_MAX_RETRY = 20;
+const CASHIER_POLL_INTERVAL = 1500;
+const CASHIER_POLL_MAX_RETRY = 20;
 
 const resolveMethodBadge = (channel?: string) => {
   const normalized = String(channel || '').toLowerCase();
@@ -49,15 +50,6 @@ function normalizePayMethods(input: any): PayMethod[] {
       };
     })
     .filter(Boolean) as PayMethod[];
-}
-
-function shouldRetryPayInfo(error: any): boolean {
-  const msg = String(error?.msg || error?.message || '');
-  const code = error?.code;
-
-  if (code === 404 || code === '404') return true;
-
-  return msg.includes('\u8ba2\u5355\u4e0d\u5b58\u5728') || msg.includes('\u8ba2\u5355\u521b\u5efa\u4e2d') || msg.includes('\u5904\u7406\u4e2d');
 }
 
 export default function Cashier() {
@@ -94,7 +86,7 @@ export default function Cashier() {
     setFailed(false);
     Taro.showLoading({ title: '\u8ba2\u5355\u521b\u5efa\u4e2d', mask: true });
 
-    const pollFetchOrderPayInfo = (retryCount = 0) => {
+    const loadPayInfo = () => {
       fetchOrderPayInfo(no)
         .then((res: any) => {
           const data = res?.data || res || {};
@@ -108,16 +100,10 @@ export default function Cashier() {
           setPayMethod(firstEnabled?.channel || finalMethods[0]?.channel || 'wechat');
           setCreating(false);
           setFailed(false);
+          setFailReason('');
           Taro.hideLoading();
         })
         .catch((err: any) => {
-          if (retryCount < PAY_INFO_POLL_MAX_RETRY && shouldRetryPayInfo(err)) {
-            payInfoPollingTimerRef.current = setTimeout(() => {
-              pollFetchOrderPayInfo(retryCount + 1);
-            }, PAY_INFO_POLL_INTERVAL);
-            return;
-          }
-
           setCreating(false);
           setFailed(true);
           setFailReason(err?.msg || '\u83b7\u53d6\u652f\u4ed8\u4fe1\u606f\u5931\u8d25');
@@ -125,7 +111,53 @@ export default function Cashier() {
         });
     };
 
-    pollFetchOrderPayInfo();
+    const pollSubmitResult = (retryCount = 0) => {
+      fetchSubmitResult(no)
+        .then((res: any) => {
+          const data = res?.data || res || {};
+          const submitState = resolveSubmitResultState(data);
+
+          if (submitState.shouldRetry) {
+            if (retryCount >= CASHIER_POLL_MAX_RETRY) {
+              setCreating(false);
+              setFailed(true);
+              setFailReason('\u8ba2\u5355\u521b\u5efa\u8d85\u65f6');
+              Taro.hideLoading();
+              return;
+            }
+
+            payInfoPollingTimerRef.current = setTimeout(() => {
+              pollSubmitResult(retryCount + 1);
+            }, CASHIER_POLL_INTERVAL);
+            return;
+          }
+
+          if (submitState.failed) {
+            setCreating(false);
+            setFailed(true);
+            setFailReason(submitState.reason || '\u8ba2\u5355\u521b\u5efa\u5931\u8d25');
+            Taro.hideLoading();
+            return;
+          }
+
+          loadPayInfo();
+        })
+        .catch((err: any) => {
+          if (retryCount >= CASHIER_POLL_MAX_RETRY) {
+            setCreating(false);
+            setFailed(true);
+            setFailReason(err?.msg || '\u8ba2\u5355\u521b\u5efa\u72b6\u6001\u83b7\u53d6\u5931\u8d25');
+            Taro.hideLoading();
+            return;
+          }
+
+          payInfoPollingTimerRef.current = setTimeout(() => {
+            pollSubmitResult(retryCount + 1);
+          }, CASHIER_POLL_INTERVAL);
+        });
+    };
+
+    pollSubmitResult();
 
     return () => {
       if (payInfoPollingTimerRef.current) {
