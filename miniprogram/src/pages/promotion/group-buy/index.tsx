@@ -3,13 +3,14 @@ import Taro, { usePullDownRefresh } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { OngoingGroup, fetchGroupBuyList, fetchOngoingGroups } from '../../../services/promotion/groupBuy';
 import { isH5 } from '../../../common/platform';
-import PageNav from '../../../components/page-nav';
+import { getMiniProgramNavMetrics } from '../../../utils/system-info';
 import {
   GroupBuyItemInput,
   NavTabInput,
   buildGroupBuyDetailUrl,
   buildGroupBuyViewModel,
 } from './view-model';
+import { getGroupBuyHeroPresentation } from './presentation';
 import './index.scss';
 
 function formatSoldText(value: unknown) {
@@ -147,51 +148,46 @@ export default function GroupBuy() {
 
   const featured = viewModel.featured;
   const listItems = featured ? viewModel.listItems.slice(1) : [];
+  const heroPresentation = useMemo(() => getGroupBuyHeroPresentation(h5), [h5]);
+  const navMetrics = useMemo(() => (h5 ? null : getMiniProgramNavMetrics()), [h5]);
+  const heroStyle = navMetrics ? { paddingTop: `${navMetrics.statusBarHeight + 18}px` } : undefined;
+  const capsuleStyle = navMetrics ? { width: `${Math.max(176, navMetrics.capsuleWidth)}px` } : undefined;
 
   return (
     <View className={`group-buy ${h5 ? 'group-buy--h5' : 'group-buy--weapp'}`}>
-      {!h5 ? <PageNav title="拼团特惠" light background="transparent" /> : null}
-      <View className="group-buy__hero">
+      <View className="group-buy__hero" style={heroStyle}>
         <View className="group-buy__hero-content">
-          <View className="group-buy__topbar">
-            {h5 ? (
+          <View className={`group-buy__topbar ${heroPresentation.overlayControls ? 'group-buy__topbar--overlay' : ''}`}>
+            {heroPresentation.showTopbarControls ? (
               <View className="group-buy__topbar-back" onClick={handleBack}>
                 <Text className="group-buy__icon-text">‹</Text>
               </View>
-            ) : (
-              <View className="group-buy__topbar-back group-buy__topbar-back--placeholder" />
-            )}
+            ) : null}
             <View className="group-buy__topbar-title">
-              <Text className="group-buy__eyebrow">GROUP BUY MARKET</Text>
-              <Text className="group-buy__headline">一起拼更省</Text>
-              <Text className="group-buy__subline">优先展示可直接参团商品，减少等待时间，提升拼团转化。</Text>
+              <Text className="group-buy__eyebrow">{heroPresentation.eyebrow}</Text>
+              <Text className="group-buy__headline">{heroPresentation.headline}</Text>
+              <Text className="group-buy__subline">{heroPresentation.subline}</Text>
             </View>
             {h5 ? (
               <View className="group-buy__topbar-action">
                 <Text className="group-buy__icon-text">⋯</Text>
               </View>
-            ) : (
-              <View className="group-buy__topbar-action group-buy__topbar-action--placeholder" />
-            )}
+            ) : heroPresentation.showCapsuleActions ? (
+              <View className="group-buy__topbar-actions" style={capsuleStyle}>
+                <Text className="group-buy__capsule-dots">•••</Text>
+                <Text className="group-buy__capsule-ring">◉</Text>
+              </View>
+            ) : null
+            }
           </View>
 
           <View className="group-buy__chip-row">
-            <View className="group-buy__chip group-buy__chip--active">
-              <Text className="group-buy__chip-top">优先直参团</Text>
-              <Text className="group-buy__chip-bottom">减少重新开团等待</Text>
-            </View>
-            <View className="group-buy__chip">
-              <Text className="group-buy__chip-top">2人成团快</Text>
-              <Text className="group-buy__chip-bottom">低门槛更容易成交</Text>
-            </View>
-            <View className="group-buy__chip">
-              <Text className="group-buy__chip-top">3人成团省</Text>
-              <Text className="group-buy__chip-bottom">更高优惠拉动分享</Text>
-            </View>
-            <View className="group-buy__chip">
-              <Text className="group-buy__chip-top">热门活动实时更</Text>
-              <Text className="group-buy__chip-bottom">随筛选动态切换</Text>
-            </View>
+            {heroPresentation.chips.map((chip) => (
+              <View key={chip.title} className="group-buy__chip">
+                <Text className="group-buy__chip-top">{chip.title}</Text>
+                <Text className="group-buy__chip-bottom">{chip.subtitle}</Text>
+              </View>
+            ))}
           </View>
         </View>
       </View>

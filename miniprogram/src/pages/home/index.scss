@@ -721,6 +721,24 @@
   font-weight: 700;
 }
 
+.home--default .home-activity-info__card--group .home-activity-info__chip {
+  order: 1;
+  margin-top: 0;
+  margin-bottom: 14rpx;
+}
+
+.home--default .home-activity-info__card--group .home-activity-info__card-title {
+  order: 2;
+  line-height: 1.18;
+}
+
+.home--default .home-activity-info__card--group .home-activity-info__card-sub {
+  order: 3;
+  margin-top: 10rpx;
+  max-width: 176rpx;
+  line-height: 1.4;
+}
+
 .home-promo-hub__ad-long--light {
   color: #fff;
 }

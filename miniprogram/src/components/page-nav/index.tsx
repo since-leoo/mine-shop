@@ -1,6 +1,7 @@
 ﻿import { View, Text } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { isH5 } from '../../common/platform';
+import { getMiniProgramNavMetrics } from '../../utils/system-info';
 import './index.scss';
 
 interface Props {
@@ -18,9 +19,8 @@ export default function PageNav({
   light = false,
   background = 'default',
 }: Props) {
-  const systemInfo = Taro.getSystemInfoSync();
   const h5 = isH5();
-  const statusBarHeight = systemInfo.statusBarHeight || 20;
+  const { statusBarHeight, navHeight, capsuleWidth } = getMiniProgramNavMetrics();
 
   const handleBack = () => {
     const pages = Taro.getCurrentPages();
@@ -61,10 +61,6 @@ export default function PageNav({
       </View>
     );
   }
-  const menuButton = h5 ? null : Taro.getMenuButtonBoundingClientRect?.();
-  const navHeight = menuButton ? (menuButton.top - statusBarHeight) * 2 + menuButton.height : 44;
-  const capsuleWidth = menuButton ? systemInfo.windowWidth - menuButton.left + 12 : 176;
-
   return (
     <View className={`page-nav ${background === 'transparent' ? 'page-nav--transparent' : ''}`} style={{ paddingTop: `${statusBarHeight}px` }}>
       <View className="page-nav__bar" style={{ height: `${navHeight}px` }}>

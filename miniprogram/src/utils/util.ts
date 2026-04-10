@@ -1,5 +1,6 @@
 import Taro from '@tarojs/taro';
 import dayjs from 'dayjs';
+import { getMiniProgramWindowWidth } from './system-info';
 
 export const formatTime = (date: Date | string | number, template: string): string =>
   dayjs(date).format(template);
@@ -55,8 +56,7 @@ let systemWidth = 0;
 export const loadSystemWidth = (): number => {
   if (systemWidth) return systemWidth;
   try {
-    const info = Taro.getSystemInfoSync();
-    systemWidth = info.screenWidth;
+    systemWidth = getMiniProgramWindowWidth();
   } catch (_e) {
     systemWidth = 0;
   }

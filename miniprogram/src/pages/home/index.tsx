@@ -376,7 +376,6 @@ function HomeDefaultView(props: {
         <View className="home-activity-info__cards">
           <View className="home-activity-info__card home-activity-info__card--seckill" onClick={openSeckillTopic}>
             <View className="home-activity-info__countdown">
-              <Text className="home-activity-info__countdown-label">距最新场结束</Text>
               <View className="home-activity-info__countdown-box">
                 <Text className="home-activity-info__countdown-num">{seckillCountdown.hours}</Text>
               </View>
@@ -390,14 +389,14 @@ function HomeDefaultView(props: {
               </View>
             </View>
             <Text className="home-activity-info__card-title">限时秒杀</Text>
-            <Text className="home-activity-info__card-sub">爆款低价专场 点击直达秒杀会场，热门商品限量放价，每天都有精选好物持续更新。</Text>
+            <Text className="home-activity-info__card-sub">爆款低价，点击直达秒杀会场</Text>
           </View>
           <View className="home-activity-info__card home-activity-info__card--group" onClick={openGroupBuyTopic}>
-            <Text className="home-activity-info__card-title">拼团活动</Text>
-            <Text className="home-activity-info__card-sub">多人拼团更划算 热门好物持续开团</Text>
             <View className="home-activity-info__chip">
               <Text className="home-activity-info__chip-text">立即开团</Text>
             </View>
+            <Text className="home-activity-info__card-title">拼团活动</Text>
+            <Text className="home-activity-info__card-sub">多人拼团更划算，热门好物持续开团</Text>
           </View>
         </View>
       </View>
