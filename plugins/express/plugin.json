@@ -1,0 +1,13 @@
+{
+    "name": "since/express",
+    "version": "1.0.0",
+    "description": "一个物流查询插件",
+    "author": "since",
+    "namespace": "Plugin\\Express",
+    "priority": 0,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": false,
+    "enabled": true,
+    "configProvider": "Plugin\\Express\\ConfigProvider"
+}
