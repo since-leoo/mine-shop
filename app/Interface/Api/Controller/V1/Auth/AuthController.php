@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Interface\Api\Controller\V1;
+namespace App\Interface\Api\Controller\V1\Auth;
 
 use App\Application\Api\Auth\AppApiAuthCommandService;
 use App\Application\Api\Auth\AppApiAuthQueryService;

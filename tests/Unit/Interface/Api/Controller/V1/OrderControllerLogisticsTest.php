@@ -8,7 +8,7 @@ use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
 use App\Application\Api\Order\AppApiOrderCommandService;
 use App\Application\Api\Order\AppApiOrderQueryService;
 use App\Application\Api\Payment\AppApiOrderPaymentService;
-use App\Interface\Api\Controller\V1\OrderController;
+use App\Interface\Api\Controller\V1\Order\OrderController;
 use App\Interface\Api\Transformer\OrderCheckoutTransformer;
 use App\Interface\Api\Transformer\OrderTransformer;
 use App\Interface\Common\CurrentMember;

@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace App\Interface\Api\Controller\V1;
+namespace App\Interface\Api\Controller\V1\Product;
 
 use App\Application\Api\Product\AppApiCategoryQueryService;
 use App\Interface\Api\Transformer\CategoryTransformer;

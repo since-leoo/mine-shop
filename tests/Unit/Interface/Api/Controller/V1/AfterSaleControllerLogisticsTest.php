@@ -7,7 +7,7 @@ namespace Tests\Unit\Interface\Api\Controller\V1;
 use App\Application\Api\AfterSale\AppApiAfterSaleCommandService;
 use App\Application\Api\AfterSale\AppApiAfterSaleQueryService;
 use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
-use App\Interface\Api\Controller\V1\AfterSaleController;
+use App\Interface\Api\Controller\V1\AfterSale\AfterSaleController;
 use App\Interface\Api\Transformer\AfterSaleTransformer;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
