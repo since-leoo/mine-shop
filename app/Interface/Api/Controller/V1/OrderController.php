@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1;
 
+use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
 use App\Application\Api\Order\AppApiOrderCommandService;
 use App\Application\Api\Order\AppApiOrderQueryService;
 use App\Application\Api\Payment\AppApiOrderPaymentService;
@@ -43,7 +44,8 @@ final class OrderController extends AbstractController
         private readonly AppApiOrderPaymentService $paymentApiService,
         private readonly AppApiOrderQueryService $orderQueryService,
         private readonly OrderTransformer $orderTransformer,
-        private readonly OrderCheckoutTransformer $checkoutTransformer
+        private readonly OrderCheckoutTransformer $checkoutTransformer,
+        private readonly AppApiLogisticsTrackingQueryService $logisticsTrackingQueryService,
     ) {}
 
     #[PostMapping(path: 'preview')]
@@ -114,6 +116,14 @@ final class OrderController extends AbstractController
         }
 
         return $this->successWithTransform($order, fn ($order) => $this->orderTransformer->transformDetail($order));
+    }
+
+    #[GetMapping(path: 'logistics/{orderNo}')]
+    public function logistics(string $orderNo): Result
+    {
+        return $this->success(
+            $this->logisticsTrackingQueryService->trackOrder($this->currentMember->id(), $orderNo)
+        );
     }
 
     /**

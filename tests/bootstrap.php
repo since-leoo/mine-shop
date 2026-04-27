@@ -29,6 +29,7 @@ error_reporting(\E_ALL);
 date_default_timezone_set('Asia/Shanghai');
 
 ! defined('BASE_PATH') && define('BASE_PATH', dirname(__DIR__, 1));
+! defined('SWOOLE_HOOK_ALL') && define('SWOOLE_HOOK_ALL', 0);
 ! defined('SWOOLE_HOOK_FLAGS') && define('SWOOLE_HOOK_FLAGS', \SWOOLE_HOOK_ALL);
 ! defined('START_TIME') && define('START_TIME', time());    // 启动时间
 ! defined('HF_VERSION') && define('HF_VERSION', '3.1');     // 定义hyperf版本号
@@ -43,8 +44,11 @@ if (class_exists(BypassFinals::class)) {
 // 插件引导
 PluginBootstrap::init();
 
-ClassLoader::init();
+if (extension_loaded('pcntl')) {
+    ClassLoader::init();
+}
 
-$container = require BASE_PATH . '/config/container.php';
-
-$container->get(ApplicationInterface::class);
+if (class_exists(\Swoole\Coroutine::class)) {
+    $container = require BASE_PATH . '/config/container.php';
+    $container->get(ApplicationInterface::class);
+}

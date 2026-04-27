@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1;
 
 use App\Application\Api\AfterSale\AppApiAfterSaleCommandService;
 use App\Application\Api\AfterSale\AppApiAfterSaleQueryService;
+use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\AfterSale\AfterSaleApplyRequest;
 use App\Interface\Api\Request\V1\AfterSale\AfterSaleReturnShipmentRequest;
@@ -37,6 +38,7 @@ final class AfterSaleController extends AbstractController
         private readonly AfterSaleTransformer $transformer,
         private readonly CurrentMember $currentMember,
         private readonly RequestInterface $request,
+        private readonly AppApiLogisticsTrackingQueryService $logisticsTrackingQueryService,
     ) {}
 
     /**
@@ -85,6 +87,22 @@ final class AfterSaleController extends AbstractController
         $afterSale = $this->queryService->detail($this->currentMember->id(), $id);
 
         return $this->successWithTransform($afterSale, fn ($item) => $this->transformer->transform($item));
+    }
+
+    #[GetMapping(path: '{id}/return-logistics')]
+    public function returnLogistics(int $id): Result
+    {
+        return $this->success(
+            $this->logisticsTrackingQueryService->trackAfterSaleReturn($this->currentMember->id(), $id)
+        );
+    }
+
+    #[GetMapping(path: '{id}/reship-logistics')]
+    public function reshipLogistics(int $id): Result
+    {
+        return $this->success(
+            $this->logisticsTrackingQueryService->trackAfterSaleReship($this->currentMember->id(), $id)
+        );
     }
 
     /**

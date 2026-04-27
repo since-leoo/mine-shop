@@ -26,4 +26,5 @@ storage/uploads
 .kiro
 web/*.lock
 docs/superpowers
+.worktrees/
 web/.codex
