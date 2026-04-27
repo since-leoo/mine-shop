@@ -31,23 +31,20 @@ final class ExpressSettingsResolverTest extends TestCase
             'endpoint' => 'https://poll.kuaidi100.com/poll/query.do',
             'cache_ttl' => 300,
             'timeout' => 5,
-            'company_name_map' => [],
         ], $resolver->toArray());
     }
 
-    public function testItPrefersPersistedMallExpressSettings(): void
+    public function testItPrefersPersistedShippingDialogSettings(): void
     {
         $persisted = [
-            'mall.express.enabled' => false,
-            'mall.express.default_provider' => 'kuaidi100',
-            'mall.express.customer' => 'customer-1',
-            'mall.express.key' => 'secret-1',
-            'mall.express.endpoint' => 'https://example.com/query',
-            'mall.express.cache_ttl' => 180,
-            'mall.express.timeout' => 9,
-            'mall.express.company_name_map' => [
-                ['code' => 'shunfeng', 'name' => '顺丰速运'],
-                ['code' => 'yto', 'name' => '圆通速递'],
+            'mall.shipping.express_tracking_config' => [
+                'enabled' => false,
+                'default_provider' => 'kuaidi100',
+                'customer' => 'customer-1',
+                'key' => 'secret-1',
+                'endpoint' => 'https://example.com/query',
+                'cache_ttl' => 180,
+                'timeout' => 9,
             ],
         ];
 
@@ -66,10 +63,6 @@ final class ExpressSettingsResolverTest extends TestCase
             'endpoint' => 'https://example.com/query',
             'cache_ttl' => 180,
             'timeout' => 9,
-            'company_name_map' => [
-                'shunfeng' => '顺丰速运',
-                'yto' => '圆通速递',
-            ],
         ], $resolver->toArray());
     }
 }

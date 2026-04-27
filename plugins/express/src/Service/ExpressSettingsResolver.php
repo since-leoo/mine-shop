@@ -8,6 +8,8 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 
 final class ExpressSettingsResolver
 {
+    private const SETTING_KEY = 'mall.shipping.express_tracking_config';
+
     public function __construct(private readonly DomainSystemSettingService $settingService) {}
 
     /**
@@ -18,51 +20,47 @@ final class ExpressSettingsResolver
      *     key: string,
      *     endpoint: string,
      *     cache_ttl: int,
-     *     timeout: int,
-     *     company_name_map: array<string, string>
+     *     timeout: int
      * }
      */
     public function toArray(): array
     {
+        $config = $this->normalizeConfig(
+            $this->settingService->get(self::SETTING_KEY, $this->defaultConfig())
+        );
+
         return [
-            'enabled' => (bool) $this->settingService->get('mall.express.enabled', true),
-            'default_provider' => (string) $this->settingService->get('mall.express.default_provider', 'kuaidi100'),
-            'customer' => (string) $this->settingService->get('mall.express.customer', ''),
-            'key' => (string) $this->settingService->get('mall.express.key', ''),
-            'endpoint' => (string) $this->settingService->get('mall.express.endpoint', 'https://poll.kuaidi100.com/poll/query.do'),
-            'cache_ttl' => (int) $this->settingService->get('mall.express.cache_ttl', 300),
-            'timeout' => (int) $this->settingService->get('mall.express.timeout', 5),
-            'company_name_map' => $this->normalizeCompanyNameMap(
-                $this->settingService->get('mall.express.company_name_map', [])
-            ),
+            'enabled' => (bool) ($config['enabled'] ?? true),
+            'default_provider' => (string) ($config['default_provider'] ?? 'kuaidi100'),
+            'customer' => (string) ($config['customer'] ?? ''),
+            'key' => (string) ($config['key'] ?? ''),
+            'endpoint' => (string) ($config['endpoint'] ?? 'https://poll.kuaidi100.com/poll/query.do'),
+            'cache_ttl' => (int) ($config['cache_ttl'] ?? 300),
+            'timeout' => (int) ($config['timeout'] ?? 5),
         ];
     }
 
     /**
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
-    private function normalizeCompanyNameMap(mixed $value): array
+    private function defaultConfig(): array
     {
-        if (! \is_array($value)) {
-            return [];
-        }
+        return [
+            'enabled' => true,
+            'default_provider' => 'kuaidi100',
+            'customer' => '',
+            'key' => '',
+            'endpoint' => 'https://poll.kuaidi100.com/poll/query.do',
+            'cache_ttl' => 300,
+            'timeout' => 5,
+        ];
+    }
 
-        $normalized = [];
-        foreach ($value as $item) {
-            if (! \is_array($item)) {
-                continue;
-            }
-
-            $code = trim((string) ($item['code'] ?? ''));
-            $name = trim((string) ($item['name'] ?? ''));
-
-            if ($code === '' || $name === '') {
-                continue;
-            }
-
-            $normalized[$code] = $name;
-        }
-
-        return $normalized;
+    /**
+     * @return array<string, mixed>
+     */
+    private function normalizeConfig(mixed $value): array
+    {
+        return \is_array($value) ? array_replace($this->defaultConfig(), $value) : $this->defaultConfig();
     }
 }

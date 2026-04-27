@@ -609,7 +609,7 @@ return [
                     'type' => 'json',
                     'meta' => [
                         'component' => 'tags',
-                        'display_span' => ['full'],
+                        'display_span' => ['compact'],
                         'placeholder' => '输入快递公司编码后回车添加',
                         'min_items' => 1,
                         'options' => [

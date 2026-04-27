@@ -14,7 +14,7 @@ use Psr\Http\Message\ResponseInterface;
 final class Kuaidi100Provider implements LogisticsTrackingInterface
 {
     /**
-     * @param array{customer:string,key:string,endpoint:string,timeout?:int,company_name_map?:array<string,string>} $config
+     * @param array{customer:string,key:string,endpoint:string,timeout?:int} $config
      */
     public function __construct(
         private readonly ClientFactory $clientFactory,
@@ -78,13 +78,11 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
         }
 
         $normalizedCompanyCode = (string) ($decoded['com'] ?? strtolower($companyCode));
-        $companyMap = is_array($this->config['company_name_map'] ?? null) ? $this->config['company_name_map'] : [];
-        $companyName = $companyMap[$normalizedCompanyCode] ?? $normalizedCompanyCode;
 
         return new TrackingResult(
             status: $this->normalizeState((string) ($decoded['state'] ?? '')),
             companyCode: $normalizedCompanyCode,
-            companyName: $companyName,
+            companyName: $normalizedCompanyCode,
             trackingNo: (string) ($decoded['nu'] ?? $trackingNo),
             traces: $traces,
             raw: $decoded,

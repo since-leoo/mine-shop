@@ -27,7 +27,6 @@ final class ExpressTrackingServiceTest extends TestCase
             'endpoint' => 'https://poll.kuaidi100.com/poll/query.do',
             'cache_ttl' => 300,
             'timeout' => 5,
-            'company_name_map' => [],
         ]);
 
         $service = new ExpressTrackingService(
