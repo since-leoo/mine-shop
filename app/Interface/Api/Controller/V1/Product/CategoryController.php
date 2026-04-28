@@ -13,13 +13,16 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Product;
 
 use App\Application\Api\Product\AppApiCategoryQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\CategoryTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 
 #[Controller(prefix: '/api/v1/categories')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class CategoryController extends AbstractController
 {
     public function __construct(

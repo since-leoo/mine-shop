@@ -7,7 +7,8 @@ import {
   clearAuthStorage,
 } from '../common/auth';
 import { redirectToLogin } from '../common/auth-guard';
-import { isH5 } from '../common/platform';
+import { isH5, isMiniProgram } from '../common/platform';
+import { buildCanonicalJson, buildQueryString, buildSignatureHeaders } from './_utils/signature';
 
 const DEFAULT_TIMEOUT = 15000;
 
@@ -70,6 +71,44 @@ function getBaseUrl(): string {
   return base.endsWith('/') ? base.slice(0, -1) : base;
 }
 
+function getSignatureClient() {
+  return isMiniProgram()
+    ? config.apiSignature.clients.miniapp
+    : config.apiSignature.clients.h5;
+}
+
+function splitPathAndQuery(path: string): { path: string; queryString: string } {
+  const [pathname, query = ''] = path.split('?');
+  return { path: pathname || '/', queryString: query };
+}
+
+function buildSignedRequestPayload(
+  url: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+  data: Record<string, any>,
+) {
+  const normalizedPath = typeof url === 'string' && url.startsWith('/') ? url : `/${url || ''}`;
+  const snakeData = toSnakeCase(data);
+  const signatureClient = getSignatureClient();
+  const { path, queryString: initialQueryString } = splitPathAndQuery(normalizedPath);
+  const requestQueryString = (method === 'GET' || method === 'DELETE') ? buildQueryString(snakeData) : '';
+  const finalQueryString = [initialQueryString, requestQueryString].filter(Boolean).join('&');
+  const bodyString = (method === 'GET' || method === 'DELETE') ? '' : buildCanonicalJson(snakeData);
+
+  return {
+    finalUrl: `${getBaseUrl()}${path}${finalQueryString ? `?${finalQueryString}` : ''}`,
+    requestData: (method === 'GET' || method === 'DELETE') ? undefined : bodyString,
+    signatureHeaders: buildSignatureHeaders({
+      method,
+      path,
+      queryString: finalQueryString,
+      bodyString,
+      clientId: signatureClient.clientId,
+      secret: signatureClient.secret,
+    }),
+  };
+}
+
 function ensureAuthToken(forceLogin = false): Promise<string> {
   if (!forceLogin) {
     const token = getStoredToken();
@@ -81,13 +120,13 @@ function ensureAuthToken(forceLogin = false): Promise<string> {
     .then(() => {
       const token = getStoredToken();
       if (!token) {
-        return Promise.reject({ code: 401, msg: 'µ«¬º◊¥Ã¨ªÒ»° ß∞‹£¨«Î÷ÿ ‘', __authError: true });
+        return Promise.reject({ code: 401, msg: 'Login state unavailable', __authError: true });
       }
       return token;
     })
     .catch((error) => Promise.reject({
       code: error?.code || 401,
-      msg: error?.message || error?.msg || 'µ«¬º ß∞‹£¨«Î…‘∫Û÷ÿ ‘',
+      msg: error?.message || error?.msg || 'Login failed',
       __authError: true,
     }));
 }
@@ -113,18 +152,15 @@ interface RequestOptions {
 }
 
 export function request({ url, method = 'GET', data = {}, header = {}, needAuth = false }: RequestOptions): Promise<any> {
-  const baseUrl = getBaseUrl();
-  const normalizedPath = typeof url === 'string' && url.startsWith('/') ? url : `/${url || ''}`;
-  const finalUrl = baseUrl + normalizedPath;
-  const snakeData = toSnakeCase(data);
+  const { finalUrl, requestData, signatureHeaders } = buildSignedRequestPayload(url, method, data);
 
   const execRequest = (): Promise<any> =>
     new Promise((resolve, reject) => {
       Taro.request({
         url: finalUrl,
         method,
-        data: snakeData,
-        header: buildHeaders(header, needAuth),
+        data: requestData,
+        header: buildHeaders({ ...signatureHeaders, ...header }, needAuth),
         timeout: DEFAULT_TIMEOUT,
         success(res) {
           const { statusCode, data: body } = res;
@@ -134,12 +170,12 @@ export function request({ url, method = 'GET', data = {}, header = {}, needAuth 
           }
           reject({
             code: (body && body.code) || statusCode,
-            msg: (body && body.message) || 'Ω”ø⁄«Î«Û ß∞‹',
+            msg: (body && body.message) || 'Request failed',
             data: toCamelCase(body && body.data),
           });
         },
         fail(error) {
-          reject({ code: -1, msg: (error && error.errMsg) || 'Õ¯¬Á“Ï≥£' });
+          reject({ code: -1, msg: (error && error.errMsg) || 'Network error' });
         },
       });
     });

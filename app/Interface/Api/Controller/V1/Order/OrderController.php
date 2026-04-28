@@ -16,6 +16,7 @@ use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
 use App\Application\Api\Order\AppApiOrderCommandService;
 use App\Application\Api\Order\AppApiOrderQueryService;
 use App\Application\Api\Payment\AppApiOrderPaymentService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\OrderCancelRequest;
 use App\Interface\Api\Request\V1\OrderCommitRequest;
@@ -35,6 +36,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\RateLimit\Annotation\RateLimit;
 
 #[Controller(prefix: '/api/v1/order')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class OrderController extends AbstractController
 {

@@ -15,6 +15,7 @@ namespace App\Interface\Api\Controller\V1\AfterSale;
 use App\Application\Api\AfterSale\AppApiAfterSaleCommandService;
 use App\Application\Api\AfterSale\AppApiAfterSaleQueryService;
 use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\AfterSale\AfterSaleApplyRequest;
 use App\Interface\Api\Request\V1\AfterSale\AfterSaleReturnShipmentRequest;
@@ -29,6 +30,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/after-sales')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class AfterSaleController extends AbstractController
 {

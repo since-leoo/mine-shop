@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Member;
 
 use App\Application\Api\Member\AppApiMemberWalletQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\WalletTransactionRequest;
 use App\Interface\Common\Controller\AbstractController;
@@ -23,6 +24,7 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 
 #[Controller(prefix: '/api/v1/member/wallet')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class WalletController extends AbstractController
 {

@@ -14,15 +14,18 @@ namespace App\Interface\Api\Controller\V1\Seckill;
 
 use App\Application\Api\Seckill\AppApiSeckillProductQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\Seckill\SeckillProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/seckill/products')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class SeckillProductController extends AbstractController
 {
     public function __construct(

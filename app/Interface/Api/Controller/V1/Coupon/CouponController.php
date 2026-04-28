@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Coupon;
 
 use App\Application\Api\Coupon\AppApiCouponQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\Coupon\CouponAvailableRequest;
 use App\Interface\Api\Transformer\Coupon\CouponTransformer;
 use App\Interface\Common\Controller\AbstractController;
@@ -20,8 +21,10 @@ use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 
 #[Controller(prefix: '/api/v1/coupons')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class CouponController extends AbstractController
 {
     public function __construct(

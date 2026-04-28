@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1\Cart;
 
 use App\Application\Api\Cart\AppApiCartCommandService;
 use App\Application\Api\Cart\AppApiCartQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\CartItemStoreRequest;
 use App\Interface\Api\Request\V1\CartItemUpdateRequest;
@@ -29,6 +30,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 
 #[Controller(prefix: '/api/v1/cart')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class CartController extends AbstractController
 {

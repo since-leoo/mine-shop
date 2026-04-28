@@ -13,14 +13,17 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Geo;
 
 use App\Application\Api\Geo\AppApiGeoRegionQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\GeoRegionTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/geo/regions')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class GeoRegionController extends AbstractController
 {
     public function __construct(

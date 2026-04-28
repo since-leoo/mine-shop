@@ -14,13 +14,16 @@ namespace App\Interface\Api\Controller\V1\Auth;
 
 use App\Application\Api\Auth\AppApiAuthCommandService;
 use App\Application\Api\Member\AppApiMemberAuthCommandService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\H5PasswordLoginRequest;
 use App\Interface\Api\Request\V1\LoginRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\AutoController;
+use Hyperf\HttpServer\Annotation\Middleware;
 
 #[AutoController(prefix: '/api/v1/login')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class LoginController extends AbstractController
 {
     public function __construct(

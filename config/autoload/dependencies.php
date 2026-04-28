@@ -20,6 +20,8 @@ use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
 use App\Domain\Trade\Order\Strategy\NormalOrderStrategy;
 use App\Domain\Trade\Seckill\Strategy\SeckillOrderStrategy;
 use App\Domain\Trade\Shipping\Service\FreightServiceAdapter;
+use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Interface\InterfaceCache;
 use Mine\JwtAuth\Interfaces\CheckTokenInterface;
 use Mine\Upload\Factory;
 use Mine\Upload\UploadInterface;
@@ -28,6 +30,7 @@ use Psr\Container\ContainerInterface;
 return [
     UploadInterface::class => Factory::class,
     CheckTokenInterface::class => JwtTokenChecker::class,
+    InterfaceCache::class => ICache::class,
     ProductSnapshotInterface::class => DomainProductSnapshotService::class,
     CouponServiceInterface::class => CouponServiceAdapter::class,
     FreightServiceInterface::class => FreightServiceAdapter::class,

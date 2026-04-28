@@ -15,6 +15,7 @@ namespace App\Interface\Api\Controller\V1\Member;
 use App\Application\Api\Member\AppApiMemberAuthCommandService;
 use App\Application\Api\Member\AppApiMemberCenterQueryService;
 use App\Application\Api\Member\AppApiMemberReferralQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\PhoneAuthorizeRequest;
 use App\Interface\Api\Request\V1\ProfileAuthorizeRequest;
@@ -31,6 +32,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/member')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class MemberController extends AbstractController
 {

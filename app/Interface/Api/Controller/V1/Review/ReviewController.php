@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1\Review;
 
 use App\Application\Api\Review\AppApiReviewCommandService;
 use App\Application\Api\Review\AppApiReviewQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\ReviewTransformer;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\Review\CreateReviewRequest;
@@ -27,6 +28,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/review')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class ReviewController extends AbstractController
 {
     public function __construct(

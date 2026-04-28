@@ -1,20 +1,38 @@
 import Taro from '@tarojs/taro';
 import { config } from '../config';
+import { isMiniProgram } from '../common/platform';
+import { buildSignatureHeaders } from './_utils/signature';
+
+function buildUploadHeaders() {
+  const storageKey = config.tokenStorageKey || 'accessToken';
+  const token = Taro.getStorageSync(storageKey);
+  const signatureClient = isMiniProgram()
+    ? config.apiSignature.clients.miniapp
+    : config.apiSignature.clients.h5;
+
+  return {
+    Authorization: token ? `Bearer ${token}` : '',
+    ...buildSignatureHeaders({
+      method: 'POST',
+      path: '/api/v1/upload/image',
+      queryString: '',
+      bodyString: '',
+      clientId: signatureClient.clientId,
+      secret: signatureClient.secret,
+    }),
+  };
+}
 
 export function uploadImage(filePath: string) {
   const baseUrl = config.apiBaseUrl || '';
   const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const storageKey = config.tokenStorageKey || 'accessToken';
-  const token = Taro.getStorageSync(storageKey);
 
   return new Promise<string>((resolve, reject) => {
     Taro.uploadFile({
       url: `${normalizedBase}/api/v1/upload/image`,
       filePath,
       name: 'file',
-      header: {
-        Authorization: token ? `Bearer ${token}` : '',
-      },
+      header: buildUploadHeaders(),
       success(res) {
         try {
           const body = JSON.parse(res.data);
@@ -22,14 +40,13 @@ export function uploadImage(filePath: string) {
             resolve(body.data.url);
             return;
           }
-          reject({ msg: body.message || '上传失败' });
-        }
-        catch (_error) {
-          reject({ msg: '上传响应解析失败' });
+          reject({ msg: body.message || 'Upload failed' });
+        } catch (_error) {
+          reject({ msg: 'Upload response parse failed' });
         }
       },
       fail(error) {
-        reject({ msg: error.errMsg || '上传失败' });
+        reject({ msg: error.errMsg || 'Upload failed' });
       },
     });
   });

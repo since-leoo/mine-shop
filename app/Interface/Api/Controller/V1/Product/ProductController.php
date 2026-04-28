@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1\Product;
 
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\ProductListRequest;
 use App\Interface\Api\Transformer\ProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
@@ -21,8 +22,10 @@ use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 
 #[Controller(prefix: '/api/v1/products')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class ProductController extends AbstractController
 {
     public function __construct(

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Common;
 
 use App\Application\Admin\Infrastructure\AppAttachmentCommandService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
@@ -24,6 +25,7 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 use Symfony\Component\Finder\SplFileInfo;
 
 #[Controller(prefix: '/api/v1/upload')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class UploadController extends AbstractController
 {

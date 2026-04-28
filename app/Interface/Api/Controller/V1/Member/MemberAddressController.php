@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1\Member;
 
 use App\Application\Api\Member\AppApiMemberAddressCommandService;
 use App\Application\Api\Member\AppApiMemberAddressQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\MemberAddressRequest;
 use App\Interface\Api\Transformer\MemberAddressTransformer;
@@ -29,6 +30,7 @@ use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/member/addresses')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class MemberAddressController extends AbstractController
 {

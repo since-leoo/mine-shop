@@ -14,6 +14,7 @@ namespace App\Interface\Api\Controller\V1\Coupon;
 
 use App\Application\Api\Coupon\Member\AppApiMemberCouponCommandService;
 use App\Application\Api\Coupon\Member\AppApiMemberCouponQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\Coupon\CouponReceiveRequest;
 use App\Interface\Api\Transformer\Coupon\CouponTransformer;
@@ -27,6 +28,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/member/coupons')]
+#[Middleware(ApiSignatureMiddleware::class)]
 #[Middleware(TokenMiddleware::class)]
 final class MemberCouponController extends AbstractController
 {

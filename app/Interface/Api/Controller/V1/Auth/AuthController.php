@@ -6,6 +6,7 @@ namespace App\Interface\Api\Controller\V1\Auth;
 
 use App\Application\Api\Auth\AppApiAuthCommandService;
 use App\Application\Api\Auth\AppApiAuthQueryService;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\ForgotPasswordRequest;
 use App\Interface\Api\Request\V1\RegisterRequest;
 use App\Interface\Api\Request\V1\SendVerificationCodeRequest;
@@ -13,9 +14,11 @@ use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 
 #[Controller(prefix: '/api/v1/auth')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class AuthController extends AbstractController
 {
     public function __construct(

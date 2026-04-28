@@ -14,15 +14,18 @@ namespace App\Interface\Api\Controller\V1\GroupBuy;
 
 use App\Application\Api\GroupBuy\AppApiGroupBuyProductQueryService;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\GroupBuy\GroupBuyProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Contract\RequestInterface;
 
 #[Controller(prefix: '/api/v1/group-buy/products')]
+#[Middleware(ApiSignatureMiddleware::class)]
 final class GroupBuyProductController extends AbstractController
 {
     public function __construct(
