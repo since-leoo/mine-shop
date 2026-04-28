@@ -7,3 +7,7 @@ export function isMiniProgram(): boolean {
 export function isH5(): boolean {
   return Taro.getEnv() === Taro.ENV_TYPE.WEB;
 }
+
+export function supportsRootPortal(): boolean {
+  return !isH5();
+}

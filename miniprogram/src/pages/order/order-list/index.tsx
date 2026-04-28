@@ -292,6 +292,22 @@ export default function OrderList() {
   const getOrderActions = useCallback((order: Order) => {
     const buttonList = Array.isArray(order.buttons) ? order.buttons : [];
     const actions: Array<{ key: string; text: string; className: string; onClick: () => void }> = [];
+    const serviceEntry = resolveServiceEntry(order);
+    const mergeServiceAction = (items: Array<{ key: string; text: string; className: string; onClick: () => void }>) => {
+      if (!serviceEntry) {
+        return items.slice(0, 2);
+      }
+
+      return [
+        {
+          key: 'service',
+          text: serviceEntry.text,
+          className: 'order-card__action-btn--outline-primary',
+          onClick: serviceEntry.onClick,
+        },
+        ...items,
+      ].slice(0, 2);
+    };
 
     buttonList.forEach((button: any) => {
       const type = Number(button?.type);
@@ -311,35 +327,35 @@ export default function OrderList() {
     });
 
     if (actions.length > 0) {
-      return actions.slice(0, 2);
+      return mergeServiceAction(actions);
     }
 
     if (order.status === OrderStatus.PENDING_PAYMENT) {
-      return [
+      return mergeServiceAction([
         { key: 'cancel', text: '取消订单', className: 'order-card__action-btn--outline', onClick: () => handleCancelOrder(order) },
         { key: 'pay', text: '去支付', className: 'order-card__action-btn--gradient', onClick: () => handlePayOrder(order) },
-      ];
+      ]);
     }
     if (order.status === OrderStatus.PENDING_RECEIPT) {
-      return [
+      return mergeServiceAction([
         { key: 'delivery', text: '查看物流', className: 'order-card__action-btn--outline', onClick: () => handleViewDelivery(order) },
         { key: 'confirm', text: '确认收货', className: 'order-card__action-btn--primary', onClick: () => handleConfirmReceipt(order) },
-      ];
+      ]);
     }
     if (order.status === OrderStatus.COMPLETE) {
-      return [
+      return mergeServiceAction([
         { key: 'rebuy', text: '再次购买', className: 'order-card__action-btn--outline', onClick: () => handleRepurchase(order) },
         { key: 'comment', text: '去评价', className: 'order-card__action-btn--outline-primary', onClick: () => handleReview(order) },
-      ];
+      ]);
     }
     if (order.status === OrderStatus.REFUNDED) {
-      return [
+      return mergeServiceAction([
         { key: 'rebuy', text: '再次购买', className: 'order-card__action-btn--outline', onClick: () => handleRepurchase(order) },
         { key: 'view-refund', text: '查看售后', className: 'order-card__action-btn--outline-primary', onClick: () => handleViewAfterSale(order) },
-      ];
+      ]);
     }
     return [];
-  }, [handleApplyService, handleCancelOrder, handleConfirmReceipt, handlePayOrder, handleRepurchase, handleReview, handleViewAfterSale, handleViewDelivery]);
+  }, [handleCancelOrder, handleConfirmReceipt, handlePayOrder, handleRepurchase, handleReview, handleViewAfterSale, handleViewDelivery, resolveServiceEntry]);
 
   return (
     <View className={`order-list-page ${isH5() ? 'order-list-page--h5' : ''}`}>
@@ -396,25 +412,6 @@ export default function OrderList() {
                   <Text className="order-card__total-label">实付</Text>
                   <Price price={order.amount} className="order-card__total-price" fill />
                 </View>
-
-                {(() => {
-                  const serviceEntry = resolveServiceEntry(order);
-                  if (!serviceEntry) {
-                    return null;
-                  }
-
-                  return (
-                    <View
-                      className="order-card__service-link"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        serviceEntry.onClick();
-                      }}
-                    >
-                      <Text className="order-card__service-link-text">{serviceEntry.text}</Text>
-                    </View>
-                  );
-                })()}
               </View>
 
               <View className="order-card__actions" onClick={(e) => e.stopPropagation()}>

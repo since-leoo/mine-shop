@@ -9,8 +9,9 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
+
+use App\Interface\Common\Middleware\CorsMiddleware;
 use Hyperf\Validation\Middleware\ValidationMiddleware;
-use Mine\Support\Middleware\CorsMiddleware;
 use Mine\Support\Middleware\RequestIdMiddleware;
 use Mine\Support\Middleware\TranslationMiddleware;
 

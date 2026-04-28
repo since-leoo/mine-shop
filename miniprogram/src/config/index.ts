@@ -7,11 +7,11 @@ export const config = {
     clients: {
       h5: {
         clientId: 'h5',
-        secret: 'change-me-h5-signature-secret',
+        secret: 'd7b0decf52ec40b8c3b18ef80d4686e0',
       },
       miniapp: {
         clientId: 'miniapp',
-        secret: 'change-me-miniapp-signature-secret',
+        secret: 'd7b0decf52ec40b8c3b18ef80d4686e0',
       },
     },
   },

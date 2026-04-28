@@ -14,7 +14,7 @@ import {
 import homeIcon from '../../../assets/detail-bottom/home-line.svg';
 import cartIcon from '../../../assets/detail-bottom/cart-line.svg';
 import PageNav from '../../../components/page-nav';
-import { isH5 } from '../../../common/platform';
+import { isH5, supportsRootPortal } from '../../../common/platform';
 import './index.scss';
 
 interface SkuItem {
@@ -129,6 +129,7 @@ function formatPrice(price: number) {
 }
 
 export default function GoodsDetails() {
+  const useRootPortal = supportsRootPortal();
   const [details, setDetails] = useState<any>({});
   const [skuArray, setSkuArray] = useState<SkuItem[]>([]);
   const [primaryImage, setPrimaryImage] = useState('');
@@ -289,12 +290,6 @@ export default function GoodsDetails() {
   useEffect(() => {
     if (!spuId || hasTrackViewRef.current) return;
     hasTrackViewRef.current = true;
-    trackEvent('goods_detail_view', {
-      spuId,
-      orderType: orderType || 'normal',
-      activityId: activityId || groupBuyId || '',
-      sessionId: sessionId || '',
-    });
   }, [spuId, orderType, activityId, groupBuyId, sessionId]);
 
   useEffect(() => () => {
@@ -405,11 +400,6 @@ export default function GoodsDetails() {
       groupBuyIntentRef.current = null;
     }
     setBuyType(type);
-    trackEvent('goods_sku_popup_open', {
-      spuId,
-      orderType: orderType || 'normal',
-      actionType: type === 2 ? 'add_cart' : type === 1 ? 'buy_now' : 'select_spec',
-    });
     if (!showSpecPopup) {
       setShowSpecPopup(true);
       if (popupTimerRef.current) clearTimeout(popupTimerRef.current);
@@ -773,7 +763,7 @@ export default function GoodsDetails() {
 
       <View className="goods-bottom-placeholder" />
 
-      {!isGroupBuyMode && (isH5() ? (
+      {!isGroupBuyMode && (useRootPortal ? (
         <RootPortal>
           <View className={`goods-bottom-bar ${showSpecPopup ? 'goods-bottom-bar--hidden' : ''}`}>
             <View className="goods-bottom-bar__icons">
@@ -833,7 +823,7 @@ export default function GoodsDetails() {
         </View>
       ))}
 
-      {isGroupBuyMode && (isH5() ? (
+      {isGroupBuyMode && (useRootPortal ? (
         <RootPortal>
           <View className={`goods-group-bottom ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
             <View className="goods-group-bottom__origin" onClick={() => handleGroupBottomClick('origin')}>

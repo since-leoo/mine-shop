@@ -345,7 +345,6 @@ export default function OrderDetail() {
             <Text className="order-detail__icon-text">运</Text>
           </View>
           <View className="order-detail__logistics-main">
-            <Text className="order-detail__logistics-title">物流信息</Text>
             <Text className="order-detail__logistics-text">您的快递正在派送中</Text>
             <Text className="order-detail__logistics-time">{logisticsTime}</Text>
           </View>
@@ -375,9 +374,11 @@ export default function OrderDetail() {
               <Image className="order-detail__goods-img" src={goods.thumb} mode="aspectFill" />
               <View className="order-detail__goods-info">
                 <Text className="order-detail__goods-title">{goods.title}</Text>
-                {!!goods.specs.length && (
-                  <Text className="order-detail__goods-specs">{goods.specs.join(' ')}</Text>
-                )}
+                <View className="order-detail__goods-meta">
+                  {!!goods.specs.length && (
+                    <Text className="order-detail__goods-specs">{goods.specs.join(' ')}</Text>
+                  )}
+                </View>
                 {((afterSale && !canReapplyAfterSale(afterSale)) || canApplyServiceForOrder || canReapplyAfterSale(afterSale)) && (
                   <View className="order-detail__goods-actions" onClick={(event) => event.stopPropagation()}>
                     {afterSale && !canReapplyAfterSale(afterSale) ? (
