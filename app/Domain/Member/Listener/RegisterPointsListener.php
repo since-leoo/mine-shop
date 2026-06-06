@@ -15,6 +15,7 @@ namespace App\Domain\Member\Listener;
 use App\Domain\Member\Event\MemberRegistered;
 use App\Domain\Member\Service\DomainMemberPointsService;
 use Hyperf\Event\Contract\ListenerInterface;
+use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
  * 注册送积分监听器：监听会员注册事件，赠送注册积分.
@@ -23,6 +24,7 @@ final class RegisterPointsListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainMemberPointsService $pointsService,
+        private readonly EventDispatcherInterface $dispatcher,
     ) {}
 
     public function listen(): array
@@ -38,8 +40,29 @@ final class RegisterPointsListener implements ListenerInterface
             return;
         }
 
-        \Hyperf\Coroutine\co(function () use ($event) {
-            $this->pointsService->grantRegisterPoints($event->memberId);
-        });
+        $handler = fn () => $this->grantRewards($event);
+        if (class_exists(\Swoole\Coroutine::class)) {
+            \Hyperf\Coroutine\co($handler);
+            return;
+        }
+
+        $handler();
+    }
+
+    private function grantRewards(MemberRegistered $event): void
+    {
+        $registerEvent = $this->pointsService->grantRegisterPoints($event->memberId);
+        if ($registerEvent !== null) {
+            $this->dispatcher->dispatch($registerEvent);
+        }
+
+        if ($event->referrerId === null) {
+            return;
+        }
+
+        $inviteEvent = $this->pointsService->grantInvitePoints($event->referrerId, $event->memberId);
+        if ($inviteEvent !== null) {
+            $this->dispatcher->dispatch($inviteEvent);
+        }
     }
 }

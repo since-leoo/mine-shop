@@ -87,9 +87,11 @@ final class FreightCalculationService
     public function calculateForItems(array $items, string $province): int
     {
         $totalFreight = 0;
+        $totalAmount = 0;
         $configCache = [];
 
         foreach ($items as $item) {
+            $totalAmount += $item->getTotalPrice();
             $productId = $item->getProductId();
             if ($productId <= 0) {
                 continue;
@@ -109,6 +111,11 @@ final class FreightCalculationService
                 $item->getQuantity(),
                 (int) $item->getWeight(),
             );
+        }
+
+        $freeShippingThreshold = $this->mallSettingService->shipping()->freeShippingThreshold();
+        if ($freeShippingThreshold > 0 && $totalAmount >= $freeShippingThreshold) {
+            return 0;
         }
 
         return $totalFreight;

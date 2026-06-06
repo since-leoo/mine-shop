@@ -56,4 +56,12 @@ final class AppMemberLevelCommandService
         // 事务管理
         return Db::transaction(fn () => $this->memberLevelService->delete($id));
     }
+
+    /**
+     * @return array{created: int, updated: int, skipped: int}
+     */
+    public function importVipLevelsFromConfig(int $operatorId): array
+    {
+        return Db::transaction(fn () => $this->memberLevelService->importVipLevelsFromConfig($operatorId));
+    }
 }

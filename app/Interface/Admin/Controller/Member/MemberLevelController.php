@@ -73,6 +73,16 @@ final class MemberLevelController extends AbstractController
         return $this->success($level, '更新会员等级成功');
     }
 
+    #[PostMapping(path: 'import-vip-levels')]
+    #[Permission(code: 'member:level:update')]
+    public function importVipLevels(): Result
+    {
+        return $this->success(
+            $this->commandService->importVipLevelsFromConfig($this->currentUser->id()),
+            '会员等级配置导入成功',
+        );
+    }
+
     #[DeleteMapping(path: '{id:\d+}')]
     #[Permission(code: 'member:level:delete')]
     public function delete(int $id): Result

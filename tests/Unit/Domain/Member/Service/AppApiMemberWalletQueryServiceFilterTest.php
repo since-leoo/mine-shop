@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Domain\Member\Service;
 
 use App\Application\Api\Member\AppApiMemberWalletQueryService;
-use App\Domain\Member\Repository\MemberWalletTransactionRepository;
+use App\Domain\Member\Service\DomainMemberWalletTransactionService;
 use Eris\Generators;
 use Eris\TestTrait;
 use PHPUnit\Framework\TestCase;
@@ -235,9 +235,9 @@ final class AppApiMemberWalletQueryServiceFilterTest extends TestCase
      */
     private function buildService(array $allRecords): AppApiMemberWalletQueryService
     {
-        $repository = $this->createMock(MemberWalletTransactionRepository::class);
+        $walletTransactionService = $this->createMock(DomainMemberWalletTransactionService::class);
 
-        $repository->method('page')
+        $walletTransactionService->method('page')
             ->willReturnCallback(static function (array $params, ?int $page, ?int $pageSize) use ($allRecords): array {
                 $filtered = $allRecords;
 
@@ -257,6 +257,6 @@ final class AppApiMemberWalletQueryServiceFilterTest extends TestCase
                 ];
             });
 
-        return new AppApiMemberWalletQueryService($repository);
+        return new AppApiMemberWalletQueryService($walletTransactionService);
     }
 }

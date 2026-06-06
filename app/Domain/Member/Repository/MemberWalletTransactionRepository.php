@@ -14,6 +14,8 @@ namespace App\Domain\Member\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\MemberWalletTransaction;
+use Carbon\Carbon;
+use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
 /**
@@ -61,5 +63,74 @@ final class MemberWalletTransactionRepository extends IRepository
             ->where('wallet_type', $walletType)
             ->where('source', $source)
             ->exists();
+    }
+
+    public function existsByMemberSourceAndRelated(
+        int $memberId,
+        string $walletType,
+        string $source,
+        string $relatedType,
+        int $relatedId
+    ): bool {
+        return $this->getQuery()
+            ->where('member_id', $memberId)
+            ->where('wallet_type', $walletType)
+            ->where('source', $source)
+            ->where('related_type', $relatedType)
+            ->where('related_id', $relatedId)
+            ->exists();
+    }
+
+    public function existsBySourceAndRelated(
+        string $walletType,
+        string $source,
+        string $relatedType,
+        int $relatedId
+    ): bool {
+        return $this->getQuery()
+            ->where('wallet_type', $walletType)
+            ->where('source', $source)
+            ->where('related_type', $relatedType)
+            ->where('related_id', $relatedId)
+            ->exists();
+    }
+
+    /**
+     * @return Collection<int, MemberWalletTransaction>
+     */
+    public function findExpirablePointGrantTransactions(Carbon $cutoff): Collection
+    {
+        return $this->getQuery()
+            ->where('wallet_type', 'points')
+            ->where('type', 'adjust_in')
+            ->where('amount', '>', 0)
+            ->whereNotIn('source', ['points_expire', 'purchase_refund'])
+            ->where('created_at', '<=', $cutoff)
+            ->orderBy('member_id')
+            ->orderBy('created_at')
+            ->orderBy('id')
+            ->get();
+    }
+
+    /**
+     * @param array<int, int> $sourceTransactionIds
+     * @return array<int, int>
+     */
+    public function findExpiredPointSourceTransactionIds(array $sourceTransactionIds): array
+    {
+        if ($sourceTransactionIds === []) {
+            return [];
+        }
+
+        return $this->getQuery()
+            ->where('wallet_type', 'points')
+            ->where('source', 'points_expire')
+            ->where('related_type', 'wallet_transaction')
+            ->whereIn('related_id', $sourceTransactionIds)
+            ->pluck('related_id')
+            ->map(static fn ($relatedId): int => (int) $relatedId)
+            ->unique()
+            ->values()
+            ->all();
     }
 }

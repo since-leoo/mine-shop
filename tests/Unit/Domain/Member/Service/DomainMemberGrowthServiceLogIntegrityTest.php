@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\MemberSetting;
 use App\Domain\Member\Repository\MemberGrowthLogRepository;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Service\DomainMemberGrowthService;
@@ -175,6 +177,8 @@ final class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
         $memberRepository = $this->createMock(MemberRepository::class);
         $growthLogRepository = $this->createMock(MemberGrowthLogRepository::class);
         $levelService = $this->createMock(DomainMemberLevelService::class);
+        $mallSettingService = $this->createMock(DomainMallSettingService::class);
+        $mallSettingService->method('member')->willReturn($this->makeMemberSetting());
 
         $memberRepository->method('findById')
             ->willReturn($this->makeMemberMock($memberId, $initialGrowth));
@@ -195,6 +199,7 @@ final class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             $memberRepository,
             $growthLogRepository,
             $levelService,
+            $mallSettingService,
         );
 
         return [
@@ -202,5 +207,19 @@ final class DomainMemberGrowthServiceLogIntegrityTest extends TestCase
             'getLog' => static function () use (&$capturedLog) { return $capturedLog; },
             'getUpdate' => static function () use (&$capturedUpdate) { return $capturedUpdate; },
         ];
+    }
+
+    private function makeMemberSetting(): MemberSetting
+    {
+        return new MemberSetting(
+            enableGrowth: true,
+            registerPoints: 100,
+            signInReward: 5,
+            inviteReward: 50,
+            pointsExpireMonths: 24,
+            vipLevels: [],
+            defaultLevel: 1,
+            pointsRatio: 100,
+        );
     }
 }

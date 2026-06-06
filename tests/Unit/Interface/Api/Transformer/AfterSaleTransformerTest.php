@@ -15,7 +15,8 @@ namespace HyperfTests\Unit\Interface\Api\Transformer;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
-use App\Interface\Api\Request\Transformer\AfterSaleTransformer;
+use App\Infrastructure\Model\Order\OrderPaymentRefund;
+use App\Interface\Api\Transformer\AfterSaleTransformer;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,6 +29,11 @@ final class AfterSaleTransformerTest extends TestCase
     {
         $afterSale = new class extends AfterSale {
             public function __construct() {}
+
+            public function latestRefundRecord(): ?OrderPaymentRefund
+            {
+                return null;
+            }
         };
         $order = new class extends Order {
             public function __construct() {}

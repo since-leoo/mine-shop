@@ -19,12 +19,12 @@ use PHPUnit\Framework\TestCase;
  */
 final class DomainMemberLevelServiceFallbackTest extends TestCase
 {
-    public function testMatchLevelByGrowthValueReturnsNullWhenNoLevelConfigExists(): void
+    public function testMatchLevelByGrowthValueThrowsWhenNoTableLevelExists(): void
     {
         $builder = $this->getMockBuilder(Builder::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['where', 'whereKey', 'first', 'firstOrFail', 'orderBy'])
-            ->addMethods(['orderByDesc'])
+            ->onlyMethods(['where', 'whereKey', 'first', 'firstOrFail'])
+            ->addMethods(['orderBy', 'orderByDesc'])
             ->getMock();
 
         $builder->method('where')->willReturnSelf();
@@ -42,7 +42,9 @@ final class DomainMemberLevelServiceFallbackTest extends TestCase
 
         $service = new DomainMemberLevelService($repository, $mallSettingService);
 
-        self::assertNull($service->matchLevelByGrowthValue(38800));
+        $this->expectException(ModelNotFoundException::class);
+
+        $service->matchLevelByGrowthValue(38800);
     }
 
     private function createMallSettingService(int $defaultLevelId): DomainMallSettingService

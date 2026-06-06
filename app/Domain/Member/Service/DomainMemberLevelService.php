@@ -65,6 +65,48 @@ final class DomainMemberLevelService extends IService
     }
 
     /**
+     * Import mall.member.vip_levels into member_levels explicitly.
+     *
+     * The config is import input only. Runtime matching continues to read
+     * member_levels, and unrelated table records are not deleted or changed.
+     *
+     * @return array{created: int, updated: int, skipped: int}
+     */
+    public function importVipLevelsFromConfig(int $operatorId = 0): array
+    {
+        $levels = $this->normalizeVipLevelConfigs($this->mallSettingService->member()->vipLevels());
+        $this->validateLevelConfigs($levels);
+        $this->validateUniqueLevelNames($levels);
+
+        $result = ['created' => 0, 'updated' => 0, 'skipped' => 0];
+
+        foreach ($levels as $level) {
+            $existing = $this->repository->getModel()->newQuery()
+                ->where('name', $level['name'])
+                ->first();
+
+            if ($existing instanceof MemberLevel) {
+                $payload = $level;
+                if ($operatorId > 0) {
+                    $payload['updated_by'] = $operatorId;
+                }
+                $existing->update($payload);
+                ++$result['updated'];
+                continue;
+            }
+
+            $payload = $level;
+            if ($operatorId > 0) {
+                $payload['created_by'] = $operatorId;
+            }
+            $this->repository->create($payload);
+            ++$result['created'];
+        }
+
+        return $result;
+    }
+
+    /**
      * 校验等级配置列表的合法性（序号唯一、成长值门槛严格递增）.
      *
      * @param array $levels 等级配置数组，每项需包含 level 和 growth_value_min 字段
@@ -100,10 +142,63 @@ final class DomainMemberLevelService extends IService
     }
 
     /**
-     * 根据成长值匹配对应等级（返回所有启用等级中 growth_value_min <= growthValue 的最高序号等级）.
-     *
-     * @param int $growthValue 当前成长值
-     * @return MemberLevel 匹配的等级
+     * @param array<int, array<string, mixed>> $levels
+     */
+    private function validateUniqueLevelNames(array $levels): void
+    {
+        $names = array_map(static fn (array $level) => $level['name'], $levels);
+        if (\count($names) !== \count(array_unique($names))) {
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级名称不能重复');
+        }
+    }
+
+    /**
+     * @param array<int, array<string, mixed>> $levels
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeVipLevelConfigs(array $levels): array
+    {
+        $normalized = [];
+
+        foreach ($levels as $item) {
+            $name = trim((string) ($item['name'] ?? ''));
+            if ($name === '') {
+                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级名称不能为空');
+            }
+
+            if (! isset($item['level']) || (! isset($item['growth']) && ! isset($item['growth_value_min']))) {
+                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级配置字段不完整');
+            }
+
+            $level = (int) $item['level'];
+            $growthValueMin = (int) ($item['growth_value_min'] ?? $item['growth']);
+
+            if ($level < 1 || $growthValueMin < 0) {
+                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级配置字段不合法');
+            }
+
+            $payload = [
+                'name' => $name,
+                'level' => $level,
+                'growth_value_min' => $growthValueMin,
+                'status' => (string) ($item['status'] ?? 'active'),
+                'sort_order' => (int) ($item['sort_order'] ?? $level),
+            ];
+
+            foreach (['growth_value_max', 'discount_rate', 'point_rate', 'privileges', 'icon', 'color', 'description'] as $field) {
+                if (array_key_exists($field, $item) && $item[$field] !== null) {
+                    $payload[$field] = $item[$field];
+                }
+            }
+
+            $normalized[] = $payload;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Match the highest active table level whose threshold is not greater than the growth value.
      */
     public function matchLevelByGrowthValue(int $growthValue): MemberLevel
     {

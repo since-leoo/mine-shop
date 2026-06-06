@@ -90,7 +90,87 @@ final class DomainMemberPointsService
      *
      * @return ?MemberBalanceAdjusted 变动事件对象供调用方派发（无变动时返回 null）
      */
-    public function grantPurchasePoints(int $memberId, int $payAmountCents, string $orderNo): void
+    public function grantSignInPoints(int $memberId, ?\DateTimeInterface $signedAt = null): ?MemberBalanceAdjusted
+    {
+        $points = $this->mallSettingService->member()->signInReward();
+
+        if ($points <= 0) {
+            return null;
+        }
+
+        $member = $this->memberRepository->findById($memberId);
+        if (! $member) {
+            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+        }
+
+        $dateId = (int) ($signedAt ?? new \DateTimeImmutable())->format('Ymd');
+        if ($this->transactionRepository->existsByMemberSourceAndRelated($memberId, 'points', 'sign_in', 'sign_in_date', $dateId)) {
+            return null;
+        }
+
+        $walletEntity = $this->walletService->getEntity($memberId, 'points');
+        $walletEntity->grant($points, 'sign_in', 'daily sign-in points');
+        $this->walletService->saveEntity($walletEntity);
+
+        return new MemberBalanceAdjusted(
+            memberId: $memberId,
+            walletId: $walletEntity->getId(),
+            walletType: 'points',
+            changeAmount: $points,
+            beforeBalance: $walletEntity->getBeforeBalance(),
+            afterBalance: $walletEntity->getAfterBalance(),
+            source: 'sign_in',
+            remark: 'daily sign-in points',
+            relatedType: 'sign_in_date',
+            relatedId: $dateId,
+        );
+    }
+
+    public function grantInvitePoints(int $referrerId, int $invitedMemberId): ?MemberBalanceAdjusted
+    {
+        if ($referrerId === $invitedMemberId) {
+            return null;
+        }
+
+        $points = $this->mallSettingService->member()->inviteReward();
+
+        if ($points <= 0) {
+            return null;
+        }
+
+        $referrer = $this->memberRepository->findById($referrerId);
+        if (! $referrer) {
+            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+        }
+
+        $invitedMember = $this->memberRepository->findById($invitedMemberId);
+        if (! $invitedMember) {
+            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+        }
+
+        if ($this->transactionRepository->existsBySourceAndRelated('points', 'invite_reward', 'invited_member', $invitedMemberId)) {
+            return null;
+        }
+
+        $walletEntity = $this->walletService->getEntity($referrerId, 'points');
+        $walletEntity->grant($points, 'invite_reward', 'invite reward points');
+        $this->walletService->saveEntity($walletEntity);
+
+        return new MemberBalanceAdjusted(
+            memberId: $referrerId,
+            walletId: $walletEntity->getId(),
+            walletType: 'points',
+            changeAmount: $points,
+            beforeBalance: $walletEntity->getBeforeBalance(),
+            afterBalance: $walletEntity->getAfterBalance(),
+            source: 'invite_reward',
+            remark: 'invite reward points',
+            relatedType: 'invited_member',
+            relatedId: $invitedMemberId,
+        );
+    }
+
+    public function grantPurchasePoints(int $memberId, int $payAmountCents, string $orderNo): ?MemberBalanceAdjusted
     {
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
@@ -108,14 +188,14 @@ final class DomainMemberPointsService
         $points = $this->calculatePurchasePoints($payAmountCents, $pointRate);
 
         if ($points <= 0) {
-            return;
+            return null;
         }
 
         $walletEntity = $this->walletService->getEntity($memberId, 'points');
         $walletEntity->grant($points, 'purchase_reward', '消费奖励:' . $orderNo);
         $this->walletService->saveEntity($walletEntity);
 
-        event(new MemberBalanceAdjusted(
+        return new MemberBalanceAdjusted(
             memberId: $memberId,
             walletId: $walletEntity->getId(),
             walletType: 'points',
@@ -124,7 +204,7 @@ final class DomainMemberPointsService
             afterBalance: $walletEntity->getAfterBalance(),
             source: 'purchase_reward',
             remark: '消费奖励:' . $orderNo,
-        ));
+        );
     }
 
     /**

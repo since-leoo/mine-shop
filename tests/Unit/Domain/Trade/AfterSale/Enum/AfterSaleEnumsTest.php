@@ -46,7 +46,7 @@ final class AfterSaleEnumsTest extends TestCase
 
     public function testAfterSaleRefundStatusValues(): void
     {
-        self::assertSame(['none', 'pending', 'processing', 'refunded'], AfterSaleRefundStatus::values());
+        self::assertSame(['none', 'pending', 'processing', 'failed', 'refunded'], AfterSaleRefundStatus::values());
     }
 
     public function testAfterSaleReturnStatusValues(): void

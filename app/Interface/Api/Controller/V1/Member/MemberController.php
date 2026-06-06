@@ -15,6 +15,7 @@ namespace App\Interface\Api\Controller\V1\Member;
 use App\Application\Api\Member\AppApiMemberAuthCommandService;
 use App\Application\Api\Member\AppApiMemberCenterQueryService;
 use App\Application\Api\Member\AppApiMemberReferralQueryService;
+use App\Application\Api\Member\AppApiMemberSignInCommandService;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\PhoneAuthorizeRequest;
@@ -43,6 +44,7 @@ final class MemberController extends AbstractController
         private readonly CurrentMember $currentMember,
         private readonly AppApiMemberAuthCommandService $memberAuthService,
         private readonly AppApiMemberReferralQueryService $referralQueryService,
+        private readonly AppApiMemberSignInCommandService $signInCommandService,
         private readonly RequestInterface $request,
     ) {}
 
@@ -98,5 +100,10 @@ final class MemberController extends AbstractController
         $page = $this->request->input('page', 'pages/home/home');
         $result = $this->referralQueryService->generateInviteQrCode($this->currentMember->id(), $page);
         return $this->success($result, '获取成功');
+    }
+    #[PostMapping(path: 'sign-in')]
+    public function signIn(): Result
+    {
+        return $this->success($this->signInCommandService->signIn($this->currentMember->id()), 'success');
     }
 }

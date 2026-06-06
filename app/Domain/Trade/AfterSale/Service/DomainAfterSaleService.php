@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\AfterSale\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleApplyInput;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
@@ -29,6 +30,7 @@ final class DomainAfterSaleService
     public function __construct(
         private readonly OrderRepository $orderRepository,
         private readonly AfterSaleRepository $afterSaleRepository,
+        private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -89,7 +91,26 @@ final class DomainAfterSaleService
             throw new DomainException('当前订单状态不支持申请售后');
         }
 
+        if ($status === OrderStatus::COMPLETED->value && $this->isAfterSaleWindowExpired($orderItem)) {
+            throw new DomainException('订单已超过售后申请期');
+        }
+
         return $orderItem;
+    }
+
+    private function isAfterSaleWindowExpired(OrderItem $orderItem): bool
+    {
+        $afterSaleDays = $this->mallSettingService->order()->afterSaleDays();
+        if ($afterSaleDays <= 0) {
+            return false;
+        }
+
+        $completedAt = $orderItem->order->updated_at ?? null;
+        if ($completedAt === null) {
+            return false;
+        }
+
+        return $completedAt->copy()->addDays($afterSaleDays)->isPast();
     }
 
     /**

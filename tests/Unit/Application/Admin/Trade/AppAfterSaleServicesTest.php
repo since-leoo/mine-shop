@@ -10,11 +10,14 @@ use App\Domain\Trade\AfterSale\Contract\AfterSaleActionInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReshipInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReviewInput;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\PaymentSetting;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleQueryService;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundService;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleService;
 use DG\BypassFinals;
 use PHPUnit\Framework\TestCase;
+use RuntimeException;
 
 /**
  * @internal
@@ -72,7 +75,7 @@ final class AppAfterSaleServicesTest extends TestCase
             ->method('saveEntity')
             ->with(self::callback(static function (AfterSaleEntity $saved): bool {
                 return $saved->getId() === 89
-                    && $saved\->getStatus() === 'waiting_refund'
+                    && $saved->getStatus() === 'waiting_refund'
                     && $saved->getRefundAmount() === 9900;
             }))
             ->willReturn(true);
@@ -87,10 +90,98 @@ final class AppAfterSaleServicesTest extends TestCase
         $input->method('getId')->willReturn(89);
         $input->method('getApprovedRefundAmount')->willReturn(9900);
 
-        $service = new AppAfterSaleCommandService($afterSaleService, $queryService, $this->createMock(DomainAfterSaleRefundService::class));
+        $refundService = $this->createMock(DomainAfterSaleRefundService::class);
+        $refundService->expects(self::never())->method('refund');
+
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $refundService,
+            $this->makeMallSettingService(refundReview: true),
+        );
         $result = $service->approve($input);
 
         self::assertSame(89, $result['after_sale']->id);
+    }
+
+    public function testCommandServiceApproveAutoRefundsWhenRefundReviewDisabled(): void
+    {
+        $entity = $this->makeEntity(id: 93, status: 'pending_review');
+        $afterSaleService = $this->createMock(DomainAfterSaleService::class);
+        $afterSaleService->expects(self::once())->method('getEntity')->with(93)->willReturn($entity);
+        $afterSaleService->expects(self::exactly(2))
+            ->method('saveEntity')
+            ->with(self::callback(static fn (AfterSaleEntity $saved): bool => \in_array($saved->getStatus(), ['waiting_refund', 'refunding'], true)))
+            ->willReturn(true);
+
+        $refundService = $this->createMock(DomainAfterSaleRefundService::class);
+        $refundService->expects(self::once())
+            ->method('refund')
+            ->with(self::callback(static fn (AfterSaleEntity $saved): bool => $saved->getStatus() === 'refunding'), 1, 'admin');
+
+        $queryService = $this->createMock(AppAfterSaleQueryService::class);
+        $queryService->expects(self::once())
+            ->method('detail')
+            ->with(93)
+            ->willReturn(['after_sale' => (object) ['id' => 93], 'refund_record' => null]);
+
+        $input = $this->createStub(AfterSaleReviewInput::class);
+        $input->method('getId')->willReturn(93);
+        $input->method('getApprovedRefundAmount')->willReturn(9900);
+        $input->method('getOperatorId')->willReturn(1);
+        $input->method('getOperatorName')->willReturn('admin');
+
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $refundService,
+            $this->makeMallSettingService(refundReview: false),
+        );
+        $result = $service->approve($input);
+
+        self::assertSame(93, $result['after_sale']->id);
+    }
+
+    public function testCommandServiceApproveMarksRefundFailedAndRethrowsWhenAutoRefundFails(): void
+    {
+        $entity = $this->makeEntity(id: 94, status: 'pending_review');
+        $afterSaleService = $this->createMock(DomainAfterSaleService::class);
+        $afterSaleService->expects(self::once())->method('getEntity')->with(94)->willReturn($entity);
+        $afterSaleService->expects(self::exactly(3))
+            ->method('saveEntity')
+            ->with(self::callback(static fn (AfterSaleEntity $saved): bool => \in_array($saved->getStatus(), ['waiting_refund', 'refunding'], true)))
+            ->willReturn(true);
+
+        $refundService = $this->createMock(DomainAfterSaleRefundService::class);
+        $refundService->expects(self::once())
+            ->method('refund')
+            ->willThrowException(new RuntimeException('gateway rejected'));
+
+        $queryService = $this->createMock(AppAfterSaleQueryService::class);
+        $queryService->expects(self::never())->method('detail');
+
+        $input = $this->createStub(AfterSaleReviewInput::class);
+        $input->method('getId')->willReturn(94);
+        $input->method('getApprovedRefundAmount')->willReturn(9900);
+        $input->method('getOperatorId')->willReturn(1);
+        $input->method('getOperatorName')->willReturn('admin');
+
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $refundService,
+            $this->makeMallSettingService(refundReview: false),
+        );
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('gateway rejected');
+
+        try {
+            $service->approve($input);
+        } finally {
+            self::assertSame('waiting_refund', $entity->getStatus());
+            self::assertSame('failed', $entity->getRefundStatus());
+        }
     }
 
     public function testCommandServiceRefundTriggersRefundServiceAndReturnsRawDetail(): void
@@ -119,7 +210,12 @@ final class AppAfterSaleServicesTest extends TestCase
         $input->method('getOperatorId')->willReturn(1);
         $input->method('getOperatorName')->willReturn('admin');
 
-        $service = new AppAfterSaleCommandService($afterSaleService, $queryService, $refundService);
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $refundService,
+            $this->makeMallSettingService(),
+        );
         $result = $service->refund($input);
 
         self::assertSame(90, $result['after_sale']->id);
@@ -150,7 +246,12 @@ final class AppAfterSaleServicesTest extends TestCase
         $input->method('getLogisticsCompany')->willReturn('SF');
         $input->method('getLogisticsNo')->willReturn('SF123456');
 
-        $service = new AppAfterSaleCommandService($afterSaleService, $queryService, $this->createMock(DomainAfterSaleRefundService::class));
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $this->createMock(DomainAfterSaleRefundService::class),
+            $this->makeMallSettingService(),
+        );
         $result = $service->reship($input);
 
         self::assertSame(91, $result['after_sale']->id);
@@ -175,10 +276,30 @@ final class AppAfterSaleServicesTest extends TestCase
         $input = $this->createStub(AfterSaleActionInput::class);
         $input->method('getId')->willReturn(92);
 
-        $service = new AppAfterSaleCommandService($afterSaleService, $queryService, $this->createMock(DomainAfterSaleRefundService::class));
+        $service = new AppAfterSaleCommandService(
+            $afterSaleService,
+            $queryService,
+            $this->createMock(DomainAfterSaleRefundService::class),
+            $this->makeMallSettingService(),
+        );
         $result = $service->completeExchange($input);
 
         self::assertSame(92, $result['after_sale']->id);
+    }
+
+    private function makeMallSettingService(bool $refundReview = true): DomainMallSettingService
+    {
+        $service = $this->createMock(DomainMallSettingService::class);
+        $service->method('payment')->willReturn(new PaymentSetting(
+            false,
+            [],
+            $refundReview,
+            7,
+            true,
+            [],
+        ));
+
+        return $service;
     }
 
     private function makeEntity(

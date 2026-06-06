@@ -12,9 +12,7 @@ use App\Domain\Trade\Order\Entity\OrderItemEntity;
 use App\Domain\Trade\Order\Event\OrderCreatedEvent;
 use App\Domain\Trade\Order\Listener\OrderCreatedListener;
 use App\Infrastructure\Abstract\ICache;
-use Hyperf\Logger\LoggerFactory;
 use PHPUnit\Framework\TestCase;
-use Psr\Log\LoggerInterface;
 
 /**
  * @internal
@@ -46,11 +44,7 @@ final class OrderCreatedListenerTest extends TestCase
             $this->newInstanceWithoutConstructor(DomainApiMemberCartQueryService::class),
         );
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $loggerFactory = $this->createMock(LoggerFactory::class);
-        $loggerFactory->method('get')->with('order')->willReturn($logger);
-
-        $listener = new OrderCreatedListener($loggerFactory, $cartCommandService);
+        $listener = new OrderCreatedListener($cartCommandService);
         $listener->process(new OrderCreatedEvent($this->makeOrder(true)));
 
         self::assertSame([
@@ -83,11 +77,7 @@ final class OrderCreatedListenerTest extends TestCase
             $this->newInstanceWithoutConstructor(DomainApiMemberCartQueryService::class),
         );
 
-        $logger = $this->createMock(LoggerInterface::class);
-        $loggerFactory = $this->createMock(LoggerFactory::class);
-        $loggerFactory->method('get')->with('order')->willReturn($logger);
-
-        $listener = new OrderCreatedListener($loggerFactory, $cartCommandService);
+        $listener = new OrderCreatedListener($cartCommandService);
         $listener->process(new OrderCreatedEvent($this->makeOrder(false)));
 
         self::assertSame([], $deleted->getArrayCopy());

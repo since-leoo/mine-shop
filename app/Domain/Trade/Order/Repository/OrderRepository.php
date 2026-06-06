@@ -309,6 +309,23 @@ final class OrderRepository extends IRepository
             ->get();
     }
 
+    public function findAutoConfirmableOrders(Carbon $shippedBefore, int $limit = 200): \Hyperf\Database\Model\Collection
+    {
+        return $this->getQuery()
+            ->where('status', OrderStatus::SHIPPED->value)
+            ->whereHas('packages', static function (Builder $query) use ($shippedBefore) {
+                $query->whereNotNull('shipped_at')
+                    ->where('shipped_at', '<=', $shippedBefore);
+            })
+            ->whereDoesntHave('packages', static function (Builder $query) use ($shippedBefore) {
+                $query->whereNull('shipped_at')
+                    ->orWhere('shipped_at', '>', $shippedBefore);
+            })
+            ->with(['items', 'address', 'packages'])
+            ->limit($limit)
+            ->get();
+    }
+
     /**
      * 婵犵數濮烽弫鍛婃叏娴兼潙鍨傞柣鎾崇岸閺嬫牗绻涢幋鐐茬劰闁稿鎸搁～婵嬫偂鎼淬垻褰庢俊銈囧Х閸嬫盯宕婊勫床婵犻潧顑呴悙濠勬喐韫囨侗鏁婇柟閭﹀厴閺€浠嬫煟濡鍤嬬€规悶鍎甸弻鐔煎礃閺屻儱寮伴悗瑙勬礃閸ㄧ敻顢橀崗鐓庣窞閻庯綆鍓欓獮鎰攽閻橆喖鐏辨繛澶嬬☉铻炵€光偓閸曨偆锛涢梺瑙勫礃椤曆囨儗濡も偓椤潡鎳滃妤婁簼缁?
      *
