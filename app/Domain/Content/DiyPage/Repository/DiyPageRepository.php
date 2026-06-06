@@ -48,6 +48,20 @@ class DiyPageRepository extends IRepository
         return $page;
     }
 
+    public function findDetail(int $id): ?DiyPage
+    {
+        /** @var DiyPage|null $page */
+        $page = $this->getQuery()
+            ->with([
+                'publishedVersion',
+                'versions' => static fn ($query) => $query->orderByDesc('id'),
+            ])
+            ->whereKey($id)
+            ->first();
+
+        return $page;
+    }
+
     public function createPage(array $data): DiyPage
     {
         /** @var DiyPage $page */

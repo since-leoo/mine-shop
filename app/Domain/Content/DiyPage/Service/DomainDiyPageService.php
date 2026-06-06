@@ -145,6 +145,11 @@ final class DomainDiyPageService extends IService
         return $this->repository->storeDraft($id, $schema, $operatorId);
     }
 
+    public function findDetail(int $id): ?DiyPage
+    {
+        return $this->repository->findDetail($id);
+    }
+
     private function requirePage(int $id): DiyPage
     {
         $page = $this->repository->findById($id);
