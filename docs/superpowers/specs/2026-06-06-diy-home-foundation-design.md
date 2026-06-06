@@ -6,7 +6,7 @@
 
 为 MineShop 建立第一期小程序 DIY 装修能力，先打通“后台配置 -> 草稿保存 -> 发布 -> 接口输出 -> 小程序多端渲染”的基础闭环。
 
-第一期聚焦首页，不做完整装修平台。设计目标是把页面装修的数据结构、发布机制、组件边界先稳定下来，后续再扩展拖拽编辑器、更多页面、模板市场和营销专题。
+第一期聚焦首页，但后台需要先建立 DIY 页面管理列表。设计目标是把页面装修的数据结构、页面类型、启用机制、发布机制、组件边界和可视化编辑能力先稳定下来，后续再扩展模板市场、营销专题和更复杂的自由布局。
 
 ## 背景
 
@@ -25,10 +25,14 @@
 第一期包含：
 
 - 首页装修页面模型。
+- DIY 页面管理列表。
+- 页面类型：小程序、H5、通用。
+- 常规启用/禁用。
+- 在同一页面键和页面类型下选择一个已 DIY 好的页面启用。
 - 页面草稿保存。
 - 页面发布。
 - 已发布页面接口。
-- 后台实用型装修编辑页。
+- 后台可视化装修编辑器。
 - 小程序动态装修渲染器。
 - 首页兼容回退：未发布装修或接口异常时继续使用现有首页。
 - 基础组件：
@@ -42,9 +46,9 @@
 
 第一期不包含：
 
-- 完整拖拽自由布局。
 - 模板市场。
-- 多页面装修管理，如分类页、会员中心、活动专题。
+- 多业务页面落地，如分类页、会员中心、活动专题的前端接入。
+- 绝对定位式自由画布。
 - 页面 A/B 测试。
 - 复杂人群定向、定时发布、渠道差异化投放。
 - 任意 CSS 或低代码脚本能力。
@@ -53,13 +57,13 @@
 
 采用“服务端保存标准页面结构，小程序端按组件注册表渲染”的行业通用方案。
 
-后台负责编辑结构化组件数据，不允许保存任意前端代码。后端负责页面结构校验、草稿和发布状态管理。接口只返回已发布版本。小程序端维护组件注册表，根据 `type` 找到对应 Taro 组件渲染。
+后台负责管理 DIY 页面列表和可视化编辑结构化组件数据，不允许保存任意前端代码。后端负责页面结构校验、草稿、发布和启用状态管理。公开接口只返回当前页面键和页面类型下已启用且已发布的版本。小程序端维护组件注册表，根据 `type` 找到对应 Taro 组件渲染。
 
 首页改造保持可回退：
 
-1. 小程序请求装修接口。
-2. 如果存在已发布装修且组件列表有效，渲染装修页面。
-3. 如果无发布版本、接口失败、页面结构不可用，则沿用当前 `fetchHome()` 首页渲染。
+1. 小程序请求装修接口，并声明页面键 `home` 和页面类型 `miniprogram`。
+2. 如果存在已启用、已发布且组件列表有效的装修页面，渲染装修页面。
+3. 如果无启用发布版本、接口失败、页面结构不可用，则沿用当前 `fetchHome()` 首页渲染。
 
 这样第一期不会一次性替换现有首页，也不会影响当前交易、商品、营销链路。
 
@@ -98,7 +102,9 @@ app/Infrastructure/Model/Content/
 - `id`
 - `page_key`：页面键，如 `home`
 - `title`：页面名称
-- `platform`：目标平台，第一期默认 `all`
+- `page_type`：页面类型，`miniprogram`、`h5`、`all`
+- `description`：页面说明
+- `is_enabled`：是否启用
 - `status`：`draft`、`published`、`disabled`
 - `published_version_id`
 - `created_by`
@@ -120,6 +126,15 @@ app/Infrastructure/Model/Content/
 - `updated_at`
 
 不单独建立组件表。组件是页面版本 JSON 的一部分，第一期可减少跨表排序和发布一致性问题。后续若需要组件复用、组件埋点、组件级权限，再拆表。
+
+启用规则：
+
+- 同一个 `page_key` + `page_type` 只能启用一个 DIY 页面。
+- `page_type=all` 是通用页面，可作为小程序和 H5 的兜底。
+- 小程序请求时优先查 `page_type=miniprogram`，没有启用发布页时再查 `page_type=all`。
+- H5 请求时优先查 `page_type=h5`，没有启用发布页时再查 `page_type=all`。
+- 启用前必须存在已发布版本，不能启用只有草稿的页面。
+- 禁用只影响公开端读取，不删除草稿和历史版本。
 
 ### 页面结构标准
 
@@ -263,8 +278,12 @@ app/Infrastructure/Model/Content/
 `DomainDiyPageService` 负责：
 
 - 创建或获取页面。
+- 页面列表查询。
+- 复制页面。
 - 保存草稿。
 - 发布草稿。
+- 启用页面。
+- 禁用页面。
 - 校验页面结构。
 - 过滤禁用组件。
 - 限制组件类型白名单。
@@ -274,6 +293,9 @@ app/Infrastructure/Model/Content/
 第一期校验重点：
 
 - 首页只能有一个 `page_key=home`。
+- `page_type` 只能是 `miniprogram`、`h5`、`all`。
+- 同一 `page_key` + `page_type` 下只能启用一个页面。
+- 启用页面前必须已有已发布版本。
 - `components` 最大 50 个。
 - 单个 `banner` 最多 10 张图。
 - `quick-nav` 最多 20 个入口。
@@ -285,14 +307,20 @@ app/Infrastructure/Model/Content/
 
 后台接口：
 
-- `GET /admin/diy/pages/{pageKey}`：获取页面、草稿、发布状态。
-- `PUT /admin/diy/pages/{pageKey}/draft`：保存草稿。
-- `POST /admin/diy/pages/{pageKey}/publish`：发布草稿。
-- `POST /admin/diy/pages/{pageKey}/reset`：恢复默认草稿。
+- `GET /admin/diy/pages/list`：页面管理列表。
+- `POST /admin/diy/pages`：创建 DIY 页面。
+- `GET /admin/diy/pages/{id}`：获取页面、草稿、发布状态。
+- `PUT /admin/diy/pages/{id}`：更新页面标题、类型、说明。
+- `PUT /admin/diy/pages/{id}/draft`：保存草稿。
+- `POST /admin/diy/pages/{id}/publish`：发布草稿。
+- `POST /admin/diy/pages/{id}/enable`：启用页面。
+- `POST /admin/diy/pages/{id}/disable`：禁用页面。
+- `POST /admin/diy/pages/{id}/copy`：复制页面。
+- `POST /admin/diy/pages/{id}/reset`：恢复默认草稿。
 
 小程序接口：
 
-- `GET /api/v1/diy/pages/{pageKey}`：获取已发布装修页面。
+- `GET /api/v1/diy/pages/{pageKey}?page_type=miniprogram`：获取当前类型下已启用、已发布的装修页面。
 
 接口返回示例：
 
@@ -336,31 +364,44 @@ app/Infrastructure/Model/Content/
 
 ## 后台网页端设计
 
-新增后台页面：`web/src/modules/mall/views/diy/home/index.vue`。
+新增页面管理列表：`web/src/modules/mall/views/diy/page/index.vue`。
+
+列表能力：
+
+- 按页面名称、页面键、页面类型、启用状态查询。
+- 显示页面名称、页面键、页面类型、启用状态、发布状态、更新时间。
+- 操作：新建、编辑、可视化装修、复制、启用、禁用、删除或软删除。
+- 启用操作用于“小程序装修时选择已经 DIY 好的页面点启用即可”的场景。
+- 启用前如果页面没有已发布版本，后台提示先进入可视化编辑器发布。
+
+新增可视化装修编辑器：`web/src/modules/mall/views/diy/editor/index.vue`。
 
 界面结构：
 
-- 顶部操作栏：保存草稿、发布、恢复默认、返回。
+- 顶部操作栏：页面名称、页面类型、保存草稿、发布、恢复默认、返回列表。
 - 左侧组件库：展示基础组件，点击添加。
-- 中间手机预览：按页面结构顺序渲染组件预览。
+- 中间手机预览：按页面结构顺序实时渲染组件预览，点击预览组件可选中。
 - 右侧配置面板：编辑当前组件的 props、style、data。
 
 第一期交互：
 
 - 点击组件添加到页面底部。
+- 支持拖拽或按钮调整组件顺序；如果拖拽实现成本高，先提供上移/下移并预留拖拽接入点。
 - 选中预览组件后在右侧编辑。
 - 支持上移、下移、复制、删除、启用/禁用。
 - 支持保存草稿。
 - 支持发布草稿。
 - 支持恢复默认首页装修。
+- 可视化预览必须与小程序渲染结构保持同一份页面结构，后台不维护另一套私有布局数据。
 
-第一期不做复杂拖拽。可在页面结构和渲染稳定后，引入 `sortablejs` 做组件排序。
+第一期不做绝对定位式自由画布。可视化编辑以“组件库 + 手机实时预览 + 属性面板”为准，符合商城装修后台的常见工作流。
 
 后台文件建议：
 
 ```text
 web/src/modules/mall/api/diyPage.ts
-web/src/modules/mall/views/diy/home/index.vue
+web/src/modules/mall/views/diy/page/index.vue
+web/src/modules/mall/views/diy/editor/index.vue
 web/src/modules/mall/views/diy/components/ComponentLibrary.vue
 web/src/modules/mall/views/diy/components/PhonePreview.vue
 web/src/modules/mall/views/diy/components/PropertyPanel.vue
@@ -402,7 +443,7 @@ miniprogram/src/components/diy/link.ts
 
 首页接入：
 
-- `pages/home/index.tsx` 页面加载时先请求 `fetchDiyPage('home')`。
+- `pages/home/index.tsx` 页面加载时先请求 `fetchDiyPage('home', 'miniprogram')`。
 - 如果返回组件列表非空，渲染 `DiyRenderer`。
 - 如果失败或为空，保留当前首页渲染。
 
@@ -498,13 +539,14 @@ miniprogram/src/components/diy/link.ts
 
 1. 后端表结构和模型。
 2. 后端 Domain 页面结构校验与草稿/发布服务。
-3. 后台接口。
+3. 后端页面列表、启用/禁用、复制、后台接口。
 4. 小程序公开接口。
 5. 小程序装修渲染器和基础组件。
 6. 首页接入装修兜底逻辑。
-7. 后台装修编辑页。
-8. 默认首页模板和菜单入口。
-9. 全量验证。
+7. 后台 DIY 页面管理列表。
+8. 后台可视化装修编辑器。
+9. 默认首页模板和菜单入口。
+10. 全量验证。
 
 ## 风险与取舍
 
@@ -516,11 +558,15 @@ miniprogram/src/components/diy/link.ts
 
 ## 验收标准
 
-- 后台可以打开首页装修页面。
+- 后台可以打开 DIY 页面管理列表。
+- 后台可以创建、编辑、复制、启用、禁用 DIY 页面。
+- 页面支持 `miniprogram`、`h5`、`all` 类型。
+- 同一页面键和页面类型下只能启用一个页面。
+- 后台可以从列表进入可视化装修编辑器。
 - 后台可以新增、编辑、排序、删除基础组件。
 - 后台可以保存草稿。
 - 后台可以发布草稿。
-- 小程序首页可以渲染已发布装修。
+- 小程序首页可以渲染已启用、已发布的小程序装修页面。
 - 未发布装修时小程序首页保持当前表现。
 - `weapp` 和 `h5` 构建通过。
 - 后端新增服务遵循 `docs/DDD-ARCHITECTURE.md` 的分层规范。
