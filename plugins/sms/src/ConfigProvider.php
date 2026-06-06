@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Plugin\Sms;
 
 use Plugin\Sms\Contract\SmsVerificationServiceInterface;
+use Plugin\Sms\Service\EasySmsSender;
 use Plugin\Sms\Service\EasySmsVerificationService;
+use Plugin\Sms\Service\SmsSenderInterface;
 
 class ConfigProvider
 {
@@ -21,6 +23,7 @@ class ConfigProvider
             ],
             'dependencies' => [
                 SmsVerificationServiceInterface::class => EasySmsVerificationService::class,
+                SmsSenderInterface::class => EasySmsSender::class,
             ],
         ];
     }

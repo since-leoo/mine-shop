@@ -136,6 +136,141 @@ final class DomainMemberPointsServiceTest extends TestCase
 
     // --- grantPurchasePoints ---
 
+    public function testGrantSignInPointsReturnsEventForToday(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(signInReward: 5));
+        $this->memberRepository->method('findById')->with(1)->willReturn($this->makeMemberMock(1));
+        $this->transactionRepository->method('existsByMemberSourceAndRelated')
+            ->with(1, 'points', 'sign_in', 'sign_in_date', 20260606)
+            ->willReturn(false);
+
+        $walletEntity = $this->makeWalletEntity(1, 10);
+        $this->walletService->expects(self::once())->method('getEntity')->with(1, 'points')->willReturn($walletEntity);
+        $this->walletService->expects(self::once())->method('saveEntity');
+
+        $event = $this->service->grantSignInPoints(1, new \DateTimeImmutable('2026-06-06 09:30:00'));
+
+        self::assertInstanceOf(MemberBalanceAdjusted::class, $event);
+        self::assertSame(5, (int) $event->changeAmount);
+        self::assertSame('sign_in', $event->source);
+        self::assertSame('sign_in_date', $event->relatedType);
+        self::assertSame(20260606, $event->relatedId);
+    }
+
+    public function testGrantSignInPointsReturnsNullWhenConfigIsZero(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(signInReward: 0));
+        $this->memberRepository->expects(self::never())->method('findById');
+        $this->walletService->expects(self::never())->method('getEntity');
+
+        self::assertNull($this->service->grantSignInPoints(1, new \DateTimeImmutable('2026-06-06')));
+    }
+
+    public function testGrantSignInPointsReturnsNullWhenAlreadyGrantedForSameDay(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(signInReward: 5));
+        $this->memberRepository->method('findById')->with(1)->willReturn($this->makeMemberMock(1));
+        $this->transactionRepository->method('existsByMemberSourceAndRelated')
+            ->with(1, 'points', 'sign_in', 'sign_in_date', 20260606)
+            ->willReturn(true);
+
+        $this->walletService->expects(self::never())->method('getEntity');
+
+        self::assertNull($this->service->grantSignInPoints(1, new \DateTimeImmutable('2026-06-06 23:59:59')));
+    }
+
+    public function testGrantSignInPointsThrowsWhenMemberNotFound(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(signInReward: 5));
+        $this->memberRepository->method('findById')->with(999)->willReturn(null);
+
+        $this->expectException(BusinessException::class);
+        $this->service->grantSignInPoints(999, new \DateTimeImmutable('2026-06-06'));
+    }
+
+    public function testGrantInvitePointsReturnsEventForReferrer(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 50));
+        $this->memberRepository->method('findById')->willReturnMap([
+            [10, $this->makeMemberMock(10)],
+            [20, $this->makeMemberMock(20)],
+        ]);
+        $this->transactionRepository->method('existsBySourceAndRelated')
+            ->with('points', 'invite_reward', 'invited_member', 20)
+            ->willReturn(false);
+
+        $walletEntity = $this->makeWalletEntity(10, 100);
+        $this->walletService->expects(self::once())->method('getEntity')->with(10, 'points')->willReturn($walletEntity);
+        $this->walletService->expects(self::once())->method('saveEntity');
+
+        $event = $this->service->grantInvitePoints(10, 20);
+
+        self::assertInstanceOf(MemberBalanceAdjusted::class, $event);
+        self::assertSame(10, $event->memberId);
+        self::assertSame(50, (int) $event->changeAmount);
+        self::assertSame('invite_reward', $event->source);
+        self::assertSame('invited_member', $event->relatedType);
+        self::assertSame(20, $event->relatedId);
+    }
+
+    public function testGrantInvitePointsReturnsNullWhenConfigIsZero(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 0));
+        $this->memberRepository->expects(self::never())->method('findById');
+        $this->walletService->expects(self::never())->method('getEntity');
+
+        self::assertNull($this->service->grantInvitePoints(10, 20));
+    }
+
+    public function testGrantInvitePointsReturnsNullWhenInvitedMemberAlreadyRewarded(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 50));
+        $this->memberRepository->method('findById')->willReturnMap([
+            [10, $this->makeMemberMock(10)],
+            [20, $this->makeMemberMock(20)],
+        ]);
+        $this->transactionRepository->method('existsBySourceAndRelated')
+            ->with('points', 'invite_reward', 'invited_member', 20)
+            ->willReturn(true);
+
+        $this->walletService->expects(self::never())->method('getEntity');
+
+        self::assertNull($this->service->grantInvitePoints(10, 20));
+    }
+
+    public function testGrantInvitePointsChecksInvitedMemberGlobally(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 50));
+        $this->memberRepository->method('findById')->willReturnMap([
+            [11, $this->makeMemberMock(11)],
+            [20, $this->makeMemberMock(20)],
+        ]);
+        $this->transactionRepository->method('existsBySourceAndRelated')
+            ->with('points', 'invite_reward', 'invited_member', 20)
+            ->willReturn(true);
+
+        $this->walletService->expects(self::never())->method('getEntity');
+
+        self::assertNull($this->service->grantInvitePoints(11, 20));
+    }
+
+    public function testGrantInvitePointsReturnsNullWhenReferrerEqualsInvitedMember(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 50));
+        $this->memberRepository->expects(self::never())->method('findById');
+
+        self::assertNull($this->service->grantInvitePoints(10, 10));
+    }
+
+    public function testGrantInvitePointsThrowsWhenReferrerNotFound(): void
+    {
+        $this->mallSettingService->method('member')->willReturn($this->makeMemberSetting(inviteReward: 50));
+        $this->memberRepository->method('findById')->with(10)->willReturn(null);
+
+        $this->expectException(BusinessException::class);
+        $this->service->grantInvitePoints(10, 20);
+    }
+
     public function testGrantPurchasePointsReturnsEventWithLevel(): void
     {
         $member = $this->makeMemberMock(1, 2);
@@ -227,13 +362,18 @@ final class DomainMemberPointsServiceTest extends TestCase
         $this->service->deductPurchasePoints(999, 100, 'ORD009');
     }
 
-    private function makeMemberSetting(int $registerPoints = 100, int $pointsRatio = 100): MemberSetting
+    private function makeMemberSetting(
+        int $registerPoints = 100,
+        int $pointsRatio = 100,
+        int $signInReward = 5,
+        int $inviteReward = 50
+    ): MemberSetting
     {
         return new MemberSetting(
             enableGrowth: true,
             registerPoints: $registerPoints,
-            signInReward: 5,
-            inviteReward: 50,
+            signInReward: $signInReward,
+            inviteReward: $inviteReward,
             pointsExpireMonths: 24,
             vipLevels: [],
             defaultLevel: 1,

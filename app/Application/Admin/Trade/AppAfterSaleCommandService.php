@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Trade;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleActionInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReshipInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReviewInput;
+use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundService;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleService;
 use Hyperf\DbConnection\Annotation\Transactional;
@@ -25,6 +27,7 @@ final class AppAfterSaleCommandService
         private readonly DomainAfterSaleService $afterSaleService,
         private readonly AppAfterSaleQueryService $queryService,
         private readonly DomainAfterSaleRefundService $refundService,
+        private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -40,6 +43,10 @@ final class AppAfterSaleCommandService
 
         $entity->approve();
         $this->afterSaleService->saveEntity($entity);
+
+        if (! $this->mallSettingService->payment()->refundReview() && $entity->getStatus() === 'waiting_refund') {
+            $this->refundApprovedEntity($entity, $input->getOperatorId(), $input->getOperatorName());
+        }
 
         return $this->detail($entity->getId());
     }
@@ -118,5 +125,19 @@ final class AppAfterSaleCommandService
     private function detail(int $id): array
     {
         return $this->queryService->detail($id) ?? [];
+    }
+
+    private function refundApprovedEntity(AfterSaleEntity $entity, int $operatorId, string $operatorName): void
+    {
+        $entity->markRefunding();
+        $this->afterSaleService->saveEntity($entity);
+
+        try {
+            $this->refundService->refund($entity, $operatorId, $operatorName);
+        } catch (\Throwable $throwable) {
+            $entity->markRefundFailed();
+            $this->afterSaleService->saveEntity($entity);
+            throw $throwable;
+        }
     }
 }

@@ -8,7 +8,6 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
-use Overtrue\EasySms\EasySms;
 use Overtrue\EasySms\Strategies\OrderStrategy;
 use Plugin\Sms\Contract\SmsVerificationServiceInterface;
 
@@ -22,10 +21,12 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     public function __construct(
         private readonly DomainMallSettingService $mallSettingService,
         private readonly ICache $cache,
+        private readonly ?SmsSenderInterface $sender = null,
     ) {}
 
     public function sendCode(string $phone, string $scene): array
     {
+        $this->assertProductionSmsEnabled();
         $this->assertCanSend($phone, $scene);
 
         $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -38,11 +39,13 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
 
         if ($this->isNonProduction()) {
             $result['code'] = $code;
-            logger()->info('sms verification code generated in non-production mode', compact('phone', 'scene', 'code'));
+            $this->logNonProductionCode($phone, $scene, $code);
+
             return $result;
         }
 
         $this->dispatchSms($phone, $code);
+
         return $result;
     }
 
@@ -54,18 +57,31 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         }
 
         $this->redis()->delete($this->codeKey($phone, $scene));
+
         return true;
     }
 
     private function assertCanSend(string $phone, string $scene): void
     {
         if ($this->redis()->get($this->resendKey($phone, $scene)) !== null) {
-            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '发送过于频繁，请稍后再试');
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
         }
 
         $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);
         if ($dailyCount >= self::DAILY_LIMIT) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '今日验证码发送次数已达上限');
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
+        }
+    }
+
+    private function assertProductionSmsEnabled(): void
+    {
+        if ($this->isNonProduction()) {
+            return;
+        }
+
+        $integration = $this->mallSettingService->integration();
+        if ($integration->smsProvider() === 'disabled' || ! $integration->isChannelEnabled('sms')) {
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS service is disabled.');
         }
     }
 
@@ -81,15 +97,6 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     private function dispatchSms(string $phone, string $code): void
     {
         $integration = $this->mallSettingService->integration();
-        if ($integration->smsProvider() === 'disabled' || ! $integration->isChannelEnabled('sms')) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '短信服务未启用');
-        }
-
-        if (! class_exists(EasySms::class)) {
-            throw new BusinessException(ResultCode::FAIL, '短信插件依赖 easy-sms 未安装');
-        }
-
-        $sms = new EasySms($this->buildEasySmsConfig());
         $smsConfig = $integration->smsConfig();
         $template = (string) ($smsConfig['template_code'] ?? $smsConfig['template_id'] ?? $integration->smsTemplate());
 
@@ -99,7 +106,7 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
             'content' => str_replace(['{{$code}}', '{$code}'], $code, $integration->smsTemplate()),
         ];
 
-        $sms->send($phone, $payload);
+        ($this->sender ?? new EasySmsSender())->send($phone, $payload, $this->buildEasySmsConfig());
     }
 
     /**
@@ -138,9 +145,22 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         return env('APP_ENV', 'dev') !== 'production';
     }
 
+    private function logNonProductionCode(string $phone, string $scene, string $code): void
+    {
+        if (! function_exists('logger')) {
+            return;
+        }
+
+        try {
+            logger()->info('sms verification code generated in non-production mode', compact('phone', 'scene', 'code'));
+        } catch (\Throwable) {
+        }
+    }
+
     private function secondsUntilDayEnd(): int
     {
         $tomorrow = strtotime('tomorrow');
+
         return max(60, $tomorrow - time());
     }
 

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Domain\Member\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\MemberSetting;
 use App\Domain\Member\Event\MemberGrowthChanged;
 use App\Domain\Member\Repository\MemberGrowthLogRepository;
 use App\Domain\Member\Repository\MemberRepository;
@@ -34,18 +36,27 @@ final class DomainMemberGrowthServiceTest extends TestCase
 
     private DomainMemberLevelService $levelService;
 
+    private DomainMallSettingService $mallSettingService;
+
     private DomainMemberGrowthService $service;
+
+    private bool $growthEnabled = true;
 
     protected function setUp(): void
     {
+        $this->growthEnabled = true;
         $this->memberRepository = $this->createMock(MemberRepository::class);
         $this->growthLogRepository = $this->createMock(MemberGrowthLogRepository::class);
         $this->levelService = $this->createMock(DomainMemberLevelService::class);
+        $this->mallSettingService = $this->createMock(DomainMallSettingService::class);
+        $this->mallSettingService->method('member')
+            ->willReturnCallback(fn (): MemberSetting => $this->makeMemberSetting($this->growthEnabled));
 
         $this->service = new DomainMemberGrowthService(
             $this->memberRepository,
             $this->growthLogRepository,
             $this->levelService,
+            $this->mallSettingService,
         );
     }
 
@@ -85,6 +96,16 @@ final class DomainMemberGrowthServiceTest extends TestCase
         $this->memberRepository->method('findById')->willReturn(null);
         $this->expectException(BusinessException::class);
         $this->service->addGrowthValue(999, 50, 'order_payment');
+    }
+
+    public function testAddGrowthValueReturnsNullWithoutTouchingMemberWhenGrowthDisabled(): void
+    {
+        $this->growthEnabled = false;
+        $this->memberRepository->expects(self::never())->method('findById');
+        $this->memberRepository->expects(self::never())->method('updateById');
+        $this->growthLogRepository->expects(self::never())->method('create');
+
+        self::assertNull($this->service->addGrowthValue(1, 50, 'order_payment', 'test'));
     }
 
     // --- deductGrowthValue ---
@@ -138,6 +159,16 @@ final class DomainMemberGrowthServiceTest extends TestCase
         $this->service->deductGrowthValue(999, 50, 'order_refund');
     }
 
+    public function testDeductGrowthValueReturnsNullWithoutTouchingMemberWhenGrowthDisabled(): void
+    {
+        $this->growthEnabled = false;
+        $this->memberRepository->expects(self::never())->method('findById');
+        $this->memberRepository->expects(self::never())->method('updateById');
+        $this->growthLogRepository->expects(self::never())->method('create');
+
+        self::assertNull($this->service->deductGrowthValue(1, 50, 'order_refund', 'test'));
+    }
+
     // --- recalculateLevel ---
 
     public function testRecalculateLevelUpdatesWhenLevelChanges(): void
@@ -169,6 +200,30 @@ final class DomainMemberGrowthServiceTest extends TestCase
         $this->memberRepository->method('findById')->willReturn(null);
         $this->expectException(BusinessException::class);
         $this->service->recalculateLevel(999);
+    }
+
+    public function testRecalculateLevelDoesNotTouchMemberOrLevelServiceWhenGrowthDisabled(): void
+    {
+        $this->growthEnabled = false;
+        $this->memberRepository->expects(self::never())->method('findById');
+        $this->memberRepository->expects(self::never())->method('updateById');
+        $this->levelService->expects(self::never())->method('matchLevelByGrowthValue');
+
+        $this->service->recalculateLevel(1);
+    }
+
+    private function makeMemberSetting(bool $enableGrowth): MemberSetting
+    {
+        return new MemberSetting(
+            enableGrowth: $enableGrowth,
+            registerPoints: 100,
+            signInReward: 5,
+            inviteReward: 50,
+            pointsExpireMonths: 24,
+            vipLevels: [],
+            defaultLevel: 1,
+            pointsRatio: 100,
+        );
     }
 
     private function makeMemberMock(int $id, int $growthValue, ?int $levelId = null, string $level = 'VIP1'): Member

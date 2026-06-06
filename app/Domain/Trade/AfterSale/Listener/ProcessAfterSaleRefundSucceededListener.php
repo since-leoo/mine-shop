@@ -15,6 +15,7 @@ namespace App\Domain\Trade\AfterSale\Listener;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Service\DomainMemberWalletService;
+use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
 use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
@@ -38,6 +39,7 @@ final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
         private readonly DomainOrderService $orderService,
         private readonly DomainMemberWalletService $walletService,
         private readonly EventDispatcherInterface $dispatcher,
+        private readonly OutboundWebhookDispatcher $webhookDispatcher,
     ) {}
 
     public function listen(): array
@@ -79,6 +81,19 @@ final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
         if ($paymentMethod === PayType::BALANCE->value) {
             $this->refundBalance($event);
         }
+
+        $this->webhookDispatcher->dispatch('after_sale.refund_succeeded', [
+            'after_sale_id' => $event->afterSaleId,
+            'order_id' => $event->orderId,
+            'member_id' => $event->memberId,
+            'refund_amount' => $event->refundAmount,
+            'payment_id' => $event->paymentId,
+            'payment_no' => $event->paymentNo,
+            'payment_method' => $paymentMethod,
+            'refund_no' => $event->refundNo,
+            'operator_id' => $event->operatorId,
+            'operator_name' => $event->operatorName,
+        ]);
     }
 
     /**

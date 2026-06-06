@@ -6,6 +6,7 @@ namespace HyperfTests\Unit\Domain\Trade\AfterSale;
 
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Service\DomainMemberWalletService;
+use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
 use App\Domain\Trade\AfterSale\Listener\ProcessAfterSaleRefundSucceededListener;
@@ -39,6 +40,7 @@ final class ProcessAfterSaleRefundSucceededListenerTest extends TestCase
         $orderService = $this->createMock(DomainOrderService::class);
         $walletService = $this->createMock(DomainMemberWalletService::class);
         $dispatcher = $this->createMock(EventDispatcherInterface::class);
+        $webhook = $this->createMock(OutboundWebhookDispatcher::class);
 
         $afterSaleRepository->expects(self::once())
             ->method('findById')
@@ -84,6 +86,17 @@ final class ProcessAfterSaleRefundSucceededListenerTest extends TestCase
             ->method('dispatch')
             ->with(self::isInstanceOf(MemberBalanceAdjusted::class));
 
+        $webhook->expects(self::once())
+            ->method('dispatch')
+            ->with('after_sale.refund_succeeded', self::callback(static function (array $payload): bool {
+                return $payload['after_sale_id'] === 90
+                    && $payload['order_id'] === 10
+                    && $payload['member_id'] === 1
+                    && $payload['refund_amount'] === 18800
+                    && $payload['refund_no'] === 'REF202603170001';
+            }))
+            ->willReturn(true);
+
         $listener = new ProcessAfterSaleRefundSucceededListener(
             $afterSaleRepository,
             $orderPaymentService,
@@ -91,6 +104,7 @@ final class ProcessAfterSaleRefundSucceededListenerTest extends TestCase
             $orderService,
             $walletService,
             $dispatcher,
+            $webhook,
         );
 
         $listener->process(new AfterSaleRefundSucceeded(90, 10, 1, 18800, 11, 'PAY202603170001', 'balance', 'REF202603170001', 1, 'admin'));

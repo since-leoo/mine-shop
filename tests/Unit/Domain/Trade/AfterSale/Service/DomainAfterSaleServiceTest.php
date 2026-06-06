@@ -18,11 +18,14 @@ use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleType;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
+use Carbon\Carbon;
 use DG\BypassFinals;
 use DomainException;
 use PHPUnit\Framework\TestCase;
@@ -73,7 +76,7 @@ final class DomainAfterSaleServiceTest extends TestCase
         $activeAfterSale = new class extends AfterSale {
             public function __construct() {}
         };
-        $activeAfterSale->id = 1;
+        $activeAfterSale->setRawAttributes(['id' => 1], true);
 
         [$service] = $this->makeService(
             orderStatus: OrderStatus::SHIPPED->value,
@@ -82,6 +85,31 @@ final class DomainAfterSaleServiceTest extends TestCase
 
         $this->expectException(DomainException::class);
         $service->eligibility(memberId: 3003, orderId: 1001, orderItemId: 2002);
+    }
+
+    public function testEligibilityRejectsCompletedOrderOutsideAfterSaleWindow(): void
+    {
+        [$service] = $this->makeService(
+            orderStatus: OrderStatus::COMPLETED->value,
+            orderUpdatedAt: Carbon::now()->subDays(16),
+            afterSaleDays: 15,
+        );
+
+        $this->expectException(DomainException::class);
+        $service->eligibility(memberId: 3003, orderId: 1001, orderItemId: 2002);
+    }
+
+    public function testEligibilityAllowsCompletedOrderWithinAfterSaleWindow(): void
+    {
+        [$service] = $this->makeService(
+            orderStatus: OrderStatus::COMPLETED->value,
+            orderUpdatedAt: Carbon::now()->subDays(14),
+            afterSaleDays: 15,
+        );
+
+        $eligibility = $service->eligibility(memberId: 3003, orderId: 1001, orderItemId: 2002);
+
+        self::assertTrue($eligibility['can_apply']);
     }
 
     public function testApplyPersistsAfterSaleEntity(): void
@@ -126,38 +154,53 @@ final class DomainAfterSaleServiceTest extends TestCase
     /**
      * @return array{0: DomainAfterSaleService, 1: OrderRepository, 2: AfterSaleRepository}
      */
-    private function makeService(string $orderStatus, ?AfterSale $existingAfterSale = null): array
+    private function makeService(
+        string $orderStatus,
+        ?AfterSale $existingAfterSale = null,
+        ?Carbon $orderUpdatedAt = null,
+        int $afterSaleDays = 15,
+    ): array
     {
         $orderRepository = $this->createMock(OrderRepository::class);
         $afterSaleRepository = $this->createMock(AfterSaleRepository::class);
+        $mallSettingService = $this->createMock(DomainMallSettingService::class);
 
         $orderRepository
             ->method('findOrderItemForAfterSale')
-            ->willReturn($this->makeOrderItem($orderStatus));
+            ->willReturn($this->makeOrderItem($orderStatus, $orderUpdatedAt));
 
         $afterSaleRepository
             ->method('findActiveByOrderItemId')
             ->willReturn($existingAfterSale);
 
-        return [new DomainAfterSaleService($orderRepository, $afterSaleRepository), $orderRepository, $afterSaleRepository];
+        $mallSettingService
+            ->method('order')
+            ->willReturn(new OrderSetting(30, 7, $afterSaleDays, true, 'system', '400-888-1000'));
+
+        return [new DomainAfterSaleService($orderRepository, $afterSaleRepository, $mallSettingService), $orderRepository, $afterSaleRepository];
     }
 
-    private function makeOrderItem(string $orderStatus): OrderItem
+    private function makeOrderItem(string $orderStatus, ?Carbon $orderUpdatedAt = null): OrderItem
     {
         $order = new class extends Order {
             public function __construct() {}
         };
-        $order->id = 1001;
-        $order->member_id = 3003;
-        $order->status = $orderStatus;
+        $order->setRawAttributes([
+            'id' => 1001,
+            'member_id' => 3003,
+            'status' => $orderStatus,
+            'updated_at' => $orderUpdatedAt ?? Carbon::now(),
+        ], true);
 
         $item = new class extends OrderItem {
             public function __construct() {}
         };
-        $item->id = 2002;
-        $item->order_id = 1001;
-        $item->quantity = 1;
-        $item->total_price = 18800;
+        $item->setRawAttributes([
+            'id' => 2002,
+            'order_id' => 1001,
+            'quantity' => 1,
+            'total_price' => 18800,
+        ], true);
         $item->setRelation('order', $order);
 
         return $item;

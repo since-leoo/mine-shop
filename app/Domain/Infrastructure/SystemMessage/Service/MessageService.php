@@ -27,6 +27,8 @@ use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Db;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MessageService
@@ -42,7 +44,8 @@ class MessageService
     public function __construct(
         MessageRepository $repository,
         NotificationService $notificationService,
-        DriverFactory $queueDriverFactory
+        DriverFactory $queueDriverFactory,
+        private readonly ?IntegrationEmailTemplateResolver $emailTemplateResolver = null
     ) {
         $this->repository = $repository;
         $this->notificationService = $notificationService;
@@ -54,14 +57,17 @@ class MessageService
         try {
             $this->validateMessageData($data);
             $data = $this->setDefaultValues($data);
+            if ($this->emailTemplateResolver !== null && \in_array('email', $data['channels'] ?? [], true)) {
+                $data = $this->emailTemplateResolver->apply($data, $data['template_variables'] ?? []);
+            }
             $message = $this->repository->create($data);
-            logger()->info('Message created', [
+            $this->logger()->info('Message created', [
                 'message_id' => $message->id, 'title' => $message->title,
                 'type' => $message->type, 'recipient_type' => $message->recipient_type,
             ]);
             return $message;
         } catch (\Throwable $e) {
-            logger()->error('Failed to create message', ['data' => $data, 'error' => $e->getMessage()]);
+            $this->logger()->error('Failed to create message', ['data' => $data, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -87,7 +93,7 @@ class MessageService
             });
             $this->queueNotifications($message, $recipients);
             $this->getEventDispatcher()->dispatch(new MessageSent($message));
-            logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
+            $this->logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
             return true;
         } catch (\Throwable $e) {
             if (isset($message) && $message->isSending()) {
@@ -96,7 +102,7 @@ class MessageService
             if (isset($message)) {
                 $this->getEventDispatcher()->dispatch(new MessageSendFailed($message, $e->getMessage()));
             }
-            logger()->error('Failed to send message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            $this->logger()->error('Failed to send message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -188,10 +194,10 @@ class MessageService
                 }
             }
             $message->update($data);
-            logger()->info('Message updated', ['message_id' => $message->id, 'changes' => array_keys($changes)]);
+            $this->logger()->info('Message updated', ['message_id' => $message->id, 'changes' => array_keys($changes)]);
             return $message;
         } catch (\Throwable $e) {
-            logger()->error('Failed to update message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            $this->logger()->error('Failed to update message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -204,10 +210,10 @@ class MessageService
                 return false;
             }
             $result = $message->delete();
-            logger()->info('Message deleted', ['message_id' => $message->id]);
+            $this->logger()->info('Message deleted', ['message_id' => $message->id]);
             return $result;
         } catch (\Throwable $e) {
-            logger()->error('Failed to delete message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
+            $this->logger()->error('Failed to delete message', ['message_id' => $messageId, 'error' => $e->getMessage()]);
             throw $e;
         }
     }
@@ -226,7 +232,7 @@ class MessageService
                 $this->send($message->id);
                 ++$processed;
             } catch (\Throwable $e) {
-                logger()->error('Failed to process scheduled message', ['message_id' => $message->id, 'error' => $e->getMessage()]);
+                $this->logger()->error('Failed to process scheduled message', ['message_id' => $message->id, 'error' => $e->getMessage()]);
             }
         }
         return $processed;
@@ -239,7 +245,7 @@ class MessageService
 
     public function cleanupExpiredMessages(): int
     {
-        $retentionDays = config('system_message.message.retention_days', 90);
+        $retentionDays = $this->config('system_message.message.retention_days', 90);
         $expiredDate = Carbon::now()->subDays($retentionDays);
         $expiredMessageIds = Message::where('created_at', '<', $expiredDate)->pluck('id')->toArray();
         if (empty($expiredMessageIds)) {
@@ -257,11 +263,11 @@ class MessageService
                 throw new \InvalidArgumentException("Field {$field} is required");
             }
         }
-        $maxTitleLength = config('system_message.message.max_title_length', 255);
+        $maxTitleLength = $this->config('system_message.message.max_title_length', 255);
         if (mb_strlen($data['title']) > $maxTitleLength) {
             throw new \InvalidArgumentException("Title too long, max {$maxTitleLength} characters");
         }
-        $maxContentLength = config('system_message.message.max_content_length', 10000);
+        $maxContentLength = $this->config('system_message.message.max_content_length', 10000);
         if (mb_strlen($data['content']) > $maxContentLength) {
             throw new \InvalidArgumentException("Content too long, max {$maxContentLength} characters");
         }
@@ -280,7 +286,7 @@ class MessageService
     {
         $defaults = [
             'type' => MessageType::SYSTEM->value,
-            'priority' => config('system_message.message.default_priority', 1),
+            'priority' => $this->config('system_message.message.default_priority', 1),
             'recipient_type' => RecipientType::ALL->value,
             'status' => MessageStatus::DRAFT->value,
             'channels' => MessageChannel::defaults(),
@@ -303,7 +309,7 @@ class MessageService
     protected function queueNotifications(Message $message, Collection $recipients): void
     {
         $channels = $message->channels ?? ['database'];
-        $queueChannel = config('system_message.queue.channel', 'default');
+        $queueChannel = $this->config('system_message.queue.channel', 'default');
         try {
             $driver = $this->queueDriverFactory->get($queueChannel);
         } catch (\Throwable $e) {
@@ -323,5 +329,23 @@ class MessageService
             $this->eventDispatcher = ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
         }
         return $this->eventDispatcher;
+    }
+
+    private function logger(): LoggerInterface
+    {
+        try {
+            return logger();
+        } catch (\Throwable) {
+            return new NullLogger();
+        }
+    }
+
+    private function config(string $key, mixed $default = null): mixed
+    {
+        try {
+            return config($key, $default);
+        } catch (\Throwable) {
+            return $default;
+        }
     }
 }

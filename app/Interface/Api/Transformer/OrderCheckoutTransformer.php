@@ -51,6 +51,33 @@ final class OrderCheckoutTransformer
             ],
             'coupon_amount' => $order->getCouponAmount(),
             'invoice_support' => $this->mallSettingService->order()->enableInvoice() ? 1 : 0,
+            'shipping_config' => $this->shippingConfig(),
+        ];
+    }
+
+    private function shippingConfig(): array
+    {
+        $shipping = $this->mallSettingService->shipping();
+        $methods = [
+            ['type' => 'express', 'name' => '快递配送', 'pickup_address' => ''],
+        ];
+
+        if ($shipping->enablePickup()) {
+            $methods[] = [
+                'type' => 'pickup',
+                'name' => '门店自提',
+                'pickup_address' => $shipping->pickupAddress(),
+            ];
+        }
+
+        $methodTypes = array_column($methods, 'type');
+        $defaultMethod = \in_array($shipping->defaultMethod(), $methodTypes, true)
+            ? $shipping->defaultMethod()
+            : 'express';
+
+        return [
+            'default_method' => $defaultMethod,
+            'methods' => $methods,
         ];
     }
 

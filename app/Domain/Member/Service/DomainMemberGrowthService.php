@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Member\Event\MemberGrowthChanged;
 use App\Domain\Member\Repository\MemberGrowthLogRepository;
 use App\Domain\Member\Repository\MemberRepository;
@@ -28,6 +29,7 @@ final class DomainMemberGrowthService
         private readonly MemberRepository $memberRepository,
         private readonly MemberGrowthLogRepository $growthLogRepository,
         private readonly DomainMemberLevelService $levelService,
+        private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -38,6 +40,10 @@ final class DomainMemberGrowthService
     public function addGrowthValue(int $memberId, int $amount, string $source, string $remark = ''): ?MemberGrowthChanged
     {
         if ($amount <= 0) {
+            return null;
+        }
+
+        if (! $this->growthEnabled()) {
             return null;
         }
 
@@ -81,6 +87,10 @@ final class DomainMemberGrowthService
             return null;
         }
 
+        if (! $this->growthEnabled()) {
+            return null;
+        }
+
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
             throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
@@ -120,6 +130,10 @@ final class DomainMemberGrowthService
      */
     public function recalculateLevel(int $memberId): void
     {
+        if (! $this->growthEnabled()) {
+            return;
+        }
+
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
             throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
@@ -133,5 +147,10 @@ final class DomainMemberGrowthService
                 'level_id' => $matchedLevel->id,
             ]);
         }
+    }
+
+    private function growthEnabled(): bool
+    {
+        return $this->mallSettingService->member()->enableGrowth();
     }
 }
