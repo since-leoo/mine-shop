@@ -5,7 +5,7 @@ export function fetchDiyPage(pageKey: string, pageType: DiyPageType = 'miniprogr
   return request({
     url: `/api/v1/diy/pages/${pageKey}`,
     method: 'GET',
-    data: { pageType },
+    data: { page_type: pageType },
   }).then((data: any = {}) => ({
     page: data.page ?? null,
     components: Array.isArray(data.components) ? data.components : [],

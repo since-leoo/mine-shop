@@ -163,6 +163,7 @@ final class ProductRepository extends IRepository
         }
 
         return $query
+            ->when(! empty($params['ids']), static fn (Builder $q) => $q->whereIn('id', array_values(array_filter(array_map('intval', (array) $params['ids'])))))
             ->when(! empty($params['name']), static fn (Builder $q) => $q->where('name', 'like', '%' . $params['name'] . '%'))
             ->when(! empty($params['keyword']), static fn (Builder $q) => $q->where(static fn (Builder $q) => $q->where('name', 'like', '%' . $params['keyword'] . '%')->orWhere('product_code', 'like', '%' . $params['keyword'] . '%')))
             ->when(! empty($params['product_code']), static fn (Builder $q) => $q->where('product_code', 'like', '%' . $params['product_code'] . '%'))
