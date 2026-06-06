@@ -1,0 +1,19 @@
+.diy-title-bar {
+  padding: 28px 24px 12px;
+  display: flex;
+  align-items: baseline;
+}
+
+.diy-title-bar__title {
+  font-size: 34px;
+  line-height: 42px;
+  font-weight: 600;
+  color: #1f2429;
+}
+
+.diy-title-bar__subtitle {
+  margin-left: 12px;
+  font-size: 24px;
+  line-height: 32px;
+  color: #7b858f;
+}

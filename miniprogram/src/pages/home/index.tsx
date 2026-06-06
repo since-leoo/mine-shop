@@ -3,6 +3,7 @@ import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isH5 } from '../../common/platform';
 import { addCartItem } from '../../services/cart/cart';
+import { fetchDiyPage } from '../../services/diy/page';
 import { fetchHome } from '../../services/home/home';
 import { fetchSeckillSessions } from '../../services/promotion/detail';
 import searchIcon from '../../assets/home-top/search-line.svg';
@@ -13,6 +14,8 @@ import gridIcon from '../../assets/home-quick/grid.svg';
 import groupIcon from '../../assets/home-quick/group.svg';
 import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
+import DiyRenderer from '../../components/diy-renderer';
+import { DiyPagePayload } from '../../components/diy-renderer/types';
 import { resolveHomeSeckillTarget } from './seckill-timing';
 import './index.scss';
 
@@ -499,11 +502,19 @@ export default function Home() {
   const [seckillEndTime, setSeckillEndTime] = useState<string | number | null>(null);
   const [seckillActivityId, setSeckillActivityId] = useState<string | number | null>(null);
   const [seckillSessionId, setSeckillSessionId] = useState<string | number | null>(null);
+  const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
   const [nowMs, setNowMs] = useState(Date.now());
 
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
+      const publishedDiyPage = await fetchDiyPage('home', 'miniprogram');
+      if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+        setDiyPage(publishedDiyPage);
+        return;
+      }
+
+      setDiyPage(null);
       const [data, sessions] = await Promise.all([fetchHome(), fetchSeckillSessions()]);
       const bannerList = Array.isArray(data?.swiper) ? data.swiper.map(toBannerItem) : [];
       const seckill = Array.isArray(data?.seckillList) ? data.seckillList.map((item: any, index: number) => toProductCard(item, index, '秒杀')) : [];
@@ -592,6 +603,15 @@ export default function Home() {
 
   const h5RecommendList = useMemo(() => recommendList, [recommendList]);
   const seckillCountdown = useMemo(() => formatCountdown(seckillEndTime, nowMs), [seckillEndTime, nowMs]);
+
+  if (diyPage?.page && diyPage.components.length > 0) {
+    return (
+      <View className="home home--diy">
+        <DiyRenderer page={diyPage} />
+        {isH5() ? <H5TabBar current="/pages/home/index" /> : null}
+      </View>
+    );
+  }
 
   if (isH5()) {
     return (

@@ -1,0 +1,43 @@
+.diy-quick-nav {
+  margin: 12px 24px;
+  padding: 20px 8px 12px;
+  display: flex;
+  flex-wrap: wrap;
+  background: #ffffff;
+  border-radius: 16px;
+}
+
+.diy-quick-nav__item {
+  width: 20%;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diy-quick-nav__icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 24px;
+  background: #f4f6f8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diy-quick-nav__icon {
+  width: 44px;
+  height: 44px;
+}
+
+.diy-quick-nav__title {
+  margin-top: 10px;
+  max-width: 112px;
+  font-size: 22px;
+  line-height: 28px;
+  color: #222222;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
