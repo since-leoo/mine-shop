@@ -16,6 +16,7 @@ use App\Domain\Content\DiyPage\Contract\DiyPageDraftInput;
 use App\Domain\Content\DiyPage\Contract\DiyPageInput;
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\Repository\DiyPageRepository;
+use App\Domain\Content\DiyPage\ValueObject\DiyPagePublishValidationVo;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Content\DiyPage;
@@ -91,7 +92,12 @@ final class DomainDiyPageService extends IService
             throw new \DomainException('请先保存草稿后再发布');
         }
 
-        DiyPageSchemaVo::fromArray($draft->schema, $page->page_key);
+        $schema = DiyPageSchemaVo::fromArray($draft->schema, $page->page_key)->toArray();
+        $validation = DiyPagePublishValidationVo::inspect($schema);
+        if (! $validation->passed()) {
+            $firstIssue = $validation->issues()[0];
+            throw new \DomainException('发布前校验失败：' . $firstIssue['component_name'] . ' - ' . $firstIssue['message']);
+        }
 
         return $this->repository->publishVersion($page, $draft, $operatorId);
     }

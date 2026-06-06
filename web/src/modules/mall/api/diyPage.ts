@@ -37,6 +37,28 @@ export interface DiyPageVo {
   updated_at?: string
 }
 
+export interface DiyPublishRecordVo {
+  id: number
+  page_id: number
+  version_id?: number | null
+  publish_type: 'manual' | 'scheduled' | 'rollback'
+  publish_status: 'pending' | 'published' | 'failed' | 'cancelled'
+  scheduled_at?: string | null
+  published_at?: string | null
+  operator_id?: number | null
+  remark?: string | null
+  error_message?: string | null
+  created_at?: string
+}
+
+export interface DiyPreviewTokenVo {
+  id: number
+  page_id: number
+  version_id?: number | null
+  token: string
+  expired_at: string
+}
+
 export interface DiyPageSearchVo {
   title?: string
   page_key?: string
@@ -88,4 +110,38 @@ export function copyDiyPage(id: number): Promise<ResponseStruct<DiyPageVo>> {
 
 export function resetDiyDraft(id: number): Promise<ResponseStruct<any>> {
   return useHttp().post(`${baseUrl}/${id}/reset`)
+}
+
+export function getDiyPublishRecords(id: number): Promise<ResponseStruct<DiyPublishRecordVo[]>> {
+  return useHttp().get(`${baseUrl}/${id}/publish-records`)
+}
+
+export function schedulePublishDiyPage(id: number, data: { version_id: number; scheduled_at: string; remark?: string }): Promise<ResponseStruct<DiyPublishRecordVo>> {
+  return useHttp().post(`${baseUrl}/${id}/schedule-publish`, data)
+}
+
+export function cancelDiySchedule(id: number, recordId: number): Promise<ResponseStruct<null>> {
+  return useHttp().post(`${baseUrl}/${id}/cancel-schedule`, { record_id: recordId })
+}
+
+export function rollbackDiyPage(id: number, versionId: number): Promise<ResponseStruct<any>> {
+  return useHttp().post(`${baseUrl}/${id}/rollback`, { version_id: versionId })
+}
+
+export function createDiyPreviewToken(id: number, versionId?: number): Promise<ResponseStruct<DiyPreviewTokenVo>> {
+  return useHttp().post(`${baseUrl}/${id}/preview-token`, versionId ? { version_id: versionId } : {})
+}
+
+export function saveDiyPageAsTemplate(id: number, data: {
+  category_id: number
+  name: string
+  page_key: string
+  page_type: DiyPageType
+  cover?: string | null
+  description?: string | null
+  schema: DiySchema
+  sort?: number
+  is_enabled?: boolean
+}): Promise<ResponseStruct<any>> {
+  return useHttp().post(`${baseUrl}/${id}/save-as-template`, data)
 }

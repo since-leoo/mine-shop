@@ -1,13 +1,17 @@
 <script setup lang="ts">
-import type { DiyPageType, DiyPageVo } from '~/mall/api/diyPage'
+import type { DiyPageType, DiyPageVo, DiyPublishRecordVo } from '~/mall/api/diyPage'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRouter } from 'vue-router'
 import {
   copyDiyPage,
   createDiyPage,
+  createDiyPreviewToken,
   disableDiyPage,
   enableDiyPage,
+  getDiyPublishRecords,
   pageDiyPages,
+  rollbackDiyPage,
+  saveDiyPageAsTemplate,
   updateDiyPage,
 } from '~/mall/api/diyPage'
 
@@ -22,16 +26,31 @@ const query = reactive({
   page_key: '',
   page_type: '' as DiyPageType | '',
   is_enabled: '' as boolean | '',
+  status: '',
   page: 1,
   page_size: 15,
 })
 const dialogVisible = ref(false)
+const templateVisible = ref(false)
+const recordVisible = ref(false)
 const editing = ref<DiyPageVo | null>(null)
+const templateSource = ref<DiyPageVo | null>(null)
+const recordSource = ref<DiyPageVo | null>(null)
+const publishRecords = ref<DiyPublishRecordVo[]>([])
+const recordLoading = ref(false)
 const form = reactive({
   page_key: 'home',
   page_type: 'miniprogram' as DiyPageType,
   title: '',
   description: '',
+})
+const templateForm = reactive({
+  category_id: 1,
+  name: '',
+  cover: '',
+  description: '',
+  sort: 0,
+  is_enabled: true,
 })
 
 const pageTypeMap: Record<string, string> = {
@@ -57,6 +76,7 @@ function resetQuery() {
   query.page_key = ''
   query.page_type = ''
   query.is_enabled = ''
+  query.status = ''
   query.page = 1
   load()
 }
@@ -123,6 +143,87 @@ function openEditor(row: DiyPageVo) {
   router.push({ path: '/mall/diy/editor', query: { id: row.id } })
 }
 
+function openSaveAsTemplate(row: DiyPageVo) {
+  if (!row.published_version) {
+    ElMessage.warning('请先发布页面后再保存为模板')
+    return
+  }
+  templateSource.value = row
+  templateForm.category_id = 1
+  templateForm.name = `${row.title}模板`
+  templateForm.cover = ''
+  templateForm.description = row.description || ''
+  templateForm.sort = 0
+  templateForm.is_enabled = true
+  templateVisible.value = true
+}
+
+async function submitSaveAsTemplate() {
+  const row = templateSource.value
+  if (!row?.id || !row.published_version?.schema) {
+    ElMessage.warning('缺少已发布页面结构')
+    return
+  }
+  if (!templateForm.name) {
+    ElMessage.warning('请填写模板名称')
+    return
+  }
+
+  await saveDiyPageAsTemplate(row.id, {
+    category_id: templateForm.category_id,
+    name: templateForm.name,
+    page_key: row.page_key,
+    page_type: row.page_type,
+    cover: templateForm.cover || null,
+    description: templateForm.description || null,
+    schema: row.published_version.schema,
+    sort: templateForm.sort,
+    is_enabled: templateForm.is_enabled,
+  })
+  ElMessage.success('已保存为模板')
+  templateVisible.value = false
+}
+
+async function openPublishRecords(row: DiyPageVo) {
+  recordSource.value = row
+  recordVisible.value = true
+  recordLoading.value = true
+  try {
+    const res = await getDiyPublishRecords(row.id!)
+    publishRecords.value = res.data || []
+  }
+  finally {
+    recordLoading.value = false
+  }
+}
+
+async function handleRollback(versionId: number) {
+  const pageId = recordSource.value?.id
+  if (!pageId)
+    return
+  await ElMessageBox.confirm('确认回滚到该历史发布版本？当前线上版本会被替换。', '回滚页面', {
+    type: 'warning',
+  })
+  await rollbackDiyPage(pageId, versionId)
+  ElMessage.success('页面已回滚')
+  recordVisible.value = false
+  load()
+}
+
+async function handlePreview(row: DiyPageVo) {
+  if (!row.published_version_id) {
+    ElMessage.warning('请先发布页面后再预览')
+    return
+  }
+  const res = await createDiyPreviewToken(row.id!, row.published_version_id)
+  const token = res.data?.token
+  if (!token) {
+    ElMessage.warning('预览令牌生成失败')
+    return
+  }
+  ElMessage.success(`预览令牌：${token}`)
+}
+
 onMounted(load)
 </script>
 
@@ -141,10 +242,15 @@ onMounted(load)
           <el-option label="启用" :value="true" />
           <el-option label="禁用" :value="false" />
         </el-select>
+        <el-select v-model="query.status" clearable placeholder="发布状态">
+          <el-option label="草稿" value="draft" />
+          <el-option label="已发布" value="published" />
+          <el-option label="已禁用" value="disabled" />
+        </el-select>
         <el-button type="primary" @click="load"><ma-svg-icon name="ph:magnifying-glass" size="14" />查询</el-button>
         <el-button @click="resetQuery">重置</el-button>
       </div>
-      <el-button v-auth="['mall:diy:create']" type="primary" @click="openCreate">
+      <el-button v-auth="['mall:diy:page:create']" type="primary" @click="openCreate">
         <ma-svg-icon name="ph:plus" size="14" />新建页面
       </el-button>
     </div>
@@ -171,6 +277,9 @@ onMounted(load)
           <el-button link type="primary" @click="openEditor(row)">装修</el-button>
           <el-button link @click="openEdit(row)">编辑</el-button>
           <el-button link @click="handleCopy(row)">复制</el-button>
+          <el-button link @click="openPublishRecords(row)">记录</el-button>
+          <el-button link @click="handlePreview(row)">预览</el-button>
+          <el-button link @click="openSaveAsTemplate(row)">存模板</el-button>
           <el-button v-if="!row.is_enabled" link type="success" @click="handleEnable(row)">启用</el-button>
           <el-button v-else link type="warning" @click="handleDisable(row)">禁用</el-button>
         </template>
@@ -211,6 +320,58 @@ onMounted(load)
         <el-button type="primary" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="templateVisible" title="保存为模板" width="520px">
+      <el-form label-width="96px">
+        <el-form-item label="来源页面">
+          <span>{{ templateSource?.title }}</span>
+        </el-form-item>
+        <el-form-item label="分类ID" required>
+          <el-input-number v-model="templateForm.category_id" :min="1" controls-position="right" />
+        </el-form-item>
+        <el-form-item label="模板名称" required>
+          <el-input v-model="templateForm.name" />
+        </el-form-item>
+        <el-form-item label="封面">
+          <el-input v-model="templateForm.cover" placeholder="图片 URL" />
+        </el-form-item>
+        <el-form-item label="排序">
+          <el-input-number v-model="templateForm.sort" :min="0" controls-position="right" />
+        </el-form-item>
+        <el-form-item label="启用">
+          <el-switch v-model="templateForm.is_enabled" />
+        </el-form-item>
+        <el-form-item label="说明">
+          <el-input v-model="templateForm.description" type="textarea" :rows="3" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="templateVisible = false">取消</el-button>
+        <el-button type="primary" @click="submitSaveAsTemplate">保存</el-button>
+      </template>
+    </el-dialog>
+
+    <el-drawer v-model="recordVisible" title="发布记录" size="620px">
+      <el-table v-loading="recordLoading" :data="publishRecords" border>
+        <el-table-column prop="publish_type" label="类型" width="100" />
+        <el-table-column prop="publish_status" label="状态" width="100" />
+        <el-table-column prop="version_id" label="版本" width="90" />
+        <el-table-column prop="published_at" label="发布时间" min-width="160" />
+        <el-table-column prop="scheduled_at" label="定时时间" min-width="160" />
+        <el-table-column label="操作" width="90" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              v-if="row.version_id && row.publish_status === 'published'"
+              link
+              type="primary"
+              @click="handleRollback(row.version_id)"
+            >
+              回滚
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-drawer>
   </div>
 </template>
 
@@ -229,7 +390,7 @@ onMounted(load)
 
 .diy-page-list__filters {
   display: grid;
-  grid-template-columns: 160px 140px 130px 130px auto auto;
+  grid-template-columns: 150px 130px 120px 120px 120px auto auto;
   gap: 8px;
 }
 

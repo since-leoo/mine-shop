@@ -129,6 +129,29 @@ class DiyPageRepository extends IRepository
         return $version;
     }
 
+    public function findVersion(int $pageId, int $versionId): ?DiyPageVersion
+    {
+        /** @var DiyPageVersion|null $version */
+        $version = DiyPageVersion::query()
+            ->where('page_id', $pageId)
+            ->whereKey($versionId)
+            ->first();
+
+        return $version;
+    }
+
+    public function findVersionWithPage(int $pageId, int $versionId): ?DiyPageVersion
+    {
+        /** @var DiyPageVersion|null $version */
+        $version = DiyPageVersion::query()
+            ->with(['page'])
+            ->where('page_id', $pageId)
+            ->whereKey($versionId)
+            ->first();
+
+        return $version;
+    }
+
     public function storeDraft(int $pageId, array $schema, ?int $operatorId): DiyPageVersion
     {
         $draft = $this->findDraftVersion($pageId);

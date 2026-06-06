@@ -1,0 +1,43 @@
+.diy-product-rank {
+  margin: 12px 24px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.diy-product-rank__title {
+  margin-bottom: 12px;
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 700;
+  color: #1f2429;
+}
+
+.diy-product-rank__item {
+  min-height: 84px;
+  display: grid;
+  grid-template-columns: 40px 64px 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.diy-product-rank__no {
+  color: #ef4444;
+  font-size: 30px;
+  font-weight: 700;
+}
+
+.diy-product-rank__image {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  background: #e5e7eb;
+}
+
+.diy-product-rank__name {
+  overflow: hidden;
+  font-size: 24px;
+  color: #1f2429;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

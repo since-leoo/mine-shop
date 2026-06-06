@@ -1,0 +1,42 @@
+.diy-coupon-group {
+  margin: 12px 24px;
+}
+
+.diy-coupon-group__title {
+  margin-bottom: 12px;
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 600;
+  color: #1f2429;
+}
+
+.diy-coupon-group__list {
+  display: flex;
+  gap: 12px;
+}
+
+.diy-coupon-group__item {
+  flex: 1;
+  min-width: 0;
+  padding: 16px 12px;
+  border-radius: 14px;
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+.diy-coupon-group__amount {
+  display: block;
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 700;
+}
+
+.diy-coupon-group__name {
+  display: block;
+  margin-top: 6px;
+  overflow: hidden;
+  font-size: 20px;
+  line-height: 26px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

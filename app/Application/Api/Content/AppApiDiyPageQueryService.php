@@ -14,12 +14,16 @@ namespace App\Application\Api\Content;
 
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
+use App\Domain\Content\DiyPage\Service\DomainDiyPublishService;
 use App\Domain\Content\DiyPage\Service\DomainDiyPageService;
+use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
+use App\Infrastructure\Model\Content\DiyPageVersion;
 
 final class AppApiDiyPageQueryService
 {
     public function __construct(
         private readonly DomainDiyPageService $diyPageService,
+        private readonly DomainDiyPublishService $publishService,
         private readonly AppApiProductQueryService $productQueryService,
     ) {}
 
@@ -29,6 +33,24 @@ final class AppApiDiyPageQueryService
         if ($payload === null) {
             return null;
         }
+
+        return $this->fillProductGroups($payload);
+    }
+
+    public function preview(string $token): ?array
+    {
+        $previewToken = $this->publishService->resolvePreview($token);
+        if ($previewToken->version_id === null) {
+            return null;
+        }
+
+        $version = $this->diyPageService->repository->findVersionWithPage($previewToken->page_id, $previewToken->version_id);
+        if (! $version instanceof DiyPageVersion || $version->page === null) {
+            return null;
+        }
+
+        $payload = DiyPageSchemaVo::fromArray($version->schema, $version->page->page_key)->publishedPayload();
+        $payload['published_at'] = $version->published_at?->toDateTimeString();
 
         return $this->fillProductGroups($payload);
     }

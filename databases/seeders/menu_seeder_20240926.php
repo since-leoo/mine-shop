@@ -834,6 +834,155 @@ class MenuSeeder20240926 extends Seeder
                 ]),
             ],
             [
+                'name' => 'mall:diy',
+                'path' => '/mall/diy',
+                'meta' => new Meta([
+                    'title' => '页面装修',
+                    'i18n' => 'mallMenu.mall.diy',
+                    'icon' => 'ph:paint-brush',
+                    'hidden' => 0,
+                    'type' => 'M',
+                    'componentPath' => 'modules/',
+                    'componentSuffix' => '.vue',
+                    'breadcrumbEnable' => 1,
+                    'copyright' => 1,
+                    'cache' => 1,
+                    'affix' => 0,
+                ]),
+                'children' => [
+                    [
+                        'name' => 'mall:diy:page',
+                        'path' => '/mall/diy/page',
+                        'component' => 'mall/views/diy/page/index',
+                        'meta' => new Meta([
+                            'title' => 'DIY页面',
+                            'i18n' => 'mallMenu.mall.diyPage',
+                            'icon' => 'ph:files',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'mall:diy:page:read',
+                                'meta' => new Meta([
+                                    'title' => 'DIY页面查看',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyPageRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:page:create',
+                                'meta' => new Meta([
+                                    'title' => 'DIY页面创建',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyPageCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:page:update',
+                                'meta' => new Meta([
+                                    'title' => 'DIY页面编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyPageUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:page:publish',
+                                'meta' => new Meta([
+                                    'title' => 'DIY页面发布',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyPagePublish',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:page:enable',
+                                'meta' => new Meta([
+                                    'title' => 'DIY页面启用',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyPageEnable',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:diy:template',
+                        'path' => '/mall/diy/template',
+                        'component' => 'mall/views/diy/template/index',
+                        'meta' => new Meta([
+                            'title' => '装修模板',
+                            'i18n' => 'mallMenu.mall.diyTemplate',
+                            'icon' => 'ph:layout',
+                            'hidden' => 0,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 1,
+                            'affix' => 0,
+                        ]),
+                        'children' => [
+                            [
+                                'name' => 'mall:diy:template:read',
+                                'meta' => new Meta([
+                                    'title' => '装修模板查看',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyTemplateRead',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:template:create',
+                                'meta' => new Meta([
+                                    'title' => '装修模板创建',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyTemplateCreate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:template:update',
+                                'meta' => new Meta([
+                                    'title' => '装修模板编辑',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyTemplateUpdate',
+                                ]),
+                            ],
+                            [
+                                'name' => 'mall:diy:template:delete',
+                                'meta' => new Meta([
+                                    'title' => '装修模板删除',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.diyTemplateDelete',
+                                ]),
+                            ],
+                        ],
+                    ],
+                    [
+                        'name' => 'mall:diy:editor',
+                        'path' => '/mall/diy/editor',
+                        'component' => 'mall/views/diy/editor/index',
+                        'meta' => new Meta([
+                            'title' => 'DIY页面装修',
+                            'i18n' => 'mallMenu.mall.diyEditor',
+                            'icon' => 'ph:paint-brush-broad',
+                            'hidden' => 1,
+                            'type' => 'M',
+                            'componentPath' => 'modules/',
+                            'componentSuffix' => '.vue',
+                            'breadcrumbEnable' => 1,
+                            'copyright' => 1,
+                            'cache' => 0,
+                            'affix' => 0,
+                        ]),
+                    ],
+                ],
+            ],
+            [
                 'name' => 'mall:config',
                 'path' => '/mall/config',
                 'meta' => new Meta([

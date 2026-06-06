@@ -1,13 +1,33 @@
 .diy-image-ad {
-  padding: 12px 24px;
+  margin-top: 12px;
+  margin-bottom: 12px;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
   gap: 16px;
+  overflow: hidden;
 }
 
 .diy-image-ad__image {
   width: 100%;
-  height: 160px;
+  height: 100%;
   border-radius: 12px;
   background: #eef1f4;
+}
+
+.diy-image-ad--single,
+.diy-image-ad--vertical {
+  grid-template-columns: 1fr;
+}
+
+.diy-image-ad--two-column {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.diy-image-ad--horizontal {
+  display: flex;
+  overflow: hidden;
+}
+
+.diy-image-ad--horizontal .diy-image-ad__image {
+  width: 260px;
+  flex: 0 0 260px;
 }

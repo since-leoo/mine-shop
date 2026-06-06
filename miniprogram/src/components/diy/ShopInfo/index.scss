@@ -1,0 +1,56 @@
+.diy-shop-info {
+  margin: 12px 24px;
+  padding: 20px;
+  display: flex;
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.diy-shop-info__logo {
+  width: 88px;
+  height: 88px;
+  margin-right: 18px;
+  border-radius: 18px;
+  background: #e5e7eb;
+}
+
+.diy-shop-info__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.diy-shop-info__name,
+.diy-shop-info__desc {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.diy-shop-info__name {
+  color: #1f2429;
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 700;
+}
+
+.diy-shop-info__desc {
+  margin-top: 4px;
+  color: #6b7280;
+  font-size: 22px;
+  line-height: 30px;
+}
+
+.diy-shop-info__tags {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.diy-shop-info__tag {
+  padding: 2px 10px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 20px;
+}

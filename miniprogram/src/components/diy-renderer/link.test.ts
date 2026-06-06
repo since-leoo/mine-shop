@@ -22,6 +22,10 @@ describe('DIY 链接解析', () => {
     expect(resolveDiyLink({ type: 'product', id: 1001 })).toBe('/pages/goods/details/index?spuId=1001');
   });
 
+  it('解析拼团链接到已注册页面', () => {
+    expect(resolveDiyLink({ type: 'group_buy', id: 12 })).toBe('/pages/promotion/group-buy/index?id=12');
+  });
+
   it('未知链接类型会被忽略', () => {
     expect(resolveDiyLink({ type: 'unknown', id: 1 })).toBe('');
   });

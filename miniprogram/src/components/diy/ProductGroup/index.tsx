@@ -1,11 +1,14 @@
 import Taro from '@tarojs/taro';
-import { View } from '@tarojs/components';
+import { Text, View } from '@tarojs/components';
 import GoodsList from '../../GoodsList';
 import { DiyComponent, DiyProductItem } from '../../diy-renderer/types';
 import './index.scss';
 
 interface Props {
-  component: DiyComponent<{ products?: DiyProductItem[]; items?: DiyProductItem[] }>;
+  component: DiyComponent<
+    { products?: DiyProductItem[]; items?: DiyProductItem[]; mode?: string; source?: string },
+    { title?: string; source?: string; sort?: string; categoryId?: string | number; activityId?: string | number; tagIds?: Array<string | number>; limit?: number }
+  >;
 }
 
 function normalizeProduct(item: DiyProductItem, index: number) {
@@ -23,19 +26,40 @@ function normalizeProduct(item: DiyProductItem, index: number) {
   };
 }
 
+function sourceText(component: Props['component']): string {
+  const source = component.props?.source || component.data?.source || component.data?.mode || 'recommend';
+  const map: Record<string, string> = {
+    manual: '手动商品',
+    recommend: '推荐商品',
+    hot: '热卖商品',
+    new: '新品商品',
+    category: `分类 ${component.props?.categoryId || '未选择'}`,
+    tag: '标签商品',
+    activity: `活动 ${component.props?.activityId || '未选择'}`,
+  };
+  return map[source] || '推荐商品';
+}
+
 export default function ProductGroup({ component }: Props) {
   const products = (component.data?.products || component.data?.items || []).map(normalizeProduct);
-  if (products.length === 0) return null;
 
   return (
     <View className="diy-product-group">
-      <GoodsList
-        goodsList={products}
-        onClickGoods={(goods) => {
-          if (!goods.spuId) return;
-          Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
-        }}
-      />
+      <View className="diy-product-group__head">
+        <Text className="diy-product-group__title">{component.props?.title || '商品组'}</Text>
+        <Text className="diy-product-group__source">{sourceText(component)}</Text>
+      </View>
+      {products.length > 0 ? (
+        <GoodsList
+          goodsList={products}
+          onClickGoods={(goods) => {
+            if (!goods.spuId) return;
+            Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
+          }}
+        />
+      ) : (
+        <View className="diy-product-group__empty">{sourceText(component)}</View>
+      )}
     </View>
   );
 }

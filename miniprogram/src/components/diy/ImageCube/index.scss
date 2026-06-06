@@ -1,0 +1,47 @@
+.diy-image-cube {
+  margin-top: 12px;
+  margin-bottom: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  overflow: hidden;
+}
+
+.diy-image-cube__item {
+  min-height: 100%;
+  border-radius: 14px;
+  background: #e5e7eb;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diy-image-cube__image {
+  width: 100%;
+  height: 100%;
+}
+
+.diy-image-cube__text {
+  color: #6b7280;
+  font-size: 24px;
+}
+
+.diy-image-cube--one {
+  grid-template-columns: 1fr;
+}
+
+.diy-image-cube--three {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+.diy-image-cube--four {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.diy-image-cube--left-one-right-two {
+  grid-template-columns: 1.2fr 1fr;
+}
+
+.diy-image-cube--left-one-right-two .diy-image-cube__item:first-child {
+  grid-row: span 2;
+}

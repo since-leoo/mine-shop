@@ -16,38 +16,23 @@ final class DiyPageSchemaVo
 {
     private const MAX_COMPONENTS = 50;
 
-    private const MAX_BANNER_ITEMS = 10;
-
-    private const MAX_QUICK_NAV_ITEMS = 20;
-
-    private const MAX_IMAGE_AD_ITEMS = 10;
-
-    private const MAX_PRODUCT_GROUP_LIMIT = 50;
-
-    private const COMPONENT_TYPES = [
-        'banner',
-        'quick-nav',
-        'image-ad',
-        'product-group',
-        'title-bar',
-        'gap',
-        'divider',
+    private const THEME_COLOR_KEYS = [
+        'primaryColor',
+        'priceColor',
+        'backgroundColor',
     ];
 
-    private const LINK_TYPES = [
-        'page',
-        'url',
-        'product',
-        'category',
-        'coupon',
-        'group_buy',
-        'seckill',
+    private const BUTTON_SHAPES = [
+        'round',
+        'square',
+        'plain',
     ];
 
     private function __construct(private readonly array $schema) {}
 
     public static function fromArray(array $schema, string $pageKey): self
     {
+        $schema = DiyComponentRegistryVo::migrateSchema($schema);
         self::assertPage($schema, $pageKey);
         self::assertComponents($schema['components']);
 
@@ -72,7 +57,7 @@ final class DiyPageSchemaVo
 
     private static function assertPage(array $schema, string $pageKey): void
     {
-        if (($schema['version'] ?? null) !== 1) {
+        if (($schema['version'] ?? null) !== DiyComponentRegistryVo::CURRENT_SCHEMA_VERSION) {
             throw new \DomainException('装修页面结构版本无效');
         }
 
@@ -86,6 +71,42 @@ final class DiyPageSchemaVo
 
         if (! isset($schema['components']) || ! \is_array($schema['components'])) {
             throw new \DomainException('装修组件不能为空');
+        }
+
+        self::assertPageTheme($schema['page']);
+    }
+
+    private static function assertPageTheme(array $page): void
+    {
+        $theme = $page['theme'] ?? [];
+        if ($theme === []) {
+            return;
+        }
+
+        if (! \is_array($theme)) {
+            throw new \DomainException('装修主题格式无效');
+        }
+
+        foreach (self::THEME_COLOR_KEYS as $key) {
+            if (! isset($theme[$key]) || $theme[$key] === '') {
+                continue;
+            }
+
+            if (! \is_string($theme[$key]) || ! preg_match('/^#[0-9a-fA-F]{6}$/', $theme[$key])) {
+                throw new \DomainException('装修主题颜色无效');
+            }
+        }
+
+        if (isset($theme['cardRadius'])) {
+            $cardRadius = (int) $theme['cardRadius'];
+            if ($cardRadius < 0 || $cardRadius > 64) {
+                throw new \DomainException('装修卡片圆角需在0-64之间');
+            }
+        }
+
+        $buttonShape = (string) ($theme['buttonShape'] ?? 'round');
+        if (! \in_array($buttonShape, self::BUTTON_SHAPES, true)) {
+            throw new \DomainException('装修按钮样式无效');
         }
     }
 
@@ -111,77 +132,17 @@ final class DiyPageSchemaVo
             $ids[$id] = true;
 
             $type = (string) ($component['type'] ?? '');
-            if (! \in_array($type, self::COMPONENT_TYPES, true)) {
-                throw new \DomainException('不支持的装修组件');
-            }
-
-            self::assertComponentData($type, $component);
-        }
-    }
-
-    private static function assertComponentData(string $type, array $component): void
-    {
-        $data = \is_array($component['data'] ?? null) ? $component['data'] : [];
-        $props = \is_array($component['props'] ?? null) ? $component['props'] : [];
-
-        if ($type === 'banner') {
-            self::assertItemsLimit($data, self::MAX_BANNER_ITEMS, '轮播图最多10张');
-        }
-
-        if ($type === 'quick-nav') {
-            self::assertItemsLimit($data, self::MAX_QUICK_NAV_ITEMS, '金刚区最多20个入口');
-        }
-
-        if ($type === 'image-ad') {
-            self::assertItemsLimit($data, self::MAX_IMAGE_AD_ITEMS, '图片广告最多10张');
-        }
-
-        if ($type === 'product-group') {
-            $limit = (int) ($props['limit'] ?? $data['limit'] ?? 10);
-            if ($limit > self::MAX_PRODUCT_GROUP_LIMIT) {
-                throw new \DomainException('商品组数量最多50个');
-            }
-        }
-
-        self::assertLinks($data);
-    }
-
-    private static function assertItemsLimit(array $data, int $limit, string $message): void
-    {
-        $items = $data['items'] ?? [];
-        if (\is_array($items) && \count($items) > $limit) {
-            throw new \DomainException($message);
-        }
-    }
-
-    private static function assertLinks(array $data): void
-    {
-        $items = $data['items'] ?? [];
-        if (! \is_array($items)) {
-            return;
-        }
-
-        foreach ($items as $item) {
-            if (! \is_array($item) || ! isset($item['link']) || ! \is_array($item['link'])) {
-                continue;
-            }
-
-            $linkType = (string) ($item['link']['type'] ?? '');
-            if ($linkType !== '' && ! \in_array($linkType, self::LINK_TYPES, true)) {
-                throw new \DomainException('不支持的跳转类型');
-            }
+            DiyComponentRegistryVo::assertSupportedComponent($type);
+            DiyComponentRegistryVo::assertComponentData($type, $component);
         }
     }
 
     private static function normalize(array $schema): array
     {
-        $schema['components'] = array_values(array_map(static function (array $component): array {
-            $component['enabled'] = (bool) ($component['enabled'] ?? true);
-            $component['props'] = \is_array($component['props'] ?? null) ? $component['props'] : [];
-            $component['style'] = \is_array($component['style'] ?? null) ? $component['style'] : [];
-            $component['data'] = \is_array($component['data'] ?? null) ? $component['data'] : [];
-            return $component;
-        }, $schema['components']));
+        $schema['components'] = array_values(array_map(
+            static fn (array $component): array => DiyComponentRegistryVo::normalizeComponent($component),
+            $schema['components']
+        ));
 
         return $schema;
     }

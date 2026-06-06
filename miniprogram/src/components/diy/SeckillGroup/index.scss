@@ -1,0 +1,63 @@
+.diy-seckill-group {
+  margin: 12px 24px;
+  padding: 20px;
+  border-radius: 18px;
+  background: #fff7ed;
+}
+
+.diy-seckill-group__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.diy-seckill-group__title {
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 700;
+  color: #c2410c;
+}
+
+.diy-seckill-group__session {
+  max-width: 320px;
+  overflow: hidden;
+  color: #ea580c;
+  font-size: 22px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.diy-seckill-group__list {
+  margin-top: 16px;
+  display: flex;
+  gap: 12px;
+}
+
+.diy-seckill-group__item {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.diy-seckill-group__image {
+  height: 120px;
+  border-radius: 10px;
+  background: #fed7aa;
+}
+
+.diy-seckill-group__name,
+.diy-seckill-group__price {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  font-size: 22px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.diy-seckill-group__price {
+  color: #ef4444;
+  font-weight: 700;
+}

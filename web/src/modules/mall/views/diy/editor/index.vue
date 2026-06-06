@@ -5,9 +5,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { cloneDeep } from 'lodash-es'
 import { getDiyPage, publishDiyPage, resetDiyDraft, saveDiyDraft } from '~/mall/api/diyPage'
 import ComponentLibrary from '../components/ComponentLibrary.vue'
+import PageSettingPanel from '../components/PageSettingPanel.vue'
 import PhonePreview from '../components/PhonePreview.vue'
 import PropertyPanel from '../components/PropertyPanel.vue'
-import { componentRegistry, createDefaultSchema } from '../schema/componentRegistry'
+import { componentRegistry, createDefaultSchema, defaultPageTheme } from '../schema/componentRegistry'
 
 defineOptions({ name: 'mall:diy:editor' })
 
@@ -18,6 +19,7 @@ const saving = ref(false)
 const pageId = computed(() => Number(route.query.id || 0))
 const pageInfo = ref<any>(null)
 const selectedId = ref('')
+const panelMode = ref<'component' | 'page'>('component')
 const schema = ref<DiySchema>(createDefaultSchema('home', '首页'))
 const selectedComponent = computed(() => schema.value.components.find(item => item.id === selectedId.value) || null)
 
@@ -40,6 +42,10 @@ async function load() {
     schema.value = draft?.schema || createDefaultSchema(res.data.page_key, res.data.title)
     schema.value.page.key = res.data.page_key
     schema.value.page.title = res.data.title
+    schema.value.page.theme = {
+      ...defaultPageTheme,
+      ...(schema.value.page.theme || {}),
+    }
     selectedId.value = schema.value.components[0]?.id || ''
   }
   finally {
@@ -54,6 +60,7 @@ function addComponent(type: string) {
   const component = meta.defaults()
   schema.value.components.push(component)
   selectedId.value = component.id
+  panelMode.value = 'component'
 }
 
 function indexOf(id: string) {
@@ -98,6 +105,10 @@ function updateComponent(component: DiyComponent) {
     schema.value.components[index] = component
 }
 
+function updateSchema(nextSchema: DiySchema) {
+  schema.value = nextSchema
+}
+
 async function saveDraft() {
   saving.value = true
   try {
@@ -134,6 +145,13 @@ onMounted(load)
       </div>
       <div class="diy-editor__actions">
         <el-button @click="router.push('/mall/diy/page')"><ma-svg-icon name="ph:arrow-left" size="14" />返回列表</el-button>
+        <el-segmented
+          v-model="panelMode"
+          :options="[
+            { label: '组件属性', value: 'component' },
+            { label: '页面设置', value: 'page' },
+          ]"
+        />
         <el-button @click="resetDraft">重置草稿</el-button>
         <el-button :loading="saving" type="primary" @click="saveDraft">保存草稿</el-button>
         <el-button type="success" @click="publish">发布</el-button>
@@ -144,14 +162,15 @@ onMounted(load)
       <PhonePreview
         :schema="schema"
         :selected-id="selectedId"
-        @select="selectedId = $event"
+        @select="selectedId = $event; panelMode = 'component'"
         @move-up="move($event, -1)"
         @move-down="move($event, 1)"
         @copy="copyComponent"
         @remove="removeComponent"
         @toggle="toggleComponent"
       />
-      <PropertyPanel :component="selectedComponent" @update="updateComponent" />
+      <PropertyPanel v-if="panelMode === 'component'" :component="selectedComponent" @update="updateComponent" />
+      <PageSettingPanel v-else :schema="schema" @update="updateSchema" />
     </main>
   </div>
 </template>

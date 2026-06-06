@@ -23,14 +23,29 @@ export interface DiySchema {
   page: {
     key: string
     title?: string
+    theme?: DiyPageTheme
   }
   components: DiyComponent[]
 }
+
+export interface DiyPageTheme {
+  primaryColor?: string
+  priceColor?: string
+  backgroundColor?: string
+  cardRadius?: number
+  buttonShape?: 'round' | 'square' | 'plain'
+}
+
+export type DiyComponentCategory = 'base' | 'user' | 'ad' | 'marketing'
+
+export type DiyComponentOrientation = 'vertical' | 'horizontal' | 'both'
 
 export interface DiyComponentMeta {
   type: string
   name: string
   icon: string
   description: string
+  category: DiyComponentCategory
+  orientation: DiyComponentOrientation
   defaults: () => DiyComponent
 }

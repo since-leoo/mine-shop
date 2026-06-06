@@ -1,0 +1,55 @@
+.diy-group-buy-group {
+  margin: 12px 24px;
+}
+
+.diy-group-buy-group__title {
+  margin-bottom: 12px;
+  font-size: 30px;
+  line-height: 38px;
+  font-weight: 700;
+  color: #1f2429;
+}
+
+.diy-group-buy-group__list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.diy-group-buy-group__item {
+  padding: 14px;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.diy-group-buy-group__image {
+  height: 180px;
+  border-radius: 12px;
+  background: #e5e7eb;
+}
+
+.diy-group-buy-group__name,
+.diy-group-buy-group__price,
+.diy-group-buy-group__people {
+  display: block;
+  margin-top: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.diy-group-buy-group__name {
+  font-size: 24px;
+  color: #1f2429;
+}
+
+.diy-group-buy-group__price {
+  color: #ef4444;
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.diy-group-buy-group__people {
+  color: #6b7280;
+  font-size: 20px;
+}

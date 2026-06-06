@@ -22,6 +22,7 @@ export interface DiyPagePayload {
   page: {
     key: string;
     title?: string;
+    theme?: DiyPageTheme;
     [key: string]: any;
   } | null;
   components: DiyComponent[];
@@ -34,6 +35,24 @@ export interface DiyImageItem {
   url?: string;
   title?: string;
   link?: DiyLink;
+}
+
+export interface DiyPageTheme {
+  primaryColor?: string;
+  priceColor?: string;
+  backgroundColor?: string;
+  cardRadius?: number;
+  buttonShape?: 'round' | 'square' | 'plain' | string;
+}
+
+export interface DiyImageProps {
+  layout?: string;
+  widthMode?: 'full' | 'contained' | 'custom' | string;
+  widthUnit?: 'percent' | 'px' | 'rpx' | string;
+  width?: number;
+  height?: number;
+  radius?: number;
+  objectFit?: 'cover' | 'contain' | 'fill' | string;
 }
 
 export interface DiyNavItem {

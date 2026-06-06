@@ -1,0 +1,28 @@
+.diy-notice-bar {
+  margin: 12px 24px;
+  min-height: 64px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  border-radius: 32px;
+  font-size: 24px;
+}
+
+.diy-notice-bar__icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 12px;
+  border-radius: 50%;
+  background: currentColor;
+  color: #ffffff;
+  font-size: 22px;
+  line-height: 32px;
+  text-align: center;
+}
+
+.diy-notice-bar__text {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}

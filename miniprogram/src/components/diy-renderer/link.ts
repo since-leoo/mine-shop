@@ -32,7 +32,7 @@ export function resolveDiyLink(link?: DiyLink): string {
   }
 
   if (link.type === 'group_buy') {
-    return link.id ? `/pages/promotion/group-buy/detail/index?id=${link.id}` : '/pages/promotion/group-buy/index';
+    return link.id ? `/pages/promotion/group-buy/index?id=${link.id}` : '/pages/promotion/group-buy/index';
   }
 
   if (link.type === 'seckill') {

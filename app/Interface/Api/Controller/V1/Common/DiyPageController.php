@@ -41,4 +41,5 @@ final class DiyPageController extends AbstractController
             $this->queryService->published($pageKey, $pageType)
         ));
     }
+
 }
