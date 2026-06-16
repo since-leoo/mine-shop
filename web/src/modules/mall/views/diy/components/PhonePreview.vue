@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { DiyComponent, DiySchema } from '../schema/types'
+import Sortable from 'sortablejs'
 
-defineProps<{
+const props = defineProps<{
   schema: DiySchema
   selectedId?: string
 }>()
@@ -13,7 +14,39 @@ const emit = defineEmits<{
   copy: [id: string]
   remove: [id: string]
   toggle: [id: string]
+  sort: [ids: string[]]
 }>()
+
+const bodyRef = ref<HTMLElement>()
+let sortable: Sortable | null = null
+
+function bindSortable() {
+  sortable?.destroy()
+  sortable = null
+  if (!bodyRef.value) {
+    return
+  }
+
+  sortable = Sortable.create(bodyRef.value, {
+    animation: 160,
+    handle: '.preview-block__drag',
+    draggable: '.preview-block',
+    ghostClass: 'preview-block--ghost',
+    chosenClass: 'preview-block--chosen',
+    dragClass: 'preview-block--dragging',
+    forceFallback: true,
+    onEnd: () => {
+      const ids = Array.from(bodyRef.value?.querySelectorAll<HTMLElement>('.preview-block') || [])
+        .map(item => item.dataset.id)
+        .filter(Boolean) as string[]
+      emit('sort', ids)
+    },
+  })
+}
+
+onMounted(() => nextTick(bindSortable))
+onBeforeUnmount(() => sortable?.destroy())
+watch(() => props.schema.components.map(item => item.id).join(','), () => nextTick(bindSortable))
 
 function imageOf(item: any) {
   return item?.image || item?.img || item?.url || ''
@@ -112,11 +145,14 @@ function pageTheme(schema: DiySchema) {
   <section class="phone-preview">
     <div class="phone-preview__device">
       <div class="phone-preview__status" />
-      <div class="phone-preview__title">{{ schema.page.title || schema.page.key }}</div>
+      <div class="phone-preview__title">
+        {{ schema.page.title || schema.page.key }}
+      </div>
       <div
+        ref="bodyRef"
         class="phone-preview__body"
         :style="{
-          background: pageTheme(schema).backgroundColor,
+          'background': pageTheme(schema).backgroundColor,
           '--diy-primary-color': pageTheme(schema).primaryColor,
           '--diy-price-color': pageTheme(schema).priceColor,
           '--diy-card-radius': `${pageTheme(schema).cardRadius}px`,
@@ -125,16 +161,30 @@ function pageTheme(schema: DiySchema) {
         <div
           v-for="component in schema.components"
           :key="component.id"
+          :data-id="component.id"
           class="preview-block"
           :class="{ 'preview-block--active': component.id === selectedId, 'preview-block--disabled': component.enabled === false }"
           @click="emit('select', component.id)"
         >
           <div class="preview-block__tools">
-            <button type="button" @click.stop="emit('moveUp', component.id)"><ma-svg-icon name="ph:arrow-up" size="13" /></button>
-            <button type="button" @click.stop="emit('moveDown', component.id)"><ma-svg-icon name="ph:arrow-down" size="13" /></button>
-            <button type="button" @click.stop="emit('copy', component.id)"><ma-svg-icon name="ph:copy" size="13" /></button>
-            <button type="button" @click.stop="emit('toggle', component.id)"><ma-svg-icon :name="component.enabled === false ? 'ph:eye-slash' : 'ph:eye'" size="13" /></button>
-            <button type="button" @click.stop="emit('remove', component.id)"><ma-svg-icon name="ph:trash" size="13" /></button>
+            <button class="preview-block__drag" type="button" title="拖动排序" @click.stop>
+              <ma-svg-icon name="ph:dots-six-vertical" size="14" />
+            </button>
+            <button type="button" @click.stop="emit('moveUp', component.id)">
+              <ma-svg-icon name="ph:arrow-up" size="13" />
+            </button>
+            <button type="button" @click.stop="emit('moveDown', component.id)">
+              <ma-svg-icon name="ph:arrow-down" size="13" />
+            </button>
+            <button type="button" @click.stop="emit('copy', component.id)">
+              <ma-svg-icon name="ph:copy" size="13" />
+            </button>
+            <button type="button" @click.stop="emit('toggle', component.id)">
+              <ma-svg-icon :name="component.enabled === false ? 'ph:eye-slash' : 'ph:eye'" size="13" />
+            </button>
+            <button type="button" @click.stop="emit('remove', component.id)">
+              <ma-svg-icon name="ph:trash" size="13" />
+            </button>
           </div>
 
           <template v-if="component.type === 'banner'">
@@ -179,7 +229,9 @@ function pageTheme(schema: DiySchema) {
                 <strong>{{ item.title || item.name || '商品' }}</strong>
                 <em>¥{{ item.price || 0 }}</em>
               </div>
-              <div v-if="products(component).length === 0" class="preview-empty">{{ productSourceText(component) }}</div>
+              <div v-if="products(component).length === 0" class="preview-empty">
+                {{ productSourceText(component) }}
+              </div>
             </div>
           </template>
 
@@ -210,13 +262,17 @@ function pageTheme(schema: DiySchema) {
 
           <template v-else-if="component.type === 'coupon-group'">
             <div class="preview-section">
-              <div class="preview-section__title">{{ component.props?.title || '领券中心' }}</div>
+              <div class="preview-section__title">
+                {{ component.props?.title || '领券中心' }}
+              </div>
               <div class="preview-coupons">
                 <div v-for="(item, index) in coupons(component).slice(0, component.props?.limit || 3)" :key="index" class="preview-coupon">
                   <strong>¥{{ price(item.value) }}</strong>
                   <span>{{ item.name || '优惠券' }}</span>
                 </div>
-                <div v-if="coupons(component).length === 0" class="preview-empty">优惠券组</div>
+                <div v-if="coupons(component).length === 0" class="preview-empty">
+                  优惠券组
+                </div>
               </div>
             </div>
           </template>
@@ -239,21 +295,27 @@ function pageTheme(schema: DiySchema) {
 
           <template v-else-if="component.type === 'group-buy-group'">
             <div class="preview-section">
-              <div class="preview-section__title">{{ component.props?.title || '多人拼团' }}</div>
+              <div class="preview-section__title">
+                {{ component.props?.title || '多人拼团' }}
+              </div>
               <div class="preview-products">
                 <div v-for="(item, index) in groupBuys(component).slice(0, 4)" :key="index" class="preview-product">
                   <span class="preview-product__img" />
                   <strong>{{ item.title || '拼团活动' }}</strong>
                   <em>¥{{ price(item.group_price) }}</em>
                 </div>
-                <div v-if="groupBuys(component).length === 0" class="preview-empty">拼团组</div>
+                <div v-if="groupBuys(component).length === 0" class="preview-empty">
+                  拼团组
+                </div>
               </div>
             </div>
           </template>
 
           <template v-else-if="component.type === 'product-rank'">
             <div class="preview-section">
-              <div class="preview-section__title">{{ component.props?.title || '商品榜单' }}</div>
+              <div class="preview-section__title">
+                {{ component.props?.title || '商品榜单' }}
+              </div>
               <div class="preview-rank">
                 <div v-for="index in 3" :key="index" class="preview-rank__item">
                   <b>{{ index }}</b>
@@ -301,7 +363,9 @@ function pageTheme(schema: DiySchema) {
           </template>
 
           <template v-else>
-            <div class="preview-empty">{{ component.name }}</div>
+            <div class="preview-empty">
+              {{ component.name }}
+            </div>
           </template>
         </div>
       </div>
@@ -313,26 +377,30 @@ function pageTheme(schema: DiySchema) {
 .phone-preview {
   flex: 1;
   min-width: 440px;
-  padding: 24px 0;
+  padding: 28px 0;
   display: flex;
   justify-content: center;
   overflow: auto;
-  background: #f3f4f6;
+  background:
+    linear-gradient(90deg, rgba(148, 163, 184, 0.14) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px),
+    #f6f8fb;
+  background-size: 24px 24px;
 }
 
 .phone-preview__device {
   width: 390px;
   height: 760px;
-  border: 1px solid #d1d5db;
-  border-radius: 28px;
-  background: #f6f7f8;
+  border: 1px solid #d8dee8;
+  border-radius: 30px;
+  background: #f8fafc;
   overflow: hidden;
-  box-shadow: 0 16px 42px rgba(15, 23, 42, 0.12);
+  box-shadow: 0 22px 54px rgba(15, 23, 42, 0.14), 0 0 0 8px rgba(255, 255, 255, 0.72);
 }
 
 .phone-preview__status {
   height: 28px;
-  background: #111827;
+  background: #0f172a;
 }
 
 .phone-preview__title {
@@ -341,12 +409,14 @@ function pageTheme(schema: DiySchema) {
   align-items: center;
   justify-content: center;
   background: #fff;
+  border-bottom: 1px solid #edf0f5;
   font-size: 15px;
   font-weight: 600;
 }
 
 .phone-preview__body {
   height: 686px;
+  padding: 8px 0 18px;
   overflow: auto;
 }
 
@@ -354,11 +424,14 @@ function pageTheme(schema: DiySchema) {
   position: relative;
   min-height: 28px;
   border: 1px solid transparent;
+  outline: 0;
   cursor: pointer;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, background 0.18s ease;
 
   &:hover,
   &--active {
     border-color: #409eff;
+    box-shadow: inset 0 0 0 1px rgba(64, 158, 255, 0.18);
   }
 }
 
@@ -366,22 +439,55 @@ function pageTheme(schema: DiySchema) {
   opacity: 0.45;
 }
 
+.preview-block--chosen {
+  border-color: #2563eb;
+  background: rgba(37, 99, 235, 0.04);
+}
+
+.preview-block--ghost {
+  opacity: 0.35;
+  background: rgba(64, 158, 255, 0.10);
+}
+
+.preview-block--dragging {
+  cursor: grabbing;
+}
+
 .preview-block__tools {
   position: absolute;
   z-index: 2;
-  top: 4px;
-  right: 4px;
+  top: 6px;
+  right: 6px;
   display: none;
-  gap: 3px;
+  gap: 4px;
+  padding: 3px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.14);
 
   button {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     border: 0;
     border-radius: 4px;
-    background: rgba(17, 24, 39, 0.72);
-    color: #fff;
+    background: transparent;
+    color: #334155;
     cursor: pointer;
+    transition: background 0.16s ease, color 0.16s ease;
+
+    &:hover {
+      background: #eef5ff;
+      color: #2563eb;
+    }
+  }
+}
+
+.preview-block__drag {
+  cursor: grab;
+
+  &:active {
+    cursor: grabbing;
   }
 }
 
@@ -394,7 +500,7 @@ function pageTheme(schema: DiySchema) {
   margin-top: 12px;
   margin-bottom: 12px;
   border-radius: 10px;
-  background: #e5e7eb;
+  background: #e8edf4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -414,6 +520,7 @@ function pageTheme(schema: DiySchema) {
   grid-template-columns: repeat(5, 1fr);
   background: #fff;
   border-radius: var(--diy-card-radius, 10px);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
 }
 
 .preview-nav__item {
@@ -438,7 +545,7 @@ function pageTheme(schema: DiySchema) {
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: #e5e7eb;
+  background: #e8edf4;
 }
 
 .preview-image-ad {
@@ -450,7 +557,7 @@ function pageTheme(schema: DiySchema) {
   div {
     min-height: 100%;
     border-radius: 8px;
-    background: #e5e7eb;
+    background: #e8edf4;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -475,6 +582,7 @@ function pageTheme(schema: DiySchema) {
   padding: 8px;
   background: #fff;
   border-radius: var(--diy-card-radius, 8px);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -524,7 +632,7 @@ function pageTheme(schema: DiySchema) {
 .preview-divider {
   margin: 12px;
   height: 1px;
-  background: #e5e7eb;
+  background: #e1e7ef;
 }
 
 .preview-notice,
@@ -636,6 +744,7 @@ function pageTheme(schema: DiySchema) {
   gap: 8px;
   border-radius: var(--diy-card-radius, 8px);
   background: #fff;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
 
   b {
     color: var(--diy-primary-color, #ef4444);
@@ -659,6 +768,7 @@ function pageTheme(schema: DiySchema) {
 
 .preview-search {
   background: #fff;
+  border: 1px solid #edf0f5;
   color: #9ca3af;
 }
 

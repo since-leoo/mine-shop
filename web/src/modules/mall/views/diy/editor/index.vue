@@ -55,8 +55,9 @@ async function load() {
 
 function addComponent(type: string) {
   const meta = componentRegistry.find(item => item.type === type)
-  if (!meta)
+  if (!meta) {
     return
+  }
   const component = meta.defaults()
   schema.value.components.push(component)
   selectedId.value = component.id
@@ -70,8 +71,9 @@ function indexOf(id: string) {
 function move(id: string, offset: number) {
   const index = indexOf(id)
   const next = index + offset
-  if (index < 0 || next < 0 || next >= schema.value.components.length)
+  if (index < 0 || next < 0 || next >= schema.value.components.length) {
     return
+  }
   const list = schema.value.components
   const [item] = list.splice(index, 1)
   list.splice(next, 0, item)
@@ -79,8 +81,9 @@ function move(id: string, offset: number) {
 
 function copyComponent(id: string) {
   const source = schema.value.components.find(item => item.id === id)
-  if (!source)
+  if (!source) {
     return
+  }
   const copy = cloneDeep(source)
   copy.id = `${source.type}-${Date.now()}`
   copy.name = `${source.name}副本`
@@ -95,14 +98,25 @@ function removeComponent(id: string) {
 
 function toggleComponent(id: string) {
   const component = schema.value.components.find(item => item.id === id)
-  if (component)
+  if (component) {
     component.enabled = component.enabled === false
+  }
+}
+
+function sortComponents(ids: string[]) {
+  const componentMap = new Map(schema.value.components.map(item => [item.id, item]))
+  const sorted = ids.map(id => componentMap.get(id)).filter(Boolean) as DiyComponent[]
+  if (sorted.length !== schema.value.components.length) {
+    return
+  }
+  schema.value.components = sorted
 }
 
 function updateComponent(component: DiyComponent) {
   const index = indexOf(component.id)
-  if (index >= 0)
+  if (index >= 0) {
     schema.value.components[index] = component
+  }
 }
 
 function updateSchema(nextSchema: DiySchema) {
@@ -144,7 +158,9 @@ onMounted(load)
         <span>{{ pageInfo?.page_key }} / {{ pageInfo?.page_type }}</span>
       </div>
       <div class="diy-editor__actions">
-        <el-button @click="router.push('/mall/diy/page')"><ma-svg-icon name="ph:arrow-left" size="14" />返回列表</el-button>
+        <el-button @click="router.push('/mall/diy/page')">
+          <ma-svg-icon name="ph:arrow-left" size="14" />返回列表
+        </el-button>
         <el-segmented
           v-model="panelMode"
           :options="[
@@ -152,9 +168,15 @@ onMounted(load)
             { label: '页面设置', value: 'page' },
           ]"
         />
-        <el-button @click="resetDraft">重置草稿</el-button>
-        <el-button :loading="saving" type="primary" @click="saveDraft">保存草稿</el-button>
-        <el-button type="success" @click="publish">发布</el-button>
+        <el-button @click="resetDraft">
+          重置草稿
+        </el-button>
+        <el-button :loading="saving" type="primary" @click="saveDraft">
+          保存草稿
+        </el-button>
+        <el-button type="success" @click="publish">
+          发布
+        </el-button>
       </div>
     </header>
     <main class="diy-editor__main">
@@ -168,6 +190,7 @@ onMounted(load)
         @copy="copyComponent"
         @remove="removeComponent"
         @toggle="toggleComponent"
+        @sort="sortComponents"
       />
       <PropertyPanel v-if="panelMode === 'component'" :component="selectedComponent" @update="updateComponent" />
       <PageSettingPanel v-else :schema="schema" @update="updateSchema" />
@@ -180,17 +203,19 @@ onMounted(load)
   height: calc(100vh - 84px);
   display: flex;
   flex-direction: column;
-  background: #f3f4f6;
+  background: #f5f7fb;
 }
 
 .diy-editor__toolbar {
-  height: 56px;
-  padding: 0 16px;
+  min-height: 64px;
+  padding: 10px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid #e5eaf2;
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.03);
 }
 
 .diy-editor__title {
@@ -199,24 +224,29 @@ onMounted(load)
   gap: 3px;
 
   strong {
-    font-size: 15px;
-    line-height: 20px;
+    font-size: 16px;
+    line-height: 22px;
+    color: #111827;
   }
 
   span {
     font-size: 12px;
-    color: #6b7280;
+    color: #64748b;
   }
 }
 
 .diy-editor__actions {
   display: flex;
+  align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .diy-editor__main {
   flex: 1;
   min-height: 0;
   display: flex;
+  overflow: hidden;
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
 }
 </style>

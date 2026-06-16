@@ -37,7 +37,9 @@ function patchTheme(payload: Record<string, any>) {
 
 <template>
   <aside class="page-setting-panel">
-    <div class="page-setting-panel__head">页面设置</div>
+    <div class="page-setting-panel__head">
+      页面设置
+    </div>
     <el-form label-position="top" class="page-setting-panel__form">
       <el-form-item label="页面标题">
         <el-input :model-value="schema.page.title || ''" @update:model-value="patchPage({ title: String($event) })" />
@@ -74,8 +76,8 @@ function patchTheme(payload: Record<string, any>) {
 
 <style scoped lang="scss">
 .page-setting-panel {
-  width: 320px;
-  border-left: 1px solid #e5e7eb;
+  width: 360px;
+  border-left: 1px solid #e5eaf2;
   background: #fff;
   overflow: auto;
 }
@@ -85,7 +87,8 @@ function patchTheme(payload: Record<string, any>) {
   padding: 0 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eef2f7;
+  color: #111827;
   font-size: 14px;
   font-weight: 600;
 }

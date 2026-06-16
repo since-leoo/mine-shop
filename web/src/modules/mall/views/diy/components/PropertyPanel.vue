@@ -20,7 +20,7 @@ const emit = defineEmits<{
   update: [component: DiyComponent]
 }>()
 
-const advancedVisible = ref(false)
+const advancedVisible = ref<string[]>([])
 const activeTab = ref('content')
 const propsJson = ref('{}')
 const dataJson = ref('{}')
@@ -71,8 +71,9 @@ watch(() => props.component, (component) => {
 }, { immediate: true, deep: true })
 
 function patch(payload: Partial<DiyComponent>) {
-  if (!props.component)
+  if (!props.component) {
     return
+  }
   emit('update', { ...props.component, ...payload })
 }
 
@@ -117,8 +118,9 @@ function removeItem(index: number) {
 }
 
 function applyJson() {
-  if (!props.component)
+  if (!props.component) {
     return
+  }
 
   try {
     patch({
@@ -210,7 +212,9 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
 
 <template>
   <aside class="property-panel">
-    <div class="property-panel__head">{{ title }}</div>
+    <div class="property-panel__head">
+      {{ title }}
+    </div>
     <el-empty v-if="!component" description="请选择组件" />
     <template v-else>
       <el-form label-position="top" class="property-panel__form">
@@ -223,519 +227,550 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
 
         <el-tabs v-model="activeTab" class="property-panel__tabs">
           <el-tab-pane label="内容" name="content">
-        <template v-if="component.type === 'banner'">
-          <el-divider>轮播设置</el-divider>
-          <el-form-item label="宽度模式">
-            <el-segmented
-              :model-value="imageSizeDefaults('banner').widthMode"
-              :options="imageWidthModeOptions"
-              @update:model-value="patchProps({ widthMode: $event })"
-            />
-          </el-form-item>
-          <div v-if="imageSizeDefaults('banner').widthMode === 'custom'" class="property-panel__grid">
-            <el-form-item label="宽度单位">
-              <el-select :model-value="imageSizeDefaults('banner').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
-                <el-option label="百分比" value="percent" />
-                <el-option label="PX" value="px" />
-                <el-option label="RPX" value="rpx" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="宽度">
-              <el-input-number :model-value="imageSizeDefaults('banner').width" :min="1" :max="imageSizeDefaults('banner').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
-            </el-form-item>
-          </div>
-          <div class="property-panel__grid">
-            <el-form-item label="高度">
-              <el-input-number :model-value="imageSizeDefaults('banner').height" :min="80" :max="360" @update:model-value="patchProps({ height: $event || 150 })" />
-            </el-form-item>
-            <el-form-item label="圆角">
-              <el-input-number :model-value="imageSizeDefaults('banner').radius" :min="0" :max="32" @update:model-value="patchProps({ radius: $event ?? 0 })" />
-            </el-form-item>
-          </div>
-          <el-form-item label="填充方式">
-            <el-select :model-value="imageSizeDefaults('banner').objectFit" @update:model-value="patchProps({ objectFit: $event })">
-              <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="自动播放">
-            <el-switch :model-value="component.props?.autoplay !== false" @update:model-value="patchProps({ autoplay: Boolean($event) })" />
-          </el-form-item>
-          <div class="property-panel__items">
-            <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
-              <div class="property-panel__item-head">
-                <strong>轮播图 {{ index + 1 }}</strong>
-                <el-button text type="danger" @click="removeItem(index)">删除</el-button>
+            <template v-if="component.type === 'banner'">
+              <el-divider>轮播设置</el-divider>
+              <el-form-item label="宽度模式">
+                <el-segmented
+                  :model-value="imageSizeDefaults('banner').widthMode"
+                  :options="imageWidthModeOptions"
+                  @update:model-value="patchProps({ widthMode: $event })"
+                />
+              </el-form-item>
+              <div v-if="imageSizeDefaults('banner').widthMode === 'custom'" class="property-panel__grid">
+                <el-form-item label="宽度单位">
+                  <el-select :model-value="imageSizeDefaults('banner').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
+                    <el-option label="百分比" value="percent" />
+                    <el-option label="PX" value="px" />
+                    <el-option label="RPX" value="rpx" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="宽度">
+                  <el-input-number :model-value="imageSizeDefaults('banner').width" :min="1" :max="imageSizeDefaults('banner').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
+                </el-form-item>
               </div>
-              <el-form-item label="图片地址">
-                <el-input :model-value="item.image || item.url || ''" @update:model-value="patchItem(index, { image: String($event) })" />
-              </el-form-item>
-              <el-form-item label="标题">
-                <el-input :model-value="item.title || ''" @update:model-value="patchItem(index, { title: String($event) })" />
-              </el-form-item>
-              <el-form-item label="跳转类型">
-                <el-select :model-value="item.link?.type || 'page'" @update:model-value="patchItemLink(index, { type: $event })">
-                  <el-option label="页面路径" value="page" />
-                  <el-option label="商品详情" value="product" />
-                  <el-option label="分类结果" value="category" />
-                  <el-option label="优惠券" value="coupon" />
-                  <el-option label="拼团" value="group_buy" />
-                  <el-option label="秒杀" value="seckill" />
+              <div class="property-panel__grid">
+                <el-form-item label="高度">
+                  <el-input-number :model-value="imageSizeDefaults('banner').height" :min="80" :max="360" @update:model-value="patchProps({ height: $event || 150 })" />
+                </el-form-item>
+                <el-form-item label="圆角">
+                  <el-input-number :model-value="imageSizeDefaults('banner').radius" :min="0" :max="32" @update:model-value="patchProps({ radius: $event ?? 0 })" />
+                </el-form-item>
+              </div>
+              <el-form-item label="填充方式">
+                <el-select :model-value="imageSizeDefaults('banner').objectFit" @update:model-value="patchProps({ objectFit: $event })">
+                  <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
                 </el-select>
               </el-form-item>
-              <el-form-item v-if="(item.link?.type || 'page') === 'page'" label="页面路径">
-                <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { path: String($event) })" />
+              <el-form-item label="自动播放">
+                <el-switch :model-value="component.props?.autoplay !== false" @update:model-value="patchProps({ autoplay: Boolean($event) })" />
               </el-form-item>
-              <el-form-item v-else label="业务 ID">
-                <el-input :model-value="item.link?.id || ''" @update:model-value="patchItemLink(index, { id: $event })" />
-              </el-form-item>
-            </div>
-            <el-button class="property-panel__add" @click="addItem(defaultImageItem())">添加轮播图</el-button>
-          </div>
-        </template>
-
-        <template v-else-if="component.type === 'quick-nav'">
-          <el-divider>金刚区设置</el-divider>
-          <div class="property-panel__grid">
-            <el-form-item label="列数">
-              <el-input-number :model-value="component.props?.columns || 5" :min="3" :max="5" @update:model-value="patchProps({ columns: $event || 5 })" />
-            </el-form-item>
-            <el-form-item label="行数">
-              <el-input-number :model-value="component.props?.rows || 1" :min="1" :max="4" @update:model-value="patchProps({ rows: $event || 1 })" />
-            </el-form-item>
-          </div>
-          <div class="property-panel__items">
-            <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
-              <div class="property-panel__item-head">
-                <strong>入口 {{ index + 1 }}</strong>
-                <el-button text type="danger" @click="removeItem(index)">删除</el-button>
+              <div class="property-panel__items">
+                <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
+                  <div class="property-panel__item-head">
+                    <strong>轮播图 {{ index + 1 }}</strong>
+                    <el-button text type="danger" @click="removeItem(index)">
+                      删除
+                    </el-button>
+                  </div>
+                  <el-form-item label="图片地址">
+                    <el-input :model-value="item.image || item.url || ''" @update:model-value="patchItem(index, { image: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="标题">
+                    <el-input :model-value="item.title || ''" @update:model-value="patchItem(index, { title: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="跳转类型">
+                    <el-select :model-value="item.link?.type || 'page'" @update:model-value="patchItemLink(index, { type: $event })">
+                      <el-option label="页面路径" value="page" />
+                      <el-option label="商品详情" value="product" />
+                      <el-option label="分类结果" value="category" />
+                      <el-option label="优惠券" value="coupon" />
+                      <el-option label="拼团" value="group_buy" />
+                      <el-option label="秒杀" value="seckill" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item v-if="(item.link?.type || 'page') === 'page'" label="页面路径">
+                    <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { path: String($event) })" />
+                  </el-form-item>
+                  <el-form-item v-else label="业务 ID">
+                    <el-input :model-value="item.link?.id || ''" @update:model-value="patchItemLink(index, { id: $event })" />
+                  </el-form-item>
+                </div>
+                <el-button class="property-panel__add" @click="addItem(defaultImageItem())">
+                  添加轮播图
+                </el-button>
               </div>
-              <el-form-item label="入口名称">
-                <el-input :model-value="item.title || item.name || ''" @update:model-value="patchItem(index, { title: String($event) })" />
-              </el-form-item>
-              <el-form-item label="图标地址">
-                <el-input :model-value="item.icon || item.image || ''" @update:model-value="patchItem(index, { icon: String($event) })" />
-              </el-form-item>
-              <el-form-item label="页面路径">
-                <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { type: 'page', path: String($event) })" />
-              </el-form-item>
-            </div>
-            <el-button class="property-panel__add" @click="addItem(defaultNavItem())">添加入口</el-button>
-          </div>
-        </template>
+            </template>
 
-        <template v-else-if="component.type === 'image-ad'">
-          <el-divider>图片广告</el-divider>
-          <el-form-item label="布局">
-            <el-select
-              :model-value="component.props?.layout || 'single'"
-              @update:model-value="patchProps({ layout: $event })"
-            >
-              <el-option label="单图" value="single" />
-              <el-option label="双列" value="two-column" />
-              <el-option label="横向滑动" value="horizontal" />
-              <el-option label="竖向列表" value="vertical" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="宽度模式">
-            <el-segmented
-              :model-value="imageSizeDefaults('image-ad').widthMode"
-              :options="imageWidthModeOptions"
-              @update:model-value="patchProps({ widthMode: $event })"
-            />
-          </el-form-item>
-          <div v-if="imageSizeDefaults('image-ad').widthMode === 'custom'" class="property-panel__grid">
-            <el-form-item label="宽度单位">
-              <el-select :model-value="imageSizeDefaults('image-ad').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
-                <el-option label="百分比" value="percent" />
-                <el-option label="PX" value="px" />
-                <el-option label="RPX" value="rpx" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="宽度">
-              <el-input-number :model-value="imageSizeDefaults('image-ad').width" :min="1" :max="imageSizeDefaults('image-ad').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
-            </el-form-item>
-          </div>
-          <div class="property-panel__grid">
-            <el-form-item label="高度">
-              <el-input-number :model-value="imageSizeDefaults('image-ad').height" :min="40" :max="600" @update:model-value="patchProps({ height: $event || 120 })" />
-            </el-form-item>
-            <el-form-item label="圆角">
-              <el-input-number :model-value="imageSizeDefaults('image-ad').radius" :min="0" :max="64" @update:model-value="patchProps({ radius: $event ?? 0 })" />
-            </el-form-item>
-          </div>
-          <el-form-item label="填充方式">
-            <el-select :model-value="imageSizeDefaults('image-ad').objectFit" @update:model-value="patchProps({ objectFit: $event })">
-              <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
-            </el-select>
-          </el-form-item>
-          <div class="property-panel__items">
-            <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
-              <div class="property-panel__item-head">
-                <strong>广告图 {{ index + 1 }}</strong>
-                <el-button text type="danger" @click="removeItem(index)">删除</el-button>
+            <template v-else-if="component.type === 'quick-nav'">
+              <el-divider>金刚区设置</el-divider>
+              <div class="property-panel__grid">
+                <el-form-item label="列数">
+                  <el-input-number :model-value="component.props?.columns || 5" :min="3" :max="5" @update:model-value="patchProps({ columns: $event || 5 })" />
+                </el-form-item>
+                <el-form-item label="行数">
+                  <el-input-number :model-value="component.props?.rows || 1" :min="1" :max="4" @update:model-value="patchProps({ rows: $event || 1 })" />
+                </el-form-item>
               </div>
-              <el-form-item label="图片地址">
-                <el-input :model-value="item.image || item.url || ''" @update:model-value="patchItem(index, { image: String($event) })" />
-              </el-form-item>
-              <el-form-item label="页面路径">
-                <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { type: 'page', path: String($event) })" />
-              </el-form-item>
-            </div>
-            <el-button class="property-panel__add" @click="addItem(defaultImageItem())">添加广告图</el-button>
-          </div>
-        </template>
-
-        <template v-else-if="component.type === 'product-group'">
-          <el-divider>商品组设置</el-divider>
-          <el-form-item label="标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <el-form-item label="商品来源">
-            <el-select :model-value="productSource" @update:model-value="patchProps({ source: $event })">
-              <el-option label="手动选择" value="manual" />
-              <el-option label="推荐商品" value="recommend" />
-              <el-option label="热卖商品" value="hot" />
-              <el-option label="新品商品" value="new" />
-              <el-option label="按分类" value="category" />
-              <el-option label="按标签" value="tag" />
-              <el-option label="按活动" value="activity" />
-            </el-select>
-          </el-form-item>
-          <div v-if="productSource === 'category'" class="property-panel__grid">
-            <el-form-item label="分类 ID">
-              <el-input :model-value="component.props?.categoryId || ''" @update:model-value="patchProps({ categoryId: $event })" />
-            </el-form-item>
-            <el-form-item label="排序">
-              <el-select :model-value="component.props?.sort || 'default'" @update:model-value="patchProps({ sort: $event })">
-                <el-option label="综合" value="default" />
-                <el-option label="销量优先" value="sales" />
-                <el-option label="价格升序" value="price_asc" />
-                <el-option label="价格降序" value="price_desc" />
-                <el-option label="新品优先" value="new" />
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-form-item v-else-if="productSource === 'tag'" label="标签 ID">
-            <el-input
-              :model-value="Array.isArray(component.props?.tagIds) ? component.props.tagIds.join(',') : ''"
-              placeholder="多个标签 ID 用英文逗号分隔"
-              @update:model-value="patchProps({ tagIds: String($event).split(',').map(item => item.trim()).filter(Boolean).map(Number).filter(item => Number.isFinite(item) && item > 0) })"
-            />
-          </el-form-item>
-          <el-form-item v-else-if="productSource === 'activity'" label="活动 ID">
-            <el-input :model-value="component.props?.activityId || ''" @update:model-value="patchProps({ activityId: $event })" />
-          </el-form-item>
-          <el-form-item label="展示数量">
-            <el-input-number :model-value="component.props?.limit || 10" :min="1" :max="50" @update:model-value="patchProps({ limit: $event || 10 })" />
-          </el-form-item>
-          <el-form-item v-if="!['category'].includes(productSource)" label="排序">
-            <el-select :model-value="component.props?.sort || 'default'" @update:model-value="patchProps({ sort: $event })">
-              <el-option label="综合" value="default" />
-              <el-option label="销量优先" value="sales" />
-              <el-option label="价格升序" value="price_asc" />
-              <el-option label="价格降序" value="price_desc" />
-              <el-option label="新品优先" value="new" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="布局">
-            <el-segmented
-              :model-value="component.props?.layout || 'two-column'"
-              :options="[
-                { label: '双列', value: 'two-column' },
-                { label: '单列', value: 'single' },
-              ]"
-              @update:model-value="patchProps({ layout: $event })"
-            />
-          </el-form-item>
-          <el-form-item v-if="productSource === 'manual'" label="商品 ID">
-            <el-input v-model="productIdsText" type="textarea" :rows="3" placeholder="多个商品 ID 用英文逗号分隔" />
-          </el-form-item>
-          <el-form-item v-if="productSource === 'manual'" label="商品选择">
-            <el-button @click="productSelectorVisible = true">选择商品</el-button>
-            <span class="property-panel__hint">已选 {{ selectedProducts().length }} 个</span>
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'notice-bar'">
-          <el-divider>公告栏设置</el-divider>
-          <el-form-item label="公告文案">
-            <el-input
-              :model-value="items()[0]?.text || ''"
-              maxlength="60"
-              show-word-limit
-              @update:model-value="patchItems([{ ...(items()[0] || {}), text: String($event), link: items()[0]?.link || { type: 'page', path: '' } }])"
-            />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="滚动速度">
-              <el-input-number :model-value="component.props?.speed || 40" :min="10" :max="120" @update:model-value="patchProps({ speed: $event || 40 })" />
-            </el-form-item>
-            <el-form-item label="图标">
-              <el-switch :model-value="component.props?.showIcon !== false" @update:model-value="patchProps({ showIcon: Boolean($event) })" />
-            </el-form-item>
-          </div>
-          <div class="property-panel__grid">
-            <el-form-item label="背景色">
-              <el-color-picker :model-value="component.style?.background || '#fff7ed'" @update:model-value="patchStyle({ background: $event || '#fff7ed' })" />
-            </el-form-item>
-            <el-form-item label="文字色">
-              <el-color-picker :model-value="component.style?.color || '#c2410c'" @update:model-value="patchStyle({ color: $event || '#c2410c' })" />
-            </el-form-item>
-          </div>
-        </template>
-
-        <template v-else-if="component.type === 'coupon-group'">
-          <el-divider>优惠券组设置</el-divider>
-          <el-form-item label="标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="展示数量">
-              <el-input-number :model-value="component.props?.limit || 3" :min="1" :max="10" @update:model-value="patchProps({ limit: $event || 3 })" />
-            </el-form-item>
-            <el-form-item label="布局">
-              <el-select :model-value="component.props?.layout || 'scroll'" @update:model-value="patchProps({ layout: $event })">
-                <el-option label="横向滚动" value="scroll" />
-                <el-option label="双列" value="two-column" />
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-form-item label="优惠券">
-            <el-button @click="couponSelectorVisible = true">选择优惠券</el-button>
-            <span class="property-panel__hint">已选 {{ selectedCoupons().length }} 张</span>
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'seckill-group'">
-          <el-divider>秒杀组设置</el-divider>
-          <el-form-item label="标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="展示数量">
-              <el-input-number :model-value="component.props?.limit || 6" :min="1" :max="20" @update:model-value="patchProps({ limit: $event || 6 })" />
-            </el-form-item>
-            <el-form-item label="布局">
-              <el-select :model-value="component.props?.layout || 'scroll'" @update:model-value="patchProps({ layout: $event })">
-                <el-option label="横向滚动" value="scroll" />
-                <el-option label="双列" value="two-column" />
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-form-item label="秒杀场次">
-            <el-button @click="seckillSelectorVisible = true">选择场次</el-button>
-            <span class="property-panel__hint">{{ component.data?.session?.title || '未选择' }}</span>
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'group-buy-group'">
-          <el-divider>拼团组设置</el-divider>
-          <el-form-item label="标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="展示数量">
-              <el-input-number :model-value="component.props?.limit || 6" :min="1" :max="20" @update:model-value="patchProps({ limit: $event || 6 })" />
-            </el-form-item>
-            <el-form-item label="布局">
-              <el-select :model-value="component.props?.layout || 'two-column'" @update:model-value="patchProps({ layout: $event })">
-                <el-option label="双列" value="two-column" />
-                <el-option label="横向滚动" value="scroll" />
-              </el-select>
-            </el-form-item>
-          </div>
-          <el-form-item label="拼团活动">
-            <el-button @click="groupBuySelectorVisible = true">选择活动</el-button>
-            <span class="property-panel__hint">已选 {{ selectedGroupBuys().length }} 个</span>
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'product-rank'">
-          <el-divider>商品榜单设置</el-divider>
-          <el-form-item label="标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="榜单类型">
-              <el-select :model-value="component.props?.rankType || 'hot'" @update:model-value="patchProps({ rankType: $event })">
-                <el-option label="热销榜" value="hot" />
-                <el-option label="新品榜" value="new" />
-                <el-option label="推荐榜" value="recommend" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="展示数量">
-              <el-input-number :model-value="component.props?.limit || 10" :min="1" :max="50" @update:model-value="patchProps({ limit: $event || 10 })" />
-            </el-form-item>
-          </div>
-        </template>
-
-        <template v-else-if="component.type === 'search-bar'">
-          <el-divider>搜索框设置</el-divider>
-          <el-form-item label="占位文案">
-            <el-input :model-value="component.props?.placeholder || ''" maxlength="30" show-word-limit @update:model-value="patchProps({ placeholder: String($event) })" />
-          </el-form-item>
-          <div class="property-panel__grid">
-            <el-form-item label="样式">
-              <el-select :model-value="component.props?.shape || 'round'" @update:model-value="patchProps({ shape: $event })">
-                <el-option label="圆角" value="round" />
-                <el-option label="方形" value="square" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="目标路径">
-              <el-input :model-value="component.props?.target || ''" @update:model-value="patchProps({ target: String($event) })" />
-            </el-form-item>
-          </div>
-        </template>
-
-        <template v-else-if="component.type === 'shop-info'">
-          <el-divider>店铺信息设置</el-divider>
-          <el-form-item label="店铺名称">
-            <el-input :model-value="component.props?.name || ''" @update:model-value="patchProps({ name: String($event) })" />
-          </el-form-item>
-          <el-form-item label="店铺说明">
-            <el-input :model-value="component.props?.description || ''" @update:model-value="patchProps({ description: String($event) })" />
-          </el-form-item>
-          <el-form-item label="Logo">
-            <el-input :model-value="component.props?.logo || ''" @update:model-value="patchProps({ logo: String($event) })" />
-          </el-form-item>
-          <el-form-item label="服务标签">
-            <el-input :model-value="(component.data?.tags || []).join(',')" placeholder="英文逗号分隔" @update:model-value="patchData({ tags: String($event).split(',').map(item => item.trim()).filter(Boolean) })" />
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'rich-text'">
-          <el-divider>富文本设置</el-divider>
-          <el-form-item label="内容">
-            <el-input :model-value="component.data?.content || ''" type="textarea" :rows="8" @update:model-value="patchData({ content: String($event) })" />
-          </el-form-item>
-          <el-form-item label="内边距">
-            <el-input-number :model-value="component.props?.padding || 12" :min="0" :max="40" @update:model-value="patchProps({ padding: $event || 0 })" />
-          </el-form-item>
-        </template>
-
-        <template v-else-if="component.type === 'image-cube'">
-          <el-divider>图片魔方设置</el-divider>
-          <div class="property-panel__grid">
-            <el-form-item label="布局">
-              <el-select :model-value="component.props?.layout || 'two'" @update:model-value="patchProps({ layout: $event })">
-                <el-option label="单图" value="one" />
-                <el-option label="两图" value="two" />
-                <el-option label="三图" value="three" />
-                <el-option label="四图" value="four" />
-                <el-option label="左一右二" value="left-one-right-two" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="间距">
-              <el-input-number :model-value="component.props?.gap || 8" :min="0" :max="24" @update:model-value="patchProps({ gap: $event || 0 })" />
-            </el-form-item>
-          </div>
-          <el-form-item label="宽度模式">
-            <el-segmented
-              :model-value="imageSizeDefaults('image-cube').widthMode"
-              :options="imageWidthModeOptions"
-              @update:model-value="patchProps({ widthMode: $event })"
-            />
-          </el-form-item>
-          <div v-if="imageSizeDefaults('image-cube').widthMode === 'custom'" class="property-panel__grid">
-            <el-form-item label="宽度单位">
-              <el-select :model-value="imageSizeDefaults('image-cube').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
-                <el-option label="百分比" value="percent" />
-                <el-option label="PX" value="px" />
-                <el-option label="RPX" value="rpx" />
-              </el-select>
-            </el-form-item>
-            <el-form-item label="宽度">
-              <el-input-number :model-value="imageSizeDefaults('image-cube').width" :min="1" :max="imageSizeDefaults('image-cube').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
-            </el-form-item>
-          </div>
-          <div class="property-panel__grid">
-            <el-form-item label="图片高度">
-              <el-input-number :model-value="imageSizeDefaults('image-cube').height" :min="40" :max="600" @update:model-value="patchProps({ height: $event || 120 })" />
-            </el-form-item>
-            <el-form-item label="圆角">
-              <el-input-number :model-value="imageSizeDefaults('image-cube').radius" :min="0" :max="64" @update:model-value="patchProps({ radius: $event ?? 0 })" />
-            </el-form-item>
-          </div>
-          <el-form-item label="填充方式">
-            <el-select :model-value="imageSizeDefaults('image-cube').objectFit" @update:model-value="patchProps({ objectFit: $event })">
-              <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
-            </el-select>
-          </el-form-item>
-          <div class="property-panel__items">
-            <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
-              <div class="property-panel__item-head">
-                <strong>图片 {{ index + 1 }}</strong>
-                <el-button text type="danger" @click="removeItem(index)">删除</el-button>
+              <div class="property-panel__items">
+                <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
+                  <div class="property-panel__item-head">
+                    <strong>入口 {{ index + 1 }}</strong>
+                    <el-button text type="danger" @click="removeItem(index)">
+                      删除
+                    </el-button>
+                  </div>
+                  <el-form-item label="入口名称">
+                    <el-input :model-value="item.title || item.name || ''" @update:model-value="patchItem(index, { title: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="图标地址">
+                    <el-input :model-value="item.icon || item.image || ''" @update:model-value="patchItem(index, { icon: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="页面路径">
+                    <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { type: 'page', path: String($event) })" />
+                  </el-form-item>
+                </div>
+                <el-button class="property-panel__add" @click="addItem(defaultNavItem())">
+                  添加入口
+                </el-button>
               </div>
-              <el-form-item label="图片地址">
-                <el-input :model-value="item.image || ''" @update:model-value="patchItem(index, { image: String($event) })" />
+            </template>
+
+            <template v-else-if="component.type === 'image-ad'">
+              <el-divider>图片广告</el-divider>
+              <el-form-item label="布局">
+                <el-select
+                  :model-value="component.props?.layout || 'single'"
+                  @update:model-value="patchProps({ layout: $event })"
+                >
+                  <el-option label="单图" value="single" />
+                  <el-option label="双列" value="two-column" />
+                  <el-option label="横向滑动" value="horizontal" />
+                  <el-option label="竖向列表" value="vertical" />
+                </el-select>
               </el-form-item>
+              <el-form-item label="宽度模式">
+                <el-segmented
+                  :model-value="imageSizeDefaults('image-ad').widthMode"
+                  :options="imageWidthModeOptions"
+                  @update:model-value="patchProps({ widthMode: $event })"
+                />
+              </el-form-item>
+              <div v-if="imageSizeDefaults('image-ad').widthMode === 'custom'" class="property-panel__grid">
+                <el-form-item label="宽度单位">
+                  <el-select :model-value="imageSizeDefaults('image-ad').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
+                    <el-option label="百分比" value="percent" />
+                    <el-option label="PX" value="px" />
+                    <el-option label="RPX" value="rpx" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="宽度">
+                  <el-input-number :model-value="imageSizeDefaults('image-ad').width" :min="1" :max="imageSizeDefaults('image-ad').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
+                </el-form-item>
+              </div>
+              <div class="property-panel__grid">
+                <el-form-item label="高度">
+                  <el-input-number :model-value="imageSizeDefaults('image-ad').height" :min="40" :max="600" @update:model-value="patchProps({ height: $event || 120 })" />
+                </el-form-item>
+                <el-form-item label="圆角">
+                  <el-input-number :model-value="imageSizeDefaults('image-ad').radius" :min="0" :max="64" @update:model-value="patchProps({ radius: $event ?? 0 })" />
+                </el-form-item>
+              </div>
+              <el-form-item label="填充方式">
+                <el-select :model-value="imageSizeDefaults('image-ad').objectFit" @update:model-value="patchProps({ objectFit: $event })">
+                  <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
+                </el-select>
+              </el-form-item>
+              <div class="property-panel__items">
+                <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
+                  <div class="property-panel__item-head">
+                    <strong>广告图 {{ index + 1 }}</strong>
+                    <el-button text type="danger" @click="removeItem(index)">
+                      删除
+                    </el-button>
+                  </div>
+                  <el-form-item label="图片地址">
+                    <el-input :model-value="item.image || item.url || ''" @update:model-value="patchItem(index, { image: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="页面路径">
+                    <el-input :model-value="item.link?.path || item.link?.url || ''" @update:model-value="patchItemLink(index, { type: 'page', path: String($event) })" />
+                  </el-form-item>
+                </div>
+                <el-button class="property-panel__add" @click="addItem(defaultImageItem())">
+                  添加广告图
+                </el-button>
+              </div>
+            </template>
+
+            <template v-else-if="component.type === 'product-group'">
+              <el-divider>商品组设置</el-divider>
               <el-form-item label="标题">
-                <el-input :model-value="item.title || ''" @update:model-value="patchItem(index, { title: String($event) })" />
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
               </el-form-item>
-            </div>
-            <el-button class="property-panel__add" @click="addItem(defaultImageItem())">添加图片</el-button>
-          </div>
-        </template>
+              <el-form-item label="商品来源">
+                <el-select :model-value="productSource" @update:model-value="patchProps({ source: $event })">
+                  <el-option label="手动选择" value="manual" />
+                  <el-option label="推荐商品" value="recommend" />
+                  <el-option label="热卖商品" value="hot" />
+                  <el-option label="新品商品" value="new" />
+                  <el-option label="按分类" value="category" />
+                  <el-option label="按标签" value="tag" />
+                  <el-option label="按活动" value="activity" />
+                </el-select>
+              </el-form-item>
+              <div v-if="productSource === 'category'" class="property-panel__grid">
+                <el-form-item label="分类 ID">
+                  <el-input :model-value="component.props?.categoryId || ''" @update:model-value="patchProps({ categoryId: $event })" />
+                </el-form-item>
+                <el-form-item label="排序">
+                  <el-select :model-value="component.props?.sort || 'default'" @update:model-value="patchProps({ sort: $event })">
+                    <el-option label="综合" value="default" />
+                    <el-option label="销量优先" value="sales" />
+                    <el-option label="价格升序" value="price_asc" />
+                    <el-option label="价格降序" value="price_desc" />
+                    <el-option label="新品优先" value="new" />
+                  </el-select>
+                </el-form-item>
+              </div>
+              <el-form-item v-else-if="productSource === 'tag'" label="标签 ID">
+                <el-input
+                  :model-value="Array.isArray(component.props?.tagIds) ? component.props.tagIds.join(',') : ''"
+                  placeholder="多个标签 ID 用英文逗号分隔"
+                  @update:model-value="patchProps({ tagIds: String($event).split(',').map(item => item.trim()).filter(Boolean).map(Number).filter(item => Number.isFinite(item) && item > 0) })"
+                />
+              </el-form-item>
+              <el-form-item v-else-if="productSource === 'activity'" label="活动 ID">
+                <el-input :model-value="component.props?.activityId || ''" @update:model-value="patchProps({ activityId: $event })" />
+              </el-form-item>
+              <el-form-item label="展示数量">
+                <el-input-number :model-value="component.props?.limit || 10" :min="1" :max="50" @update:model-value="patchProps({ limit: $event || 10 })" />
+              </el-form-item>
+              <el-form-item v-if="!['category'].includes(productSource)" label="排序">
+                <el-select :model-value="component.props?.sort || 'default'" @update:model-value="patchProps({ sort: $event })">
+                  <el-option label="综合" value="default" />
+                  <el-option label="销量优先" value="sales" />
+                  <el-option label="价格升序" value="price_asc" />
+                  <el-option label="价格降序" value="price_desc" />
+                  <el-option label="新品优先" value="new" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="布局">
+                <el-segmented
+                  :model-value="component.props?.layout || 'two-column'"
+                  :options="[
+                    { label: '双列', value: 'two-column' },
+                    { label: '单列', value: 'single' },
+                  ]"
+                  @update:model-value="patchProps({ layout: $event })"
+                />
+              </el-form-item>
+              <el-form-item v-if="productSource === 'manual'" label="商品 ID">
+                <el-input v-model="productIdsText" type="textarea" :rows="3" placeholder="多个商品 ID 用英文逗号分隔" />
+              </el-form-item>
+              <el-form-item v-if="productSource === 'manual'" label="商品选择">
+                <el-button @click="productSelectorVisible = true">
+                  选择商品
+                </el-button>
+                <span class="property-panel__hint">已选 {{ selectedProducts().length }} 个</span>
+              </el-form-item>
+            </template>
 
-        <template v-else-if="component.type === 'title-bar'">
-          <el-divider>标题栏设置</el-divider>
-          <el-form-item label="主标题">
-            <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
-          </el-form-item>
-          <el-form-item label="副标题">
-            <el-input :model-value="component.props?.subtitle || ''" @update:model-value="patchProps({ subtitle: String($event) })" />
-          </el-form-item>
-          <el-form-item label="标题颜色">
-            <el-color-picker :model-value="component.style?.color || '#1f2937'" @update:model-value="patchStyle({ color: $event || '#1f2937' })" />
-          </el-form-item>
-        </template>
+            <template v-else-if="component.type === 'notice-bar'">
+              <el-divider>公告栏设置</el-divider>
+              <el-form-item label="公告文案">
+                <el-input
+                  :model-value="items()[0]?.text || ''"
+                  maxlength="60"
+                  show-word-limit
+                  @update:model-value="patchItems([{ ...(items()[0] || {}), text: String($event), link: items()[0]?.link || { type: 'page', path: '' } }])"
+                />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="滚动速度">
+                  <el-input-number :model-value="component.props?.speed || 40" :min="10" :max="120" @update:model-value="patchProps({ speed: $event || 40 })" />
+                </el-form-item>
+                <el-form-item label="图标">
+                  <el-switch :model-value="component.props?.showIcon !== false" @update:model-value="patchProps({ showIcon: Boolean($event) })" />
+                </el-form-item>
+              </div>
+              <div class="property-panel__grid">
+                <el-form-item label="背景色">
+                  <el-color-picker :model-value="component.style?.background || '#fff7ed'" @update:model-value="patchStyle({ background: $event || '#fff7ed' })" />
+                </el-form-item>
+                <el-form-item label="文字色">
+                  <el-color-picker :model-value="component.style?.color || '#c2410c'" @update:model-value="patchStyle({ color: $event || '#c2410c' })" />
+                </el-form-item>
+              </div>
+            </template>
 
-        <template v-else-if="component.type === 'gap'">
-          <el-divider>空白设置</el-divider>
-          <el-form-item label="高度">
-            <el-input-number :model-value="component.props?.height || 16" :min="4" :max="120" @update:model-value="patchProps({ height: $event || 16 })" />
-          </el-form-item>
-          <el-form-item label="背景色">
-            <el-color-picker :model-value="component.props?.background || '#f6f7f8'" @update:model-value="patchProps({ background: $event || 'transparent' })" />
-          </el-form-item>
-        </template>
+            <template v-else-if="component.type === 'coupon-group'">
+              <el-divider>优惠券组设置</el-divider>
+              <el-form-item label="标题">
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="展示数量">
+                  <el-input-number :model-value="component.props?.limit || 3" :min="1" :max="10" @update:model-value="patchProps({ limit: $event || 3 })" />
+                </el-form-item>
+                <el-form-item label="布局">
+                  <el-select :model-value="component.props?.layout || 'scroll'" @update:model-value="patchProps({ layout: $event })">
+                    <el-option label="横向滚动" value="scroll" />
+                    <el-option label="双列" value="two-column" />
+                  </el-select>
+                </el-form-item>
+              </div>
+              <el-form-item label="优惠券">
+                <el-button @click="couponSelectorVisible = true">
+                  选择优惠券
+                </el-button>
+                <span class="property-panel__hint">已选 {{ selectedCoupons().length }} 张</span>
+              </el-form-item>
+            </template>
 
-        <template v-else-if="component.type === 'divider'">
-          <el-divider>分割线设置</el-divider>
-          <el-form-item label="颜色">
-            <el-color-picker :model-value="component.props?.color || '#e8ecef'" @update:model-value="patchProps({ color: $event || '#e8ecef' })" />
-          </el-form-item>
-          <el-form-item label="左右边距">
-            <el-input-number :model-value="component.props?.margin || 24" :min="0" :max="80" @update:model-value="patchProps({ margin: $event || 0 })" />
-          </el-form-item>
-        </template>
+            <template v-else-if="component.type === 'seckill-group'">
+              <el-divider>秒杀组设置</el-divider>
+              <el-form-item label="标题">
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="展示数量">
+                  <el-input-number :model-value="component.props?.limit || 6" :min="1" :max="20" @update:model-value="patchProps({ limit: $event || 6 })" />
+                </el-form-item>
+                <el-form-item label="布局">
+                  <el-select :model-value="component.props?.layout || 'scroll'" @update:model-value="patchProps({ layout: $event })">
+                    <el-option label="横向滚动" value="scroll" />
+                    <el-option label="双列" value="two-column" />
+                  </el-select>
+                </el-form-item>
+              </div>
+              <el-form-item label="秒杀场次">
+                <el-button @click="seckillSelectorVisible = true">
+                  选择场次
+                </el-button>
+                <span class="property-panel__hint">{{ component.data?.session?.title || '未选择' }}</span>
+              </el-form-item>
+            </template>
 
+            <template v-else-if="component.type === 'group-buy-group'">
+              <el-divider>拼团组设置</el-divider>
+              <el-form-item label="标题">
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="展示数量">
+                  <el-input-number :model-value="component.props?.limit || 6" :min="1" :max="20" @update:model-value="patchProps({ limit: $event || 6 })" />
+                </el-form-item>
+                <el-form-item label="布局">
+                  <el-select :model-value="component.props?.layout || 'two-column'" @update:model-value="patchProps({ layout: $event })">
+                    <el-option label="双列" value="two-column" />
+                    <el-option label="横向滚动" value="scroll" />
+                  </el-select>
+                </el-form-item>
+              </div>
+              <el-form-item label="拼团活动">
+                <el-button @click="groupBuySelectorVisible = true">
+                  选择活动
+                </el-button>
+                <span class="property-panel__hint">已选 {{ selectedGroupBuys().length }} 个</span>
+              </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'product-rank'">
+              <el-divider>商品榜单设置</el-divider>
+              <el-form-item label="标题">
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="榜单类型">
+                  <el-select :model-value="component.props?.rankType || 'hot'" @update:model-value="patchProps({ rankType: $event })">
+                    <el-option label="热销榜" value="hot" />
+                    <el-option label="新品榜" value="new" />
+                    <el-option label="推荐榜" value="recommend" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="展示数量">
+                  <el-input-number :model-value="component.props?.limit || 10" :min="1" :max="50" @update:model-value="patchProps({ limit: $event || 10 })" />
+                </el-form-item>
+              </div>
+            </template>
+
+            <template v-else-if="component.type === 'search-bar'">
+              <el-divider>搜索框设置</el-divider>
+              <el-form-item label="占位文案">
+                <el-input :model-value="component.props?.placeholder || ''" maxlength="30" show-word-limit @update:model-value="patchProps({ placeholder: String($event) })" />
+              </el-form-item>
+              <div class="property-panel__grid">
+                <el-form-item label="样式">
+                  <el-select :model-value="component.props?.shape || 'round'" @update:model-value="patchProps({ shape: $event })">
+                    <el-option label="圆角" value="round" />
+                    <el-option label="方形" value="square" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="目标路径">
+                  <el-input :model-value="component.props?.target || ''" @update:model-value="patchProps({ target: String($event) })" />
+                </el-form-item>
+              </div>
+            </template>
+
+            <template v-else-if="component.type === 'shop-info'">
+              <el-divider>店铺信息设置</el-divider>
+              <el-form-item label="店铺名称">
+                <el-input :model-value="component.props?.name || ''" @update:model-value="patchProps({ name: String($event) })" />
+              </el-form-item>
+              <el-form-item label="店铺说明">
+                <el-input :model-value="component.props?.description || ''" @update:model-value="patchProps({ description: String($event) })" />
+              </el-form-item>
+              <el-form-item label="Logo">
+                <el-input :model-value="component.props?.logo || ''" @update:model-value="patchProps({ logo: String($event) })" />
+              </el-form-item>
+              <el-form-item label="服务标签">
+                <el-input :model-value="(component.data?.tags || []).join(',')" placeholder="英文逗号分隔" @update:model-value="patchData({ tags: String($event).split(',').map(item => item.trim()).filter(Boolean) })" />
+              </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'rich-text'">
+              <el-divider>富文本设置</el-divider>
+              <el-form-item label="内容">
+                <el-input :model-value="component.data?.content || ''" type="textarea" :rows="8" @update:model-value="patchData({ content: String($event) })" />
+              </el-form-item>
+              <el-form-item label="内边距">
+                <el-input-number :model-value="component.props?.padding || 12" :min="0" :max="40" @update:model-value="patchProps({ padding: $event || 0 })" />
+              </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'image-cube'">
+              <el-divider>图片魔方设置</el-divider>
+              <div class="property-panel__grid">
+                <el-form-item label="布局">
+                  <el-select :model-value="component.props?.layout || 'two'" @update:model-value="patchProps({ layout: $event })">
+                    <el-option label="单图" value="one" />
+                    <el-option label="两图" value="two" />
+                    <el-option label="三图" value="three" />
+                    <el-option label="四图" value="four" />
+                    <el-option label="左一右二" value="left-one-right-two" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="间距">
+                  <el-input-number :model-value="component.props?.gap || 8" :min="0" :max="24" @update:model-value="patchProps({ gap: $event || 0 })" />
+                </el-form-item>
+              </div>
+              <el-form-item label="宽度模式">
+                <el-segmented
+                  :model-value="imageSizeDefaults('image-cube').widthMode"
+                  :options="imageWidthModeOptions"
+                  @update:model-value="patchProps({ widthMode: $event })"
+                />
+              </el-form-item>
+              <div v-if="imageSizeDefaults('image-cube').widthMode === 'custom'" class="property-panel__grid">
+                <el-form-item label="宽度单位">
+                  <el-select :model-value="imageSizeDefaults('image-cube').widthUnit" @update:model-value="patchProps({ widthUnit: $event })">
+                    <el-option label="百分比" value="percent" />
+                    <el-option label="PX" value="px" />
+                    <el-option label="RPX" value="rpx" />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="宽度">
+                  <el-input-number :model-value="imageSizeDefaults('image-cube').width" :min="1" :max="imageSizeDefaults('image-cube').widthUnit === 'percent' ? 100 : 750" @update:model-value="patchProps({ width: $event || 100 })" />
+                </el-form-item>
+              </div>
+              <div class="property-panel__grid">
+                <el-form-item label="图片高度">
+                  <el-input-number :model-value="imageSizeDefaults('image-cube').height" :min="40" :max="600" @update:model-value="patchProps({ height: $event || 120 })" />
+                </el-form-item>
+                <el-form-item label="圆角">
+                  <el-input-number :model-value="imageSizeDefaults('image-cube').radius" :min="0" :max="64" @update:model-value="patchProps({ radius: $event ?? 0 })" />
+                </el-form-item>
+              </div>
+              <el-form-item label="填充方式">
+                <el-select :model-value="imageSizeDefaults('image-cube').objectFit" @update:model-value="patchProps({ objectFit: $event })">
+                  <el-option v-for="option in imageObjectFitOptions" :key="option.value" :label="option.label" :value="option.value" />
+                </el-select>
+              </el-form-item>
+              <div class="property-panel__items">
+                <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
+                  <div class="property-panel__item-head">
+                    <strong>图片 {{ index + 1 }}</strong>
+                    <el-button text type="danger" @click="removeItem(index)">
+                      删除
+                    </el-button>
+                  </div>
+                  <el-form-item label="图片地址">
+                    <el-input :model-value="item.image || ''" @update:model-value="patchItem(index, { image: String($event) })" />
+                  </el-form-item>
+                  <el-form-item label="标题">
+                    <el-input :model-value="item.title || ''" @update:model-value="patchItem(index, { title: String($event) })" />
+                  </el-form-item>
+                </div>
+                <el-button class="property-panel__add" @click="addItem(defaultImageItem())">
+                  添加图片
+                </el-button>
+              </div>
+            </template>
+
+            <template v-else-if="component.type === 'title-bar'">
+              <el-divider>标题栏设置</el-divider>
+              <el-form-item label="主标题">
+                <el-input :model-value="component.props?.title || ''" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <el-form-item label="副标题">
+                <el-input :model-value="component.props?.subtitle || ''" @update:model-value="patchProps({ subtitle: String($event) })" />
+              </el-form-item>
+              <el-form-item label="标题颜色">
+                <el-color-picker :model-value="component.style?.color || '#1f2937'" @update:model-value="patchStyle({ color: $event || '#1f2937' })" />
+              </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'gap'">
+              <el-divider>空白设置</el-divider>
+              <el-form-item label="高度">
+                <el-input-number :model-value="component.props?.height || 16" :min="4" :max="120" @update:model-value="patchProps({ height: $event || 16 })" />
+              </el-form-item>
+              <el-form-item label="背景色">
+                <el-color-picker :model-value="component.props?.background || '#f6f7f8'" @update:model-value="patchProps({ background: $event || 'transparent' })" />
+              </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'divider'">
+              <el-divider>分割线设置</el-divider>
+              <el-form-item label="颜色">
+                <el-color-picker :model-value="component.props?.color || '#e8ecef'" @update:model-value="patchProps({ color: $event || '#e8ecef' })" />
+              </el-form-item>
+              <el-form-item label="左右边距">
+                <el-input-number :model-value="component.props?.margin || 24" :min="0" :max="80" @update:model-value="patchProps({ margin: $event || 0 })" />
+              </el-form-item>
+            </template>
           </el-tab-pane>
           <el-tab-pane label="样式" name="style">
-            <div class="property-panel__placeholder">样式配置已在各组件内容区展示，后续会逐步归并到此处。</div>
+            <div class="property-panel__placeholder">
+              样式配置已在各组件内容区展示，后续会逐步归并到此处。
+            </div>
           </el-tab-pane>
           <el-tab-pane label="交互" name="interaction">
-            <div class="property-panel__placeholder">跳转、点击和展示行为配置会优先沉淀到此处。</div>
+            <div class="property-panel__placeholder">
+              跳转、点击和展示行为配置会优先沉淀到此处。
+            </div>
           </el-tab-pane>
           <el-tab-pane label="数据源" name="datasource">
-            <div class="property-panel__placeholder">商品、优惠券、活动等选择器已在对应组件中可用。</div>
+            <div class="property-panel__placeholder">
+              商品、优惠券、活动等选择器已在对应组件中可用。
+            </div>
           </el-tab-pane>
           <el-tab-pane label="高级" name="advanced">
-        <el-collapse v-model="advancedVisible" class="property-panel__advanced">
-          <el-collapse-item title="高级 JSON 配置" :name="true">
-            <el-form-item label="Props JSON">
-              <el-input v-model="propsJson" type="textarea" :rows="7" spellcheck="false" />
-            </el-form-item>
-            <el-form-item label="Data JSON">
-              <el-input v-model="dataJson" type="textarea" :rows="10" spellcheck="false" />
-            </el-form-item>
-            <el-form-item label="Style JSON">
-              <el-input v-model="styleJson" type="textarea" :rows="5" spellcheck="false" />
-            </el-form-item>
-            <el-button type="primary" @click="applyJson">应用 JSON</el-button>
-          </el-collapse-item>
-        </el-collapse>
+            <el-collapse v-model="advancedVisible" class="property-panel__advanced">
+              <el-collapse-item title="高级 JSON 配置" name="json">
+                <el-form-item label="Props JSON">
+                  <el-input v-model="propsJson" type="textarea" :rows="7" spellcheck="false" />
+                </el-form-item>
+                <el-form-item label="Data JSON">
+                  <el-input v-model="dataJson" type="textarea" :rows="10" spellcheck="false" />
+                </el-form-item>
+                <el-form-item label="Style JSON">
+                  <el-input v-model="styleJson" type="textarea" :rows="5" spellcheck="false" />
+                </el-form-item>
+                <el-button type="primary" @click="applyJson">
+                  应用 JSON
+                </el-button>
+              </el-collapse-item>
+            </el-collapse>
           </el-tab-pane>
         </el-tabs>
       </el-form>
@@ -749,8 +784,8 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
 
 <style scoped lang="scss">
 .property-panel {
-  width: 360px;
-  border-left: 1px solid #e5e7eb;
+  width: 380px;
+  border-left: 1px solid #e5eaf2;
   background: #fff;
   overflow: auto;
 }
@@ -760,7 +795,8 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
   padding: 0 16px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #eef2f7;
+  color: #111827;
   font-size: 14px;
   font-weight: 600;
 }
