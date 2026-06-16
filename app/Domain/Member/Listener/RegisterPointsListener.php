@@ -14,6 +14,7 @@ namespace App\Domain\Member\Listener;
 
 use App\Domain\Member\Event\MemberRegistered;
 use App\Domain\Member\Service\DomainMemberPointsService;
+use Hyperf\Context\ApplicationContext;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
@@ -24,7 +25,6 @@ final class RegisterPointsListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainMemberPointsService $pointsService,
-        private readonly EventDispatcherInterface $dispatcher,
     ) {}
 
     public function listen(): array
@@ -53,7 +53,7 @@ final class RegisterPointsListener implements ListenerInterface
     {
         $registerEvent = $this->pointsService->grantRegisterPoints($event->memberId);
         if ($registerEvent !== null) {
-            $this->dispatcher->dispatch($registerEvent);
+            $this->dispatcher()->dispatch($registerEvent);
         }
 
         if ($event->referrerId === null) {
@@ -62,7 +62,12 @@ final class RegisterPointsListener implements ListenerInterface
 
         $inviteEvent = $this->pointsService->grantInvitePoints($event->referrerId, $event->memberId);
         if ($inviteEvent !== null) {
-            $this->dispatcher->dispatch($inviteEvent);
+            $this->dispatcher()->dispatch($inviteEvent);
         }
+    }
+
+    private function dispatcher(): EventDispatcherInterface
+    {
+        return ApplicationContext::getContainer()->get(EventDispatcherInterface::class);
     }
 }
