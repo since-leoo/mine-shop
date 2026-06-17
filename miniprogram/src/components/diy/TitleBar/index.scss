@@ -1,19 +1,39 @@
 .diy-title-bar {
-  padding: 28px 24px 12px;
+  padding: 6rpx 32rpx 16rpx;
   display: flex;
-  align-items: baseline;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.diy-title-bar::before {
+  content: '';
+  width: 8rpx;
+  height: 36rpx;
+  border-radius: 4rpx;
+  background: var(--diy-primary-color, #E8836B);
+  flex-shrink: 0;
+}
+
+.diy-title-bar--center {
+  justify-content: center;
+  text-align: center;
+}
+
+.diy-title-bar--right {
+  justify-content: flex-end;
+  text-align: right;
 }
 
 .diy-title-bar__title {
-  font-size: 34px;
-  line-height: 42px;
-  font-weight: 600;
-  color: #1f2429;
+  font-size: 32rpx;
+  line-height: 40rpx;
+  font-weight: 700;
+  color: #4a3228;
 }
 
 .diy-title-bar__subtitle {
-  margin-left: 12px;
-  font-size: 24px;
-  line-height: 32px;
-  color: #7b858f;
+  margin-left: 8rpx;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  color: #a89088;
 }

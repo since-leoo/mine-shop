@@ -32,8 +32,6 @@ return [
     ErrorExceptionHandler::class,
     // 默认文件上传
     UploadSubscriber::class,
-    // 处理程序启动
-    BootApplicationSubscriber::class,
     // 处理 sql 执行
     DbQueryExecutedSubscriber::class,
     // 处理命令异常

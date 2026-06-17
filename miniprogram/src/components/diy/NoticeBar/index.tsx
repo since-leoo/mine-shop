@@ -1,6 +1,7 @@
 import { Text, View } from '@tarojs/components';
 import { DiyComponent, DiyLink } from '../../diy-renderer/types';
 import { navigateDiyLink } from '../../diy-renderer/link';
+import { diyComponentStyle, stopDiyEvent } from '../../diy-renderer/style';
 import './index.scss';
 
 interface NoticeItem {
@@ -20,8 +21,11 @@ export default function NoticeBar({ component }: Props) {
   return (
     <View
       className="diy-notice-bar"
-      style={{ background: component.style?.background || '#fff7ed', color: component.style?.color || '#c2410c' }}
-      onClick={() => navigateDiyLink(item?.link)}
+      style={diyComponentStyle(component)}
+      onClick={(event) => {
+        stopDiyEvent(event);
+        navigateDiyLink(item?.link, { needLogin: component.props?.needLogin });
+      }}
     >
       {component.props?.showIcon === false ? null : <Text className="diy-notice-bar__icon">!</Text>}
       <Text className="diy-notice-bar__text">{text}</Text>

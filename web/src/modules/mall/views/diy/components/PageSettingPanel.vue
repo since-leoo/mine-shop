@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { DiySchema } from '../schema/types'
-import { defaultPageTheme } from '../schema/componentRegistry'
+import { defaultPageTheme, defaultPageStyle, designHomePageBackground } from '../schema/componentRegistry'
 
 const props = defineProps<{
   schema: DiySchema
@@ -14,6 +14,8 @@ const theme = computed(() => ({
   ...defaultPageTheme,
   ...(props.schema.page.theme || {}),
 }))
+
+const pageStyle = computed(() => props.schema.page.style || {})
 
 function patchPage(payload: Record<string, any>) {
   emit('update', {
@@ -33,6 +35,19 @@ function patchTheme(payload: Record<string, any>) {
     },
   })
 }
+
+function patchPageStyle(payload: Record<string, any>) {
+  patchPage({
+    style: {
+      ...pageStyle.value,
+      ...payload,
+    },
+  })
+}
+
+function applyDesignBackground() {
+  patchPageStyle(defaultPageStyle(props.schema.page.key))
+}
 </script>
 
 <template>
@@ -44,6 +59,27 @@ function patchTheme(payload: Record<string, any>) {
       <el-form-item label="页面标题">
         <el-input :model-value="schema.page.title || ''" @update:model-value="patchPage({ title: String($event) })" />
       </el-form-item>
+      <el-divider>页面背景</el-divider>
+      <div class="page-setting-panel__grid">
+        <el-form-item label="背景色">
+          <el-color-picker
+            :model-value="pageStyle.backgroundColor || theme.backgroundColor"
+            @update:model-value="patchPageStyle({ background: $event || theme.backgroundColor, backgroundColor: $event || theme.backgroundColor })"
+          />
+        </el-form-item>
+      </div>
+      <el-form-item label="背景 CSS">
+        <el-input
+          :model-value="pageStyle.background || pageStyle.backgroundColor || theme.backgroundColor"
+          :placeholder="designHomePageBackground"
+          type="textarea"
+          :rows="3"
+          @update:model-value="patchPageStyle({ background: String($event) })"
+        />
+      </el-form-item>
+      <el-button class="page-setting-panel__background-action" @click="applyDesignBackground">
+        使用设计稿背景
+      </el-button>
       <el-divider>主题风格</el-divider>
       <div class="page-setting-panel__grid">
         <el-form-item label="主色">
@@ -95,6 +131,10 @@ function patchTheme(payload: Record<string, any>) {
 
 .page-setting-panel__form {
   padding: 16px;
+}
+
+.page-setting-panel__background-action {
+  width: 100%;
 }
 
 .page-setting-panel__grid {

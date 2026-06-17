@@ -1,4 +1,4 @@
-import type { DiyComponent, DiyComponentMeta, DiyPageTheme } from './types'
+import type { DiyComponent, DiyComponentMeta, DiyPageTheme, DiySchema } from './types'
 
 function id(prefix: string): string {
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2, 8)}`
@@ -31,12 +31,34 @@ const imageBaseProps = {
   objectFit: 'cover',
 }
 
+export const designPageBackgroundColor = '#FAF3ED'
+
+export const designHomePageBackground = 'linear-gradient(180deg, #E8836B 0, #F2A99A 90px, #F5C5A3 180px, #FAF3ED 330px, #FAF3ED 100%)'
+
+export function designBannerImage(index: number) {
+  return `https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner${index}.png`
+}
+
 export const defaultPageTheme: Required<DiyPageTheme> = {
-  primaryColor: '#2563eb',
-  priceColor: '#ef4444',
-  backgroundColor: '#f6f7f8',
-  cardRadius: 8,
+  primaryColor: '#E8836B',
+  priceColor: '#E8836B',
+  backgroundColor: designPageBackgroundColor,
+  cardRadius: 16,
   buttonShape: 'round',
+}
+
+export function defaultPageStyle(pageKey: string) {
+  if (pageKey === 'home') {
+    return {
+      background: designHomePageBackground,
+      backgroundColor: designPageBackgroundColor,
+    }
+  }
+
+  return {
+    background: designPageBackgroundColor,
+    backgroundColor: designPageBackgroundColor,
+  }
 }
 
 export const componentRegistry: DiyComponentMeta[] = [
@@ -49,11 +71,14 @@ export const componentRegistry: DiyComponentMeta[] = [
     orientation: 'horizontal',
     defaults: () => component('banner', '轮播图', {
       items: [
-        { image: '', title: '轮播图', link: { type: 'page', path: '' } },
+        { image: designBannerImage(1), title: '春日上新', link: { type: 'page', path: '/pages/goods/result/index' } },
+        { image: designBannerImage(2), title: '限时特惠', link: { type: 'page', path: '/pages/coupon/coupon-center/index' } },
       ],
     }, {
       ...imageBaseProps,
-      height: 150,
+      widthMode: 'contained',
+      height: 148,
+      radius: 24,
       autoplay: true,
     }),
   },
@@ -69,6 +94,34 @@ export const componentRegistry: DiyComponentMeta[] = [
         { title: '分类', icon: '', link: { type: 'page', path: '/pages/category/index' } },
         { title: '优惠券', icon: '', link: { type: 'page', path: '/pages/coupon/coupon-center/index' } },
       ],
+    }, {
+      columns: 5,
+      rows: 1,
+      iconSize: 48,
+      iconRadius: 16,
+      imageSize: 30,
+      itemGap: 7,
+    }, {
+      margin: { top: 0, right: 16, bottom: 8, left: 16 },
+      padding: { top: 11, right: 8, bottom: 7, left: 8 },
+      background: '#FFFFFF',
+      borderRadius: 16,
+      boxShadow: '0 2px 8px rgba(200,140,110,0.08)',
+    }),
+  },
+  {
+    type: 'category-panel',
+    name: '商品分类',
+    icon: 'ph:list-bullets',
+    description: '左右栏商品分类，适合分类页主区域',
+    category: 'base',
+    orientation: 'both',
+    defaults: () => component('category-panel', '商品分类', {}, {
+      columns: 3,
+      activeIndex: 0,
+    }, {
+      margin: { top: 0, right: 0, bottom: 0, left: 0 },
+      height: '100%',
     }),
   },
   {
@@ -174,6 +227,45 @@ export const componentRegistry: DiyComponentMeta[] = [
       title: '领券中心',
       limit: 3,
       layout: 'scroll',
+    }),
+  },
+  {
+    type: 'marketing-entry',
+    name: '营销入口',
+    icon: 'ph:rocket-launch',
+    description: '秒杀、拼团等活动统一跳转入口',
+    category: 'marketing',
+    orientation: 'horizontal',
+    defaults: () => component('marketing-entry', '营销入口', {
+      items: [
+        {
+          title: '秒杀专场',
+          subtitle: '点击进入专题页',
+          badge: '距下一场 02:18:45',
+          background: '#F0A18E',
+          color: '#FFFFFF',
+          link: { type: 'page', path: '/pages/promotion/seckill/index' },
+        },
+        {
+          title: '拼团会场',
+          subtitle: '精选团购每天上新',
+          badge: '3人团最低5折起',
+          background: '#86BFA9',
+          color: '#FFFFFF',
+          link: { type: 'page', path: '/pages/promotion/group-buy/index' },
+        },
+      ],
+    }, {
+      title: '今日活动直达',
+      layout: 'two-column',
+      itemGap: 10,
+      cardRadius: 10,
+    }, {
+      margin: { top: 0, right: 16, bottom: 8, left: 16 },
+      padding: { top: 12, right: 14, bottom: 14, left: 14 },
+      background: '#FFFFFF',
+      borderRadius: 16,
+      boxShadow: '0 2px 8px rgba(200,140,110,0.08)',
     }),
   },
   {
@@ -286,13 +378,14 @@ export const componentRegistry: DiyComponentMeta[] = [
   },
 ]
 
-export function createDefaultSchema(pageKey: string, title: string): { version: 1, page: { key: string, title: string, theme: typeof defaultPageTheme }, components: DiyComponent[] } {
+export function createDefaultSchema(pageKey: string, title: string): DiySchema {
   return {
     version: 1,
     page: {
       key: pageKey,
       title,
       theme: { ...defaultPageTheme },
+      style: defaultPageStyle(pageKey),
     },
     components: [
       componentRegistry.find(item => item.type === 'title-bar')!.defaults(),

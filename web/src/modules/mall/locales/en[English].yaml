@@ -82,6 +82,8 @@ mallMenu:
     shippingSetting: Shipping
     memberSetting: Member
     contentSetting: Content
+    diy: DIY Pages
+    diyTemplate: DIY Templates
     setting: System
     settingList: View
     settingUpdate: Update

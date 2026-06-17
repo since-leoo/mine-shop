@@ -389,6 +389,34 @@ final class DiyPageSchemaVoTest extends TestCase
         DiyPageSchemaVo::fromArray($schema, 'home');
     }
 
+    public function testNestedCategoryPanelLinkRejectsUnsupportedType(): void
+    {
+        $schema = $this->schemaWithComponent([
+            'id' => 'cmp_category_panel',
+            'type' => 'category-panel',
+            'enabled' => true,
+            'props' => ['columns' => 3],
+            'style' => [],
+            'data' => [
+                'items' => [
+                    [
+                        'title' => 'Pets',
+                        'children' => [
+                            [
+                                'title' => 'Food',
+                                'link' => ['type' => 'invalid'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->expectException(\DomainException::class);
+
+        DiyPageSchemaVo::fromArray($schema, 'home');
+    }
+
     public function testOldSchemaVersionMigratesToCurrentVersion(): void
     {
         $schema = $this->validSchema();

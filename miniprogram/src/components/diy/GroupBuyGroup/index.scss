@@ -16,6 +16,19 @@
   gap: 14px;
 }
 
+.diy-group-buy-group--scroll .diy-group-buy-group__list {
+  display: flex;
+  overflow-x: auto;
+}
+
+.diy-group-buy-group--scroll .diy-group-buy-group__item {
+  flex: 0 0 220px;
+}
+
+.diy-group-buy-group--single .diy-group-buy-group__list {
+  grid-template-columns: 1fr;
+}
+
 .diy-group-buy-group__item {
   padding: 14px;
   border-radius: 16px;
@@ -26,6 +39,13 @@
   height: 180px;
   border-radius: 12px;
   background: #e5e7eb;
+  overflow: hidden;
+}
+
+.diy-group-buy-group__thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .diy-group-buy-group__name,

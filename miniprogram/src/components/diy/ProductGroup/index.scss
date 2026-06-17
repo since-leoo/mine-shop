@@ -1,33 +1,49 @@
 .diy-product-group {
-  padding: 8px 24px 24px;
+  padding: 0 0 20rpx;
 }
 
 .diy-product-group__head {
-  padding: 8px 0 16px;
+  padding: 0 32rpx 20rpx;
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
 .diy-product-group__title {
-  color: #111827;
-  font-size: 32px;
+  color: #4a3228;
+  font-size: 32rpx;
   font-weight: 700;
 }
 
 .diy-product-group__source {
   color: var(--diy-primary-color, #2563eb);
-  font-size: 24px;
+  font-size: 24rpx;
+  font-weight: 600;
 }
 
 .diy-product-group__empty {
-  min-height: 120px;
-  border: 1px dashed #cbd5e1;
-  border-radius: var(--diy-card-radius, 12px);
+  margin: 0 32rpx;
+  min-height: 120rpx;
+  border: 2rpx dashed rgba(232, 131, 107, 0.24);
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6b7280;
-  font-size: 24px;
+  color: #9a7a68;
+  font-size: 24rpx;
   background: #fff;
+}
+
+.diy-product-group--home-recommend {
+  margin-top: 0;
+  padding-bottom: 26rpx;
+}
+
+.diy-product-group--home-recommend .goods-list {
+  padding-top: 0;
+}
+
+.diy-product-group--home-recommend .goods-card {
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(200, 140, 110, 0.08);
 }

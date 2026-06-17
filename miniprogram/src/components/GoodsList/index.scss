@@ -14,3 +14,23 @@
 .goods-list__item {
   width: calc(50% - 10rpx); // half width minus half gap
 }
+
+.goods-list--single {
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.goods-list--single .goods-list__item {
+  width: 100%;
+}
+
+.goods-list--scroll {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-right: 0;
+}
+
+.goods-list--scroll .goods-list__item {
+  width: 220rpx;
+  flex: 0 0 220rpx;
+}

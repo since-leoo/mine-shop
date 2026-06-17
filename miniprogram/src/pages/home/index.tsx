@@ -3,7 +3,7 @@ import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { isH5 } from '../../common/platform';
 import { addCartItem } from '../../services/cart/cart';
-import { fetchDiyPage } from '../../services/diy/page';
+import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
 import { fetchHome } from '../../services/home/home';
 import { fetchSeckillSessions } from '../../services/promotion/detail';
 import searchIcon from '../../assets/home-top/search-line.svg';
@@ -16,6 +16,7 @@ import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
 import DiyRenderer from '../../components/diy-renderer';
 import { DiyPagePayload } from '../../components/diy-renderer/types';
+import { diyStyle } from '../../components/diy-renderer/style';
 import { resolveHomeSeckillTarget } from './seckill-timing';
 import './index.scss';
 
@@ -508,7 +509,7 @@ export default function Home() {
   const refresh = useCallback(async () => {
     setLoading(true);
     try {
-      const publishedDiyPage = await fetchDiyPage('home', 'miniprogram');
+      const publishedDiyPage = await fetchDiyPage('home', currentDiyPageType());
       if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
         setDiyPage(publishedDiyPage);
         return;
@@ -605,9 +606,14 @@ export default function Home() {
   const seckillCountdown = useMemo(() => formatCountdown(seckillEndTime, nowMs), [seckillEndTime, nowMs]);
 
   if (diyPage?.page && diyPage.components.length > 0) {
+    const diyPageStyle = diyStyle(diyPage.page.style || {});
+
     return (
-      <View className="home home--diy">
-        <DiyRenderer page={diyPage} />
+      <View className="home home--diy" style={diyPageStyle}>
+        <View className="home-top-bg home-top-bg--diy">
+          <PageNav showBack={false} showTitle={false} light background="transparent" />
+          <DiyRenderer page={diyPage} transparent />
+        </View>
         {isH5() ? <H5TabBar current="/pages/home/index" /> : null}
       </View>
     );

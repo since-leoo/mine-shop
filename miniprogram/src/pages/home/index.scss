@@ -8,6 +8,10 @@
   background-color: $warm-bg-page;
 }
 
+.home--diy {
+  background: transparent;
+}
+
 // ========= 顶部渐变区 =========
 // .home-header-bg { background: var(--gradient-header); padding-bottom: 10px; }
 .home-top-bg {
@@ -16,6 +20,11 @@
 
   &--with-quick {
     padding-bottom: 28rpx;
+  }
+
+  &--diy {
+    padding-bottom: 0;
+    background: transparent;
   }
 }
 

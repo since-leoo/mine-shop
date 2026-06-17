@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('@tarojs/taro', () => ({
   default: {
     navigateTo: vi.fn(),
+    switchTab: vi.fn(),
   },
 }));
 
@@ -34,5 +35,11 @@ describe('DIY 链接解析', () => {
     navigateDiyLink({ type: 'category', id: 9 });
 
     expect(Taro.navigateTo).toHaveBeenCalledWith({ url: '/pages/goods/result/index?categoryId=9' });
+  });
+
+  it('tab 页面链接使用 switchTab', () => {
+    navigateDiyLink({ type: 'page', path: '/pages/cart/index' });
+
+    expect(Taro.switchTab).toHaveBeenCalledWith({ url: '/pages/cart/index' });
   });
 });

@@ -16,10 +16,15 @@ import SearchBar from '../diy/SearchBar';
 import ShopInfo from '../diy/ShopInfo';
 import RichText from '../diy/RichText';
 import ImageCube from '../diy/ImageCube';
+import MarketingEntry from '../diy/MarketingEntry';
+import CategoryPanel from '../diy/CategoryPanel';
+import { diyStyle, handleComponentClick } from './style';
 import './index.scss';
 
 interface DiyRendererProps {
   page?: DiyPagePayload | null;
+  className?: string;
+  transparent?: boolean;
 }
 
 const registry: Record<string, (component: DiyComponent) => JSX.Element | null> = {
@@ -39,6 +44,8 @@ const registry: Record<string, (component: DiyComponent) => JSX.Element | null> 
   'shop-info': (component) => <ShopInfo component={component} />,
   'rich-text': (component) => <RichText component={component} />,
   'image-cube': (component) => <ImageCube component={component} />,
+  'marketing-entry': (component) => <MarketingEntry component={component} />,
+  'category-panel': (component) => <CategoryPanel component={component} />,
 };
 
 export function renderDiyComponent(component: DiyComponent): JSX.Element | null {
@@ -47,7 +54,7 @@ export function renderDiyComponent(component: DiyComponent): JSX.Element | null 
   return renderer ? renderer(component) : null;
 }
 
-export default function DiyRenderer({ page }: DiyRendererProps) {
+export default function DiyRenderer({ page, className = '', transparent = false }: DiyRendererProps) {
   const components = page?.components || [];
   if (!page?.page || components.length === 0) return null;
   const theme = {
@@ -58,18 +65,28 @@ export default function DiyRenderer({ page }: DiyRendererProps) {
     ...(page.page.theme || {}),
   };
 
+  const pageStyle = diyStyle(page.page.style || {});
+  const pageBackground = page.page.style?.background || page.page.style?.backgroundColor;
+  const rendererStyle = transparent
+    ? { ...pageStyle, background: undefined, backgroundColor: 'transparent' }
+    : { ...pageStyle, backgroundColor: pageBackground ? undefined : theme.backgroundColor };
+
   return (
     <View
-      className="diy-renderer"
+      className={`diy-renderer ${className}`}
       style={{
-        backgroundColor: theme.backgroundColor,
+        ...rendererStyle,
         '--diy-primary-color': theme.primaryColor,
         '--diy-price-color': theme.priceColor,
         '--diy-card-radius': `${theme.cardRadius}px`,
       } as Record<string, string>}
     >
       {components.map((component) => (
-        <View key={component.id} className="diy-renderer__item">
+        <View
+          key={component.id}
+          className="diy-renderer__item"
+          onClick={() => handleComponentClick(component)}
+        >
           {renderDiyComponent(component)}
         </View>
       ))}

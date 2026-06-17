@@ -1,5 +1,13 @@
 import Taro from '@tarojs/taro';
+import { ensureAuthenticated } from '../../common/auth';
 import { DiyLink } from './types';
+
+const TAB_PAGES = new Set([
+  '/pages/home/index',
+  '/pages/category/index',
+  '/pages/cart/index',
+  '/pages/usercenter/index',
+]);
 
 function buildQuery(params?: Record<string, any>): string {
   if (!params) return '';
@@ -14,9 +22,15 @@ function buildQuery(params?: Record<string, any>): string {
 export function resolveDiyLink(link?: DiyLink): string {
   if (!link || !link.type) return '';
 
+  if (link.type === 'none') return '';
+
   if (link.type === 'page') {
     const path = link.path || link.url || '';
     return path ? `${path}${buildQuery(link.params)}` : '';
+  }
+
+  if (link.type === 'url') {
+    return link.url || link.path || '';
   }
 
   if (link.type === 'product' && link.id) {
@@ -42,8 +56,38 @@ export function resolveDiyLink(link?: DiyLink): string {
   return '';
 }
 
-export function navigateDiyLink(link?: DiyLink): void {
+interface NavigateDiyLinkOptions {
+  needLogin?: boolean;
+}
+
+function runNavigate(url: string): void {
+  const path = url.split('?')[0];
+  if (TAB_PAGES.has(path)) {
+    Taro.switchTab({ url: path });
+    return;
+  }
+
+  if (/^https?:\/\//.test(url)) {
+    const env = Taro.getEnv?.();
+    if (env === Taro.ENV_TYPE?.WEB && typeof window !== 'undefined') {
+      window.location.href = url;
+    }
+    return;
+  }
+
+  Taro.navigateTo({ url });
+}
+
+export function navigateDiyLink(link?: DiyLink, options: NavigateDiyLinkOptions = {}): void {
   const url = resolveDiyLink(link);
   if (!url) return;
-  Taro.navigateTo({ url });
+
+  if (options.needLogin) {
+    ensureAuthenticated()
+      .then(() => runNavigate(url))
+      .catch(() => undefined);
+    return;
+  }
+
+  runNavigate(url);
 }

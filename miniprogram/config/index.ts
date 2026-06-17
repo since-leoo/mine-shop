@@ -20,6 +20,7 @@ export default defineConfig(async (merge) => {
     copy: {
       patterns: [
         { from: 'src/custom-tab-bar/', to: 'dist/custom-tab-bar/', ignore: ['*.ts', '*.tsx', '*.scss'] },
+        { from: 'src/assets/', to: 'dist/assets/' },
       ],
       options: {},
     },

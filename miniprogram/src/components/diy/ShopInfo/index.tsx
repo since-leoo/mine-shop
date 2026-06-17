@@ -1,5 +1,7 @@
 import { Image, Text, View } from '@tarojs/components';
 import { DiyComponent } from '../../diy-renderer/types';
+import { diyTextStyle } from '../../diy-renderer/style';
+import { resolveDiyAsset } from '../../diy-renderer/assets';
 import './index.scss';
 
 interface Props {
@@ -9,13 +11,14 @@ interface Props {
 export default function ShopInfo({ component }: Props) {
   const name = component.props?.name || '官方商城';
   const description = component.props?.description || '';
+  const logo = resolveDiyAsset(component.props?.logo);
   const tags = component.data?.tags || [];
 
   return (
     <View className="diy-shop-info">
-      {component.props?.logo ? <Image className="diy-shop-info__logo" src={component.props.logo} mode="aspectFill" /> : <View className="diy-shop-info__logo" />}
+      {logo ? <Image className="diy-shop-info__logo" src={logo} mode="aspectFill" /> : <View className="diy-shop-info__logo" />}
       <View className="diy-shop-info__body">
-        <Text className="diy-shop-info__name">{name}</Text>
+        <Text className="diy-shop-info__name" style={diyTextStyle(component)}>{name}</Text>
         {description ? <Text className="diy-shop-info__desc">{description}</Text> : null}
         <View className="diy-shop-info__tags">
           {tags.slice(0, 3).map((tag) => (

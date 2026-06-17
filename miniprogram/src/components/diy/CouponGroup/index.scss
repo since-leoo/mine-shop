@@ -13,15 +13,26 @@
 .diy-coupon-group__list {
   display: flex;
   gap: 12px;
+  overflow-x: auto;
 }
 
 .diy-coupon-group__item {
-  flex: 1;
+  flex: 0 0 220px;
   min-width: 0;
   padding: 16px 12px;
   border-radius: 14px;
   background: #fff1f2;
   color: #e11d48;
+}
+
+.diy-coupon-group--two-column .diy-coupon-group__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: visible;
+}
+
+.diy-coupon-group--two-column .diy-coupon-group__item {
+  flex: initial;
 }
 
 .diy-coupon-group__amount {
@@ -39,4 +50,12 @@
   line-height: 26px;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+.diy-coupon-group__condition {
+  display: block;
+  margin-top: 4px;
+  color: #fb7185;
+  font-size: 18px;
+  line-height: 24px;
 }

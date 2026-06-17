@@ -1,8 +1,15 @@
 .diy-renderer {
   min-height: 100vh;
-  background: #f6f7f8;
+  padding-bottom: calc(128rpx + env(safe-area-inset-bottom));
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.diy-renderer--transparent {
+  background: transparent !important;
 }
 
 .diy-renderer__item {
   width: 100%;
+  box-sizing: border-box;
 }

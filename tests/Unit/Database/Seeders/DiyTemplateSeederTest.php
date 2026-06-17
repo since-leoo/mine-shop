@@ -36,4 +36,41 @@ final class DiyTemplateSeederTest extends TestCase
             self::assertSame($template['page_key'], $vo->toArray()['page']['key']);
         }
     }
+
+    public function testCategoryTemplateOnlyContainsFullHeightCategoryPanel(): void
+    {
+        require_once BASE_PATH . '/databases/seeders/diy_template_seeder_20260606.php';
+
+        $seeder = new \DiyTemplateSeeder20260606();
+        $method = (new ReflectionClass($seeder))->getMethod('templates');
+        $method->setAccessible(true);
+
+        $categoryTemplate = null;
+        foreach ($method->invoke($seeder) as $template) {
+            if (($template['page_key'] ?? '') === 'category_home') {
+                $categoryTemplate = $template;
+                break;
+            }
+        }
+
+        self::assertNotNull($categoryTemplate);
+        self::assertSame(['category-panel'], array_column($categoryTemplate['schema']['components'], 'type'));
+        self::assertSame('100%', $categoryTemplate['schema']['components'][0]['style']['height'] ?? null);
+    }
+
+    public function testDefaultCategoryPageOnlyContainsFullHeightCategoryPanel(): void
+    {
+        require_once BASE_PATH . '/databases/seeders/support/DefaultDiyPageSchemas.php';
+
+        $categoryPages = array_values(array_filter(
+            \DefaultDiyPageSchemas::all(),
+            static fn (array $page): bool => ($page['page_key'] ?? '') === 'category'
+        ));
+
+        self::assertNotEmpty($categoryPages);
+        foreach ($categoryPages as $page) {
+            self::assertSame(['category-panel'], array_column($page['schema']['components'], 'type'));
+            self::assertSame('100%', $page['schema']['components'][0]['style']['height'] ?? null);
+        }
+    }
 }

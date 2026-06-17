@@ -20,6 +20,8 @@ final class DiyComponentRegistryVo
 
     private const MAX_QUICK_NAV_ITEMS = 20;
 
+    private const MAX_CATEGORY_PANEL_ITEMS = 20;
+
     private const MAX_IMAGE_AD_ITEMS = 10;
 
     private const MAX_PRODUCT_GROUP_LIMIT = 50;
@@ -35,6 +37,7 @@ final class DiyComponentRegistryVo
     private const COMPONENT_TYPES = [
         'banner',
         'quick-nav',
+        'category-panel',
         'image-ad',
         'product-group',
         'title-bar',
@@ -42,6 +45,7 @@ final class DiyComponentRegistryVo
         'divider',
         'notice-bar',
         'coupon-group',
+        'marketing-entry',
         'seckill-group',
         'group-buy-group',
         'product-rank',
@@ -142,10 +146,12 @@ final class DiyComponentRegistryVo
         match ($type) {
             'banner' => self::assertBanner($props, $data),
             'quick-nav' => self::assertItemsLimit($data, self::MAX_QUICK_NAV_ITEMS, '金刚区最多20个入口'),
+            'category-panel' => self::assertItemsLimit($data, self::MAX_CATEGORY_PANEL_ITEMS, '商品分类最多20个一级分类'),
             'image-ad' => self::assertImageAd($props, $data),
             'product-group' => self::assertProductGroup($props, $data),
             'notice-bar' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, '公告栏最多10条'),
             'coupon-group' => self::assertCouponGroup($props, $data),
+            'marketing-entry' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, '营销入口最多10个'),
             'seckill-group' => self::assertMarketingGroup($props, $data, '秒杀组件必须选择活动'),
             'group-buy-group' => self::assertMarketingGroup($props, $data, '拼团组件必须选择活动'),
             'product-rank' => self::assertProductRank($props, $data),
@@ -326,7 +332,15 @@ final class DiyComponentRegistryVo
         }
 
         foreach ($items as $item) {
-            if (! \is_array($item) || ! isset($item['link']) || ! \is_array($item['link'])) {
+            if (! \is_array($item)) {
+                continue;
+            }
+
+            if (isset($item['children']) && \is_array($item['children'])) {
+                self::assertLinks(['items' => $item['children']]);
+            }
+
+            if (! isset($item['link']) || ! \is_array($item['link'])) {
                 continue;
             }
 

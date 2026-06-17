@@ -1,5 +1,6 @@
 import { Text, View } from '@tarojs/components';
 import { DiyComponent } from '../../diy-renderer/types';
+import { diyComponentStyle, diyTextStyle } from '../../diy-renderer/style';
 import './index.scss';
 
 interface Props {
@@ -12,8 +13,8 @@ export default function TitleBar({ component }: Props) {
   if (!title && !subtitle) return null;
 
   return (
-    <View className="diy-title-bar">
-      {title ? <Text className="diy-title-bar__title">{title}</Text> : null}
+    <View className={`diy-title-bar diy-title-bar--${component.style?.textAlign || 'left'}`} style={diyComponentStyle(component)}>
+      {title ? <Text className="diy-title-bar__title" style={diyTextStyle(component)}>{title}</Text> : null}
       {subtitle ? <Text className="diy-title-bar__subtitle">{subtitle}</Text> : null}
     </View>
   );

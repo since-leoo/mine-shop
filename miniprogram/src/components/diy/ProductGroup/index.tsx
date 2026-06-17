@@ -1,13 +1,29 @@
-import Taro from '@tarojs/taro';
 import { Text, View } from '@tarojs/components';
 import GoodsList from '../../GoodsList';
 import { DiyComponent, DiyProductItem } from '../../diy-renderer/types';
+import { navigateDiyLink } from '../../diy-renderer/link';
+import { diyComponentStyle } from '../../diy-renderer/style';
+import { getGoodsList } from '../../../model/goods';
 import './index.scss';
 
 interface Props {
   component: DiyComponent<
     { products?: DiyProductItem[]; items?: DiyProductItem[]; mode?: string; source?: string },
-    { title?: string; source?: string; sort?: string; categoryId?: string | number; activityId?: string | number; tagIds?: Array<string | number>; limit?: number }
+    {
+      title?: string;
+      source?: string;
+      sort?: string;
+      categoryId?: string | number;
+      activityId?: string | number;
+      tagIds?: Array<string | number>;
+      limit?: number;
+      layout?: string;
+      variant?: string;
+      listPadding?: string | number | { top?: number; right?: number; bottom?: number; left?: number };
+      gap?: number;
+      showHeader?: boolean;
+      showSource?: boolean;
+    }
   >;
 }
 
@@ -22,7 +38,8 @@ function normalizeProduct(item: DiyProductItem, index: number) {
     thumb: item.thumb || item.image || item.primaryImage || item.mainImage || item.main_image || '',
     title: item.title || item.name || item.goodsName || '',
     price: Number(item.price || item.salePrice || item.minSalePrice || item.minPrice || 0),
-    originPrice: Number(item.originPrice || item.linePrice || item.maxLinePrice || item.maxPrice || 0),
+    originPrice: Number(item.originPrice || item.linePrice || item.minLinePrice || item.maxLinePrice || item.maxPrice || 0),
+    tags: item.tags || item.spuTagList?.map((tag) => tag.title).filter(Boolean) || [],
   };
 }
 
@@ -41,20 +58,32 @@ function sourceText(component: Props['component']): string {
 }
 
 export default function ProductGroup({ component }: Props) {
-  const products = (component.data?.products || component.data?.items || []).map(normalizeProduct);
+  const limit = Math.max(Number(component.props?.limit || 6), 1);
+  const layout = component.props?.layout || 'two-column';
+  const variant = component.props?.variant || '';
+  const sourceProducts = component.data?.products || component.data?.items || [];
+  const fallbackProducts = sourceProducts.length > 0 ? [] : getGoodsList(0, limit);
+  const products = (sourceProducts.length > 0 ? sourceProducts : fallbackProducts).map(normalizeProduct).slice(0, limit);
+  const showHeader = component.props?.showHeader === true || Boolean(component.props?.title);
+  const showSource = component.props?.showSource === true;
 
   return (
-    <View className="diy-product-group">
-      <View className="diy-product-group__head">
-        <Text className="diy-product-group__title">{component.props?.title || '商品组'}</Text>
-        <Text className="diy-product-group__source">{sourceText(component)}</Text>
-      </View>
+    <View className={`diy-product-group diy-product-group--${layout} ${variant ? `diy-product-group--${variant}` : ''}`} style={diyComponentStyle(component)}>
+      {showHeader ? (
+        <View className="diy-product-group__head">
+          <Text className="diy-product-group__title">{component.props?.title}</Text>
+          {showSource ? <Text className="diy-product-group__source">{sourceText(component)}</Text> : null}
+        </View>
+      ) : null}
       {products.length > 0 ? (
         <GoodsList
           goodsList={products}
+          layout={layout}
+          gap={component.props?.gap}
+          padding={component.props?.listPadding}
           onClickGoods={(goods) => {
             if (!goods.spuId) return;
-            Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
+            navigateDiyLink({ type: 'product', id: goods.spuId }, { needLogin: component.props?.needLogin });
           }}
         />
       ) : (

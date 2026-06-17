@@ -20,10 +20,10 @@ export function imageOuterStyle(props?: DiyImageProps): Record<string, string | 
   const style: Record<string, string | number> = {};
 
   if (widthMode === 'contained') {
-    style.marginLeft = '24px';
-    style.marginRight = '24px';
+    style.marginLeft = '32rpx';
+    style.marginRight = '32rpx';
   } else if (widthMode === 'custom') {
-    style.width = widthUnit === 'percent' ? `${Math.min(Math.max(width, 1), 100)}%` : `${Math.min(Math.max(width, 1), 750)}px`;
+    style.width = widthUnit === 'percent' ? `${Math.min(Math.max(width, 1), 100)}%` : `${Math.min(Math.max(width, 1), 750)}rpx`;
     style.marginLeft = 'auto';
     style.marginRight = 'auto';
   }
@@ -36,7 +36,7 @@ export function imageItemStyle(props?: DiyImageProps, fallbackHeight = 160): Rec
   const radius = Number(props?.radius ?? 12);
 
   return {
-    height: `${height}px`,
-    borderRadius: `${radius}px`,
+    height: `${height * 2}rpx`,
+    borderRadius: `${radius * 2}rpx`,
   };
 }

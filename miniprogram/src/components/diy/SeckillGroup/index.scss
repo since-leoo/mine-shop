@@ -31,20 +31,38 @@
   margin-top: 16px;
   display: flex;
   gap: 12px;
+  overflow-x: auto;
 }
 
 .diy-seckill-group__item {
-  flex: 1;
+  flex: 0 0 196px;
   min-width: 0;
   padding: 12px;
   border-radius: 14px;
   background: #ffffff;
 }
 
+.diy-seckill-group--two-column .diy-seckill-group__list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: visible;
+}
+
+.diy-seckill-group--two-column .diy-seckill-group__item {
+  flex: initial;
+}
+
 .diy-seckill-group__image {
   height: 120px;
   border-radius: 10px;
   background: #fed7aa;
+  overflow: hidden;
+}
+
+.diy-seckill-group__thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .diy-seckill-group__name,

@@ -119,10 +119,12 @@ export default function getTableColumns(
               </ElButton>
             )}
             {hasAuth('mall:diy:page:update') && (
-              <ElButton size="small" onClick={() => {
-                dialog.setTitle('编辑页面')
-                dialog.open({ formType: 'edit', data: row })
-              }}
+              <ElButton
+                size="small"
+                onClick={() => {
+                  dialog.setTitle('编辑页面')
+                  dialog.open({ formType: 'edit', data: row })
+                }}
               >
                 <ma-svg-icon name="material-symbols:edit-outline" size="14" />
                 编辑

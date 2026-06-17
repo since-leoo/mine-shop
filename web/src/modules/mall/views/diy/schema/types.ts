@@ -24,6 +24,7 @@ export interface DiySchema {
     key: string
     title?: string
     theme?: DiyPageTheme
+    style?: Record<string, any>
   }
   components: DiyComponent[]
 }

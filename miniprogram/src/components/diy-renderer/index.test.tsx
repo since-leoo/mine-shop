@@ -4,30 +4,24 @@ vi.mock('@tarojs/components', () => ({
   View: ({ children }: { children?: unknown }) => children || 'View',
 }));
 
-const componentNames = [
-  'Banner',
-  'QuickNav',
-  'ImageAd',
-  'ProductGroup',
-  'TitleBar',
-  'Gap',
-  'Divider',
-  'NoticeBar',
-  'CouponGroup',
-  'SeckillGroup',
-  'GroupBuyGroup',
-  'ProductRank',
-  'SearchBar',
-  'ShopInfo',
-  'RichText',
-  'ImageCube',
-];
-
-componentNames.forEach((name) => {
-  vi.mock(`../diy/${name}`, () => ({
-    default: () => name,
-  }));
-});
+vi.mock('../diy/Banner', () => ({ default: () => 'Banner' }));
+vi.mock('../diy/QuickNav', () => ({ default: () => 'QuickNav' }));
+vi.mock('../diy/ImageAd', () => ({ default: () => 'ImageAd' }));
+vi.mock('../diy/ProductGroup', () => ({ default: () => 'ProductGroup' }));
+vi.mock('../diy/TitleBar', () => ({ default: () => 'TitleBar' }));
+vi.mock('../diy/Gap', () => ({ default: () => 'Gap' }));
+vi.mock('../diy/Divider', () => ({ default: () => 'Divider' }));
+vi.mock('../diy/NoticeBar', () => ({ default: () => 'NoticeBar' }));
+vi.mock('../diy/CouponGroup', () => ({ default: () => 'CouponGroup' }));
+vi.mock('../diy/SeckillGroup', () => ({ default: () => 'SeckillGroup' }));
+vi.mock('../diy/GroupBuyGroup', () => ({ default: () => 'GroupBuyGroup' }));
+vi.mock('../diy/ProductRank', () => ({ default: () => 'ProductRank' }));
+vi.mock('../diy/SearchBar', () => ({ default: () => 'SearchBar' }));
+vi.mock('../diy/ShopInfo', () => ({ default: () => 'ShopInfo' }));
+vi.mock('../diy/RichText', () => ({ default: () => 'RichText' }));
+vi.mock('../diy/ImageCube', () => ({ default: () => 'ImageCube' }));
+vi.mock('../diy/MarketingEntry', () => ({ default: () => 'MarketingEntry' }));
+vi.mock('../diy/CategoryPanel', () => ({ default: () => 'CategoryPanel' }));
 
 import { renderDiyComponent } from './index';
 
@@ -43,6 +37,8 @@ describe('DIY 渲染器注册表', () => {
       'shop-info',
       'rich-text',
       'image-cube',
+      'marketing-entry',
+      'category-panel',
     ].forEach((type) => {
       expect(renderDiyComponent({ id: type, type })).not.toBeNull();
     });

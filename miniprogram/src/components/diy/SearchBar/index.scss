@@ -1,26 +1,32 @@
 .diy-search-bar {
-  margin: 12px 24px;
-  height: 68px;
-  padding: 0 24px;
+  margin: 8rpx 32rpx 20rpx;
+  height: 76rpx;
+  padding: 0 28rpx;
   display: flex;
   align-items: center;
-  border-radius: 34px;
-  background: #ffffff;
-  color: #9ca3af;
-  font-size: 24px;
+  gap: 16rpx;
+  border-radius: 44rpx;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 4rpx 24rpx rgba(200, 140, 110, 0.10);
+  color: #c4b0a6;
+  font-size: 26rpx;
+  box-sizing: border-box;
 }
 
 .diy-search-bar--square {
-  border-radius: 12px;
+  border-radius: 16rpx;
 }
 
 .diy-search-bar__icon {
-  margin-right: 12px;
-  font-size: 28px;
+  font-size: 32rpx;
+  line-height: 1;
+  opacity: 0.56;
 }
 
 .diy-search-bar__text {
+  flex: 1;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  line-height: 1;
 }

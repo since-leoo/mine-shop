@@ -13,8 +13,12 @@ export interface DiyComponent<TData = Record<string, any>, TProps = Record<strin
   type: string;
   name?: string;
   enabled?: boolean;
-  props?: TProps;
-  style?: Record<string, any>;
+  props?: TProps & {
+    link?: DiyLink;
+    needLogin?: boolean;
+    trackClick?: boolean;
+  };
+  style?: DiyComponentStyle;
   data?: TData;
 }
 
@@ -23,6 +27,7 @@ export interface DiyPagePayload {
     key: string;
     title?: string;
     theme?: DiyPageTheme;
+    style?: DiyComponentStyle;
     [key: string]: any;
   } | null;
   components: DiyComponent[];
@@ -57,10 +62,38 @@ export interface DiyImageProps {
 
 export interface DiyNavItem {
   icon?: string;
+  svg?: string;
+  svgCode?: string;
+  iconText?: string;
+  iconBg?: string;
   image?: string;
   title?: string;
   name?: string;
   link?: DiyLink;
+}
+
+export interface DiyMarketingEntryItem {
+  title?: string;
+  subtitle?: string;
+  badge?: string;
+  background?: string;
+  color?: string;
+  link?: DiyLink;
+}
+
+export interface DiyCategoryPanelChild {
+  title?: string;
+  name?: string;
+  image?: string;
+  thumbnail?: string;
+  icon?: string;
+  link?: DiyLink;
+}
+
+export interface DiyCategoryPanelItem {
+  title?: string;
+  name?: string;
+  children?: DiyCategoryPanelChild[];
 }
 
 export interface DiyProductItem {
@@ -71,5 +104,20 @@ export interface DiyProductItem {
   name?: string;
   price?: number;
   originPrice?: number;
+  [key: string]: any;
+}
+
+export interface DiyComponentStyle {
+  textAlign?: 'left' | 'center' | 'right' | string;
+  fontSize?: number;
+  fontWeight?: number | string;
+  fontFamily?: string;
+  color?: string;
+  background?: string;
+  backgroundColor?: string;
+  marginTop?: number;
+  marginBottom?: number;
+  padding?: number;
+  borderRadius?: number;
   [key: string]: any;
 }

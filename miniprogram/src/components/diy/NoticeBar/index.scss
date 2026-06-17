@@ -1,22 +1,24 @@
 .diy-notice-bar {
-  margin: 12px 24px;
-  min-height: 64px;
-  padding: 0 20px;
+  margin: 0 32rpx 16rpx;
+  min-height: 40rpx;
+  padding: 0 8rpx;
   display: flex;
   align-items: center;
-  border-radius: 32px;
-  font-size: 24px;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 700;
+  box-sizing: border-box;
 }
 
 .diy-notice-bar__icon {
-  width: 32px;
-  height: 32px;
-  margin-right: 12px;
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 12rpx;
   border-radius: 50%;
   background: currentColor;
   color: #ffffff;
-  font-size: 22px;
-  line-height: 32px;
+  font-size: 18rpx;
+  line-height: 24rpx;
   text-align: center;
 }
 

@@ -78,6 +78,8 @@ mallMenu:
     shippingSetting: 配送与物流
     memberSetting: 会员与营销
     contentSetting: 内容与合规
+    diy: DIY 页面
+    diyTemplate: DIY 模板
     setting: 系统配置
     settingList: 配置查看
     settingUpdate: 配置更新
