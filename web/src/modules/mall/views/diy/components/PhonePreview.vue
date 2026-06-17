@@ -165,6 +165,16 @@ function coupons(component: DiyComponent) {
   return component.data?.coupons || []
 }
 
+function previewCoupons(component: DiyComponent) {
+  const items = coupons(component)
+  return items.length > 0
+    ? items
+    : [
+        { name: '满199减40', value: 4000 },
+        { name: '满99减20', value: 2000 },
+      ]
+}
+
 function groupBuys(component: DiyComponent) {
   return component.data?.activities || []
 }
@@ -262,17 +272,37 @@ function edgeStyle(style: Record<string, any>, key: 'margin' | 'padding') {
   }
 }
 
+function radiusStyle(style: Record<string, any>) {
+  const value = style.borderRadius
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return {
+      borderTopLeftRadius: px(value.topLeft),
+      borderTopRightRadius: px(value.topRight),
+      borderBottomRightRadius: px(value.bottomRight),
+      borderBottomLeftRadius: px(value.bottomLeft),
+    }
+  }
+
+  return {
+    borderRadius: px(value),
+    borderTopLeftRadius: px(style.borderTopLeftRadius),
+    borderTopRightRadius: px(style.borderTopRightRadius),
+    borderBottomRightRadius: px(style.borderBottomRightRadius),
+    borderBottomLeftRadius: px(style.borderBottomLeftRadius),
+  }
+}
+
 function normalizedStyle(style: Record<string, any> = {}) {
   return {
     ...edgeStyle(style, 'margin'),
     ...edgeStyle(style, 'padding'),
+    ...radiusStyle(style),
     width: px(style.width),
     minWidth: px(style.minWidth),
     maxWidth: px(style.maxWidth),
     height: px(style.height),
     minHeight: px(style.minHeight),
     maxHeight: px(style.maxHeight),
-    borderRadius: px(style.borderRadius),
     background: style.backgroundColor || style.background,
     boxShadow: style.boxShadow || style.shadow,
     color: style.color,
@@ -282,11 +312,26 @@ function normalizedStyle(style: Record<string, any> = {}) {
     letterSpacing: px(style.letterSpacing),
     fontFamily: style.fontFamily || undefined,
     fontWeight: style.fontWeight || undefined,
+    position: style.position || undefined,
+    zIndex: style.zIndex ?? undefined,
   }
 }
 
 function componentStyle(component: DiyComponent) {
   return normalizedStyle(component.style || {})
+}
+
+const legacyUserProfileHeaderBackground = 'linear-gradient(180deg, #EF8D78 0%, #F3A896 48%, #F8D7BF 78%, #FFF4EA 100%)'
+
+function themedUserProfileHeaderStyle(component: DiyComponent, schema: DiySchema) {
+  const style = componentStyle(component)
+  const background = component.style?.background || component.style?.backgroundColor
+  if (!background || background === legacyUserProfileHeaderBackground) {
+    const theme = pageTheme(schema)
+    style.background = `linear-gradient(180deg, ${theme.primaryColor} 0%, color-mix(in srgb, ${theme.primaryColor} 62%, #ffffff) 72%, ${theme.backgroundColor} 100%)`
+  }
+
+  return style
 }
 
 function titleStyle(component: DiyComponent) {
@@ -421,6 +466,7 @@ function pageStyle(schema: DiySchema) {
     background: schema.page.style?.background || schema.page.style?.backgroundColor || theme.backgroundColor,
     '--diy-primary-color': theme.primaryColor,
     '--diy-price-color': theme.priceColor,
+    '--diy-page-background-color': theme.backgroundColor,
     '--diy-card-radius': `${theme.cardRadius}px`,
   }
 }
@@ -428,7 +474,7 @@ function pageStyle(schema: DiySchema) {
 
 <template>
   <section class="phone-preview">
-    <div class="phone-preview__device">
+    <div class="phone-preview__device" :class="{ 'phone-preview__device--transparent-top': schema.page.style?.topTransparent === true }" :style="pageStyle(schema)">
       <div class="phone-preview__status" />
       <div class="phone-preview__title">
         {{ schema.page.title || schema.page.key }}
@@ -443,7 +489,10 @@ function pageStyle(schema: DiySchema) {
           :key="component.id"
           :data-id="component.id"
           class="preview-block"
-          :class="{ 'preview-block--active': component.id === selectedId, 'preview-block--disabled': component.enabled === false, 'preview-block--fill': component.type === 'category-panel' }"
+          :class="[
+            `preview-block--type-${component.type}`,
+            { 'preview-block--active': component.id === selectedId, 'preview-block--disabled': component.enabled === false, 'preview-block--fill': component.type === 'category-panel' },
+          ]"
           @click="emit('select', component.id)"
         >
           <div class="preview-block__tools">
@@ -493,7 +542,7 @@ function pageStyle(schema: DiySchema) {
           <template v-else-if="component.type === 'image-ad'">
             <div
               class="preview-image-ad"
-              :class="`preview-image-ad--${component.props?.layout || 'single'}`"
+              :class="[`preview-image-ad--${component.props?.layout || 'single'}`, component.props?.variant ? `preview-image-ad--${component.props.variant}` : '']"
               :style="{ ...imageOuterStyle(component), ...componentStyle(component) }"
             >
               <div v-for="(item, index) in (component.data?.items || []).slice(0, component.props?.layout === 'single' ? 1 : 4)" :key="index" :style="imageItemStyle(component, 120)">
@@ -504,7 +553,7 @@ function pageStyle(schema: DiySchema) {
           </template>
 
           <template v-else-if="component.type === 'product-group'">
-            <div class="preview-product-group" :style="componentStyle(component)">
+            <div class="preview-product-group" :class="component.props?.variant ? `preview-product-group--${component.props.variant}` : ''" :style="componentStyle(component)">
               <div v-if="component.props?.title" class="preview-section">
                 <div class="preview-section__title">
                   {{ component.props?.title }}
@@ -551,17 +600,14 @@ function pageStyle(schema: DiySchema) {
           </template>
 
           <template v-else-if="component.type === 'coupon-group'">
-            <div class="preview-section">
+            <div class="preview-section preview-coupon-group" :style="componentStyle(component)">
               <div class="preview-section__title">
                 {{ component.props?.title || '领券中心' }}
               </div>
-              <div class="preview-coupons">
-                <div v-for="(item, index) in coupons(component).slice(0, component.props?.limit || 3)" :key="index" class="preview-coupon">
+              <div class="preview-coupons" :class="`preview-coupons--${component.props?.layout || 'scroll'}`">
+                <div v-for="(item, index) in previewCoupons(component).slice(0, component.props?.limit || 3)" :key="index" class="preview-coupon">
                   <strong>¥{{ price(item.value) }}</strong>
                   <span>{{ item.name || '优惠券' }}</span>
-                </div>
-                <div v-if="coupons(component).length === 0" class="preview-empty">
-                  优惠券组
                 </div>
               </div>
             </div>
@@ -674,7 +720,7 @@ function pageStyle(schema: DiySchema) {
           </template>
 
           <template v-else-if="component.type === 'shop-info'">
-            <div class="preview-shop">
+            <div class="preview-shop" :class="component.props?.variant ? `preview-shop--${component.props.variant}` : ''" :style="componentStyle(component)">
               <img v-if="shopLogo(component)" :src="shopLogo(component)">
               <span v-else class="preview-shop__logo" />
               <div>
@@ -685,8 +731,67 @@ function pageStyle(schema: DiySchema) {
             </div>
           </template>
 
+          <template v-else-if="component.type === 'user-profile-header'">
+            <div class="preview-user-profile-header" :style="themedUserProfileHeaderStyle(component, schema)">
+              <span class="preview-user-profile-header__avatar">
+                <img v-if="resolvePreviewAsset(component.props?.avatar || '')" :src="resolvePreviewAsset(component.props?.avatar || '')">
+                <b v-else />
+              </span>
+              <div class="preview-user-profile-header__body">
+                <strong>{{ component.props?.nickname || '小花花' }}</strong>
+                <em>邀请码: {{ component.props?.inviteCode || 'WARM2026' }}</em>
+              </div>
+              <img class="preview-user-profile-header__qrcode" :src="resolvePreviewAsset(component.props?.qrcodeIcon || 'assets/usercenter/profile-qrcode.svg')">
+            </div>
+          </template>
+
+          <template v-else-if="component.type === 'user-stats'">
+            <div class="preview-user-stats" :style="componentStyle(component)">
+              <div v-for="(item, index) in (component.data?.items || []).slice(0, 4)" :key="index" class="preview-user-stats__item">
+                <strong>{{ item.value ?? 0 }}</strong>
+                <span>{{ item.label || '统计' }}</span>
+              </div>
+            </div>
+          </template>
+
+          <template v-else-if="component.type === 'user-order-panel'">
+            <div class="preview-user-order-panel" :style="componentStyle(component)">
+              <div class="preview-user-order-panel__head">
+                <strong>{{ component.props?.title || '我的订单' }}</strong>
+                <span>{{ component.props?.moreText || '全部订单' }} ›</span>
+              </div>
+              <div class="preview-user-order-panel__grid">
+                <div v-for="(item, index) in (component.data?.items || []).slice(0, 5)" :key="index" class="preview-user-order-panel__item">
+                  <span class="preview-user-order-panel__icon">
+                    <i v-if="Number(item.orderNum || 0) > 0" class="preview-user-order-panel__badge preview-user-order-panel__badge--count">
+                      {{ Number(item.orderNum || 0) > 99 ? '99+' : Number(item.orderNum || 0) }}
+                    </i>
+                    <i v-else-if="item.badge" class="preview-user-order-panel__badge" />
+                    <img v-if="imageOf(item)" :src="imageOf(item)">
+                  </span>
+                  <em>{{ item.label || '订单' }}</em>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template v-else-if="component.type === 'user-menu-list'">
+            <div class="preview-user-menu-list" :style="componentStyle(component)">
+              <div v-for="(item, index) in (component.data?.items || []).slice(0, 10)" :key="index" class="preview-user-menu-list__item">
+                <span class="preview-user-menu-list__left">
+                  <img v-if="imageOf(item)" :src="imageOf(item)">
+                  <strong>{{ item.label || '菜单' }}</strong>
+                </span>
+                <span class="preview-user-menu-list__right">
+                  <em v-if="item.value">{{ item.value }}</em>
+                  <b>›</b>
+                </span>
+              </div>
+            </div>
+          </template>
+
           <template v-else-if="component.type === 'rich-text'">
-            <div class="preview-rich-text" :style="{ padding: `${component.props?.padding || 12}px` }" v-html="component.data?.content || '<p>请输入图文内容</p>'" />
+            <div class="preview-rich-text" :style="{ padding: `${component.props?.padding || 12}px`, ...componentStyle(component) }" v-html="component.data?.content || '<p>请输入图文内容</p>'" />
           </template>
 
           <template v-else-if="component.type === 'image-cube'">
@@ -755,6 +860,32 @@ function pageStyle(schema: DiySchema) {
   overflow: auto;
 }
 
+.phone-preview__device--transparent-top {
+  position: relative;
+
+  .phone-preview__status,
+  .phone-preview__title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    z-index: 5;
+    background: transparent;
+    color: #fff;
+  }
+
+  .phone-preview__status {
+    top: 0;
+  }
+
+  .phone-preview__title {
+    top: 44px;
+  }
+
+  .phone-preview__body {
+    height: 780px;
+  }
+}
+
 .preview-block {
   position: relative;
   min-height: 28px;
@@ -765,14 +896,20 @@ function pageStyle(schema: DiySchema) {
 
   &:hover,
   &--active {
-    border-color: #409eff;
-    box-shadow: inset 0 0 0 1px rgba(64, 158, 255, 0.18);
+    border-color: transparent;
+    box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.28);
   }
 }
 
 .preview-block--fill {
   height: 100%;
   min-height: 0;
+}
+
+.preview-block--type-user-profile-header {
+  border-bottom-left-radius: 30px;
+  border-bottom-right-radius: 30px;
+  overflow: hidden;
 }
 
 .preview-block--disabled {
@@ -1078,21 +1215,47 @@ function pageStyle(schema: DiySchema) {
   grid-template-columns: 1fr;
 }
 
+.preview-image-ad--coupon-hero {
+  margin: 12px 16px 10px;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(200, 140, 110, 0.10);
+
+  div {
+    border-radius: 24px;
+  }
+}
+
+.preview-product-group--design-card-grid .preview-product {
+  border-radius: var(--diy-card-radius, 16px);
+  box-shadow: 0 2px 8px rgba(200, 140, 110, 0.08);
+}
+
+.preview-coupon-group {
+  margin: 8px 16px 14px;
+}
+
 .preview-coupons {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
   gap: 8px;
+  overflow: hidden;
+}
+
+.preview-coupons--two-column {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .preview-coupon {
   min-height: 64px;
   padding: 8px;
+  min-width: 96px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-radius: 8px;
-  background: #fff1f2;
-  color: var(--diy-price-color, #e11d48);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #fff7f1 0%, #ffe7db 100%);
+  color: var(--diy-price-color, #E8836B);
+  box-shadow: 0 2px 8px rgba(200, 140, 110, 0.08);
 
   strong {
     font-size: 16px;
@@ -1100,7 +1263,9 @@ function pageStyle(schema: DiySchema) {
 
   span {
     overflow: hidden;
+    color: #4a3228;
     font-size: 11px;
+    font-weight: 700;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
@@ -1372,6 +1537,335 @@ function pageStyle(schema: DiySchema) {
     color: #047857;
     font-size: 10px;
     font-style: normal;
+  }
+}
+
+.preview-shop--user-profile {
+  position: relative;
+  min-height: 150px;
+  margin: 0;
+  padding: 48px 20px;
+  grid-template-columns: 64px 1fr;
+  align-items: center;
+  overflow: hidden;
+  border-radius: 0 0 30px 30px;
+
+  &::after {
+    position: absolute;
+    top: 20px;
+    right: -40px;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+    content: '';
+  }
+
+  img,
+  .preview-shop__logo {
+    position: relative;
+    z-index: 1;
+    width: 64px;
+    height: 64px;
+    border: 3px solid rgba(255, 255, 255, 0.5);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  > div {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 800;
+  }
+
+  p {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  em {
+    display: none;
+  }
+}
+
+.preview-user-profile-header {
+  position: relative;
+  min-height: 212px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  &::after {
+    position: absolute;
+    top: 16px;
+    right: -29px;
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    content: '';
+  }
+}
+
+.preview-user-profile-header__avatar {
+  position: relative;
+  z-index: 1;
+  width: 48px;
+  height: 48px;
+  margin-right: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.68);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #fff1e8;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  b {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #050505;
+    box-shadow: 0 16px 0 7px #050505;
+    transform: translateY(-8px);
+  }
+}
+
+.preview-user-profile-header__body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1;
+
+  strong,
+  em {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 800;
+  }
+
+  em {
+    margin-top: 4px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 12px;
+    font-style: normal;
+  }
+}
+
+.preview-user-profile-header__qrcode {
+  position: relative;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  object-fit: contain;
+  opacity: 0.86;
+}
+
+.preview-user-stats {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  box-sizing: border-box;
+}
+
+.preview-user-stats__item {
+  min-width: 0;
+  padding: 1px 0 7px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  strong,
+  span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  strong {
+    color: var(--diy-primary-color, #E8836B);
+    font-size: 17px;
+    font-weight: 800;
+  }
+
+  span {
+    margin-top: 4px;
+    color: color-mix(in srgb, var(--diy-primary-color, #E8836B) 54%, #6b7280);
+    font-size: 11px;
+  }
+}
+
+.preview-user-order-panel {
+  padding: 14px 14px 16px;
+  box-sizing: border-box;
+}
+
+.preview-user-order-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  strong {
+    color: var(--diy-primary-color, #E8836B);
+    font-size: 15px;
+    font-weight: 800;
+  }
+
+  span {
+    color: color-mix(in srgb, var(--diy-primary-color, #E8836B) 54%, #6b7280);
+    font-size: 11px;
+  }
+}
+
+.preview-user-order-panel__grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.preview-user-order-panel__item {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+
+  em {
+    max-width: 100%;
+    margin-top: 9px;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--diy-primary-color, #E8836B) 72%, #111827);
+    font-size: 11px;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.preview-user-order-panel__icon {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 21px;
+    height: 21px;
+    object-fit: contain;
+  }
+
+  .preview-user-order-panel__badge {
+    position: absolute;
+    top: -1px;
+    right: 1px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--diy-price-color, #ff4d4f);
+  }
+
+  .preview-user-order-panel__badge--count {
+    top: -4px;
+    right: -5px;
+    width: auto;
+    min-width: 14px;
+    height: 14px;
+    padding: 0 4px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 9px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: center;
+    box-sizing: border-box;
+  }
+}
+
+.preview-user-menu-list {
+  overflow: hidden;
+}
+
+.preview-user-menu-list__item {
+  min-height: 52px;
+  padding: 0 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--diy-primary-color, #E8836B) 18%, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  &:last-child {
+    border-bottom: 0;
+  }
+}
+
+.preview-user-menu-list__left,
+.preview-user-menu-list__right {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+}
+
+.preview-user-menu-list__left {
+  flex: 1;
+
+  img {
+    width: 21px;
+    height: 21px;
+    flex: 0 0 21px;
+    object-fit: contain;
+  }
+
+  strong {
+    margin-left: 12px;
+    overflow: hidden;
+    color: var(--diy-primary-color, #E8836B);
+    font-size: 14px;
+    font-weight: 800;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.preview-user-menu-list__right {
+  em {
+    max-width: 80px;
+    overflow: hidden;
+    color: color-mix(in srgb, var(--diy-primary-color, #E8836B) 54%, #6b7280);
+    font-size: 12px;
+    font-style: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  b {
+    margin-left: 6px;
+    color: color-mix(in srgb, var(--diy-primary-color, #E8836B) 54%, #6b7280);
+    font-size: 15px;
+    font-weight: 400;
   }
 }
 

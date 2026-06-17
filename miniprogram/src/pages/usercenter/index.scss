@@ -9,6 +9,27 @@
   padding-bottom: 120rpx;
 }
 
+.usercenter--diy {
+  padding-bottom: 0;
+}
+
+.usercenter--diy-transparent-top {
+  position: relative;
+
+  > .page-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+  }
+}
+
+.usercenter__diy-body {
+  min-height: 100vh;
+  background: $warm-bg-page;
+}
+
 // ===== 头部渐变区 =====
 // .user-header-bg { background:var(--gradient-header); padding:0 20px 30px; border-radius:0 0 30px 30px; position:relative; overflow:hidden; }
 .usercenter__header {

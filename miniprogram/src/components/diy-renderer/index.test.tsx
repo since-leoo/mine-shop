@@ -22,6 +22,10 @@ vi.mock('../diy/RichText', () => ({ default: () => 'RichText' }));
 vi.mock('../diy/ImageCube', () => ({ default: () => 'ImageCube' }));
 vi.mock('../diy/MarketingEntry', () => ({ default: () => 'MarketingEntry' }));
 vi.mock('../diy/CategoryPanel', () => ({ default: () => 'CategoryPanel' }));
+vi.mock('../diy/UserProfileHeader', () => ({ default: () => 'UserProfileHeader' }));
+vi.mock('../diy/UserStats', () => ({ default: () => 'UserStats' }));
+vi.mock('../diy/UserOrderPanel', () => ({ default: () => 'UserOrderPanel' }));
+vi.mock('../diy/UserMenuList', () => ({ default: () => 'UserMenuList' }));
 
 import { renderDiyComponent } from './index';
 
@@ -39,6 +43,10 @@ describe('DIY 渲染器注册表', () => {
       'image-cube',
       'marketing-entry',
       'category-panel',
+      'user-profile-header',
+      'user-stats',
+      'user-order-panel',
+      'user-menu-list',
     ].forEach((type) => {
       expect(renderDiyComponent({ id: type, type })).not.toBeNull();
     });

@@ -52,6 +52,7 @@ export interface DiyPageTheme {
 
 export interface DiyImageProps {
   layout?: string;
+  variant?: string;
   widthMode?: 'full' | 'contained' | 'custom' | string;
   widthUnit?: 'percent' | 'px' | 'rpx' | string;
   width?: number;

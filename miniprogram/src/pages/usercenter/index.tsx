@@ -15,9 +15,14 @@ import { useRef, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../common/platform';
+import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
 import { fetchUserCenter } from '../../services/usercenter/fetchUsercenter';
 import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
+import DiyRenderer from '../../components/diy-renderer';
+import { DiyPagePayload } from '../../components/diy-renderer/types';
+import { diyStyle } from '../../components/diy-renderer/style';
+import { userDiyPage } from './diy-user-page';
 import './index.scss';
 
 interface UserInfo {
@@ -298,9 +303,22 @@ export default function UserCenter() {
     { num: '0', label: '收藏', type: 'collect' },
   ]);
   const [versionNo, setVersionNo] = useState('');
+  const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
   const profileNavigatingRef = useRef(false);
 
   const fetchData = () => {
+    fetchDiyPage('usercenter', currentDiyPageType())
+      .then((publishedDiyPage) => {
+        if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+          setDiyPage(publishedDiyPage);
+          return;
+        }
+        setDiyPage(null);
+      })
+      .catch(() => {
+        setDiyPage(null);
+      });
+
     fetchUserCenter()
       .then((res: any) => {
         const info = res?.userInfo || {};
@@ -413,6 +431,21 @@ export default function UserCenter() {
       },
     });
   };
+
+  if (diyPage?.page && diyPage.components.length > 0) {
+    const page = userDiyPage(diyPage, userInfo, orderTags);
+    const topTransparent = page.page?.style?.topTransparent === true;
+
+    return (
+      <View className={`usercenter usercenter--diy ${topTransparent ? 'usercenter--diy-transparent-top' : ''} ${isH5() ? 'usercenter--h5' : ''}`}>
+        <PageNav title={page.page?.title || '会员中心'} showBack={false} light={topTransparent} background={topTransparent ? 'transparent' : 'default'} />
+        <View className="usercenter__diy-body" style={diyStyle(page.page?.style || {})}>
+          <DiyRenderer page={page} transparent />
+        </View>
+        {isH5() ? <H5TabBar current="/pages/usercenter/index" /> : null}
+      </View>
+    );
+  }
 
   if (isH5()) {
     return (

@@ -4,10 +4,14 @@ import { useCallback, useMemo, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5 } from '../../common/platform';
+import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
 import { deleteCartItem, fetchCartGroupData, updateCartItem } from '../../services/cart/cart';
 import { fetchRecommendGoods } from '../../services/good/fetchGoods';
 import PageNav from '../../components/page-nav';
 import H5TabBar from '../../components/h5-tab-bar';
+import DiyRenderer from '../../components/diy-renderer';
+import { DiyPagePayload } from '../../components/diy-renderer/types';
+import { diyStyle } from '../../components/diy-renderer/style';
 
 import './index.scss';
 
@@ -93,10 +97,18 @@ export default function Cart() {
   const [stores, setStores] = useState<CartStore[]>([]);
   const [loading, setLoading] = useState(false);
   const [recommendList, setRecommendList] = useState<RecommendGoods[]>([]);
+  const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
+      const publishedDiyPage = await fetchDiyPage('cart', currentDiyPageType());
+      if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+        setDiyPage(publishedDiyPage);
+        return;
+      }
+
+      setDiyPage(null);
       const [cartRes, recommendRes] = await Promise.all([
         fetchCartGroupData(),
         fetchRecommendGoods(4).catch(() => []),
@@ -157,6 +169,7 @@ export default function Cart() {
   const totalAmount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [selectedItems]);
   const totalCount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.quantity, 0), [selectedItems]);
   const isAllSelected = useMemo(() => items.length > 0 && selectedItems.length === items.length, [items, selectedItems]);
+  const pageStyle = useMemo(() => diyPage?.page ? diyStyle(diyPage.page.style || {}) : {}, [diyPage]);
 
   const updateLocalQuantity = useCallback((skuId: string, quantity: number) => {
     setStores(prev => prev.map(store => ({
@@ -234,6 +247,18 @@ export default function Cart() {
     if (!spuId) return;
     Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   }, []);
+
+  if (diyPage?.page && diyPage.components.length > 0) {
+    return (
+      <View className={`cart-page cart-page--diy ${isH5() ? 'cart-page--h5' : ''}`}>
+        <PageNav title={diyPage.page.title || '购物车'} showBack={false} />
+        <View className="cart-page__diy-body" style={pageStyle}>
+          <DiyRenderer page={diyPage} transparent />
+        </View>
+        {isH5() ? <H5TabBar current="/pages/cart/index" /> : null}
+      </View>
+    );
+  }
 
   if (!loading && items.length === 0) {
     return (

@@ -1,7 +1,7 @@
 import { Text, View } from '@tarojs/components';
 import { DiyComponent } from '../../diy-renderer/types';
 import { navigateDiyLink } from '../../diy-renderer/link';
-import { stopDiyEvent } from '../../diy-renderer/style';
+import { diyComponentStyle, stopDiyEvent } from '../../diy-renderer/style';
 import './index.scss';
 
 interface CouponItem {
@@ -21,13 +21,18 @@ function money(value?: number) {
 }
 
 export default function CouponGroup({ component }: Props) {
-  const coupons = component.data?.coupons || [];
-  if (coupons.length === 0) return null;
+  const sourceCoupons = component.data?.coupons || [];
+  const coupons = sourceCoupons.length > 0
+    ? sourceCoupons
+    : [
+        { id: 'preview-1', name: '满199减40', value: 4000, minAmount: 19900 },
+        { id: 'preview-2', name: '满99减20', value: 2000, minAmount: 9900 },
+      ];
   const limit = Number(component.props?.limit || 3);
   const layout = component.props?.layout || 'scroll';
 
   return (
-    <View className={`diy-coupon-group diy-coupon-group--${layout}`}>
+    <View className={`diy-coupon-group diy-coupon-group--${layout}`} style={diyComponentStyle(component)}>
       <View className="diy-coupon-group__title">{component.props?.title || '领券中心'}</View>
       <View className="diy-coupon-group__list">
         {coupons.slice(0, limit).map((item, index) => (

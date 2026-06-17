@@ -820,6 +820,30 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
               </el-form-item>
             </template>
 
+            <template v-else-if="component.type === 'user-profile-header'">
+              <el-divider>用户头部设置</el-divider>
+              <el-form-item label="头像">
+                <MaUploadImage
+                  :model-value="component.props?.avatar || ''"
+                  :size="72"
+                  @update:model-value="patchProps({ avatar: Array.isArray($event) ? $event[0] || '' : $event })"
+                />
+              </el-form-item>
+              <el-form-item label="昵称">
+                <el-input :model-value="component.props?.nickname || ''" @update:model-value="patchProps({ nickname: String($event) })" />
+              </el-form-item>
+              <el-form-item label="邀请码">
+                <el-input :model-value="component.props?.inviteCode || ''" @update:model-value="patchProps({ inviteCode: String($event) })" />
+              </el-form-item>
+              <el-form-item label="二维码图标">
+                <MaUploadImage
+                  :model-value="component.props?.qrcodeIcon || ''"
+                  :size="48"
+                  @update:model-value="patchProps({ qrcodeIcon: Array.isArray($event) ? $event[0] || '' : $event })"
+                />
+              </el-form-item>
+            </template>
+
             <template v-else-if="component.type === 'rich-text'">
               <el-divider>富文本设置</el-divider>
               <el-form-item label="内容">
@@ -967,7 +991,7 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
             <el-divider>容器</el-divider>
             <el-form-item label="外边距">
               <div class="property-panel__edge-grid">
-                <label><span>上</span><el-input-number :model-value="edgeValue(component.style, 'margin', 'top')" :min="0" :max="120" :controls="false" @update:model-value="patchStyleEdge('margin', 'top', $event ?? 0)" /></label>
+                <label><span>上</span><el-input-number :model-value="edgeValue(component.style, 'margin', 'top')" :min="-80" :max="120" :controls="false" @update:model-value="patchStyleEdge('margin', 'top', $event ?? 0)" /></label>
                 <label><span>右</span><el-input-number :model-value="edgeValue(component.style, 'margin', 'right')" :min="0" :max="120" :controls="false" @update:model-value="patchStyleEdge('margin', 'right', $event ?? 0)" /></label>
                 <label><span>下</span><el-input-number :model-value="edgeValue(component.style, 'margin', 'bottom')" :min="0" :max="120" :controls="false" @update:model-value="patchStyleEdge('margin', 'bottom', $event ?? 0)" /></label>
                 <label><span>左</span><el-input-number :model-value="edgeValue(component.style, 'margin', 'left')" :min="0" :max="120" :controls="false" @update:model-value="patchStyleEdge('margin', 'left', $event ?? 0)" /></label>
@@ -985,7 +1009,7 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
             </el-form-item>
             <div class="property-panel__grid">
               <el-form-item label="上边距">
-                <el-input-number :model-value="edgeValue(component.style, 'margin', 'top')" :min="0" :max="80" @update:model-value="patchStyleEdge('margin', 'top', $event ?? 0)" />
+                <el-input-number :model-value="edgeValue(component.style, 'margin', 'top')" :min="-80" :max="80" @update:model-value="patchStyleEdge('margin', 'top', $event ?? 0)" />
               </el-form-item>
               <el-form-item label="下边距">
                 <el-input-number :model-value="edgeValue(component.style, 'margin', 'bottom')" :min="0" :max="80" @update:model-value="patchStyleEdge('margin', 'bottom', $event ?? 0)" />
@@ -1122,7 +1146,22 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
   width: 380px;
   border-left: 1px solid #e5eaf2;
   background: #fff;
+  color: #111827;
   overflow: auto;
+
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+  --el-fill-color-blank: #ffffff;
+  --el-fill-color-light: #f8fafc;
+  --el-border-color: #d8dee9;
+  --el-border-color-light: #e5eaf2;
+  --el-text-color-primary: #111827;
+  --el-text-color-regular: #334155;
+  --el-text-color-secondary: #64748b;
+  --el-input-bg-color: #ffffff;
+  --el-input-border-color: #d8dee9;
+  --el-input-hover-border-color: #b7c2d4;
+  --el-input-focus-border-color: #2563eb;
 }
 
 .property-panel__head {
@@ -1138,6 +1177,59 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
 
 .property-panel__form {
   padding: 16px;
+}
+
+.property-panel :deep(.el-form-item__label) {
+  color: #94a3b8;
+}
+
+.property-panel :deep(.el-input__wrapper),
+.property-panel :deep(.el-textarea__inner),
+.property-panel :deep(.el-select__wrapper),
+.property-panel :deep(.el-input-number .el-input__wrapper) {
+  background: #ffffff;
+  box-shadow: 0 0 0 1px #d8dee9 inset;
+}
+
+.property-panel :deep(.el-input__inner),
+.property-panel :deep(.el-textarea__inner) {
+  color: #111827;
+  -webkit-text-fill-color: #111827;
+}
+
+.property-panel :deep(.el-input__wrapper.is-focus),
+.property-panel :deep(.el-select__wrapper.is-focused),
+.property-panel :deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 1px #2563eb inset;
+}
+
+.property-panel :deep(.el-tabs__item) {
+  color: #94a3b8;
+}
+
+.property-panel :deep(.el-tabs__item.is-active) {
+  color: #2563eb;
+}
+
+.property-panel :deep(.el-divider__text) {
+  background: #ffffff;
+  color: #111827;
+}
+
+.property-panel :deep(.ma-upload-container) {
+  border-color: #d8dee9;
+  background: #f8fafc;
+  color: #64748b;
+}
+
+.property-panel :deep(.ma-upload-placeholder__text) {
+  color: #64748b;
+}
+
+.property-panel :deep(.ma-resource-btn) {
+  border-color: #d8dee9;
+  background: rgba(255, 255, 255, 0.96);
+  color: #64748b;
 }
 
 .property-panel__grid {

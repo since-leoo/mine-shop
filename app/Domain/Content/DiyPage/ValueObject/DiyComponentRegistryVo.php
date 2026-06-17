@@ -51,6 +51,10 @@ final class DiyComponentRegistryVo
         'product-rank',
         'search-bar',
         'shop-info',
+        'user-profile-header',
+        'user-stats',
+        'user-order-panel',
+        'user-menu-list',
         'rich-text',
         'image-cube',
     ];
@@ -157,6 +161,9 @@ final class DiyComponentRegistryVo
             'product-rank' => self::assertProductRank($props, $data),
             'search-bar' => self::assertSearchBar($props),
             'image-cube' => self::assertImageCube($props, $data),
+            'user-stats' => self::assertItemsLimit($data, 8, '用户统计最多8项'),
+            'user-order-panel' => self::assertItemsLimit($data, 10, '订单入口最多10项'),
+            'user-menu-list' => self::assertItemsLimit($data, 10, '用户菜单最多10项'),
             default => null,
         };
 

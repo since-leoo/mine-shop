@@ -54,3 +54,55 @@
   color: #047857;
   font-size: 20px;
 }
+
+.diy-shop-info--user-profile {
+  margin: 0;
+  border-radius: 0 0 60rpx 60rpx;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -80rpx;
+    top: 40rpx;
+    width: 360rpx;
+    height: 360rpx;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.08);
+  }
+}
+
+.diy-shop-info--user-profile .diy-shop-info__logo {
+  width: 128rpx;
+  height: 128rpx;
+  margin-right: 28rpx;
+  border: 6rpx solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+}
+
+.diy-shop-info--user-profile .diy-shop-info__body {
+  position: relative;
+  z-index: 1;
+}
+
+.diy-shop-info--user-profile .diy-shop-info__name {
+  color: #fff;
+  font-size: 40rpx;
+  line-height: 48rpx;
+  font-weight: 800;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.diy-shop-info--user-profile .diy-shop-info__desc {
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.diy-shop-info--user-profile .diy-shop-info__tags {
+  display: none;
+}

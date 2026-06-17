@@ -345,6 +345,92 @@ export const componentRegistry: DiyComponentMeta[] = [
     }),
   },
   {
+    type: 'user-profile-header',
+    name: '用户头部',
+    icon: 'ph:user-circle',
+    description: '会员中心头像、昵称和邀请码头部',
+    category: 'user',
+    orientation: 'horizontal',
+    defaults: () => component('user-profile-header', '用户头部', {}, {
+      nickname: '小花花',
+      inviteCode: 'WARM2026',
+      avatar: '',
+      qrcodeIcon: 'assets/usercenter/profile-qrcode.svg',
+    }, {
+      padding: { top: 96, right: 28, bottom: 38, left: 28 },
+      background: 'linear-gradient(180deg, var(--diy-primary-color) 0%, color-mix(in srgb, var(--diy-primary-color) 62%, #ffffff) 72%, var(--diy-page-background-color) 100%)',
+      color: '#FFFFFF',
+      borderRadius: { bottomLeft: 30, bottomRight: 30 },
+    }),
+  },
+  {
+    type: 'user-stats',
+    name: '用户资产',
+    icon: 'ph:chart-bar',
+    description: '优惠券、积分、余额、收藏等资产统计',
+    category: 'user',
+    orientation: 'horizontal',
+    defaults: () => component('user-stats', '用户资产', {
+      items: [
+        { label: '优惠券', value: '3', link: { type: 'page', path: '/pages/coupon/coupon-list/index' } },
+        { label: '积分', value: '520', link: { type: 'page', path: '/pages/usercenter/index' } },
+        { label: '余额', value: '¥88', link: { type: 'page', path: '/pages/usercenter/wallet-transactions/index' } },
+        { label: '收藏', value: '12', link: { type: 'page', path: '/pages/usercenter/index' } },
+      ],
+    }, {}, {
+      margin: { top: -20, right: 20, bottom: 14, left: 20 },
+      padding: { top: 0, right: 0, bottom: 14, left: 0 },
+      background: '#FFFFFF',
+      borderRadius: 16,
+      position: 'relative',
+      zIndex: 2,
+    }),
+  },
+  {
+    type: 'user-order-panel',
+    name: '我的订单',
+    icon: 'ph:receipt',
+    description: '会员中心订单状态入口',
+    category: 'user',
+    orientation: 'horizontal',
+    defaults: () => component('user-order-panel', '我的订单', {
+      items: [
+        { label: '待付款', icon: 'assets/usercenter/order-pay.svg', badge: true, link: { type: 'page', path: '/pages/order/order-list/index', params: { tabType: 5 } } },
+        { label: '待发货', icon: 'assets/usercenter/order-deliver.svg', link: { type: 'page', path: '/pages/order/order-list/index', params: { tabType: 10 } } },
+        { label: '待收货', icon: 'assets/usercenter/order-receive.svg', link: { type: 'page', path: '/pages/order/order-list/index', params: { tabType: 40 } } },
+        { label: '待评价', icon: 'assets/usercenter/order-review.svg', link: { type: 'page', path: '/pages/order/order-list/index', params: { tabType: 60 } } },
+        { label: '退换/售后', icon: 'assets/usercenter/order-service.svg', link: { type: 'page', path: '/pages/order/after-service-list/index' } },
+      ],
+    }, {
+      title: '我的订单',
+      moreText: '全部订单',
+      moreLink: { type: 'page', path: '/pages/order/order-list/index' },
+    }, {
+      margin: { top: 0, right: 20, bottom: 14, left: 20 },
+      background: '#FFFFFF',
+      borderRadius: 14,
+    }),
+  },
+  {
+    type: 'user-menu-list',
+    name: '用户菜单',
+    icon: 'ph:list',
+    description: '收货地址、优惠券、钱包、客服等列表入口',
+    category: 'user',
+    orientation: 'vertical',
+    defaults: () => component('user-menu-list', '用户菜单', {
+      items: [
+        { label: '收货地址', icon: 'assets/usercenter/menu-address.svg', link: { type: 'page', path: '/pages/user/address/list/index' } },
+        { label: '优惠券', value: '3张可用', icon: 'assets/usercenter/menu-coupon.svg', link: { type: 'page', path: '/pages/coupon/coupon-list/index' } },
+        { label: '我的钱包', icon: 'assets/usercenter/menu-wallet.svg', link: { type: 'page', path: '/pages/usercenter/wallet-transactions/index' } },
+      ],
+    }, {}, {
+      margin: { top: 0, right: 20, bottom: 14, left: 20 },
+      background: '#FFFFFF',
+      borderRadius: 14,
+    }),
+  },
+  {
     type: 'rich-text',
     name: '富文本',
     icon: 'ph:text-align-left',

@@ -13,6 +13,21 @@
   }
 }
 
+.cart-page--diy {
+  display: flex;
+  flex-direction: column;
+}
+
+.cart-page__diy-body {
+  flex: 1;
+  min-height: 0;
+  background: $warm-bg-page;
+
+  .diy-renderer {
+    min-height: 100%;
+  }
+}
+
 .cart-empty {
   width: 100%;
   display: flex;

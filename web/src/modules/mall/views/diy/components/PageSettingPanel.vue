@@ -77,6 +77,12 @@ function applyDesignBackground() {
           @update:model-value="patchPageStyle({ background: String($event) })"
         />
       </el-form-item>
+      <el-form-item label="贯穿顶部">
+        <el-switch
+          :model-value="pageStyle.topTransparent === true"
+          @update:model-value="patchPageStyle({ topTransparent: Boolean($event) })"
+        />
+      </el-form-item>
       <el-button class="page-setting-panel__background-action" @click="applyDesignBackground">
         使用设计稿背景
       </el-button>

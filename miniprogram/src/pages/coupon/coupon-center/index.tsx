@@ -1,9 +1,13 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { fetchAvailableCoupons, receiveCoupon } from '../../../services/coupon';
+import { currentDiyPageType, fetchDiyPage } from '../../../services/diy/page';
 import CouponNav from '../../../components/coupon-nav';
 import { isH5 } from '../../../common/platform';
+import DiyRenderer from '../../../components/diy-renderer';
+import { DiyPagePayload } from '../../../components/diy-renderer/types';
+import { diyStyle } from '../../../components/diy-renderer/style';
 import './index.scss';
 
 interface CouponItem {
@@ -28,11 +32,23 @@ function buildTimeLimit(startTime?: string, endTime?: string): string {
 export default function CouponCenter() {
   const [couponList, setCouponList] = useState<CouponItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
 
   const loadList = useCallback(() => {
     setLoading(true);
-    fetchAvailableCoupons()
+    fetchDiyPage('coupon-center', currentDiyPageType())
+      .then((publishedDiyPage) => {
+        if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+          setDiyPage(publishedDiyPage);
+          setCouponList([]);
+          return null;
+        }
+
+        setDiyPage(null);
+        return fetchAvailableCoupons();
+      })
       .then((list: any) => {
+        if (list === null) return;
         const mapped = (list || []).map((item: any) => ({
           id: item.couponId || item.id || '',
           title: item.name || item.title || '',
@@ -92,6 +108,18 @@ export default function CouponCenter() {
     }
     return '无门槛';
   };
+  const pageStyle = useMemo(() => diyPage?.page ? diyStyle(diyPage.page.style || {}) : {}, [diyPage]);
+
+  if (diyPage?.page && diyPage.components.length > 0) {
+    return (
+      <View className={`coupon-page coupon-center-page coupon-center-page--diy ${isH5() ? 'coupon-center-page--h5' : ''}`}>
+        <CouponNav title={diyPage.page.title || '领券中心'} />
+        <View className="coupon-center-page__diy-body" style={pageStyle}>
+          <DiyRenderer page={diyPage} transparent />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View className={`coupon-page coupon-center-page ${isH5() ? 'coupon-center-page--h5' : ''}`}>

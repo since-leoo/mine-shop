@@ -1,33 +1,36 @@
 .diy-coupon-group {
-  margin: 12px 24px;
+  margin: 24rpx 48rpx;
 }
 
 .diy-coupon-group__title {
-  margin-bottom: 12px;
-  font-size: 30px;
-  line-height: 38px;
+  margin-bottom: 24rpx;
+  font-size: 32rpx;
+  line-height: 40rpx;
   font-weight: 600;
   color: #1f2429;
 }
 
 .diy-coupon-group__list {
   display: flex;
-  gap: 12px;
+  gap: 24rpx;
   overflow-x: auto;
 }
 
 .diy-coupon-group__item {
   flex: 0 0 220px;
   min-width: 0;
-  padding: 16px 12px;
-  border-radius: 14px;
-  background: #fff1f2;
-  color: #e11d48;
+  padding: 24rpx 22rpx;
+  border-radius: 24rpx;
+  background: linear-gradient(135deg, #fff7f1 0%, #ffe7db 100%);
+  color: var(--diy-primary-color, #E8836B);
+  box-shadow: 0 4rpx 16rpx rgba(200, 140, 110, 0.08);
+  box-sizing: border-box;
 }
 
 .diy-coupon-group--two-column .diy-coupon-group__list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20rpx;
   overflow: visible;
 }
 
@@ -37,25 +40,27 @@
 
 .diy-coupon-group__amount {
   display: block;
-  font-size: 34px;
-  line-height: 40px;
-  font-weight: 700;
+  font-size: 48rpx;
+  line-height: 56rpx;
+  font-weight: 800;
 }
 
 .diy-coupon-group__name {
   display: block;
-  margin-top: 6px;
+  margin-top: 10rpx;
   overflow: hidden;
-  font-size: 20px;
-  line-height: 26px;
+  color: #4a3228;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  font-weight: 700;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
 
 .diy-coupon-group__condition {
   display: block;
-  margin-top: 4px;
-  color: #fb7185;
-  font-size: 18px;
-  line-height: 24px;
+  margin-top: 8rpx;
+  color: #9a5f4d;
+  font-size: 20rpx;
+  line-height: 28rpx;
 }

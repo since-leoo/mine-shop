@@ -31,3 +31,13 @@
   width: 260rpx;
   flex: 0 0 260rpx;
 }
+
+.diy-image-ad--coupon-hero {
+  margin: 24rpx 32rpx 20rpx;
+  border-radius: 48rpx;
+  box-shadow: 0 8rpx 24rpx rgba(200, 140, 110, 0.10);
+}
+
+.diy-image-ad--coupon-hero .diy-image-ad__image {
+  border-radius: 48rpx;
+}

@@ -18,6 +18,10 @@ import RichText from '../diy/RichText';
 import ImageCube from '../diy/ImageCube';
 import MarketingEntry from '../diy/MarketingEntry';
 import CategoryPanel from '../diy/CategoryPanel';
+import UserProfileHeader from '../diy/UserProfileHeader';
+import UserStats from '../diy/UserStats';
+import UserOrderPanel from '../diy/UserOrderPanel';
+import UserMenuList from '../diy/UserMenuList';
 import { diyStyle, handleComponentClick } from './style';
 import './index.scss';
 
@@ -46,6 +50,10 @@ const registry: Record<string, (component: DiyComponent) => JSX.Element | null> 
   'image-cube': (component) => <ImageCube component={component} />,
   'marketing-entry': (component) => <MarketingEntry component={component} />,
   'category-panel': (component) => <CategoryPanel component={component} />,
+  'user-profile-header': (component) => <UserProfileHeader component={component} />,
+  'user-stats': (component) => <UserStats component={component} />,
+  'user-order-panel': (component) => <UserOrderPanel component={component} />,
+  'user-menu-list': (component) => <UserMenuList component={component} />,
 };
 
 export function renderDiyComponent(component: DiyComponent): JSX.Element | null {
@@ -78,6 +86,7 @@ export default function DiyRenderer({ page, className = '', transparent = false 
         ...rendererStyle,
         '--diy-primary-color': theme.primaryColor,
         '--diy-price-color': theme.priceColor,
+        '--diy-page-background-color': theme.backgroundColor,
         '--diy-card-radius': `${theme.cardRadius}px`,
       } as Record<string, string>}
     >

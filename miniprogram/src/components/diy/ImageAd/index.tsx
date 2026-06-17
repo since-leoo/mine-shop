@@ -12,12 +12,16 @@ export default function ImageAd({ component }: Props) {
   const items = component.data?.items || [];
   if (items.length === 0) return null;
   const layout = component.props?.layout || 'single';
+  const variant = component.props?.variant || '';
   const limit = layout === 'single' ? 1 : 4;
   const hasSchemaMargin = Boolean(component.style?.margin || component.style?.marginLeft || component.style?.marginRight);
   const outerStyle = hasSchemaMargin ? imageOuterStyle({ ...component.props, widthMode: 'full' }) : imageOuterStyle(component.props);
 
   return (
-    <View className={`diy-image-ad diy-image-ad--${layout}`} style={{ ...outerStyle, ...diyComponentStyle(component) }}>
+    <View
+      className={`diy-image-ad diy-image-ad--${layout} ${variant ? `diy-image-ad--${variant}` : ''}`}
+      style={{ ...outerStyle, ...diyComponentStyle(component) }}
+    >
       {items.slice(0, limit).map((item, index) => {
         const image = imageOf(item);
         if (!image) return null;

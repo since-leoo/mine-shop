@@ -73,4 +73,56 @@ final class DiyTemplateSeederTest extends TestCase
             self::assertSame('100%', $page['schema']['components'][0]['style']['height'] ?? null);
         }
     }
+
+    public function testDefaultSubPagesFollowDesignDraftStructure(): void
+    {
+        require_once BASE_PATH . '/databases/seeders/support/DefaultDiyPageSchemas.php';
+
+        $pages = [];
+        foreach (\DefaultDiyPageSchemas::all() as $page) {
+            $pages[$page['page_key']][] = $page;
+        }
+
+        foreach (['cart', 'usercenter', 'coupon-center'] as $pageKey) {
+            self::assertArrayHasKey($pageKey, $pages);
+        }
+
+        foreach ($pages['cart'] as $page) {
+            self::assertSame(
+                ['title-bar', 'rich-text', 'quick-nav', 'title-bar', 'product-group'],
+                array_column($page['schema']['components'], 'type')
+            );
+            self::assertSame('#FFFFFF', $page['schema']['components'][1]['style']['backgroundColor'] ?? null);
+            self::assertSame(24, $page['schema']['components'][1]['style']['borderRadius'] ?? null);
+        }
+
+        foreach ($pages['usercenter'] as $page) {
+            self::assertSame(
+                ['user-profile-header', 'user-stats', 'user-order-panel', 'user-menu-list', 'user-menu-list'],
+                array_column($page['schema']['components'], 'type')
+            );
+            self::assertTrue($page['schema']['page']['style']['topTransparent'] ?? false);
+            self::assertSame(['bottomLeft' => 30, 'bottomRight' => 30], $page['schema']['components'][0]['style']['borderRadius'] ?? null);
+            self::assertSame(-20, $page['schema']['components'][1]['style']['margin']['top'] ?? null);
+            self::assertSame(16, $page['schema']['components'][1]['style']['borderRadius'] ?? null);
+            foreach (array_slice($page['schema']['components'], 1) as $component) {
+                self::assertSame(20, $component['style']['margin']['right'] ?? null);
+                self::assertSame(20, $component['style']['margin']['left'] ?? null);
+            }
+            self::assertSame('小花花', $page['schema']['components'][0]['props']['nickname'] ?? null);
+            self::assertSame(['优惠券', '积分', '余额', '收藏'], array_column($page['schema']['components'][1]['data']['items'] ?? [], 'label'));
+            self::assertSame(['待付款', '待发货', '待收货', '待评价', '退换/售后'], array_column($page['schema']['components'][2]['data']['items'] ?? [], 'label'));
+            self::assertSame(['收货地址', '优惠券', '我的钱包'], array_column($page['schema']['components'][3]['data']['items'] ?? [], 'label'));
+            self::assertSame(['联系客服', '设置'], array_column($page['schema']['components'][4]['data']['items'] ?? [], 'label'));
+        }
+
+        foreach ($pages['coupon-center'] as $page) {
+            self::assertSame(
+                ['image-ad', 'coupon-group', 'title-bar', 'product-group'],
+                array_column($page['schema']['components'], 'type')
+            );
+            self::assertSame('coupon-hero', $page['schema']['components'][0]['props']['variant'] ?? null);
+            self::assertSame('two-column', $page['schema']['components'][1]['props']['layout'] ?? null);
+        }
+    }
 }
