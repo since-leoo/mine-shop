@@ -28,3 +28,5 @@ web/*.lock
 docs/superpowers
 .worktrees/
 web/.codex
+miniprogram/.codex
+.codex
