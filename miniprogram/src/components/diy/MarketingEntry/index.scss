@@ -1,0 +1,76 @@
+.diy-marketing-entry {
+  margin: 0 32rpx 18rpx;
+  padding: 24rpx 28rpx 28rpx;
+  background: #ffffff;
+  border-radius: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba(200, 140, 110, 0.08);
+  box-sizing: border-box;
+}
+
+.diy-marketing-entry__head {
+  margin-bottom: 18rpx;
+  display: flex;
+  align-items: center;
+}
+
+.diy-marketing-entry__mark {
+  width: 8rpx;
+  height: 28rpx;
+  margin-right: 12rpx;
+  border-radius: 8rpx;
+  background: var(--diy-primary-color, #e8836b);
+}
+
+.diy-marketing-entry__title {
+  color: #3a2a22;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 38rpx;
+}
+
+.diy-marketing-entry__grid {
+  display: flex;
+  min-width: 0;
+}
+
+.diy-marketing-entry__card {
+  min-width: 0;
+  min-height: 134rpx;
+  padding: 18rpx 20rpx;
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.diy-marketing-entry__card-title,
+.diy-marketing-entry__subtitle,
+.diy-marketing-entry__badge {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diy-marketing-entry__card-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 38rpx;
+}
+
+.diy-marketing-entry__subtitle {
+  margin-top: 6rpx;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  opacity: 0.9;
+}
+
+.diy-marketing-entry__badge {
+  margin-top: 14rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 30rpx;
+}

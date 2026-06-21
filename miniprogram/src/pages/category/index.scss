@@ -7,7 +7,7 @@
 .category-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  min-height: 100vh;
   overflow: hidden;
 
   &__body {
@@ -20,26 +20,31 @@
 }
 
 .category-page--diy {
+  height: 100vh;
   background: #FFF5EE;
 }
 
 .category-page__body--diy {
+  flex: 1 1 0;
   min-height: 0;
   padding: 0;
 
   .diy-renderer {
     width: 100%;
     height: 100%;
-    min-height: 0;
+    min-height: 100%;
     padding-bottom: 0;
     box-sizing: border-box;
+    overflow: hidden;
   }
 
   .diy-renderer__item {
     height: 100%;
+    min-height: 0;
   }
 
   .diy-category-panel {
+    height: 100%;
     margin-bottom: 0;
   }
 }

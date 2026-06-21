@@ -1,0 +1,39 @@
+.diy-user-stats {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  box-sizing: border-box;
+}
+
+.diy-user-stats__item {
+  min-width: 0;
+  padding: 2rpx 0 14rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diy-user-stats__value,
+.diy-user-stats__label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diy-user-stats__value {
+  color: var(--diy-primary-color, #E8836B);
+  font-size: 34rpx;
+  line-height: 42rpx;
+  font-weight: 800;
+}
+
+.diy-user-stats__label {
+  margin-top: 8rpx;
+  color: var(--diy-primary-color, #E8836B);
+  font-size: 22rpx;
+  line-height: 30rpx;
+  opacity: 0.68;
+}

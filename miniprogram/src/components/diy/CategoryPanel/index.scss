@@ -1,0 +1,123 @@
+.diy-category-panel {
+  margin: 0 0 18rpx;
+  min-height: 620rpx;
+  display: flex;
+  overflow: hidden;
+  background: #fff5ee;
+  box-sizing: border-box;
+}
+
+.diy-category-panel__sidebar {
+  width: 176rpx;
+  height: 100%;
+  flex-shrink: 0;
+  background: #fff5ee;
+}
+
+.diy-category-panel__tab {
+  min-height: 96rpx;
+  padding: 0 10rpx;
+  border-left: 6rpx solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.diy-category-panel__tab--active {
+  border-left-color: var(--diy-primary-color, #e8836b);
+  background: #ffffff;
+}
+
+.diy-category-panel__tab--active .diy-category-panel__tab-text {
+  color: var(--diy-primary-color, #e8836b);
+  font-weight: 700;
+}
+
+.diy-category-panel__tab-text {
+  max-width: 130rpx;
+  color: #8b6f63;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 34rpx;
+  text-align: center;
+  word-break: break-all;
+}
+
+.diy-category-panel__content {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 20rpx 24rpx 28rpx;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.diy-category-panel__head {
+  padding: 12rpx 0 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.diy-category-panel__mark {
+  width: 6rpx;
+  height: 28rpx;
+  border-radius: 4rpx;
+  background: var(--diy-primary-color, #e8836b);
+}
+
+.diy-category-panel__title {
+  color: #3a2a22;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 36rpx;
+}
+
+.diy-category-panel__grid {
+  display: grid;
+  gap: 20rpx;
+}
+
+.diy-category-panel__card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.diy-category-panel__image-wrap {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10rpx;
+  overflow: hidden;
+  background: #fff1e8;
+}
+
+.diy-category-panel__image {
+  width: 100%;
+  height: 100%;
+}
+
+.diy-category-panel__name {
+  width: 100%;
+  margin-top: 12rpx;
+  overflow: hidden;
+  color: #6b5248;
+  font-size: 22rpx;
+  line-height: 30rpx;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diy-category-panel__empty {
+  padding: 160rpx 0;
+  display: flex;
+  justify-content: center;
+}
+
+.diy-category-panel__empty-text {
+  color: #b29a90;
+  font-size: 24rpx;
+}

@@ -251,6 +251,16 @@ function px(value: any) {
   return typeof value === 'number' ? `${value}px` : String(value)
 }
 
+function pickStyleValue(source: Record<string, any>, keys: string[]) {
+  for (const key of keys) {
+    if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+      return source[key]
+    }
+  }
+
+  return undefined
+}
+
 function edgeStyle(style: Record<string, any>, key: 'margin' | 'padding') {
   const value = style[key]
   const capitalized = key === 'margin' ? 'Margin' : 'Padding'
@@ -273,22 +283,22 @@ function edgeStyle(style: Record<string, any>, key: 'margin' | 'padding') {
 }
 
 function radiusStyle(style: Record<string, any>) {
-  const value = style.borderRadius
+  const value = pickStyleValue(style, ['borderRadius', 'border_radius', 'border-radius'])
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     return {
-      borderTopLeftRadius: px(value.topLeft),
-      borderTopRightRadius: px(value.topRight),
-      borderBottomRightRadius: px(value.bottomRight),
-      borderBottomLeftRadius: px(value.bottomLeft),
+      borderTopLeftRadius: px(pickStyleValue(value, ['topLeft', 'top_left', 'top-left'])),
+      borderTopRightRadius: px(pickStyleValue(value, ['topRight', 'top_right', 'top-right'])),
+      borderBottomRightRadius: px(pickStyleValue(value, ['bottomRight', 'bottom_right', 'bottom-right'])),
+      borderBottomLeftRadius: px(pickStyleValue(value, ['bottomLeft', 'bottom_left', 'bottom-left'])),
     }
   }
 
   return {
     borderRadius: px(value),
-    borderTopLeftRadius: px(style.borderTopLeftRadius),
-    borderTopRightRadius: px(style.borderTopRightRadius),
-    borderBottomRightRadius: px(style.borderBottomRightRadius),
-    borderBottomLeftRadius: px(style.borderBottomLeftRadius),
+    borderTopLeftRadius: px(pickStyleValue(style, ['borderTopLeftRadius', 'border_top_left_radius', 'border-top-left-radius'])),
+    borderTopRightRadius: px(pickStyleValue(style, ['borderTopRightRadius', 'border_top_right_radius', 'border-top-right-radius'])),
+    borderBottomRightRadius: px(pickStyleValue(style, ['borderBottomRightRadius', 'border_bottom_right_radius', 'border-bottom-right-radius'])),
+    borderBottomLeftRadius: px(pickStyleValue(style, ['borderBottomLeftRadius', 'border_bottom_left_radius', 'border-bottom-left-radius'])),
   }
 }
 

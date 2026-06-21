@@ -124,6 +124,57 @@ function patchStyleEdge(key: 'margin' | 'padding', side: 'top' | 'right' | 'bott
   patchStyle({ [key]: next })
 }
 
+function pickValue(source: Record<string, any>, keys: string[]) {
+  for (const key of keys) {
+    if (source[key] !== undefined && source[key] !== null && source[key] !== '') {
+      return source[key]
+    }
+  }
+
+  return undefined
+}
+
+function toFiniteNumber(value: any) {
+  const next = Number(value)
+  return Number.isFinite(next) ? next : undefined
+}
+
+function radiusCornerValue(radius: Record<string, any>, side: 'top' | 'bottom', corner: 'Left' | 'Right') {
+  const cornerName = corner.toLowerCase()
+  return toFiniteNumber(pickValue(radius, [
+    `${side}${corner}`,
+    `${side}_${cornerName}`,
+    `${side}-${cornerName}`,
+  ]))
+}
+
+function radiusSideValue(side: 'top' | 'bottom') {
+  const radius = props.component?.style?.borderRadius
+  if (radius && typeof radius === 'object' && !Array.isArray(radius)) {
+    return radiusCornerValue(radius, side, 'Left') ?? radiusCornerValue(radius, side, 'Right') ?? 0
+  }
+
+  return toFiniteNumber(radius) ?? 0
+}
+
+function patchRadiusSide(side: 'top' | 'bottom', value: number | undefined) {
+  const current = props.component?.style?.borderRadius
+  const currentRadius = toFiniteNumber(current) ?? 0
+  const next = current && typeof current === 'object' && !Array.isArray(current)
+    ? { ...current }
+    : {
+        topLeft: currentRadius,
+        topRight: currentRadius,
+        bottomLeft: currentRadius,
+        bottomRight: currentRadius,
+      }
+
+  const radius = value ?? 0
+  next[`${side}Left`] = radius
+  next[`${side}Right`] = radius
+  patchStyle({ borderRadius: next })
+}
+
 function listPaddingValue(side: 'top' | 'right' | 'bottom' | 'left') {
   return edgeValue({ padding: props.component?.props?.listPadding }, 'padding', side)
 }
@@ -1022,8 +1073,11 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
                   @update:model-value="patchStyle({ padding: { top: $event ?? 0, right: $event ?? 0, bottom: $event ?? 0, left: $event ?? 0 } })"
                 />
               </el-form-item>
-              <el-form-item label="圆角">
-                <el-input-number :model-value="component.style?.borderRadius || 0" :min="0" :max="40" @update:model-value="patchStyle({ borderRadius: $event || 0 })" />
+              <el-form-item label="顶部圆角">
+                <el-input-number :model-value="radiusSideValue('top')" :min="0" :max="40" @update:model-value="patchRadiusSide('top', $event ?? 0)" />
+              </el-form-item>
+              <el-form-item label="底部圆角">
+                <el-input-number :model-value="radiusSideValue('bottom')" :min="0" :max="40" @update:model-value="patchRadiusSide('bottom', $event ?? 0)" />
               </el-form-item>
             </div>
             <template v-if="component.type === 'product-group'">
