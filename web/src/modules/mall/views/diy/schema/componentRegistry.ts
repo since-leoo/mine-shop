@@ -244,7 +244,7 @@ export const componentRegistry: DiyComponentMeta[] = [
           badge: '距下一场 02:18:45',
           background: '#F0A18E',
           color: '#FFFFFF',
-          link: { type: 'page', path: '/pages/promotion/seckill/index' },
+          link: { type: 'page', path: '/pages/promotion/detail/index' },
         },
         {
           title: '拼团会场',

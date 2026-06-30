@@ -283,7 +283,7 @@ class DiyTemplateSeeder20260606 extends Seeder
             ] : [],
             'data' => [
                 'items' => [
-                    $this->marketingEntryItem('秒杀专场', '点击进入专题页', '距下一场 02:18:45', '/pages/promotion/seckill/index', '#F0A18E'),
+                    $this->marketingEntryItem('秒杀专场', '点击进入专题页', '距下一场 02:18:45', '/pages/promotion/detail/index', '#F0A18E'),
                     $this->marketingEntryItem('拼团会场', '精选团购每天上新', '3人团最低5折起', '/pages/promotion/group-buy/index', '#86BFA9'),
                 ],
             ],

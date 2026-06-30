@@ -27,14 +27,18 @@ describe('DIY 链接解析', () => {
     expect(resolveDiyLink({ type: 'group_buy', id: 12 })).toBe('/pages/promotion/group-buy/index?id=12');
   });
 
+  it('解析秒杀链接到活动详情页', () => {
+    expect(resolveDiyLink({ type: 'seckill', id: 21 })).toBe('/pages/promotion/detail/index?activityId=21');
+  });
+
   it('未知链接类型会被忽略', () => {
     expect(resolveDiyLink({ type: 'unknown', id: 1 })).toBe('');
   });
 
-  it('存在有效链接时调用 Taro 跳转', () => {
+  it('分类链接跳到分类商品列表页', () => {
     navigateDiyLink({ type: 'category', id: 9 });
 
-    expect(Taro.navigateTo).toHaveBeenCalledWith({ url: '/pages/goods/result/index?categoryId=9' });
+    expect(Taro.navigateTo).toHaveBeenCalledWith({ url: '/pages/goods/list/index?categoryId=9' });
   });
 
   it('tab 页面链接使用 switchTab', () => {

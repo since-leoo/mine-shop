@@ -38,7 +38,7 @@ export function resolveDiyLink(link?: DiyLink): string {
   }
 
   if (link.type === 'category' && link.id) {
-    return `/pages/goods/result/index?categoryId=${link.id}`;
+    return `/pages/goods/list/index?categoryId=${link.id}`;
   }
 
   if (link.type === 'coupon') {

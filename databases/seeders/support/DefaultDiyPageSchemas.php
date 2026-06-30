@@ -176,7 +176,7 @@ final class DefaultDiyPageSchemas
             'cardRadius' => 10,
         ], [
             'items' => [
-                self::marketingEntryItem('秒杀专场', '点击进入专题页', '距下一场 02:18:45', '/pages/promotion/seckill/index', '#F0A18E'),
+                self::marketingEntryItem('秒杀专场', '点击进入专题页', '距下一场 02:18:45', '/pages/promotion/detail/index', '#F0A18E'),
                 self::marketingEntryItem('拼团会场', '精选团购每天上新', '3人团最低5折起', '/pages/promotion/group-buy/index', '#86BFA9'),
             ],
         ], self::homeOnlyStyle($id, [
