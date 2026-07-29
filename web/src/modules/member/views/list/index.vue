@@ -569,31 +569,44 @@ const openCreate = async () => {
 }
 
 const openEdit = async (row: MallMember) => {
-  await ensureGeoTree()
-  isCreateMode.value = false
-  Object.assign(editForm, {
-    id: row.id,
-    nickname: row.nickname || '',
-    phone: row.phone || '',
-    gender: (row.gender as 'unknown' | 'male' | 'female') || 'unknown',
-    level: row.level || 'bronze',
-    growth_value: row.growth_value ?? 0,
-    status: row.status || 'active',
-    source: row.source || 'admin',
-    remark: row.remark || '',
-    province: row.province || '',
-    city: row.city || '',
-    district: row.district || '',
-    street: row.street || '',
-    region_path: row.region_path || '',
-    country: row.country || '中国',
-  })
-  const codes = row.region_path ? row.region_path.split('|').filter(Boolean) : []
-  editForm.regionCodes = codes
-  if (codes.length)
-    applyRegionSelection(codes)
+  editLoading.value = true
+  try {
+    const [, res] = await Promise.all([
+      ensureGeoTree(),
+      memberApi.detail(row.id),
+    ])
+    const member = res.data
+    isCreateMode.value = false
+    Object.assign(editForm, {
+      id: member.id,
+      nickname: member.nickname || '',
+      phone: member.phone || '',
+      gender: (member.gender as 'unknown' | 'male' | 'female') || 'unknown',
+      level: member.level || 'bronze',
+      growth_value: member.growth_value ?? 0,
+      status: member.status || 'active',
+      source: member.source || 'admin',
+      remark: member.remark || '',
+      province: member.province || '',
+      city: member.city || '',
+      district: member.district || '',
+      street: member.street || '',
+      region_path: member.region_path || '',
+      country: member.country || '中国',
+    })
+    const codes = member.region_path ? member.region_path.split('|').filter(Boolean) : []
+    editForm.regionCodes = codes
+    if (codes.length)
+      applyRegionSelection(codes)
 
-  editVisible.value = true
+    editVisible.value = true
+  }
+  catch (error: any) {
+    ElMessage.error(error?.message || t('member.list.loadDetailFailed'))
+  }
+  finally {
+    editLoading.value = false
+  }
 }
 
 const applyRegionSelection = (codes?: (string | number)[]) => {

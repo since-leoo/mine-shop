@@ -28,7 +28,7 @@ export default function Banner({ component }: Props) {
   );
 
   return (
-    <View className="diy-banner" style={{ ...imageStyle, ...diyComponentStyle(component) }}>
+    <View className="diy-banner" style={{ ...diyComponentStyle(component), ...imageStyle }}>
       {fallback}
       {imageItems.length > 0 ? (
         <Swiper className="diy-banner__swiper" autoplay={component.props?.autoplay !== false} circular indicatorDots>

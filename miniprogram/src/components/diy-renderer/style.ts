@@ -1,6 +1,7 @@
 import { DiyComponent, DiyLink } from './types';
 import { navigateDiyLink } from './link';
 import { resolveDiyAsset } from './assets';
+import { isH5 } from '../../common/platform';
 
 type StyleValue = string | number | undefined;
 type StyleRecord = Record<string, any>;
@@ -12,13 +13,16 @@ function definedStyle(style: Record<string, StyleValue>): Record<string, StyleVa
 }
 
 function cssValue(value: string): string {
-  return value.replace(/(-?\d*\.?\d+)px\b/g, (_, amount: string) => `${Number(amount) * 2}rpx`);
+  return value.replace(/(-?\d*\.?\d+)px\b/gi, (_, amount: string) => (
+    isH5() ? `${Number(amount)}PX` : `${Number(amount) * 2}rpx`
+  ));
 }
 
 function schemaSize(value: any): string | undefined {
   if (value === undefined || value === null || value === '') return undefined;
   const amount = Number(value);
-  return Number.isFinite(amount) ? `${amount * 2}rpx` : undefined;
+  if (!Number.isFinite(amount)) return undefined;
+  return isH5() ? `${amount}PX` : `${amount * 2}rpx`;
 }
 
 function schemaValue(value: any): string | undefined {

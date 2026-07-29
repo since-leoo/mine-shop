@@ -611,7 +611,7 @@ export default function Home() {
     return (
       <View className="home home--diy" style={diyPageStyle}>
         <View className="home-top-bg home-top-bg--diy">
-          <PageNav showBack={false} showTitle={false} light background="transparent" />
+          {!isH5() ? <PageNav showBack={false} showTitle={false} light background="transparent" /> : null}
           <DiyRenderer page={diyPage} transparent />
         </View>
         {isH5() ? <H5TabBar current="/pages/home/index" /> : null}

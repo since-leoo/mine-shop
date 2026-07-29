@@ -64,12 +64,12 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     private function assertCanSend(string $phone, string $scene): void
     {
         if ($this->redis()->get($this->resendKey($phone, $scene)) !== null) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
+            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
         }
 
         $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);
         if ($dailyCount >= self::DAILY_LIMIT) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
+            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
         }
     }
 

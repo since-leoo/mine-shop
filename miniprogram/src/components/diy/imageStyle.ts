@@ -1,4 +1,9 @@
 import { DiyImageProps } from '../diy-renderer/types';
+import { isH5 } from '../../common/platform';
+
+function platformSize(value: number): string {
+  return isH5() ? `${value}PX` : `${value * 2}rpx`;
+}
 
 export function imageMode(objectFit?: string): 'aspectFill' | 'aspectFit' | 'scaleToFill' {
   if (objectFit === 'contain') return 'aspectFit';
@@ -23,7 +28,10 @@ export function imageOuterStyle(props?: DiyImageProps): Record<string, string | 
     style.marginLeft = '32rpx';
     style.marginRight = '32rpx';
   } else if (widthMode === 'custom') {
-    style.width = widthUnit === 'percent' ? `${Math.min(Math.max(width, 1), 100)}%` : `${Math.min(Math.max(width, 1), 750)}rpx`;
+    const customWidth = Math.min(Math.max(width, 1), 750);
+    style.width = widthUnit === 'percent'
+      ? `${Math.min(Math.max(width, 1), 100)}%`
+      : isH5() ? `${customWidth / 2}PX` : `${customWidth}rpx`;
     style.marginLeft = 'auto';
     style.marginRight = 'auto';
   }
@@ -36,7 +44,7 @@ export function imageItemStyle(props?: DiyImageProps, fallbackHeight = 160): Rec
   const radius = Number(props?.radius ?? 12);
 
   return {
-    height: `${height * 2}rpx`,
-    borderRadius: `${radius * 2}rpx`,
+    height: platformSize(height),
+    borderRadius: platformSize(radius),
   };
 }
