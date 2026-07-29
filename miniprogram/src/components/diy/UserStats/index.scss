@@ -24,16 +24,15 @@
 }
 
 .diy-user-stats__value {
-  color: var(--diy-primary-color, #E8836B);
-  font-size: 34rpx;
-  line-height: 42rpx;
+  color: #4a3228;
+  font-size: 40rpx;
+  line-height: 48rpx;
   font-weight: 800;
 }
 
 .diy-user-stats__label {
-  margin-top: 8rpx;
-  color: var(--diy-primary-color, #E8836B);
+  margin-top: 4rpx;
+  color: #a89088;
   font-size: 22rpx;
   line-height: 30rpx;
-  opacity: 0.68;
 }

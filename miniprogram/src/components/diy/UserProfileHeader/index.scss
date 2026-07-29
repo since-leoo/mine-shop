@@ -1,38 +1,38 @@
 .diy-user-profile-header {
   position: relative;
-  min-height: 236rpx;
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   overflow: hidden;
   box-sizing: border-box;
-  background: linear-gradient(180deg, var(--diy-primary-color, #E8836B) 0%, var(--diy-primary-color, #E8836B) 56%, var(--diy-page-background-color, #FAF3ED) 100%);
+  width: 100%;
 }
 
 .diy-user-profile-header::after {
   content: '';
   position: absolute;
-  right: -58rpx;
-  top: 32rpx;
-  width: 280rpx;
-  height: 280rpx;
+  right: -80rpx;
+  top: 40rpx;
+  width: 360rpx;
+  height: 360rpx;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .diy-user-profile-header__avatar {
   position: relative;
   z-index: 1;
-  width: 96rpx;
-  height: 96rpx;
+  width: 128rpx;
+  height: 128rpx;
   margin-right: 28rpx;
-  border: 4rpx solid rgba(255, 255, 255, 0.68);
+  border: 6rpx solid rgba(255, 255, 255, 0.5);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: #fff1e8;
-  box-shadow: 0 8rpx 24rpx rgba(110, 68, 54, 0.14);
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
 }
 
 .diy-user-profile-header__avatar-img {
@@ -42,9 +42,8 @@
 
 .diy-user-profile-header__avatar-icon {
   color: #050505;
-  font-size: 52rpx;
+  font-size: 56rpx;
   line-height: 1;
-  transform: translateY(-6rpx);
 }
 
 .diy-user-profile-header__body {
@@ -64,14 +63,15 @@
 
 .diy-user-profile-header__name {
   color: #fff;
-  font-size: 36rpx;
-  line-height: 44rpx;
+  font-size: 40rpx;
+  line-height: 48rpx;
   font-weight: 800;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
 .diy-user-profile-header__code {
-  margin-top: 8rpx;
-  color: rgba(255, 255, 255, 0.78);
+  margin-top: 4rpx;
+  color: rgba(255, 255, 255, 0.75);
   font-size: 24rpx;
   line-height: 32rpx;
 }
@@ -79,8 +79,18 @@
 .diy-user-profile-header__qrcode {
   position: relative;
   z-index: 1;
-  width: 36rpx;
-  height: 36rpx;
-  opacity: 0.86;
+  width: 72rpx;
+  height: 72rpx;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
   flex-shrink: 0;
+}
+
+.diy-user-profile-header__qrcode-icon {
+  width: 40rpx;
+  height: 40rpx;
+  display: block;
 }

@@ -37,15 +37,8 @@ function pickStyleValue(source: StyleRecord, keys: string[]): any {
   return undefined;
 }
 
-const legacyUserProfileHeaderBackground = 'linear-gradient(180deg, #EF8D78 0%, #F3A896 48%, #F8D7BF 78%, #FFF4EA 100%)';
-const themedUserProfileHeaderBackground = 'linear-gradient(180deg, var(--diy-primary-color, #E8836B) 0%, var(--diy-primary-color, #E8836B) 56%, var(--diy-page-background-color, #FAF3ED) 100%)';
-
 function schemaBackgroundValue(component: DiyComponent, style: StyleRecord): string | undefined {
   const background = style.background || style.backgroundColor;
-  if (component.type === 'user-profile-header' && background === legacyUserProfileHeaderBackground) {
-    return themedUserProfileHeaderBackground;
-  }
-
   return schemaValue(background);
 }
 

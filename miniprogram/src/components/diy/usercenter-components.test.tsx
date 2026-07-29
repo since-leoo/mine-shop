@@ -43,8 +43,9 @@ describe('DIY usercenter components', () => {
     expect(node?.props?.style?.borderBottomRightRadius).toBe('48rpx');
     const children = node.props.children as any[];
     expect(children[0].props.children.type).toBe('image');
-    expect(children[2].type).toBe('image');
-    expect(children[2].props.src).toBe('assets/usercenter/profile-qrcode.svg');
+    expect(children[2].type).toBe('view');
+    expect(children[2].props.children.type).toBe('image');
+    expect(children[2].props.children.props.src).toBe('assets/usercenter/profile-qrcode.svg');
   });
 
   it('does not force radius when profile header schema has no radius', () => {

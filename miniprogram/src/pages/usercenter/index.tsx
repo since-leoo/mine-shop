@@ -433,12 +433,32 @@ export default function UserCenter() {
   };
 
   if (diyPage?.page && diyPage.components.length > 0) {
-    const page = userDiyPage(diyPage, userInfo, orderTags);
+    const page = userDiyPage(
+      diyPage,
+      userInfo,
+      orderTags,
+      walletItems.map((item) => ({
+        type: item.type,
+        label: item.label,
+        value: item.num,
+      })),
+      menuGroups.flatMap((group) => group.map((item) => ({
+        type: item.type,
+        value: item.note,
+      }))),
+    );
     const topTransparent = page.page?.style?.topTransparent === true;
+    const navConfig = page.page?.style?.nav || {};
 
     return (
       <View className={`usercenter usercenter--diy ${topTransparent ? 'usercenter--diy-transparent-top' : ''} ${isH5() ? 'usercenter--h5' : ''}`}>
-        <PageNav title={page.page?.title || '会员中心'} showBack={false} light={topTransparent} background={topTransparent ? 'transparent' : 'default'} />
+        <PageNav
+          title={page.page?.title || '会员中心'}
+          showBack={navConfig.showBack ?? false}
+          showTitle={navConfig.showTitle ?? true}
+          light={navConfig.light ?? topTransparent}
+          background={navConfig.background ?? (topTransparent ? 'transparent' : 'default')}
+        />
         <View className="usercenter__diy-body" style={diyStyle(page.page?.style || {})}>
           <DiyRenderer page={page} transparent />
         </View>

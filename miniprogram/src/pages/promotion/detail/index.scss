@@ -6,12 +6,26 @@
   background:
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.72), transparent 32%),
     linear-gradient(180deg, #FFF7F1 0%, #FFFDFB 36%, #FAF4EE 100%);
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 220rpx;
+    background: linear-gradient(135deg, #FF8C72 0%, #FF7C68 45%, #FFA274 100%);
+    z-index: 0;
+    pointer-events: none;
+  }
 
   &__hero {
     position: relative;
-    margin-top: -136rpx;
+    margin-top: -156rpx;
     height: 444rpx;
     overflow: hidden;
+    z-index: 1;
   }
 
   &__hero-banner {
@@ -643,8 +657,12 @@
 }
 
 .promotion-detail--h5 {
+  &::before {
+    height: 120PX;
+  }
+
   .promotion-detail__hero {
-    margin-top: -68PX;
+    margin-top: -88PX;
     height: 230PX;
   }
 

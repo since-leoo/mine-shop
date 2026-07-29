@@ -5,12 +5,24 @@ export interface UserProfileDiyInfo {
   avatarUrl?: string;
   nickName?: string;
   inviteCode?: string;
+  phoneNumber?: string;
 }
 
 export interface UserOrderTagDiyInfo {
   title?: string;
   tabType?: number;
   orderNum?: number;
+}
+
+export interface UserStatDiyInfo {
+  type?: string;
+  label?: string;
+  value?: string | number;
+}
+
+export interface UserMenuDiyInfo {
+  type?: string;
+  value?: string;
 }
 
 function orderTabTypeOf(item: Record<string, any>): number | undefined {
@@ -29,7 +41,30 @@ function orderCountFor(item: Record<string, any>, index: number, orderTags: User
   return Number.isFinite(count) && count > 0 ? count : 0;
 }
 
-export function userDiyPage(page: DiyPagePayload, userInfo: UserProfileDiyInfo, orderTags: UserOrderTagDiyInfo[] = []): DiyPagePayload {
+function userStatValueFor(item: Record<string, any>, stats: UserStatDiyInfo[]): string | number | undefined {
+  const itemType = String(item.type || '');
+  const itemLabel = String(item.label || '');
+  const matched = stats.find((stat) => {
+    if (itemType && stat.type === itemType) return true;
+    return itemLabel && stat.label === itemLabel;
+  });
+
+  return matched?.value ?? item.value;
+}
+
+function userMenuValueFor(item: Record<string, any>, menus: UserMenuDiyInfo[]): string {
+  const itemType = String(item.type || '');
+  const matched = menus.find((menu) => menu.type === itemType);
+  return matched?.value ?? item.value ?? '';
+}
+
+export function userDiyPage(
+  page: DiyPagePayload,
+  userInfo: UserProfileDiyInfo,
+  orderTags: UserOrderTagDiyInfo[] = [],
+  stats: UserStatDiyInfo[] = [],
+  menus: UserMenuDiyInfo[] = [],
+): DiyPagePayload {
   const shouldExtendTop = page.page?.style?.topTransparent === true;
   const navMetrics = shouldExtendTop ? getMiniProgramNavMetrics() : null;
   const topInset = navMetrics ? navMetrics.statusBarHeight + navMetrics.navHeight : 0;
@@ -46,6 +81,34 @@ export function userDiyPage(page: DiyPagePayload, userInfo: UserProfileDiyInfo, 
             items: items.map((item, index) => ({
               ...item,
               orderNum: orderCountFor(item, index, orderTags),
+            })),
+          },
+        };
+      }
+
+      if (component.type === 'user-stats') {
+        const items = Array.isArray(component.data?.items) ? component.data.items : [];
+        return {
+          ...component,
+          data: {
+            ...(component.data || {}),
+            items: items.map((item) => ({
+              ...item,
+              value: userStatValueFor(item, stats),
+            })),
+          },
+        };
+      }
+
+      if (component.type === 'user-menu-list') {
+        const items = Array.isArray(component.data?.items) ? component.data.items : [];
+        return {
+          ...component,
+          data: {
+            ...(component.data || {}),
+            items: items.map((item) => ({
+              ...item,
+              value: userMenuValueFor(item, menus),
             })),
           },
         };
@@ -69,7 +132,7 @@ export function userDiyPage(page: DiyPagePayload, userInfo: UserProfileDiyInfo, 
           ...(component.props || {}),
           avatar: userInfo.avatarUrl || component.props?.avatar || '',
           nickname: userInfo.nickName || component.props?.nickname || '温馨用户',
-          inviteCode: userInfo.inviteCode || component.props?.inviteCode || 'WARM2026',
+          inviteCode: userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode || component.props?.inviteCode || 'WARM2026',
           qrcodeIcon: component.props?.qrcodeIcon || 'assets/usercenter/profile-qrcode.svg',
         },
       };

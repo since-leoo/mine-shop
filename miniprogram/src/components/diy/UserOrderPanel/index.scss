@@ -10,17 +10,16 @@
 }
 
 .diy-user-order-panel__title {
-  color: var(--diy-primary-color, #E8836B);
+  color: #4a3228;
   font-size: 30rpx;
   line-height: 38rpx;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .diy-user-order-panel__more {
-  color: var(--diy-primary-color, #E8836B);
+  color: #a89088;
   font-size: 22rpx;
   line-height: 30rpx;
-  opacity: 0.68;
 }
 
 .diy-user-order-panel__grid {
@@ -51,7 +50,7 @@
 }
 
 .diy-user-order-panel__fallback {
-  color: var(--diy-primary-color, #E8836B);
+  color: #6b5248;
   font-size: 38rpx;
   line-height: 1;
 }
@@ -90,13 +89,12 @@
 
 .diy-user-order-panel__label {
   max-width: 100%;
-  margin-top: 18rpx;
+  margin-top: 12rpx;
   overflow: hidden;
-  color: var(--diy-primary-color, #E8836B);
+  color: #6b5248;
   font-size: 22rpx;
   line-height: 30rpx;
   text-align: center;
-  opacity: 0.82;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -609,25 +609,27 @@ export default function OrderConfirm() {
 
       {/* Bottom bar */}
       <View className="bottom-bar">
-        {isH5() ? (
-          <View className="bottom-bar__price bottom-bar__price--h5">
-            <Text className="bottom-bar__label">{'\u5408\u8ba1\uff1a'}</Text>
-            <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
-          </View>
-        ) : (
-          <View className="bottom-bar__price">
-            <View className="bottom-bar__discount">
-              <Text>{'\u5171\u4f18\u60e0'}</Text>
-              <Price price={totalDiscountAmount} className="bottom-bar__discount-price" fill />
+        <View className={`bottom-bar__inner ${isH5() ? 'bottom-bar__inner--h5' : ''}`}>
+          {isH5() ? (
+            <View className="bottom-bar__price bottom-bar__price--h5">
+              <Text className="bottom-bar__label">{'\u5408\u8ba1\uff1a'}</Text>
+              <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
             </View>
-            <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
+          ) : (
+            <View className="bottom-bar__price">
+              <View className="bottom-bar__discount">
+                <Text>{'\u5171\u4f18\u60e0'}</Text>
+                <Price price={totalDiscountAmount} className="bottom-bar__discount-price" fill />
+              </View>
+              <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
+            </View>
+          )}
+          <View
+            className={`bottom-bar__submit ${!settleData.settleType || submitting ? 'bottom-bar__submit--disabled' : ''}`}
+            onClick={handleSubmitOrder}
+          >
+            <Text className="bottom-bar__submit-text">提交订单</Text>
           </View>
-        )}
-        <View
-          className={`bottom-bar__submit ${settleData.settleType !== 1 || submitting ? 'bottom-bar__submit--disabled' : ''}`}
-          onClick={handleSubmitOrder}
-        >
-          <Text className="bottom-bar__submit-text">提交订单</Text>
         </View>
       </View>
     </View>

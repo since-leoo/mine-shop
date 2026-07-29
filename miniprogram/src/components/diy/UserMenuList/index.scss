@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 2rpx solid rgba(232, 131, 107, 0.18);
+  border-bottom: 2rpx solid rgba(240, 221, 212, 1);
   box-sizing: border-box;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .diy-user-menu-list__fallback {
-  color: var(--diy-primary-color, #E8836B);
+  color: #6b5248;
   font-size: 34rpx;
   line-height: 42rpx;
   text-align: center;
@@ -45,10 +45,10 @@
 .diy-user-menu-list__label {
   margin-left: 24rpx;
   overflow: hidden;
-  color: var(--diy-primary-color, #E8836B);
+  color: #4a3228;
   font-size: 28rpx;
   line-height: 36rpx;
-  font-weight: 800;
+  font-weight: 600;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -56,18 +56,16 @@
 .diy-user-menu-list__value {
   max-width: 160rpx;
   overflow: hidden;
-  color: var(--diy-primary-color, #E8836B);
+  color: #a89088;
   font-size: 24rpx;
   line-height: 32rpx;
-  opacity: 0.68;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .diy-user-menu-list__arrow {
   margin-left: 12rpx;
-  color: var(--diy-primary-color, #E8836B);
+  color: #c4b0a6;
   font-size: 30rpx;
   line-height: 1;
-  opacity: 0.68;
 }

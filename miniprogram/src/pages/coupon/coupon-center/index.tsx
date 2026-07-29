@@ -57,9 +57,9 @@ export default function CouponCenter() {
           tag: item.tag || '',
           desc: item.label || item.desc || '',
           timeLimit: buildTimeLimit(item.startTime, item.endTime),
-          isReceivable: item.isReceivable !== false,
-          availableQuantity: item.availableQuantity || 0,
-          base: item.base || 0,
+          isReceivable: item.is_receivable !== false && item.isReceivable !== false,
+          availableQuantity: item.available_quantity || item.availableQuantity || 0,
+          base: item.threshold_amount || item.base || 0,
         }));
         setCouponList(mapped);
       })

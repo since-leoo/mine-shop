@@ -102,17 +102,17 @@ export default function Cart() {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const publishedDiyPage = await fetchDiyPage('cart', currentDiyPageType());
-      if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
-        setDiyPage(publishedDiyPage);
-        return;
-      }
-
-      setDiyPage(null);
-      const [cartRes, recommendRes] = await Promise.all([
+      const [publishedDiyPage, cartRes, recommendRes] = await Promise.all([
+        fetchDiyPage('cart', currentDiyPageType()).catch(() => null),
         fetchCartGroupData(),
         fetchRecommendGoods(4).catch(() => []),
       ]);
+      if (publishedDiyPage?.page && publishedDiyPage.components.length > 0) {
+        setDiyPage(publishedDiyPage);
+      } else {
+        setDiyPage(null);
+      }
+
       const rawStores = cartRes?.data?.storeGoods || [];
       const nextStores: CartStore[] = rawStores
         .map((store: any) => {
@@ -248,7 +248,7 @@ export default function Cart() {
     Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   }, []);
 
-  if (diyPage?.page && diyPage.components.length > 0) {
+  if (!loading && items.length === 0 && diyPage?.page && diyPage.components.length > 0) {
     return (
       <View className={`cart-page cart-page--diy ${isH5() ? 'cart-page--h5' : ''}`}>
         <PageNav title={diyPage.page.title || '购物车'} showBack={false} />
@@ -413,7 +413,6 @@ export default function Cart() {
     </View>
   );
 }
-
 
 
 

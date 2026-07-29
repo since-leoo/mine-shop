@@ -15,7 +15,7 @@ vi.mock('../diy-renderer/link', () => ({
   navigateDiyLink: vi.fn(),
 }));
 
-import CouponGroup from './CouponGroup';
+import { couponGroupClassName, couponId, couponThreshold, couponValue } from './CouponGroup';
 import ImageAd from './ImageAd';
 import RichText from './RichText';
 import ShopInfo from './ShopInfo';
@@ -28,18 +28,17 @@ function textContent(node: any): string {
 }
 
 describe('DIY design variants', () => {
-  it('coupon group renders visible preview coupons when schema has no selected coupons', () => {
-    const node = CouponGroup({
-      component: {
-        id: 'coupon-center-list',
-        type: 'coupon-group',
-        props: { layout: 'two-column', limit: 2 },
-        data: { coupons: [] },
-      },
-    });
+  it('coupon group supports two-column layout and API coupon fields', () => {
+    const coupon = {
+      coupon_id: '12',
+      discount_value: 4000,
+      threshold_amount: 19900,
+    };
 
-    expect(textContent(node)).toContain('满199减40');
-    expect(node?.props?.className).toContain('diy-coupon-group--two-column');
+    expect(couponGroupClassName('two-column')).toContain('diy-coupon-group--two-column');
+    expect(couponId(coupon)).toBe('12');
+    expect(couponValue(coupon)).toBe(4000);
+    expect(couponThreshold(coupon)).toBe(19900);
   });
 
   it('image ad exposes coupon hero variant class from schema props', () => {

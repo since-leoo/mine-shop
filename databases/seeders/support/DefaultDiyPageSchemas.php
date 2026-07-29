@@ -298,6 +298,12 @@ final class DefaultDiyPageSchemas
             return [
                 'background' => self::THEME['backgroundColor'],
                 'topTransparent' => true,
+                'nav' => [
+                    'showBack' => false,
+                    'showTitle' => false,
+                    'light' => true,
+                    'background' => 'transparent',
+                ],
             ];
         }
 
@@ -324,7 +330,7 @@ final class DefaultDiyPageSchemas
             'qrcodeIcon' => 'assets/usercenter/profile-qrcode.svg',
         ], [], [
             'margin' => ['top' => 0, 'right' => 0, 'bottom' => 0, 'left' => 0],
-            'padding' => ['top' => 96, 'right' => 28, 'bottom' => 38, 'left' => 28],
+            'padding' => ['top' => 50, 'right' => 20, 'bottom' => 50, 'left' => 20],
             'background' => 'linear-gradient(180deg, #EF8D78 0%, #F3A896 48%, #F8D7BF 78%, #FFF4EA 100%)',
             'color' => '#FFFFFF',
             'borderRadius' => ['bottomLeft' => 30, 'bottomRight' => 30],
@@ -335,14 +341,14 @@ final class DefaultDiyPageSchemas
     {
         return self::component($id, 'user-stats', '用户资产统计', [], [
             'items' => [
-                ['label' => '优惠券', 'value' => '3', 'link' => self::pageLink('/pages/coupon/coupon-list/index')],
-                ['label' => '积分', 'value' => '520', 'link' => self::pageLink('/pages/usercenter/index')],
-                ['label' => '余额', 'value' => '¥88', 'link' => self::pageLink('/pages/usercenter/wallet-transactions/index')],
-                ['label' => '收藏', 'value' => '12', 'link' => self::pageLink('/pages/usercenter/index')],
+                ['type' => 'coupon', 'label' => '优惠券', 'value' => '3', 'link' => self::pageLink('/pages/coupon/coupon-list/index')],
+                ['type' => 'points', 'label' => '积分', 'value' => '520', 'link' => self::pageLink('/pages/usercenter/index')],
+                ['type' => 'balance', 'label' => '余额', 'value' => '¥88', 'link' => self::pageLink('/pages/usercenter/wallet-transactions/index')],
+                ['type' => 'collect', 'label' => '收藏', 'value' => '12', 'link' => self::pageLink('/pages/usercenter/index')],
             ],
         ], [
-            'margin' => ['top' => -20, 'right' => 20, 'bottom' => 14, 'left' => 20],
-            'padding' => ['top' => 0, 'right' => 0, 'bottom' => 14, 'left' => 0],
+            'margin' => ['top' => -20, 'right' => 16, 'bottom' => 14, 'left' => 16],
+            'padding' => ['top' => 0, 'right' => 0, 'bottom' => 12, 'left' => 0],
             'background' => '#FFFFFF',
             'borderRadius' => 16,
             'boxShadow' => '0 2px 8px rgba(200,140,110,0.08)',
@@ -454,9 +460,9 @@ final class DefaultDiyPageSchemas
     private static function designPanelStyle(int $top = 0, int $bottom = 14): array
     {
         return [
-            'margin' => ['top' => $top, 'right' => 20, 'bottom' => $bottom, 'left' => 20],
+            'margin' => ['top' => $top, 'right' => 16, 'bottom' => $bottom, 'left' => 16],
             'background' => '#FFFFFF',
-            'borderRadius' => 14,
+            'borderRadius' => 16,
             'boxShadow' => '0 2px 8px rgba(200,140,110,0.08)',
         ];
     }
@@ -474,6 +480,13 @@ final class DefaultDiyPageSchemas
     private static function menuItem(string $label, string $path, string $icon, string $value = ''): array
     {
         return [
+            'type' => match ($path) {
+                '/pages/user/address/list/index' => 'address',
+                '/pages/coupon/coupon-list/index' => 'coupon',
+                '/pages/usercenter/wallet-transactions/index' => 'wallet',
+                '/pages/user/person-info/index' => 'settings',
+                default => str_contains($icon, 'menu-help') ? 'help' : '',
+            },
             'label' => $label,
             'icon' => $icon,
             'value' => $value,

@@ -13,6 +13,7 @@ export default function UserProfileHeader({ component }: Props) {
   const avatar = resolveDiyAsset(component.props?.avatar || '');
   const nickname = component.props?.nickname || '小花花';
   const inviteCode = component.props?.inviteCode || 'WARM2026';
+  const subtitle = /^(邀请码|手机号)[:：]/.test(inviteCode) ? inviteCode : `邀请码: ${inviteCode}`;
   const qrcodeIcon = resolveDiyAsset(component.props?.qrcodeIcon || '') || profileQrcodeIcon;
 
   return (
@@ -22,9 +23,11 @@ export default function UserProfileHeader({ component }: Props) {
       </View>
       <View className="diy-user-profile-header__body">
         <Text className="diy-user-profile-header__name">{nickname}</Text>
-        <Text className="diy-user-profile-header__code">邀请码: {inviteCode}</Text>
+        <Text className="diy-user-profile-header__code">{subtitle}</Text>
       </View>
-      <Image className="diy-user-profile-header__qrcode" src={qrcodeIcon} mode="aspectFit" />
+      <View className="diy-user-profile-header__qrcode">
+        <Image className="diy-user-profile-header__qrcode-icon" src={qrcodeIcon} mode="aspectFit" />
+      </View>
     </View>
   );
 }
