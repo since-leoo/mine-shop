@@ -14,6 +14,7 @@ namespace App\Domain\Trade\AfterSale\Listener;
 
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
+use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Service\DomainMemberWalletService;
 use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
@@ -38,6 +39,7 @@ final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
         private readonly OrderPaymentRepository $orderPaymentRepository,
         private readonly DomainOrderService $orderService,
         private readonly DomainMemberWalletService $walletService,
+        private readonly MemberRepository $memberRepository,
         private readonly EventDispatcherInterface $dispatcher,
         private readonly OutboundWebhookDispatcher $webhookDispatcher,
     ) {}
@@ -81,6 +83,8 @@ final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
         if ($paymentMethod === PayType::BALANCE->value) {
             $this->refundBalance($event);
         }
+
+        $this->memberRepository->syncOrderStats($event->memberId);
 
         $this->webhookDispatcher->dispatch('after_sale.refund_succeeded', [
             'after_sale_id' => $event->afterSaleId,

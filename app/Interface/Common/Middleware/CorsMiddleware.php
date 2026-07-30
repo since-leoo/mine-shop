@@ -23,18 +23,29 @@ class CorsMiddleware implements MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         if ($request->getMethod() === 'OPTIONS') {
-            return $this->setHeader(ResponseContext::get());
+            return $this->setHeader(ResponseContext::get(), $request);
         }
 
-        return $this->setHeader($handler->handle($request));
+        return $this->setHeader($handler->handle($request), $request);
     }
 
-    private function setHeader(ResponseInterface $response)
+    private function setHeader(ResponseInterface $response, ServerRequestInterface $request): ResponseInterface
     {
+        $origin = $request->getHeaderLine('Origin');
+        $allowOrigin = $origin !== '' ? $origin : '*';
+        $vary = $origin !== '' ? 'Origin' : '';
+
         // @phpstan-ignore-next-line
-        return $response->setHeader('Access-Control-Allow-Origin', '*')
+        $response = $response->setHeader('Access-Control-Allow-Origin', $allowOrigin)
             ->setHeader('Access-Control-Allow-Credentials', 'true')
             ->setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
-            ->setHeader('Access-Control-Allow-Headers', 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp');
+            ->setHeader('Access-Control-Allow-Headers', 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp')
+            ->setHeader('Access-Control-Expose-Headers', 'Request-Id');
+
+        if ($vary !== '') {
+            $response = $response->setHeader('Vary', $vary);
+        }
+
+        return $response;
     }
 }

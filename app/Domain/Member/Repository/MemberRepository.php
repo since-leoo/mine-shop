@@ -16,8 +16,10 @@ use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Enum\MemberLevel as MemberLevelEnum;
 use App\Domain\Member\Enum\MemberSource;
 use App\Domain\Member\Mapper\MemberMapper;
+use App\Domain\Trade\Order\Enum\PaymentStatus;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\Member;
+use App\Infrastructure\Model\Order\Order;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
@@ -177,6 +179,27 @@ final class MemberRepository extends IRepository
     public function updateEntity(MemberEntity $entity): bool
     {
         return $this->updateById($entity->getId(), $entity->toArray());
+    }
+
+    public function syncOrderStats(int $memberId): void
+    {
+        /** @var null|Member $member */
+        $member = $this->getQuery()->find($memberId);
+        if (! $member) {
+            return;
+        }
+
+        $stats = Order::query()
+            ->where('member_id', $memberId)
+            ->where('pay_status', PaymentStatus::PAID->value)
+            ->selectRaw('COUNT(*) as total_orders')
+            ->selectRaw('COALESCE(SUM(COALESCE(pay_amount, total_amount)), 0) as total_amount')
+            ->first();
+
+        $member->update([
+            'total_orders' => (int) ($stats?->total_orders ?? 0),
+            'total_amount' => (int) ($stats?->total_amount ?? 0),
+        ]);
     }
 
     /**

@@ -24,6 +24,7 @@ use Hyperf\Logger\LoggerFactory;
 use Mine\Support\Logger\UuidRequestIdProcessor;
 use Mine\Support\Traits\Debugging;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Swow\Psr7\Message\ResponsePlusInterface;
 
 abstract class AbstractHandler extends ExceptionHandler
@@ -39,17 +40,14 @@ abstract class AbstractHandler extends ExceptionHandler
 
     abstract public function handleResponse(\Throwable $throwable): Result;
 
+    private const CORS_ALLOW_HEADERS = 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp';
+
     public function handle(\Throwable $throwable, ResponsePlusInterface $response)
     {
         $this->report($throwable);
         return value(function (ResponsePlusInterface $responsePlus) use ($throwable) {
-            // 如果是 debug 模式，自动处理跨域
             if ($this->isDebug()) {
-                $responsePlus
-                    ->setHeader('Access-Control-Allow-Origin', '*')
-                    ->setHeader('Access-Control-Allow-Credentials', 'true')
-                    ->setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
-                    ->setHeader('Access-Control-Allow-Headers', 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp');
+                $responsePlus = $this->applyCorsHeaders($responsePlus);
                 Context::set(self::class . '.throwable', [
                     'message' => $throwable->getMessage(),
                     'file' => $throwable->getFile(),
@@ -106,5 +104,25 @@ abstract class AbstractHandler extends ExceptionHandler
     private function handlerRequestId(ResponsePlusInterface $responsePlus): ResponsePlusInterface
     {
         return $responsePlus->setHeader('Request-Id', UuidRequestIdProcessor::getUuid());
+    }
+
+    private function applyCorsHeaders(ResponsePlusInterface $responsePlus): ResponsePlusInterface
+    {
+        $request = $this->container->get(ServerRequestInterface::class);
+        $origin = $request->getHeaderLine('Origin');
+        $allowOrigin = $origin !== '' ? $origin : '*';
+
+        $responsePlus
+            ->setHeader('Access-Control-Allow-Origin', $allowOrigin)
+            ->setHeader('Access-Control-Allow-Credentials', 'true')
+            ->setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS')
+            ->setHeader('Access-Control-Allow-Headers', self::CORS_ALLOW_HEADERS)
+            ->setHeader('Access-Control-Expose-Headers', 'Request-Id');
+
+        if ($origin !== '') {
+            $responsePlus->setHeader('Vary', 'Origin');
+        }
+
+        return $responsePlus;
     }
 }
