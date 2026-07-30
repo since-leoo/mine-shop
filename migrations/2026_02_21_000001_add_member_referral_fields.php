@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace migrations;
+
 
 use App\Infrastructure\Model\Member\Member;
 use Hyperf\Database\Migrations\Migration;
