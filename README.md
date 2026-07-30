@@ -8,7 +8,8 @@
 <p align="center">
     <a href="https://mineshop.club" target="_blank">官网</a> |
     <a href="https://mineshop.club" target="_blank">文档</a> | 
-    <a href="https://demo.mineshop.club" target="_blank">演示</a> |
+    <a href="https://demo.mineshop.club" target="_blank">后台演示</a> |
+    <a href="https://h5.mineshop.club" target="_blank">H5 演示</a> |
     <a href="https://hyperf.wiki/3.0/#/" target="_blank">Hyperf官方文档</a> 
 </p>
 
