@@ -5,6 +5,7 @@ import { fetchSettleDetail, dispatchCommitPay } from '../../../services/order/or
 import { fetchCouponList } from '../../../services/coupon';
 import Price from '../../../components/Price';
 import PageNav from '../../../components/page-nav';
+import { normalizeErrorMessage, showErrorToast } from '../../../common/error-feedback';
 import { isH5 } from '../../../common/platform';
 import './index.scss';
 
@@ -28,6 +29,11 @@ interface OrderCardItem {
   specs: string;
   price: number | string;
   num: number;
+}
+
+interface CouponSelectionSnapshot {
+  id: string | null;
+  name: string;
 }
 
 const ORDER_CONFIRM_SELECTED_ADDRESS_KEY = 'order.confirm.selectedAddress';
@@ -174,6 +180,10 @@ export default function OrderConfirm() {
     return nextIds;
   }, [resolveCouponName, resolveSelectedCouponId]);
 
+  const restoreCouponSelection = useCallback((selection?: CouponSelectionSnapshot | null) => {
+    selectedCouponIdRef.current = selection?.id || null;
+    setSelectedCouponName(selection?.name || '');
+  }, []);
 
   const handleSettleData = useCallback((resData: any) => {
     const price = resData.price || {};
@@ -234,7 +244,11 @@ export default function OrderConfirm() {
     };
   }, [collectAvailableCoupons, resolveCouponName]);
 
-  const loadSettleDetail = useCallback((goodsRequestList: any[], addressReq?: any) => {
+  const loadSettleDetail = useCallback((
+    goodsRequestList: any[],
+    addressReq?: any,
+    failedCouponRollback?: CouponSelectionSnapshot | null,
+  ) => {
     setLoading(true);
     const params: any = {
       goodsRequestList: goodsRequestList.map((g) => ({
@@ -261,10 +275,13 @@ export default function OrderConfirm() {
         if (!selectedCouponIdRef.current) {
           if (result?.availableCouponIds?.length > 0 && !autoCouponTriedRef.current) {
             const autoCouponId = result.availableCouponIds[0];
+            const previousCouponSelection = {
+              id: selectedCouponIdRef.current,
+              name: selectedCouponName,
+            };
             autoCouponTriedRef.current = true;
             selectedCouponIdRef.current = autoCouponId;
-            setSelectedCouponName(couponNameMapRef.current[autoCouponId] || '已选择优惠券');
-            loadSettleDetail(goodsRequestList, result.address || addressReq);
+            loadSettleDetail(goodsRequestList, result.address || addressReq, previousCouponSelection);
             return;
           }
 
@@ -286,9 +303,12 @@ export default function OrderConfirm() {
                 if (!firstValid?.couponId) return;
                 couponNameMapRef.current[firstValid.couponId] = firstValid.name || couponNameMapRef.current[firstValid.couponId] || '';
                 couponBaseMapRef.current[firstValid.couponId] = firstValid.base || 0;
+                const previousCouponSelection = {
+                  id: selectedCouponIdRef.current,
+                  name: selectedCouponName,
+                };
                 selectedCouponIdRef.current = firstValid.couponId;
-                setSelectedCouponName(firstValid.name || '已选择优惠券');
-                loadSettleDetail(goodsRequestList, result?.address || addressReq);
+                loadSettleDetail(goodsRequestList, result?.address || addressReq, previousCouponSelection);
               })
               .catch(() => {});
           }
@@ -296,19 +316,23 @@ export default function OrderConfirm() {
       })
       .catch((err: any) => {
         setLoading(false);
-        let msg = err?.msg || '订单预览失败，请重试';
+        if (failedCouponRollback) {
+          restoreCouponSelection(failedCouponRollback);
+        }
+
+        let msg = normalizeErrorMessage(err, '订单预览失败，请重试');
         if (selectedCouponIdRef.current && /优惠券\s*\d+\s*不可用或已使用/.test(msg)) {
           const couponName = selectedCouponName || couponNameMapRef.current[selectedCouponIdRef.current] || '当前优惠券';
           msg = `${couponName}不可用或已使用`;
         }
-        Taro.showToast({ title: msg, icon: 'none', duration: 3000 });
-        if (!selectedCouponIdRef.current) {
+        showErrorToast(msg, 4500);
+        if (!selectedCouponIdRef.current && !failedCouponRollback) {
           setTimeout(() => {
             Taro.switchTab({ url: '/pages/home/index' });
-          }, 3000);
+          }, 4500);
         }
       });
-  }, [handleSettleData, resolveCouponName, resolveSelectedCouponId]);
+  }, [handleSettleData, normalizeErrorMessage, resolveCouponName, resolveSelectedCouponId, restoreCouponSelection, selectedCouponName]);
 
   useDidShow(() => {
     const selectedAddress = Taro.getStorageSync(ORDER_CONFIRM_SELECTED_ADDRESS_KEY);
@@ -402,18 +426,26 @@ export default function OrderConfirm() {
       url: `/pages/coupon/coupon-list/index?selectMode=1&availableCouponIds=${encodeURIComponent(JSON.stringify(availableCouponIdsRef.current))}&selectedCouponId=${selectedCouponIdRef.current || ''}`,
       events: {
         couponSelected: (coupon: any) => {
-          selectedCouponIdRef.current = resolveSelectedCouponId(coupon);
-          if (!selectedCouponIdRef.current) {
+          const nextCouponId = resolveSelectedCouponId(coupon);
+          if (!nextCouponId) {
             Taro.showToast({ title: '优惠券ID无效，请重新选择', icon: 'none' });
             return;
           }
+
+          const previousCouponSelection = {
+            id: selectedCouponIdRef.current,
+            name: selectedCouponName,
+          };
+          const nextCouponName = resolveCouponName(coupon);
+
           autoCouponTriedRef.current = true;
-          setSelectedCouponName(resolveCouponName(coupon));
-          loadSettleDetail(goodsRequestListRef.current, userAddress || undefined);
+          selectedCouponIdRef.current = nextCouponId;
+          couponNameMapRef.current[nextCouponId] = nextCouponName || couponNameMapRef.current[nextCouponId] || '';
+          loadSettleDetail(goodsRequestListRef.current, userAddress || undefined, previousCouponSelection);
         },
       },
     });
-  }, [loadSettleDetail, userAddress, resolveCouponName, resolveSelectedCouponId]);
+  }, [loadSettleDetail, userAddress, resolveCouponName, resolveSelectedCouponId, selectedCouponName]);
 
   const handleSubmitOrder = useCallback(() => {
     if (!settleData) return;
@@ -612,8 +644,14 @@ export default function OrderConfirm() {
         <View className={`bottom-bar__inner ${isH5() ? 'bottom-bar__inner--h5' : ''}`}>
           {isH5() ? (
             <View className="bottom-bar__price bottom-bar__price--h5">
-              <Text className="bottom-bar__label">{'\u5408\u8ba1\uff1a'}</Text>
-              <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
+              <View className="bottom-bar__discount bottom-bar__discount--h5">
+                <Text>{'\u5171\u4f18\u60e0'}</Text>
+                <Price price={totalDiscountAmount} className="bottom-bar__discount-price" fill />
+              </View>
+              <View className="bottom-bar__total-row">
+                <Text className="bottom-bar__label">{'\u5408\u8ba1\uff1a'}</Text>
+                <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
+              </View>
             </View>
           ) : (
             <View className="bottom-bar__price">

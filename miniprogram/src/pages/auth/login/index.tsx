@@ -82,7 +82,7 @@ export default function LoginPage() {
       const response = await passwordLogin(phone, password);
       persistAuth(response);
       Taro.showToast({ title: '登录成功', icon: 'success' });
-      navigateAfterLogin(redirect);
+      setTimeout(() => navigateAfterLogin(redirect), 200);
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '登录失败', icon: 'none' });
     } finally {

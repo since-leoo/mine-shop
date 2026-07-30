@@ -644,7 +644,10 @@
 
 .order-confirm--h5 .bottom-bar__price--h5 {
   flex: 1;
-  justify-content: flex-start;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 2PX;
   text-align: left;
 }
 
@@ -654,7 +657,23 @@
 }
 
 .order-confirm--h5 .bottom-bar__discount {
-  display: none;
+  display: flex;
+  align-items: center;
+  gap: 4PX;
+  font-size: 12PX;
+  color: #A89088;
+}
+
+.order-confirm--h5 .bottom-bar__discount--h5 .bottom-bar__discount-price {
+  font-size: 12PX;
+  color: #E8836B;
+  font-weight: 700;
+}
+
+.order-confirm--h5 .bottom-bar__total-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4PX;
 }
 
 .order-confirm--h5 .bottom-bar__total {

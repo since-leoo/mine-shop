@@ -4,6 +4,12 @@ const requestMock = vi.fn();
 const uploadFileMock = vi.fn();
 const getStorageSyncMock = vi.fn();
 const getEnvMock = vi.fn();
+const showToastMock = vi.fn();
+const ensureAuthenticatedMock = vi.fn();
+const getStoredMemberProfileMock = vi.fn();
+const getStoredTokenMock = vi.fn();
+const clearAuthStorageMock = vi.fn();
+const redirectToLoginMock = vi.fn();
 
 vi.mock('@tarojs/taro', () => ({
   default: {
@@ -11,6 +17,7 @@ vi.mock('@tarojs/taro', () => ({
     uploadFile: uploadFileMock,
     getStorageSync: getStorageSyncMock,
     getEnv: getEnvMock,
+    showToast: showToastMock,
     ENV_TYPE: {
       WEB: 'WEB',
       WEAPP: 'WEAPP',
@@ -19,14 +26,14 @@ vi.mock('@tarojs/taro', () => ({
 }));
 
 vi.mock('../../common/auth', () => ({
-  ensureAuthenticated: vi.fn(),
-  getStoredMemberProfile: vi.fn(),
-  getStoredToken: vi.fn(),
-  clearAuthStorage: vi.fn(),
+  ensureAuthenticated: ensureAuthenticatedMock,
+  getStoredMemberProfile: getStoredMemberProfileMock,
+  getStoredToken: getStoredTokenMock,
+  clearAuthStorage: clearAuthStorageMock,
 }));
 
 vi.mock('../../common/auth-guard', () => ({
-  redirectToLogin: vi.fn(),
+  redirectToLogin: redirectToLoginMock,
 }));
 
 describe('request signing', () => {
@@ -36,7 +43,15 @@ describe('request signing', () => {
     uploadFileMock.mockReset();
     getStorageSyncMock.mockReset();
     getEnvMock.mockReset();
+    showToastMock.mockReset();
+    ensureAuthenticatedMock.mockReset();
+    getStoredMemberProfileMock.mockReset();
+    getStoredTokenMock.mockReset();
+    clearAuthStorageMock.mockReset();
+    redirectToLoginMock.mockReset();
     getStorageSyncMock.mockReturnValue('token-demo');
+    getStoredTokenMock.mockReturnValue('token-demo');
+    getStoredMemberProfileMock.mockReturnValue(null);
   });
 
   it('attaches signature headers for h5 requests', async () => {
@@ -78,5 +93,32 @@ describe('request signing', () => {
     expect(options.header['X-Nonce']).toBeTruthy();
     expect(options.header['X-Body-Sha256']).toBeTruthy();
     expect(options.header['X-Signature']).toBeTruthy();
+  });
+
+  it('swallows h5 auth failures after redirecting to login', async () => {
+    getEnvMock.mockReturnValue('WEB');
+    requestMock.mockImplementation(({ success }) => {
+      success({ statusCode: 401, data: { code: 401, message: 'token expired' } });
+    });
+
+    const { request } = await import('../request');
+
+    const promise = request({
+      url: '/api/v1/member/profile',
+      method: 'GET',
+      needAuth: true,
+    });
+
+    const result = await Promise.race([
+      promise.then(() => 'resolved', () => 'rejected'),
+      Promise.resolve('pending'),
+    ]);
+
+    expect(result).toBe('pending');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(clearAuthStorageMock).toHaveBeenCalledTimes(1);
+    expect(redirectToLoginMock).toHaveBeenCalledTimes(1);
   });
 });

@@ -1,6 +1,6 @@
 export const config = {
   useMock: false,
-  apiBaseUrl: 'http://127.0.0.1:9501',
+  apiBaseUrl: 'https://shop-api.mineshop.club',
   tokenStorageKey: 'accessToken',
   apiSignature: {
     enabled: true,
