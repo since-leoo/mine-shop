@@ -28,13 +28,13 @@ final class CustomerServiceConversationNotifier
     public function memberMessage(Server $server, CustomerServiceConversation $conversation, array $message): void
     {
         if ($conversation->assigned_agent_id) {
-            $this->realtime->broadcast($server, 'message:created', $message, 'agent', (int) $conversation->assigned_agent_id);
+            $this->realtime->broadcast($server, 'message:created', $message, 'agent', (int) $conversation->assigned_agent_id, ['conversation_no' => $conversation->conversation_no]);
         }
     }
 
     public function agentMessage(Server $server, CustomerServiceConversation $conversation, array $message): void
     {
-        $this->realtime->broadcast($server, 'message:created', $message, 'member', (int) $conversation->member_id);
+        $this->realtime->broadcast($server, 'message:created', $message, 'member', (int) $conversation->member_id, ['conversation_no' => $conversation->conversation_no]);
     }
 
     public function closed(Server $server, CustomerServiceConversation $conversation): void

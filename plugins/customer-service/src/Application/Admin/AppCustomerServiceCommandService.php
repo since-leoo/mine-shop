@@ -43,6 +43,10 @@ final class AppCustomerServiceCommandService
     {
         return Db::transaction(function () use ($adminUserId, $name, $conversationNo) {
             $agent = $this->agent($adminUserId, $name);
+            if (\in_array($agent->status, ['offline', 'away'], true)) {
+                $agent->update(['status' => 'online', 'last_heartbeat_at' => Carbon::now()]);
+                $agent->refresh();
+            }
             if (! \in_array($agent->status, ['online', 'busy'], true)) {
                 throw new \DomainException('当前坐席不可接待');
             }

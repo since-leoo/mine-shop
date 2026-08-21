@@ -34,7 +34,7 @@ final class CustomerServiceRealtimeService
         $this->publish('presence:offline', ['principal_type' => $principalType, 'principal_id' => $principalId]);
     }
 
-    public function broadcast(Server $server, string $event, array $payload, ?string $principalType = null, ?int $principalId = null): void
+    public function broadcast(Server $server, string $event, array $payload, ?string $principalType = null, ?int $principalId = null, array $context = []): void
     {
         foreach ($this->connections->all() as $fd => $connection) {
             if ($principalType !== null && ($connection['principal_type'] ?? '') !== $principalType) {
@@ -43,7 +43,7 @@ final class CustomerServiceRealtimeService
             if ($principalId !== null && (int) ($connection['principal_id'] ?? 0) !== $principalId) {
                 continue;
             }
-            $this->responder->send($server, (int) $fd, $event, $payload);
+            $this->responder->send($server, (int) $fd, $event, $payload, $context);
         }
         $this->publish($event, $payload);
     }

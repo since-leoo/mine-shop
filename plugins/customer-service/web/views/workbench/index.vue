@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { AgentStatus, AgentVo, ConversationVo, MessageVo, StatisticsVo } from '../../api/customer-service'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ArrowDown, ChatDotRound, Check, CircleClose, Connection, DocumentCopy, MoreFilled, Picture, Promotion, Search, Service, ShoppingBag, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { acceptConversation, closeConversation, getAgents, getConversations, getCurrentAgent, getMessages, getQueue, getStatistics, sendMessage, transferConversation, updateAgentStatus } from '../../api/customer-service'
+import { acceptConversation, closeConversation, getAgents, getConversations, getCurrentAgent, getMessages, getQueue, getSocketTicket, getStatistics, sendMessage, transferConversation, updateAgentStatus } from '../../api/customer-service'
 
 defineOptions({ name: 'customer-service:workbench' })
 
@@ -21,6 +21,48 @@ const agents = ref<AgentVo[]>([])
 const statistics = ref<StatisticsVo>({ queued_count: 0, active_count: 0, today_closed_count: 0 })
 const currentAgent = ref<AgentVo>({ id: 0, name: '当前坐席', status: 'online', active_conversation_count: 0, max_conversations: 5 })
 const messageScroller = ref<HTMLElement>()
+let refreshTimer: ReturnType<typeof setInterval> | undefined
+let socket: WebSocket | undefined
+
+function socketUrl(): string {
+  const configured = import.meta.env.VITE_CUSTOMER_SERVICE_SOCKET_URL as string | undefined
+  if (configured) return configured
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  return `${protocol}//${window.location.hostname}:9502/customer-service`
+}
+
+function normalizeSocketMessage(message: any): MessageVo {
+  const content = message.content_json || message.contentJson || {}
+  return {
+    id: Number(message.id || 0),
+    type: message.message_type === 'product' ? 'product_card' : (message.message_type || 'text'),
+    content: content.text || content.answer || content.title || '',
+    sender_type: message.sender_type || 'system',
+    created_at: message.sent_at || new Date().toISOString(),
+    extra: { image_url: content.url, product_id: content.product_id, product_name: content.title, product_image: content.image, product_price: content.price },
+  }
+}
+
+async function connectSocket() {
+  try {
+    const ticketResponse = await getSocketTicket()
+    const ticket = apiData(ticketResponse).ticket
+    socket?.close()
+    socket = new WebSocket(socketUrl())
+    socket.onopen = () => socket?.send(JSON.stringify({ event: 'auth', payload: { ticket } }))
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data)
+      if (data.event === 'message:created' && data.conversation_no && selected.value?.no === data.conversation_no) {
+        const message = normalizeSocketMessage(data.payload || {})
+        if (!messages.value.some(item => item.id === message.id && message.id > 0)) messages.value.push(message)
+        void nextTick().then(() => messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight }))
+      }
+      if (data.event === 'conversation:queued' || data.event === 'conversation:assigned') void refreshWorkbench()
+    }
+    socket.onclose = () => { window.setTimeout(() => { if (socket && socket.readyState === WebSocket.CLOSED) void connectSocket() }, 2000) }
+  }
+  catch {}
+}
 
 const statusOptions: Array<{ value: AgentStatus, label: string, description: string }> = [
   { value: 'online', label: '在线接待', description: '可以接收新的会话' },
@@ -74,6 +116,10 @@ async function selectConversation(conversation: ConversationVo) {
 async function accept(conversation: ConversationVo = selected.value!) {
   if (!conversation) return
   try {
+    if (!['online', 'busy'].includes(currentAgent.value.status)) {
+      await updateAgentStatus(currentAgent.value.id, 'online')
+      currentAgent.value.status = 'online'
+    }
     await acceptConversation(conversation.no)
     conversation.status = 'active'
     conversation.agent_name = currentAgent.value.name
@@ -122,6 +168,11 @@ async function submitMessage() {
   const content = draft.value.trim()
   if (!content || !selected.value || selected.value.status === 'closed') return
   try {
+    if (socket?.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ event: 'message:send', payload: { conversation_no: selected.value.no, message_type: 'text', client_message_id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, text: content } }))
+      draft.value = ''
+      return
+    }
     const response = await sendMessage(selected.value.no, { type: 'text', content })
     messages.value.push(apiData(response))
     draft.value = ''
@@ -140,7 +191,28 @@ function setFilter(value: 'all' | 'queued' | 'active' | 'closed') {
 }
 
 watch(activeFilter, () => { if (activeFilter.value === 'queued') conversations.value = [...queuedConversations.value, ...conversations.value.filter(item => item.status !== 'queued')] })
-onMounted(loadWorkbench)
+async function refreshWorkbench() {
+  try {
+    await loadWorkbench()
+    if (selected.value) {
+      messages.value = apiData(await getMessages(selected.value.no))
+      await nextTick()
+      messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight })
+    }
+  }
+  catch {}
+}
+
+onMounted(async () => {
+  await loadWorkbench()
+  void connectSocket()
+  refreshTimer = setInterval(() => { void refreshWorkbench() }, 3000)
+})
+onBeforeUnmount(() => {
+  if (refreshTimer) clearInterval(refreshTimer)
+  socket?.close()
+  socket = undefined
+})
 </script>
 
 <template>
@@ -234,5 +306,56 @@ onMounted(loadWorkbench)
 .workspace { display:grid; grid-template-columns:300px minmax(400px,1fr) 242px; height:calc(100vh - 210px); min-height:620px; overflow:hidden; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 12px 34px #202b4b0a; }.conversation-panel,.detail-panel { overflow:auto; background:#fff; }.conversation-panel { border-right:1px solid var(--line); }.detail-panel { padding:15px; border-left:1px solid var(--line); }.panel-heading { justify-content:space-between; padding:17px 15px 11px; }.panel-heading h2,.chat-heading h2,.detail-title h3 { margin:0; font-size:14px; }.panel-heading span { color:var(--muted); font-size:11px; }.conversation-search { padding:0 14px; }.conversation-search :deep(.el-input__wrapper) { border-radius:9px; background:#f6f8fc; box-shadow:none; }.filter-tabs { display:flex; gap:3px; padding:13px 12px 8px; }.filter-tabs button { display:flex; gap:4px; padding:6px 8px; cursor:pointer; color:#7b869f; font-size:11px; border:0; border-radius:7px; background:transparent; }.filter-tabs button.active { color:#574bd1; font-weight:700; background:#eeecff; }.filter-tabs span { display:grid; min-width:15px; height:15px; color:#fff; font-size:9px; place-items:center; border-radius:6px; background:#f06c72; }.conversation-list { padding:0 7px 14px; }.conversation-item { display:grid; grid-template-columns:42px minmax(0,1fr) auto; gap:9px; width:100%; padding:11px 8px; cursor:pointer; text-align:left; border:0; border-radius:11px; background:transparent; transition:background .2s; }.conversation-item:hover { background:#f7f8fe; }.conversation-item.selected { background:#eeedff; }.conversation-copy { min-width:0; }.conversation-copy b,.conversation-copy small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }.conversation-copy b { margin:2px 0 4px; font-size:12px; }.conversation-copy small { color:#8a95ad; font-size:10px; }.conversation-meta { display:grid; justify-items:end; gap:3px; }.conversation-meta time { color:#a5aec0; font-size:9px; }.conversation-meta i { display:grid; min-width:15px; height:15px; color:#fff; font-size:9px; font-style:normal; place-items:center; border-radius:50%; background:#6c61e5; }.conversation-meta em { color:#8a95a9; font-size:9px; font-style:normal; }.conversation-meta em.queued { color:#d3881f; }.conversation-meta em.active { color:#13a878; }
 .chat-panel { display:grid; min-width:0; grid-template-rows:auto 1fr auto; background:#fbfcff; }.chat-heading { justify-content:space-between; min-height:72px; padding:0 18px; border-bottom:1px solid var(--line); background:#fff; }.customer-title { gap:10px; }.customer-title h2 { font-size:14px; }.customer-title p { display:flex; gap:5px; align-items:center; margin:3px 0 0; color:var(--muted); font-size:10px; }.chat-actions { gap:7px; }.message-stream { padding:21px 24px; overflow:auto; }.session-note { width:max-content; max-width:100%; padding:5px 10px; margin:0 auto 22px; color:#9aa4b8; font-size:10px; text-align:center; border-radius:20px; background:#f1f3f9; }.message-row { display:flex; gap:8px; align-items:flex-start; max-width:76%; margin:13px 0; }.message-row.agent { flex-direction:row-reverse; margin-left:auto; }.message-content { min-width:0; }.message-content p { padding:9px 12px; margin:0; color:#38435a; font-size:13px; line-height:1.6; white-space:pre-wrap; border-radius:4px 13px 13px; background:#fff; box-shadow:0 3px 9px #16214a0b; }.agent .message-content p { color:#fff; border-radius:13px 4px 13px 13px; background:#6559dc; }.message-content time { display:block; margin-top:4px; color:#a4adbf; font-size:9px; }.agent .message-content time { text-align:right; }.system-message { width:max-content; padding:5px 9px; margin:8px auto; color:#8b94a8; font-size:10px; border-radius:5px; background:#f0f2f7; }.message-row:has(.system-message) { display:block; max-width:none; }.chat-image { display:block; max-width:210px; max-height:220px; border-radius:10px; }.product-card { display:flex; width:240px; gap:9px; padding:8px; border:1px solid #e9e5ff; border-radius:10px; background:#fff; }.product-card img { width:51px; height:51px; object-fit:cover; border-radius:7px; background:#f3f3f7; }.product-card div { display:grid; min-width:0; }.product-card b { overflow:hidden; font-size:11px; text-overflow:ellipsis; white-space:nowrap; }.product-card small { color:#ed6a56; font-size:12px; }.product-card span { color:#7b73d6; font-size:10px; }.composer { padding:9px 16px 11px; border-top:1px solid var(--line); background:#fff; }.composer-tools { display:flex; gap:1px; }.composer :deep(.el-textarea__inner) { padding:6px 3px; font-size:13px; box-shadow:none; }.composer-footer { justify-content:space-between; }.composer-footer > span { color:#a5adbd; font-size:10px; }.composer-footer :deep(.el-button) { height:28px; }.composer kbd { padding:1px 4px; margin-left:4px; color:#dddaff; font-size:9px; border:1px solid #ffffff33; border-radius:3px; }.selection-empty { display:grid; place-items:center; }
 .detail-card { padding-bottom:15px; margin-bottom:15px; border-bottom:1px solid var(--line); }.detail-title { justify-content:space-between; margin-bottom:13px; }.detail-title h3 { font-size:13px; }.member-summary { gap:9px; }.member-summary div { display:grid; gap:3px; }.member-summary b { font-size:13px; }.member-summary span { color:var(--muted); font-size:10px; }.detail-card dl { margin:13px 0 0; }.detail-card dl div { display:flex; justify-content:space-between; padding:6px 0; font-size:11px; }.detail-card dt { color:#929caf; }.detail-card dd { max-width:120px; margin:0; overflow:hidden; color:#4c5871; text-align:right; text-overflow:ellipsis; white-space:nowrap; }.detail-card .order-link { color:#6458d7; }.queue-card p { color:#8190a7; font-size:11px; }.status-chip { display:flex; gap:4px; align-items:center; padding:3px 7px; color:#516079; font-size:10px; border-radius:10px; background:#f4f6fa; }.status-dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:#bac3d2; }.status-dot.online,.status-dot.active { background:#12b880; }.status-dot.busy,.status-dot.queued { background:#e49a2b; }.status-dot.away { background:#8c93a5; }.block-button { width:100%; margin-top:13px; }.quick-reply { width:100%; padding:9px; margin-top:6px; cursor:pointer; color:#66738b; font-size:11px; line-height:1.5; text-align:left; border:1px solid #e9edf5; border-radius:8px; background:#fafbfe; transition:.2s; }.quick-reply:hover { color:#5e51d3; border-color:#cdc8ff; background:#f2f0ff; }.transfer-hint { margin:0 0 14px; color:#7d879b; font-size:12px; }.agent-list { display:grid; gap:5px; }.transfer-agent { display:flex; gap:10px; align-items:center; width:100%; padding:9px; cursor:pointer; text-align:left; border:1px solid #edf0f5; border-radius:9px; background:#fff; }.transfer-agent:hover { border-color:#cfcaff; background:#f8f7ff; }.transfer-agent span { display:grid; flex:1; gap:3px; }.transfer-agent b { font-size:12px; }.transfer-agent small { color:#8290a7; font-size:10px; }
+:global(html.dark) {
+  .customer-workbench {
+    --ink: #edf1fa;
+    --muted: #9aa6bc;
+    --line: #2a3448;
+    --panel: #161e2d;
+    --canvas: #0d1420;
+  }
+
+  .agent-profile,
+  .workspace,
+  .conversation-panel,
+  .detail-panel,
+  .chat-heading,
+  .composer,
+  .message-content p,
+  .product-card,
+  .transfer-agent {
+    background: var(--panel);
+  }
+
+  .workspace { box-shadow: 0 16px 38px rgb(0 0 0 / 28%); }
+  .chat-panel { background: #111a29; }
+  .conversation-search :deep(.el-input__wrapper) { background: #202a3a; }
+  .conversation-item:hover { background: #202a3a; }
+  .conversation-item.selected { background: rgb(101 89 220 / 26%); }
+  .filter-tabs button { color: #aab5c8; }
+  .filter-tabs button.active { color: #c4beff; background: rgb(101 89 220 / 28%); }
+  .session-note,
+  .system-message { color: #aab5c8; background: #202a3a; }
+  .message-content p { color: #e8edf8; box-shadow: 0 3px 10px rgb(0 0 0 / 20%); }
+  .product-card { border-color: #3b3565; }
+  .product-card img { background: #283246; }
+  .detail-card dt,
+  .detail-card dd,
+  .status-chip,
+  .transfer-hint,
+  .quick-reply,
+  .transfer-agent small { color: #aab5c8; }
+  .status-chip { background: #202a3a; }
+  .quick-reply { border-color: #303b50; background: #1c2636; }
+  .quick-reply:hover { color: #c4beff; border-color: #6258ad; background: #292544; }
+  .transfer-agent { border-color: #303b50; }
+  .transfer-agent:hover { border-color: #6258ad; background: #202a3a; }
+  .accent-violet .metric-icon { color: #c4beff; background: #302b58; }
+  .accent-blue .metric-icon { color: #8fc5ff; background: #1d3855; }
+  .accent-mint .metric-icon { color: #67d9b4; background: #183d39; }
+  .accent-amber .metric-icon { color: #f6c46e; background: #493818; }
+}
+.chat-panel { min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; }
+.message-stream { min-height: 0; }
 @media (max-width: 1180px) { .customer-workbench { min-width:960px; }.workspace { grid-template-columns:280px minmax(400px,1fr) 220px; }.metric-card { padding:13px; }.metric-card em { display:none; } }
 </style>

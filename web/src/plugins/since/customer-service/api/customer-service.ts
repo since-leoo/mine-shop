@@ -62,6 +62,12 @@ export interface StatisticsVo {
   average_response_seconds?: number
 }
 
+export interface SocketTicketVo { ticket: string, expires_in: number }
+
+export function getSocketTicket(): Promise<ResponseStruct<SocketTicketVo>> {
+  return useHttp().post('/admin/customer-service/socket-ticket')
+}
+
 export function getQueue(): Promise<ResponseStruct<ConversationVo[]>> {
   return useHttp().get('/admin/customer-service/queue')
 }
