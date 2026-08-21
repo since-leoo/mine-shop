@@ -10,8 +10,6 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace seeders;
-
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
 use App\Infrastructure\Model\Content\DiyTemplate;

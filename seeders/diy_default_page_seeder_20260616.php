@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-namespace seeders;
-
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\ValueObject\DiyPagePublishValidationVo;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
