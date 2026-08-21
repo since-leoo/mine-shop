@@ -18,6 +18,7 @@ import UserMenuList from './UserMenuList';
 import UserOrderPanel from './UserOrderPanel';
 import UserProfileHeader from './UserProfileHeader';
 import UserStats from './UserStats';
+import { navigateDiyLink } from '../diy-renderer/link';
 
 function textContent(node: any): string {
   if (node === null || node === undefined || typeof node === 'boolean') return '';
@@ -119,5 +120,23 @@ describe('DIY usercenter components', () => {
     expect(textContent(firstBadge)).toBe('2');
     expect(secondBadge).toBeNull();
     expect(textContent(thirdBadge)).toBe('99+');
+  });
+
+  it('opens customer service when its DIY menu item has no configured link', () => {
+    const menu = UserMenuList({
+      component: {
+        id: 'user-account-menu',
+        type: 'user-menu-list',
+        data: { items: [{ label: '联系客服' }] },
+      },
+    });
+
+    const item = menu?.props?.children[0];
+    item.props.onClick({ stopPropagation: vi.fn() });
+
+    expect(navigateDiyLink).toHaveBeenCalledWith(
+      { type: 'page', path: '/pages/customer-service/index' },
+      { needLogin: undefined },
+    );
   });
 });

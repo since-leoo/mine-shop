@@ -9,6 +9,8 @@ interface UserMenuItem {
   icon?: string;
   image?: string;
   svg?: string;
+  type?: string;
+  action?: string;
   link?: DiyLink;
 }
 
@@ -24,11 +26,17 @@ export default function UserMenuList({ component }: Props) {
     <View className="diy-user-menu-list" style={diyComponentStyle(component)}>
       {items.slice(0, 10).map((item, index) => {
         const icon = imageOf(item);
+        const isCustomerService = item.type === 'customer_service'
+          || item.action === 'customer_service'
+          || item.label === '联系客服';
+        const link = item.link || (isCustomerService
+          ? { type: 'page', path: '/pages/customer-service/index' }
+          : undefined);
         return (
           <View
             key={`${item.label || 'menu'}-${index}`}
             className="diy-user-menu-list__item"
-            onClick={(event) => handleDiyLinkClick(event, item.link, component.props?.needLogin)}
+            onClick={(event) => handleDiyLinkClick(event, link, component.props?.needLogin)}
           >
             <View className="diy-user-menu-list__left">
               {icon ? <Image className="diy-user-menu-list__icon" src={icon} mode="aspectFit" /> : <Text className="diy-user-menu-list__fallback">□</Text>}

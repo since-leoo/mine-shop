@@ -309,6 +309,15 @@ function defaultMarketingEntryItem(): EditableItem {
   }
 }
 
+function defaultUserMenuItem(): EditableItem {
+  return {
+    label: '菜单入口',
+    value: '',
+    icon: '',
+    link: { type: 'page', path: '' },
+  }
+}
+
 function imageSizeDefaults(componentType?: string) {
   return {
     widthMode: props.component?.props?.widthMode || 'full',
@@ -893,6 +902,53 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
                   @update:model-value="patchProps({ qrcodeIcon: Array.isArray($event) ? $event[0] || '' : $event })"
                 />
               </el-form-item>
+            </template>
+
+            <template v-else-if="component.type === 'user-menu-list'">
+              <el-divider>用户菜单设置</el-divider>
+              <div class="property-panel__items">
+                <div v-for="(item, index) in items()" :key="index" class="property-panel__item">
+                  <div class="property-panel__item-head">
+                    <strong>菜单 {{ index + 1 }}</strong>
+                    <el-button text type="danger" @click="removeItem(index)">
+                      删除
+                    </el-button>
+                  </div>
+                  <div class="property-panel__grid">
+                    <el-form-item label="菜单名称">
+                      <el-input :model-value="item.label || ''" @update:model-value="patchItem(index, { label: String($event) })" />
+                    </el-form-item>
+                    <el-form-item label="右侧文案">
+                      <el-input :model-value="item.value || ''" placeholder="例如：3 张可用" @update:model-value="patchItem(index, { value: String($event) })" />
+                    </el-form-item>
+                  </div>
+                  <el-form-item label="图标">
+                    <MaUploadImage
+                      :model-value="item.icon || item.image || ''"
+                      :size="56"
+                      @update:model-value="patchItemIcon(index, $event)"
+                    />
+                  </el-form-item>
+                  <el-form-item label="跳转类型">
+                    <el-select :model-value="item.link?.type || 'page'" @update:model-value="patchItemLink(index, { type: $event })">
+                      <el-option v-for="option in linkTypeOptions" :key="option.value" :label="option.label" :value="option.value" />
+                    </el-select>
+                  </el-form-item>
+                  <el-form-item v-if="(item.link?.type || 'page') === 'page'" label="页面路径">
+                    <el-input
+                      :model-value="item.link?.path || item.link?.url || ''"
+                      placeholder="例如：/pages/customer-service/index"
+                      @update:model-value="patchItemLink(index, { type: 'page', path: String($event) })"
+                    />
+                  </el-form-item>
+                  <el-form-item v-else label="业务 ID">
+                    <el-input :model-value="item.link?.id || ''" @update:model-value="patchItemLink(index, { id: $event })" />
+                  </el-form-item>
+                </div>
+                <el-button class="property-panel__add" @click="addItem(defaultUserMenuItem())">
+                  添加菜单
+                </el-button>
+              </div>
             </template>
 
             <template v-else-if="component.type === 'rich-text'">
