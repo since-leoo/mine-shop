@@ -1,0 +1,4 @@
+interface:
+  display_name: "MineShop DDD Development Standards"
+  short_description: "按 MineShop 项目的 DDD 架构规范开发 PHP 后端"
+  default_prompt: "使用 $ddd-development-standards 按 MineShop 项目的 DDD 规范实现或评审 PHP 后端代码。"
