@@ -1,0 +1,13 @@
+{
+    "name": "since/customer-service",
+    "version": "0.1.0",
+    "description": "MineShop Socket 客服插件",
+    "author": "since",
+    "namespace": "Plugin\\CustomerService",
+    "priority": 20,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": false,
+    "enabled": true,
+    "configProvider": "Plugin\\CustomerService\\ConfigProvider"
+}

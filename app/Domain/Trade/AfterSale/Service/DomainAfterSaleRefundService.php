@@ -14,9 +14,11 @@ namespace App\Domain\Trade\AfterSale\Service;
 
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Payment\Enum\PayType;
+use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 use App\Infrastructure\Service\Pay\YsdPayService;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
@@ -30,6 +32,8 @@ class DomainAfterSaleRefundService
         private readonly OrderPaymentRepository $paymentRepository,
         private readonly OrderPaymentRefundRepository $paymentRefundRepository,
         private readonly YsdPayService $payService,
+        private readonly DomainMallSettingService $mallSettingService,
+        private readonly WechatPayConfigResolver $wechatPayConfigResolver,
         private readonly EventDispatcherInterface $dispatcher,
     ) {}
 
@@ -83,7 +87,7 @@ class DomainAfterSaleRefundService
 
     private function refundByWechat(AfterSaleEntity $afterSale, object $payment, string $refundNo, int $refundAmount): string
     {
-        $config = config('pay.default.wechat', []);
+        $config = $this->wechatPayConfigResolver->resolve($this->mallSettingService->payment()->wechatConfig());
         $notifyUrl = (string) ($config['refund_notify_url'] ?? $config['notify_url'] ?? '');
 
         $payload = [

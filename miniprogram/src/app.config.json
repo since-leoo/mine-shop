@@ -37,7 +37,8 @@
     "pages/user/person-info/index",
     "pages/user/address/list/index",
     "pages/user/address/edit/index",
-    "pages/user/name-edit/index"
+    "pages/user/name-edit/index",
+    "pages/customer-service/index"
   ],
   "tabBar": {
     "color": "#A89088",

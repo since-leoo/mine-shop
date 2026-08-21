@@ -24,6 +24,7 @@ use App\Domain\Trade\Order\Service\DomainOrderPaymentService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\Enum\PayType;
 use App\Infrastructure\Exception\System\BusinessException;
+use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 use App\Infrastructure\Service\Pay\YsdPayService;
 use App\Infrastructure\Traits\PaymentTrait;
 use App\Interface\Common\ResultCode;
@@ -44,6 +45,7 @@ class DomainPayService
         private readonly DomainMemberWalletService $walletService,
         private readonly DomainOrderPaymentService $paymentService,
         private readonly DomainMallSettingService $mallSettingService,
+        private readonly WechatPayConfigResolver $wechatPayConfigResolver,
     ) {}
 
     /**
@@ -68,7 +70,7 @@ class DomainPayService
             throw new BusinessException(ResultCode::METHOD_NOT_ALLOWED, '微信支付未启用');
         }
 
-        $config = array_merge($this->wechatSdkConfig($paymentSetting->wechatConfig()), $config);
+        $config = array_merge($this->wechatPayConfigResolver->resolve($paymentSetting->wechatConfig()), $config);
 
         // 创建支付记录
         $this->paymentService->create(
@@ -86,27 +88,6 @@ class DomainPayService
         }
 
         return $payInfo;
-    }
-
-    /** @param array<string, mixed> $config */
-    private function wechatSdkConfig(array $config): array
-    {
-        $mchid = (string) ($config['mchid'] ?? $config['mch_id'] ?? '');
-        $appId = (string) ($config['app_id'] ?? $config['mini_app_id'] ?? '');
-        $privateKey = (string) ($config['private_key'] ?? $config['mch_secret_cert'] ?? '');
-        $apiV3Key = (string) ($config['apiv3_key'] ?? $config['mch_secret_key'] ?? '');
-
-        if ($mchid === '' || $appId === '' || $privateKey === '' || $apiV3Key === '') {
-            throw new BusinessException(ResultCode::FAIL, '微信支付配置不完整');
-        }
-
-        return array_replace($config, [
-            'app_id' => $appId,
-            'mini_app_id' => $appId,
-            'mch_id' => $mchid,
-            'mch_secret_cert' => $privateKey,
-            'mch_secret_key' => $apiV3Key,
-        ]);
     }
 
     /**

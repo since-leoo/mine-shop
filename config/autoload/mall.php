@@ -251,6 +251,56 @@ return [
                     ],
                     'sort' => 20,
                 ],
+                'mall.integration.wechat_auth_config' => [
+                    'label' => '微信授权配置',
+                    'description' => '用于小程序登录/授权及小程序码；',
+                    'type' => 'json',
+                    'is_sensitive' => true,
+                    'meta' => [
+                        'component' => 'form',
+                        'display' => 'dialog',
+                        'button_label' => '配置微信授权',
+                        'fields' => [
+                            [
+                                'key' => 'app_id',
+                                'label' => '微信应用 AppID',
+                                'placeholder' => '请输入小程序/公众号 AppID',
+                                'required' => true,
+                            ],
+                            [
+                                'key' => 'secret',
+                                'label' => '微信应用 AppSecret',
+                                'placeholder' => '请输入小程序/公众号 AppSecret',
+                                'component' => 'password',
+                                'required' => true,
+                            ],
+                            [
+                                'key' => 'token',
+                                'label' => '服务器 Token',
+                                'placeholder' => '公众号服务器配置时填写（可选）',
+                            ],
+                            [
+                                'key' => 'aes_key',
+                                'label' => '消息加解密密钥',
+                                'placeholder' => 'EncodingAESKey（可选）',
+                                'component' => 'password',
+                            ],
+                            [
+                                'key' => 'oauth_redirect_url',
+                                'label' => '网页授权回调地址',
+                                'placeholder' => 'https://example.com/api/wechat/oauth/callback（可选）',
+                            ],
+                        ],
+                    ],
+                    'default' => [
+                        'app_id' => '',
+                        'secret' => '',
+                        'token' => '',
+                        'aes_key' => '',
+                        'oauth_redirect_url' => '',
+                    ],
+                    'sort' => 25,
+                ],
                 'mall.integration.notif_channels' => [
                     'label' => '系统通知渠道',
                     'description' => '控制订单/库存/售后等通知的渠道。',

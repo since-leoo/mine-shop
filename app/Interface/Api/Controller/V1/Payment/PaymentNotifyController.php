@@ -16,6 +16,7 @@ use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\DomainPayService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 use App\Infrastructure\Service\Pay\YsdPayService;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\PostMapping;
@@ -31,6 +32,7 @@ final class PaymentNotifyController
         private readonly DomainPayService $domainPayService,
         private readonly YsdPayService $payService,
         private readonly DomainMallSettingService $mallSettingService,
+        private readonly WechatPayConfigResolver $wechatPayConfigResolver,
         private readonly ServerRequestInterface $request,
     ) {}
 
@@ -61,14 +63,6 @@ final class PaymentNotifyController
 
     private function getWechatConfig(): array
     {
-        $config = $this->mallSettingService->payment()->wechatConfig();
-        $appId = (string) ($config['app_id'] ?? $config['mini_app_id'] ?? '');
-        return array_replace($config, [
-            'app_id' => $appId,
-            'mini_app_id' => $appId,
-            'mch_id' => $config['mchid'] ?? $config['mch_id'] ?? '',
-            'mch_secret_cert' => $config['private_key'] ?? $config['mch_secret_cert'] ?? '',
-            'mch_secret_key' => $config['apiv3_key'] ?? $config['mch_secret_key'] ?? '',
-        ]);
+        return $this->wechatPayConfigResolver->resolve($this->mallSettingService->payment()->wechatConfig());
     }
 }

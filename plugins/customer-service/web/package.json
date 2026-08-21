@@ -1,0 +1,7 @@
+{
+  "name": "@since/customer-service",
+  "private": true,
+  "version": "0.1.0",
+  "description": "MineShop 客服中心插件前端组件",
+  "main": "index.ts"
+}

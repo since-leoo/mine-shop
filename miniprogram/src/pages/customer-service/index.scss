@@ -1,0 +1,8 @@
+.customer-service { min-height: 100vh; background: #f7f8fa; display: flex; flex-direction: column; }
+.customer-service__header { padding: 28px 32px; background: #fff; display: flex; justify-content: space-between; font-size: 30px; }
+.customer-service__header text:last-child { color: #24a148; font-size: 24px; }
+.customer-service__messages { flex: 1; padding: 24px; box-sizing: border-box; }
+.message { max-width: 72%; margin: 16px 0; padding: 18px 22px; border-radius: 18px; background: #fff; font-size: 28px; }
+.message--mine { margin-left: auto; background: #9be15d; }
+.customer-service__composer { display: flex; gap: 12px; padding: 18px; background: #fff; align-items: center; }
+.customer-service__composer input { flex: 1; background: #f3f4f6; padding: 14px; border-radius: 10px; }

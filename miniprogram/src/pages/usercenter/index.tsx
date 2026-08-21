@@ -409,7 +409,7 @@ export default function UserCenter() {
         Taro.navigateTo({ url: '/pages/usercenter/wallet-transactions/index' });
         break;
       case 'help':
-        Taro.showToast({ title: '请在后台配置客服入口', icon: 'none' });
+        Taro.navigateTo({ url: '/pages/customer-service/index' });
         break;
       case 'settings':
         Taro.navigateTo({ url: '/pages/user/person-info/index' });

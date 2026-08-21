@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Factory;
 
-use Hyperf\Contract\ConfigInterface;
 use Plugin\Wechat\Handler\OfficialAccountHandler;
+use Plugin\Wechat\Service\WechatSettingsResolver;
 use Psr\Container\ContainerInterface;
 
 class OfficialAccountFactory
@@ -27,14 +27,7 @@ class OfficialAccountFactory
      */
     public function __invoke(ContainerInterface $container)
     {
-        // 从依赖注入容器中获取 ConfigInterface 实例，用于访问配置信息
-        $config = $container->get(ConfigInterface::class);
-        // 从配置中提取与微信相关的选项，并默认为空数组，确保即使没有配置也能正常初始化
-        $option = $config->get('wechat', []);
-
-        if (empty($option)) {
-            throw new \Exception('wechat config is empty');
-        }
+        $option = $container->get(WechatSettingsResolver::class)->toArray();
 
         // 使用依赖注入的方式创建并返回一个 MiniHandler 实例，传入微信配置选项作为构造函数参数
         return \Hyperf\Support\make(OfficialAccountHandler::class, [$option]);

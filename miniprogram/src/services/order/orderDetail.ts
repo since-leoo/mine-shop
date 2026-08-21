@@ -18,9 +18,14 @@ export function fetchOrderDetail(params: any) {
   });
 }
 
-/** 获取客服数据 -- 后端暂无此接口，使用mock */
-export function fetchBusinessTime(params?: any) {
-  const { delay } = require('../_utils/delay');
-  const { genBusinessTime } = require('../../model/order/orderDetail');
-  return delay().then(() => genBusinessTime(params));
+/** 获取客服配置，来源于会员中心后台动态配置。 */
+export function fetchBusinessTime() {
+  return request({
+    url: '/api/v1/member/center',
+    method: 'GET',
+    needAuth: true,
+  }).then((data: any) => data?.customerServiceInfo || {
+    servicePhone: '',
+    serviceTimeDuration: '',
+  });
 }
