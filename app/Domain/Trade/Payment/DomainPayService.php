@@ -17,6 +17,7 @@ use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Event\OrderPaidForMember;
 use App\Domain\Member\Service\DomainMemberWalletService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Service\DomainOrderPaymentService;
@@ -42,6 +43,7 @@ class DomainPayService
         private readonly YsdPayService $payService,
         private readonly DomainMemberWalletService $walletService,
         private readonly DomainOrderPaymentService $paymentService,
+        private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**
@@ -61,16 +63,12 @@ class DomainPayService
      */
     public function payByWechat(array $config = []): array
     {
-        $baseConfig = config('pay.wechat.default');
-
-        if (! isset($baseConfig[$this->orderEntity->getPayMethod()])) {
-            throw new BusinessException(ResultCode::METHOD_NOT_ALLOWED, '支付方式不存在');
+        $paymentSetting = $this->mallSettingService->payment();
+        if (! $paymentSetting->wechatEnabled()) {
+            throw new BusinessException(ResultCode::METHOD_NOT_ALLOWED, '微信支付未启用');
         }
 
-        // 提取系统对应支付方式的配置
-        $methodConfig = $baseConfig[$this->orderEntity->getPayMethod()];
-        // 处理合并pay 配置信息
-        $config = array_merge($methodConfig, $config);
+        $config = array_merge($this->wechatSdkConfig($paymentSetting->wechatConfig()), $config);
 
         // 创建支付记录
         $this->paymentService->create(
@@ -88,6 +86,27 @@ class DomainPayService
         }
 
         return $payInfo;
+    }
+
+    /** @param array<string, mixed> $config */
+    private function wechatSdkConfig(array $config): array
+    {
+        $mchid = (string) ($config['mchid'] ?? $config['mch_id'] ?? '');
+        $appId = (string) ($config['app_id'] ?? $config['mini_app_id'] ?? '');
+        $privateKey = (string) ($config['private_key'] ?? $config['mch_secret_cert'] ?? '');
+        $apiV3Key = (string) ($config['apiv3_key'] ?? $config['mch_secret_key'] ?? '');
+
+        if ($mchid === '' || $appId === '' || $privateKey === '' || $apiV3Key === '') {
+            throw new BusinessException(ResultCode::FAIL, '微信支付配置不完整');
+        }
+
+        return array_replace($config, [
+            'app_id' => $appId,
+            'mini_app_id' => $appId,
+            'mch_id' => $mchid,
+            'mch_secret_cert' => $privateKey,
+            'mch_secret_key' => $apiV3Key,
+        ]);
     }
 
     /**

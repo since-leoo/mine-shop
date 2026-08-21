@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import './index.scss';
+import { fetchOrderLogistics } from '../../../services/order/logistics';
 
 interface TrackingNode {
   title: string;
@@ -39,19 +40,26 @@ export default function DeliveryDetail() {
       } catch (e) {}
     }
 
-    // Mock data for standalone access
-    setTimeout(() => {
-      setCompanyName('顺丰速运');
-      setLogisticsNo(params.orderNo || 'SF1234567890');
-      setNodes([
-        { title: '已签收', time: '2024-01-03 14:30', desc: '您的快递已签收', active: true },
-        { title: '派送中', time: '2024-01-03 08:00', desc: '快递员正在派送', active: false },
-        { title: '已到达', time: '2024-01-02 20:00', desc: '快递已到达您所在城市', active: false },
-        { title: '运输中', time: '2024-01-01 16:00', desc: '快递正在运输中', active: false },
-        { title: '已揽收', time: '2024-01-01 10:00', desc: '快递员已揽收', active: false },
-      ]);
+    const orderNo = params.orderNo || '';
+    if (!orderNo) {
       setLoading(false);
-    }, 500);
+      return;
+    }
+    fetchOrderLogistics(orderNo)
+      .then((res: any) => {
+        const data = res?.data || res || {};
+        const traces = Array.isArray(data.traces) ? data.traces : [];
+        setCompanyName(data.companyName || data.company || data.companyCode || '');
+        setLogisticsNo(data.trackingNo || data.logisticsNo || '');
+        setNodes(traces.map((trace: any, index: number) => ({
+          title: trace.status || '',
+          time: trace.time || '',
+          desc: trace.context || trace.desc || '',
+          active: index === 0,
+        })));
+      })
+      .catch(() => setNodes([]))
+      .finally(() => setLoading(false));
   }, [router.params]);
 
   const handleCopyNo = () => {

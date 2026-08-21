@@ -1,5 +1,5 @@
 ---
-name: MineShop-ddd-development-standards
+name: ddd-development-standards
 description: MineShop PHP/Hyperf 项目的 DDD 后端开发与代码评审规范。用于在 MineShop 仓库新增或修改 Controller、Request、DTO、Contract、Application、Domain Service、Entity、Mapper、Repository、ValueObject、Transformer 或相关测试时，强制遵守 docs/DDD-ARCHITECTURE.md 定义的分层职责、命名、数据流、验证和持久化规则。
 ---
 

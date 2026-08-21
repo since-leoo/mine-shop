@@ -15,6 +15,7 @@ namespace App\Interface\Api\Controller\V1\Payment;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\DomainPayService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Service\Pay\YsdPayService;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\PostMapping;
@@ -29,6 +30,7 @@ final class PaymentNotifyController
         private readonly DomainOrderService $orderService,
         private readonly DomainPayService $domainPayService,
         private readonly YsdPayService $payService,
+        private readonly DomainMallSettingService $mallSettingService,
         private readonly ServerRequestInterface $request,
     ) {}
 
@@ -59,15 +61,14 @@ final class PaymentNotifyController
 
     private function getWechatConfig(): array
     {
-        if (! function_exists('config')) {
-            return [];
-        }
-
-        try {
-            $config = config('pay.default.wechat', config('pay.wechat.default', []));
-            return is_array($config) ? $config : [];
-        } catch (\Throwable) {
-            return [];
-        }
+        $config = $this->mallSettingService->payment()->wechatConfig();
+        $appId = (string) ($config['app_id'] ?? $config['mini_app_id'] ?? '');
+        return array_replace($config, [
+            'app_id' => $appId,
+            'mini_app_id' => $appId,
+            'mch_id' => $config['mchid'] ?? $config['mch_id'] ?? '',
+            'mch_secret_cert' => $config['private_key'] ?? $config['mch_secret_cert'] ?? '',
+            'mch_secret_key' => $config['apiv3_key'] ?? $config['mch_secret_key'] ?? '',
+        ]);
     }
 }

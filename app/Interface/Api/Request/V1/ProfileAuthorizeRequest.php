@@ -30,8 +30,8 @@ class ProfileAuthorizeRequest extends BaseRequest
     public function authorizeProfileRules(): array
     {
         return [
-            'avatar_url' => 'required|url',
-            'nickname' => 'required|string',
+            'avatar_url' => 'nullable|url',
+            'nickname' => 'nullable|string|max:60',
             'gender' => 'nullable|integer|in:0,1,2',
         ];
     }
@@ -42,5 +42,13 @@ class ProfileAuthorizeRequest extends BaseRequest
             'avatar_url' => '头像',
             'nickname' => '昵称',
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'avatar_url' => $this->input('avatar_url', $this->input('avatarUrl')),
+            'nickname' => $this->input('nickname', $this->input('nick_name')),
+        ]);
     }
 }

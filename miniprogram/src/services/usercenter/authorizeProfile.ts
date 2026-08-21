@@ -11,10 +11,18 @@ export function authorizeProfile(data: any) {
       ...data,
     }));
   }
+  const payload = {
+    avatar_url: data?.avatar_url ?? data?.avatarUrl,
+    nickname: data?.nickname ?? data?.nickName,
+    gender: data?.gender,
+  };
+  Object.keys(payload).forEach((key) => {
+    if (payload[key as keyof typeof payload] === undefined || payload[key as keyof typeof payload] === '') delete payload[key as keyof typeof payload];
+  });
   return request({
     url: '/api/v1/member/profile/authorize',
     method: 'POST',
-    data,
+    data: payload,
     needAuth: true,
   });
 }
