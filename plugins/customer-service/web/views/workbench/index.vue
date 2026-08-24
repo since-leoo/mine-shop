@@ -28,7 +28,7 @@ function socketUrl(): string {
   const configured = import.meta.env.VITE_CUSTOMER_SERVICE_SOCKET_URL as string | undefined
   if (configured) return configured
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.hostname}:9502/customer-service`
+  return `${protocol}//${window.location.hostname}/customer-service`
 }
 
 function normalizeSocketMessage(message: any): MessageVo {

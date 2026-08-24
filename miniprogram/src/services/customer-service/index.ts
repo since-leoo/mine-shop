@@ -25,7 +25,7 @@ export function closeCustomerConversation(conversationNo: string) {
 export function customerSocketUrl(gatewayUrl = '', socketPath = '/customer-service'): string {
   if (gatewayUrl) return `${gatewayUrl.replace(/\/$/, '')}${socketPath}`;
   const base = (config.apiBaseUrl || '').replace(/^http/, 'ws').replace(/\/$/, '');
-  return `${base.replace(/:\d+$/, '')}:9502${socketPath}`;
+  return `${base.replace(/:\d+$/, '')}${socketPath}`;
 }
 
 export function createClientMessageId() {
