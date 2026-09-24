@@ -65,19 +65,6 @@ const useRouteStore = defineStore(
         component: () => import('@/layouts'),
         redirect: welcomePage.path,
         children: [
-          {
-            name: 'MinePluginCenterRoute',
-            path: '/plugin-center/:pluginName(.*)*',
-            component: () => import('@/modules/plugin-center/views/index.vue'),
-            meta: {
-              title: '插件中心',
-              icon: 'carbon:application',
-              type: 'M',
-              breadcrumbEnable: true,
-              copyright: false,
-              cache: false,
-            },
-          },
           Object.assign(welcomeRoute, {
             name: welcomePage.name,
             path: welcomePage.path,
@@ -102,6 +89,19 @@ const useRouteStore = defineStore(
               i18n: 'menu.pageError',
             },
           }),
+          {
+            name: 'MinePluginCenterRoute',
+            path: '/plugin-center/:pluginName(.*)*',
+            component: () => import('@/modules/plugin-center/views/index.vue'),
+            meta: {
+              title: '插件中心',
+              icon: 'carbon:application',
+              type: 'M',
+              breadcrumbEnable: true,
+              copyright: false,
+              cache: false,
+            },
+          },
         ],
       }
     }
