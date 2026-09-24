@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace seeders\support;
 
@@ -440,7 +448,7 @@ final class DefaultDiyPageSchemas
 
     private static function bannerImage(int $index): string
     {
-        return sprintf('https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner%d.png', $index);
+        return \sprintf('https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner%d.png', $index);
     }
 
     private static function couponHeroImage(): string
@@ -499,12 +507,11 @@ final class DefaultDiyPageSchemas
     private static function navItem(
         string $title,
         string $path,
-        array  $params = [],
+        array $params = [],
         string $icon = '',
         string $iconText = '',
         string $iconBg = '#FFF1E8'
-    ): array
-    {
+    ): array {
         $item = [
             'title' => $title,
             'icon' => $icon,
@@ -523,18 +530,18 @@ final class DefaultDiyPageSchemas
 
     private static function quickNavSvg(string $icon): string
     {
-        if (!preg_match('/\.(svg|png)$/', $icon)) {
+        if (! preg_match('/\.(svg|png)$/', $icon)) {
             return '';
         }
 
         $asset = preg_replace('#^assets/#', '', ltrim($icon, '/'));
         $asset = preg_replace('/\.png$/', '.svg', $asset);
-        $path = dirname(__DIR__, 3) . '/web/public/diy-assets/' . $asset;
-        if (!is_file($path)) {
+        $path = \dirname(__DIR__, 3) . '/web/public/diy-assets/' . $asset;
+        if (! is_file($path)) {
             return '';
         }
 
-        $svg = trim((string)file_get_contents($path));
+        $svg = trim((string) file_get_contents($path));
         return str_starts_with($svg, '<svg') ? $svg : '';
     }
 
@@ -544,18 +551,17 @@ final class DefaultDiyPageSchemas
             'type' => 'page',
             'path' => $path,
             'params' => $params,
-        ], static fn($value): bool => $value !== []);
+        ], static fn ($value): bool => $value !== []);
     }
 
     private static function component(
         string $id,
         string $type,
         string $name,
-        array  $props = [],
-        array  $data = [],
-        array  $style = []
-    ): array
-    {
+        array $props = [],
+        array $data = [],
+        array $style = []
+    ): array {
         return [
             'id' => $id,
             'type' => $type,

@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
 use App\Infrastructure\Model\Content\DiyTemplate;
@@ -26,7 +25,7 @@ class DiyTemplateSeeder20260606 extends Seeder
 
         foreach ($this->templates() as $template) {
             $category = $categories->get($template['category_code']);
-            if (!$category instanceof DiyTemplateCategory) {
+            if (! $category instanceof DiyTemplateCategory) {
                 continue;
             }
 
@@ -437,12 +436,11 @@ class DiyTemplateSeeder20260606 extends Seeder
     private function navItem(
         string $title,
         string $path,
-        array  $params = [],
+        array $params = [],
         string $icon = '',
         string $iconText = '',
         string $iconBg = '#FFF1E8'
-    ): array
-    {
+    ): array {
         $item = [
             'title' => $title,
             'icon' => $icon,
@@ -461,18 +459,18 @@ class DiyTemplateSeeder20260606 extends Seeder
 
     private function quickNavSvg(string $icon): string
     {
-        if (!preg_match('/\.(svg|png)$/', $icon)) {
+        if (! preg_match('/\.(svg|png)$/', $icon)) {
             return '';
         }
 
         $asset = preg_replace('#^assets/#', '', ltrim($icon, '/'));
         $asset = preg_replace('/\.png$/', '.svg', $asset);
         $path = dirname(__DIR__, 2) . '/web/public/diy-assets/' . $asset;
-        if (!is_file($path)) {
+        if (! is_file($path)) {
             return '';
         }
 
-        $svg = trim((string)file_get_contents($path));
+        $svg = trim((string) file_get_contents($path));
         return str_starts_with($svg, '<svg') ? $svg : '';
     }
 
@@ -491,7 +489,7 @@ class DiyTemplateSeeder20260606 extends Seeder
             'type' => 'page',
             'path' => $path,
             'params' => $params,
-        ], static fn($value): bool => $value !== []);
+        ], static fn ($value): bool => $value !== []);
     }
 
     private function bannerImage(int $index): string

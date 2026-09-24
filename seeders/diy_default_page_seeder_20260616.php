@@ -1,7 +1,14 @@
 <?php
 
 declare(strict_types=1);
-
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\ValueObject\DiyPagePublishValidationVo;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
@@ -28,12 +35,12 @@ class DiyDefaultPageSeeder20260616 extends Seeder
 
     private function seedPage(array $definition): void
     {
-        $pageKey = (string)$definition['page_key'];
-        $pageType = (string)$definition['page_type'];
+        $pageKey = (string) $definition['page_key'];
+        $pageType = (string) $definition['page_type'];
         $schema = DiyPageSchemaVo::fromArray($definition['schema'], $pageKey)->toArray();
         $validation = DiyPagePublishValidationVo::inspect($schema);
 
-        if (!$validation->passed()) {
+        if (! $validation->passed()) {
             $firstIssue = $validation->issues()[0];
             throw new RuntimeException(sprintf(
                 '默认DIY页面发布校验失败：%s/%s - %s',
@@ -48,7 +55,7 @@ class DiyDefaultPageSeeder20260616 extends Seeder
             ->where('page_type', $pageType)
             ->first();
 
-        if (!$page instanceof DiyPage) {
+        if (! $page instanceof DiyPage) {
             $page = new DiyPage();
             $page->page_key = $pageKey;
             $page->page_type = $pageType;
@@ -69,7 +76,7 @@ class DiyDefaultPageSeeder20260616 extends Seeder
             ->where('version_no', 1)
             ->first();
 
-        if (!$version instanceof DiyPageVersion) {
+        if (! $version instanceof DiyPageVersion) {
             $version = new DiyPageVersion();
             $version->page_id = $page->id;
             $version->version_no = 1;
@@ -102,10 +109,10 @@ class DiyDefaultPageSeeder20260616 extends Seeder
         }
 
         $published = DiyPageVersion::query()
-            ->whereKey((int)$page->published_version_id)
+            ->whereKey((int) $page->published_version_id)
             ->first();
 
-        return !$published instanceof DiyPageVersion || (int)$published->version_no <= 1;
+        return ! $published instanceof DiyPageVersion || (int) $published->version_no <= 1;
     }
 
     private function recordPublish(DiyPage $page, DiyPageVersion $version, Carbon $now): void
@@ -116,7 +123,7 @@ class DiyDefaultPageSeeder20260616 extends Seeder
             ->where('remark', 'default_seed_20260616')
             ->first();
 
-        if (!$record instanceof DiyPagePublishRecord) {
+        if (! $record instanceof DiyPagePublishRecord) {
             $record = new DiyPagePublishRecord();
             $record->page_id = $page->id;
             $record->version_id = $version->id;

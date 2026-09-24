@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Infrastructure\Model\Permission\Menu;
 use Hyperf\Database\Seeders\Seeder;
 
@@ -18,7 +17,7 @@ class UserDept20250310 extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run()
+    public function run(): void
     {
         $parent = Menu::where('name', 'permission')->firstOrFail();
         $now = Menu::create([
@@ -38,7 +37,7 @@ class UserDept20250310 extends Seeder
                 'copyright' => 1,
                 'cache' => 1,
                 'affix' => 0,
-            ]
+            ],
         ]);
         $children = [
             'permission:department:index' => '部门列表',
@@ -81,9 +80,9 @@ class UserDept20250310 extends Seeder
                     'cache' => 1,
                     'affix' => 0,
                 ],
-                'parent_id' => $now->id
+                'parent_id' => $now->id,
             ]);
-            $i++;
+            ++$i;
         }
     }
 }

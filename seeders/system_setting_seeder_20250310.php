@@ -9,7 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
 use App\Domain\Infrastructure\SystemSetting\Entity\SystemSettingEntity;
 use App\Infrastructure\Model\Setting\SystemSetting;
 use Hyperf\Database\Seeders\Seeder;
@@ -27,11 +26,11 @@ class SystemSettingSeeder20250310 extends Seeder
         foreach ($groups as $groupKey => $group) {
             $settings = $group['settings'] ?? [];
             foreach ($settings as $key => $setting) {
-                $type = (string)($setting['type'] ?? 'string');
-                $label = (string)($setting['label'] ?? $key);
+                $type = (string) ($setting['type'] ?? 'string');
+                $label = (string) ($setting['label'] ?? $key);
                 $description = $setting['description'] ?? null;
-                $sort = (int)($setting['sort'] ?? 0);
-                $isSensitive = (bool)($setting['is_sensitive'] ?? false);
+                $sort = (int) ($setting['sort'] ?? 0);
+                $isSensitive = (bool) ($setting['is_sensitive'] ?? false);
                 $meta = $setting['meta'] ?? [];
                 $defaultValue = $setting['default'] ?? null;
 
