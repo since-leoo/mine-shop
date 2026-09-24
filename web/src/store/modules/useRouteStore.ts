@@ -65,6 +65,7 @@ const useRouteStore = defineStore(
         component: () => import('@/layouts'),
         redirect: welcomePage.path,
         children: [
+
           Object.assign(welcomeRoute, {
             name: welcomePage.name,
             path: welcomePage.path,
