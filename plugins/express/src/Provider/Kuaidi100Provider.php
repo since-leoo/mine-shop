@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Express\Provider;
 
@@ -28,7 +36,7 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
         }
 
         $payload = [
-            'com' => strtolower(trim($companyCode)),
+            'com' => mb_strtolower(trim($companyCode)),
             'num' => trim($trackingNo),
             'show' => '0',
             'order' => 'desc',
@@ -36,11 +44,11 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
             'resultv2' => '4',
         ];
 
-        $param = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR);
+        $param = json_encode($payload, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES | \JSON_THROW_ON_ERROR);
         $response = $this->clientFactory->create()->post($this->config['endpoint'], [
             'form_params' => [
                 'customer' => $this->config['customer'],
-                'sign' => strtoupper(md5($param . $this->config['key'] . $this->config['customer'])),
+                'sign' => mb_strtoupper(md5($param . $this->config['key'] . $this->config['customer'])),
                 'param' => $param,
             ],
             'headers' => [
@@ -56,7 +64,7 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
     private function mapResponse(ResponseInterface $response, string $companyCode, string $trackingNo): TrackingResult
     {
         $decoded = json_decode((string) $response->getBody(), true);
-        if (! is_array($decoded)) {
+        if (! \is_array($decoded)) {
             throw new TrackingException('快递100返回了无效响应');
         }
 
@@ -66,7 +74,7 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
 
         $traces = [];
         foreach (($decoded['data'] ?? []) as $item) {
-            if (! is_array($item)) {
+            if (! \is_array($item)) {
                 continue;
             }
             $traces[] = new TrackingTrace(
@@ -77,7 +85,7 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
             );
         }
 
-        $normalizedCompanyCode = (string) ($decoded['com'] ?? strtolower($companyCode));
+        $normalizedCompanyCode = (string) ($decoded['com'] ?? mb_strtolower($companyCode));
 
         return new TrackingResult(
             status: $this->normalizeState((string) ($decoded['state'] ?? '')),

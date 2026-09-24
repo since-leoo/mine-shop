@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Application\Admin\Infrastructure;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
+use SinceLeoo\Plugin\Contract\PluginDiscovererInterface;
 
 final class AppSystemSettingQueryService
 {
     public function __construct(
-        private readonly DomainSystemSettingService $service
+        private readonly DomainSystemSettingService $service,
+        private readonly PluginDiscovererInterface $pluginDiscoverer
     ) {}
 
     public function get(string $key, mixed $default = null): mixed
@@ -30,7 +32,11 @@ final class AppSystemSettingQueryService
      */
     public function group(string $group): array
     {
-        return $this->service->groupDetails($group);
+        $owned = $this->pluginSettingKeys();
+        return array_values(array_filter(
+            $this->service->groupDetails($group),
+            static fn (array $item): bool => ! isset($owned[$item['key']])
+        ));
     }
 
     /**
@@ -38,7 +44,16 @@ final class AppSystemSettingQueryService
      */
     public function groups(): array
     {
-        return $this->service->groups();
+        $owned = $this->pluginSettingKeys();
+        $groups = [];
+        foreach ($this->service->groups() as $group) {
+            $items = $this->service->groupDetails((string) $group['key']);
+            $visible = array_filter($items, static fn (array $item): bool => ! isset($owned[$item['key']]));
+            if ($visible !== []) {
+                $groups[] = $group;
+            }
+        }
+        return $groups;
     }
 
     /**
@@ -54,5 +69,24 @@ final class AppSystemSettingQueryService
             $result[$key] = $this->service->get($key);
         }
         return $result;
+    }
+
+    /** @return array<string, true> */
+    private function pluginSettingKeys(): array
+    {
+        $keys = [];
+        foreach ($this->pluginDiscoverer->discoverLocalPlugins() as $plugin) {
+            $name = (string) ($plugin['name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+            $center = $this->pluginDiscoverer->getPluginJsonConfig($name)['center'] ?? [];
+            foreach (($center['settings'] ?? []) as $key) {
+                if (\is_string($key) && $key !== '') {
+                    $keys[$key] = true;
+                }
+            }
+        }
+        return $keys;
     }
 }

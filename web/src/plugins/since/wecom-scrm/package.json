@@ -1,0 +1,6 @@
+{
+  "name": "@since/wecom-scrm",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": { "build": "echo 'Plugin build completed'" }
+}

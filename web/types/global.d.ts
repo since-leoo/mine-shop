@@ -1,5 +1,5 @@
 import type { ResultCode } from '@/utils/ResultCode.ts'
-import type { App, Ref } from 'vue'
+import type { App, Component, Ref } from 'vue'
 /**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
@@ -77,6 +77,21 @@ declare namespace Plugin {
     order?: number
   }
 
+  /** 插件中心页面定义。插件无需注册主应用菜单即可在插件中心展示。 */
+  interface Center {
+    title?: string
+    icon?: string
+    description?: string
+    /** 插件中心内加载的页面组件（支持异步组件工厂） */
+    page?: Component | (() => Promise<unknown>)
+    /** 插件设置页面，可声明组件或跳转路由。 */
+    settings?: {
+      page?: Component | (() => Promise<unknown>)
+      route?: string
+    }
+    order?: number
+  }
+
   interface Config {
     /**
      * 插件信息
@@ -93,6 +108,13 @@ declare namespace Plugin {
   interface PluginConfig {
     install: (app: App) => void
     config: Config
+    center?: Center
+    /**
+     * When true, the plugin is managed exclusively from the plugin center.
+     * Legacy `views` routes are not mounted into the main application router.
+     * This allows plugins to migrate away from menu seeders incrementally.
+     */
+    centerOnly?: boolean
     views?: Views[]
     /**
      * 插件hooks

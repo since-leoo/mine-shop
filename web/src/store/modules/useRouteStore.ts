@@ -27,6 +27,10 @@ const useRouteStore = defineStore(
       router.addRoute(MineRootLayoutRoute)
       routesRaw.value = router.getRoutes()
       routes = menuToRoutes(routes)
+      // The plugin center is a fixed application route. Ignore a stale menu
+      // record with the same route name so legacy plugin seeders cannot create
+      // duplicate Vue Router records during the migration period.
+      routes = removeFixedRoutes(routes)
 
       router.getRoutes().find((route, key) => {
         if (route.name === 'MineRootLayoutRoute') {
@@ -39,7 +43,10 @@ const useRouteStore = defineStore(
       const plugins = usePluginStore().getPluginConfig() as { [ key: string ]: Plugin.PluginConfig }
       Object.keys(plugins).map((name: string) => {
         const plugin = plugins[name] as Plugin.PluginConfig
-        if (plugin.config?.enable === true && plugin?.views) {
+        // Plugins marked as centerOnly expose their UI exclusively through the
+        // fixed plugin-center route. Keep mounting legacy views for unmigrated
+        // plugins so migration can happen one plugin at a time.
+        if (plugin.config?.enable === true && plugin.centerOnly !== true && plugin?.views) {
           plugin.views.map((item: Plugin.Views) => {
             const route = toRecordRawRoute(item)
             MineRootLayoutRoute.children?.push(route)
@@ -58,6 +65,19 @@ const useRouteStore = defineStore(
         component: () => import('@/layouts'),
         redirect: welcomePage.path,
         children: [
+          {
+            name: 'MinePluginCenterRoute',
+            path: '/plugin-center/:pluginName(.*)*',
+            component: () => import('@/modules/plugin-center/views/index.vue'),
+            meta: {
+              title: '插件中心',
+              icon: 'carbon:application',
+              type: 'M',
+              breadcrumbEnable: true,
+              copyright: false,
+              cache: false,
+            },
+          },
           Object.assign(welcomeRoute, {
             name: welcomePage.name,
             path: welcomePage.path,
@@ -117,6 +137,12 @@ const useRouteStore = defineStore(
 
     function toRecordRawRoute(route: any) {
       return flatteningRoutes([route])[0].meta.breadcrumb[0]
+    }
+
+    function removeFixedRoutes(routerMap: any[]): any[] {
+      return routerMap
+        .filter(item => item?.name !== 'MinePluginCenterRoute' && !String(item?.path ?? '').startsWith('/plugin-center'))
+        .map(item => item?.children ? { ...item, children: removeFixedRoutes(item.children) } : item)
     }
 
     const moduleViews = import.meta.glob('../../modules/**/views/**/**.{vue,jsx,tsx}')

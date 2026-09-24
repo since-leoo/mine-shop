@@ -50,6 +50,23 @@ const usePluginStore = defineStore(
       return plugins.value as keyPlugins
     }
 
+    /** 返回插件中心可展示的插件，按声明顺序排序。 */
+    function getPluginCenterList() {
+      return Object.entries(plugins.value)
+        .map(([key, plugin]) => ({
+          key,
+          plugin,
+          info: plugin.config.info,
+          center: plugin.center,
+          enabled: plugin.config.enable === true,
+        }))
+        .sort((a, b) => (a.center?.order ?? a.info.order ?? 0) - (b.center?.order ?? b.info.order ?? 0))
+    }
+
+    function getPlugin(pluginName: string): Plugin.PluginConfig | undefined {
+      return plugins.value[pluginName]
+    }
+
     function enabled(pluginName: string) {
       if (plugins.value[pluginName]) {
         const plg: Plugin.PluginConfig = plugins.value[pluginName]
@@ -74,6 +91,8 @@ const usePluginStore = defineStore(
       registerPlugin,
       callHooks,
       getPluginConfig,
+      getPluginCenterList,
+      getPlugin,
       enabled,
       disabled,
     }

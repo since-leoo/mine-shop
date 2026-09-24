@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\Sms\Service;
 
@@ -14,8 +22,11 @@ use Plugin\Sms\Contract\SmsVerificationServiceInterface;
 final class EasySmsVerificationService implements SmsVerificationServiceInterface
 {
     private const CODE_TTL = 300;
+
     private const RESEND_INTERVAL = 60;
+
     private const DAILY_LIMIT = 10;
+
     private const CACHE_PREFIX = '/plugin/sms/verification';
 
     public function __construct(
@@ -29,7 +40,7 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         $this->assertProductionSmsEnabled();
         $this->assertCanSend($phone, $scene);
 
-        $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $code = mb_str_pad((string) random_int(0, 999999), 6, '0', \STR_PAD_LEFT);
         $this->storeVerificationCode($phone, $scene, $code);
 
         $result = [
@@ -147,7 +158,7 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
 
     private function logNonProductionCode(string $phone, string $scene, string $code): void
     {
-        if (! function_exists('logger')) {
+        if (! \function_exists('logger')) {
             return;
         }
 
@@ -171,16 +182,16 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
 
     private function codeKey(string $phone, string $scene): string
     {
-        return sprintf('code:%s:%s', $scene, $phone);
+        return \sprintf('code:%s:%s', $scene, $phone);
     }
 
     private function resendKey(string $phone, string $scene): string
     {
-        return sprintf('rate:%s:%s', $scene, $phone);
+        return \sprintf('rate:%s:%s', $scene, $phone);
     }
 
     private function dailyLimitKey(string $phone): string
     {
-        return sprintf('daily:%s:%s', date('Ymd'), $phone);
+        return \sprintf('daily:%s:%s', date('Ymd'), $phone);
     }
 }

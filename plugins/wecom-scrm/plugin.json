@@ -1,0 +1,14 @@
+{
+    "name": "since/wecom-scrm",
+    "version": "0.1.0",
+    "description": "企业微信 SCRM（客户、标签、群 SOP 与系统用户打通）",
+    "author": "since",
+    "namespace": "Plugin\\WecomScrm",
+    "priority": 25,
+    "dependencies": [],
+    "composer_require": {},
+    "rollback_on_uninstall": false,
+    "enabled": true,
+    "center": {"title": "企业微信 SCRM", "icon": "ant-design:team-outlined", "sort": 50, "settings": ["mall.wecom.enabled", "mall.wecom.corp_id", "mall.wecom.secret", "mall.wecom.token", "mall.wecom.aes_key", "mall.wecom.agent_id", "mall.wecom.default_tags"]},
+    "configProvider": "Plugin\\WecomScrm\\ConfigProvider"
+}

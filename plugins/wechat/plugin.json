@@ -6,6 +6,7 @@
     "namespace": "Plugin\\Wechat",
     "priority": 10,
     "enabled": true,
+    "center": {"title": "微信组件", "icon": "ph:wechat-logo", "sort": 40, "settings": ["mall.integration.wechat_auth_config"]},
     "dependencies": [],
     "composer_require": {
         "w7corp/easywechat": "^6.5"

@@ -99,105 +99,6 @@ final class ExportService
         }
     }
 
-    /**
-     * 实际处理导出任务逻辑.
-     */
-    private function doProcessExportTask(int $taskId): void
-    {
-        $task = ExportTask::find($taskId);
-        if (! $task) {
-            throw new \RuntimeException("导出任务不存在: {$taskId}");
-        }
-
-        $status = (string) $task->status;
-
-        if (\in_array($status, [ExportStatus::PROCESSING->value, ExportStatus::SUCCESS->value], true)) {
-            return;
-        }
-
-        if ($status !== ExportStatus::PENDING->value) {
-            throw new \DomainException("只有待处理状态的任务才能开始处理，当前状态: {$status}");
-        }
-
-        $affected = ExportTask::where('id', $taskId)
-            ->where('status', ExportStatus::PENDING->value)
-            ->update([
-                'status' => ExportStatus::PROCESSING->value,
-                'progress' => 0,
-                'started_at' => Carbon::now(),
-            ]);
-
-        if ($affected === 0) {
-            return;
-        }
-
-        $task->refresh();
-
-        // 解析 DTO 注解 & 获取数据
-        $meta = $this->dtoResolver->resolve($task->dto_class);
-        $dataProvider = $meta['sheet']['dataProvider'] ?? null;
-        if (! $dataProvider || ! \is_array($dataProvider) || \count($dataProvider) !== 2) {
-            throw new \RuntimeException("DTO {$task->dto_class} 未配置 dataProvider");
-        }
-        [$serviceClass, $method] = $dataProvider;
-        $service = ApplicationContext::getContainer()->get($serviceClass);
-        $rawData = $service->{$method}($task->export_params);
-
-        // 通过 DtoHydrator 将原始数据自动映射为导出行
-        $columns = $meta['columns'];
-        $hydrator = $this->hydrator;
-        $data = (static function () use ($rawData, $columns, $hydrator) {
-            foreach ($rawData as $row) {
-                yield $hydrator->hydrate($columns, $row);
-            }
-        })();
-
-        // 临时目录
-        $tempPath = config('export.temp_path', BASE_PATH . '/storage/exports/temp');
-        if (! is_dir($tempPath)) {
-            mkdir($tempPath, 0o755, true);
-        }
-
-        $format = ExportFormat::from($task->export_format);
-        $baseName = \sprintf('%s_%s', $task->id, date('YmdHis'));
-        $tempFile = $tempPath . '/' . $baseName . '.' . $format->extension();
-
-        $progressCallback = fn (int $progress) => $this->updateProgress($taskId, $progress);
-        $maxRowsPerFile = (int) config('export.max_rows_per_file', 50000);
-
-        // 写入文件（可能返回多个分片文件）
-        $writer = $this->resolveWriter();
-        $generatedFiles = ($format === ExportFormat::EXCEL)
-            ? $writer->writeExcel($tempFile, $meta, $data, $progressCallback, $maxRowsPerFile)
-            : $writer->writeCsv($tempFile, $meta, $data, $progressCallback, $maxRowsPerFile);
-
-        // 多文件打包 zip
-        $finalFile = $this->packageFiles($generatedFiles, $tempPath, $baseName, $task->task_name, $format);
-
-        // 上传到第三方存储
-        $uploadResult = $this->upload->upload(new \SplFileInfo($finalFile));
-
-        // 获取文件大小
-        $fileSize = file_exists($finalFile) ? filesize($finalFile) : 0;
-        $fileName = $task->task_name . '.' . pathinfo($finalFile, \PATHINFO_EXTENSION);
-
-        // 清理临时文件
-        $this->cleanupTempFiles(array_merge($generatedFiles, [$finalFile]));
-
-        // 标记成功，存储第三方 URL
-        $task->update([
-            'status' => ExportStatus::SUCCESS->value,
-            'progress' => 100,
-            'file_path' => $uploadResult->getUrl(),
-            'file_size' => $fileSize ?: $uploadResult->getSizeByte(),
-            'file_name' => $fileName,
-            'completed_at' => Carbon::now(),
-        ]);
-
-        $this->cache->delete("export:progress:{$taskId}");
-        event(new ExportTaskCompleted($task));
-    }
-
     public function updateProgress(int $taskId, int $progress): void
     {
         $this->cache->set("export:progress:{$taskId}", $progress, 3600);
@@ -360,6 +261,105 @@ final class ExportService
             'url' => $task->file_path,
             'file_name' => $task->file_name,
         ];
+    }
+
+    /**
+     * 实际处理导出任务逻辑.
+     */
+    private function doProcessExportTask(int $taskId): void
+    {
+        $task = ExportTask::find($taskId);
+        if (! $task) {
+            throw new \RuntimeException("导出任务不存在: {$taskId}");
+        }
+
+        $status = (string) $task->status;
+
+        if (\in_array($status, [ExportStatus::PROCESSING->value, ExportStatus::SUCCESS->value], true)) {
+            return;
+        }
+
+        if ($status !== ExportStatus::PENDING->value) {
+            throw new \DomainException("只有待处理状态的任务才能开始处理，当前状态: {$status}");
+        }
+
+        $affected = ExportTask::where('id', $taskId)
+            ->where('status', ExportStatus::PENDING->value)
+            ->update([
+                'status' => ExportStatus::PROCESSING->value,
+                'progress' => 0,
+                'started_at' => Carbon::now(),
+            ]);
+
+        if ($affected === 0) {
+            return;
+        }
+
+        $task->refresh();
+
+        // 解析 DTO 注解 & 获取数据
+        $meta = $this->dtoResolver->resolve($task->dto_class);
+        $dataProvider = $meta['sheet']['dataProvider'] ?? null;
+        if (! $dataProvider || ! \is_array($dataProvider) || \count($dataProvider) !== 2) {
+            throw new \RuntimeException("DTO {$task->dto_class} 未配置 dataProvider");
+        }
+        [$serviceClass, $method] = $dataProvider;
+        $service = ApplicationContext::getContainer()->get($serviceClass);
+        $rawData = $service->{$method}($task->export_params);
+
+        // 通过 DtoHydrator 将原始数据自动映射为导出行
+        $columns = $meta['columns'];
+        $hydrator = $this->hydrator;
+        $data = (static function () use ($rawData, $columns, $hydrator) {
+            foreach ($rawData as $row) {
+                yield $hydrator->hydrate($columns, $row);
+            }
+        })();
+
+        // 临时目录
+        $tempPath = config('export.temp_path', BASE_PATH . '/storage/exports/temp');
+        if (! is_dir($tempPath)) {
+            mkdir($tempPath, 0o755, true);
+        }
+
+        $format = ExportFormat::from($task->export_format);
+        $baseName = \sprintf('%s_%s', $task->id, date('YmdHis'));
+        $tempFile = $tempPath . '/' . $baseName . '.' . $format->extension();
+
+        $progressCallback = fn (int $progress) => $this->updateProgress($taskId, $progress);
+        $maxRowsPerFile = (int) config('export.max_rows_per_file', 50000);
+
+        // 写入文件（可能返回多个分片文件）
+        $writer = $this->resolveWriter();
+        $generatedFiles = ($format === ExportFormat::EXCEL)
+            ? $writer->writeExcel($tempFile, $meta, $data, $progressCallback, $maxRowsPerFile)
+            : $writer->writeCsv($tempFile, $meta, $data, $progressCallback, $maxRowsPerFile);
+
+        // 多文件打包 zip
+        $finalFile = $this->packageFiles($generatedFiles, $tempPath, $baseName, $task->task_name, $format);
+
+        // 上传到第三方存储
+        $uploadResult = $this->upload->upload(new \SplFileInfo($finalFile));
+
+        // 获取文件大小
+        $fileSize = file_exists($finalFile) ? filesize($finalFile) : 0;
+        $fileName = $task->task_name . '.' . pathinfo($finalFile, \PATHINFO_EXTENSION);
+
+        // 清理临时文件
+        $this->cleanupTempFiles(array_merge($generatedFiles, [$finalFile]));
+
+        // 标记成功，存储第三方 URL
+        $task->update([
+            'status' => ExportStatus::SUCCESS->value,
+            'progress' => 100,
+            'file_path' => $uploadResult->getUrl(),
+            'file_size' => $fileSize ?: $uploadResult->getSizeByte(),
+            'file_name' => $fileName,
+            'completed_at' => Carbon::now(),
+        ]);
+
+        $this->cache->delete("export:progress:{$taskId}");
+        event(new ExportTaskCompleted($task));
     }
 
     /**

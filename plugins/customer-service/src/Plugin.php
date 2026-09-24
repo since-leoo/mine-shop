@@ -12,14 +12,69 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService;
 
-use App\Infrastructure\Model\Permission\Menu;
-use App\Infrastructure\Model\Permission\Meta;
-use App\Infrastructure\Model\Permission\Role;
-use Hyperf\DbConnection\Db;
 use SinceLeoo\Plugin\Contract\AbstractPlugin;
 
 final class Plugin extends AbstractPlugin
 {
+    public static function mallGroups(): array
+    {
+        return [
+            'customer_service' => [
+                'label' => '客服中心',
+                'description' => '配置 Socket 客服服务、排队、消息和营业时间。',
+                'sort' => 70,
+                'settings' => [
+                    'mall.customer_service.config' => [
+                        'label' => '客服服务配置',
+                        'description' => '客服 Socket 服务运行参数及业务策略。',
+                        'type' => 'json',
+                        'is_sensitive' => true,
+                        'meta' => [
+                            'component' => 'form',
+                            'display' => 'dialog',
+                            'button_label' => '配置客服',
+                            'fields' => [
+                                ['key' => 'enabled', 'label' => '启用客服', 'component' => 'switch'],
+                                ['key' => 'gateway_url', 'label' => '客服 Socket 地址', 'placeholder' => 'wss://socket.example.com:9502'],
+                                ['key' => 'socket_path', 'label' => 'Socket 路径', 'required' => true, 'placeholder' => '/customer-service'],
+                                ['key' => 'max_queue_size', 'label' => '最大排队人数', 'component' => 'number', 'required' => true],
+                                ['key' => 'queue_enabled', 'label' => '启用排队', 'component' => 'switch'],
+                                ['key' => 'auto_assign_strategy', 'label' => '自动分配策略', 'component' => 'select', 'options' => [['label' => '最少接待优先', 'value' => 'least_load']]],
+                                ['key' => 'queue_timeout_seconds', 'label' => '排队超时秒数', 'component' => 'number', 'required' => true],
+                                ['key' => 'max_conversations_per_agent', 'label' => '坐席最大会话数', 'component' => 'number', 'required' => true],
+                                ['key' => 'history_page_size', 'label' => '历史消息条数', 'component' => 'number', 'required' => true],
+                                ['key' => 'allow_member_image', 'label' => '允许发送图片', 'component' => 'switch'],
+                                ['key' => 'allow_product_card', 'label' => '允许发送商品卡片', 'component' => 'switch'],
+                                ['key' => 'max_image_size_mb', 'label' => '图片大小 MB', 'component' => 'number', 'required' => true],
+                                ['key' => 'max_message_length', 'label' => '文字最大长度', 'component' => 'number', 'required' => true],
+                                ['key' => 'welcome_message', 'label' => '欢迎语', 'component' => 'textarea'],
+                                ['key' => 'offline_message', 'label' => '离线提示', 'component' => 'textarea'],
+                            ],
+                        ],
+                        'default' => [
+                            'enabled' => true,
+                            'gateway_url' => '',
+                            'socket_path' => '/customer-service',
+                            'max_queue_size' => 100,
+                            'queue_enabled' => true,
+                            'auto_assign_strategy' => 'least_load',
+                            'queue_timeout_seconds' => 600,
+                            'max_conversations_per_agent' => 5,
+                            'history_page_size' => 30,
+                            'allow_member_image' => true,
+                            'allow_product_card' => true,
+                            'max_image_size_mb' => 5,
+                            'max_message_length' => 1000,
+                            'welcome_message' => '您好，请问有什么可以帮助您？',
+                            'offline_message' => '当前暂无客服在线，请留下您的问题。',
+                        ],
+                        'sort' => 10,
+                    ],
+                ],
+            ],
+        ];
+    }
+
     public function install(): void
     {
         $webSource = \dirname(__DIR__) . '/web';
@@ -27,7 +82,8 @@ final class Plugin extends AbstractPlugin
         if (is_dir($webSource)) {
             $this->copyDirectory($webSource, $webTarget);
         }
-        $this->installMenus();
+        // 插件统一通过前端插件中心提供入口，不再向主应用写入独立菜单。
+        // 权限按钮仍由业务接口按权限标识校验，历史菜单由 uninstallMenus() 清理。
     }
 
     public function uninstall(): void
@@ -36,58 +92,6 @@ final class Plugin extends AbstractPlugin
         if (is_dir($webTarget)) {
             $this->deleteDirectory($webTarget);
         }
-        $this->uninstallMenus();
-    }
-
-    private function installMenus(): void
-    {
-        Db::transaction(function (): void {
-            $root = $this->menu('customer-service:manage', 0, '/customer-service', '', '客服中心', 'ant-design:customer-service-outlined', 90);
-            $workbench = $this->menu('customer-service:workbench', (int) $root->id, '/customer-service/workbench', 'since/customer-service/views/workbench/index', '客服工作台', 'ant-design:message-outlined', 10);
-            $faq = $this->menu('customer-service:faq', (int) $root->id, '/customer-service/faq', 'since/customer-service/views/faq/index', '常见问题', 'ant-design:question-circle-outlined', 20);
-
-            $menus = [$root, $workbench, $faq];
-            foreach (['read', 'accept', 'transfer', 'close'] as $index => $action) {
-                $menus[] = $this->button('customer-service:conversation:' . $action, (int) $workbench->id, '会话' . ['查看', '接待', '转接', '关闭'][$index]);
-            }
-            foreach (['list', 'create', 'update', 'delete'] as $index => $action) {
-                $menus[] = $this->button('customer-service:faq:' . $action, (int) $faq->id, '常见问题' . ['查看', '新增', '编辑', '删除'][$index]);
-            }
-
-            $superAdmin = Role::query()->where('code', 'SuperAdmin')->first();
-            if ($superAdmin !== null) {
-                $superAdmin->menus()->syncWithoutDetaching(array_map(static fn (Menu $menu) => $menu->id, $menus));
-            }
-        });
-    }
-
-    private function uninstallMenus(): void
-    {
-        Db::transaction(function (): void {
-            $menus = Menu::query()->where('name', 'like', 'customer-service:%')->orderByDesc('id')->get();
-            foreach ($menus as $menu) {
-                $menu->roles()->detach();
-                $menu->delete();
-            }
-        });
-    }
-
-    private function menu(string $name, int $parentId, string $path, string $component, string $title, string $icon, int $sort): Menu
-    {
-        return Menu::query()->firstOrCreate(['name' => $name], [
-            'parent_id' => $parentId, 'path' => $path, 'component' => $component, 'redirect' => '', 'status' => 1, 'sort' => $sort,
-            'created_by' => 0, 'updated_by' => 0, 'remark' => 'since/customer-service 插件菜单',
-            'meta' => new Meta(['title' => $title, 'icon' => $icon, 'hidden' => false, 'type' => 'M', 'componentPath' => 'plugins/', 'componentSuffix' => '.vue', 'breadcrumbEnable' => true, 'copyright' => true, 'cache' => true, 'affix' => false]),
-        ]);
-    }
-
-    private function button(string $name, int $parentId, string $title): Menu
-    {
-        return Menu::query()->firstOrCreate(['name' => $name], [
-            'parent_id' => $parentId, 'path' => '', 'component' => '', 'redirect' => '', 'status' => 1, 'sort' => 0,
-            'created_by' => 0, 'updated_by' => 0, 'remark' => 'since/customer-service 插件权限',
-            'meta' => new Meta(['title' => $title, 'type' => 'B']),
-        ]);
     }
 
     private function copyDirectory(string $source, string $target): void

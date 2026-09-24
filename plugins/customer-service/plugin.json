@@ -9,5 +9,6 @@
     "composer_require": {},
     "rollback_on_uninstall": false,
     "enabled": true,
+    "center": {"title": "客服中心", "icon": "ant-design:customer-service-outlined", "sort": 20, "settings": ["mall.customer_service.config"]},
     "configProvider": "Plugin\\CustomerService\\ConfigProvider"
 }

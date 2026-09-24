@@ -9,5 +9,6 @@
     "composer_require": {},
     "rollback_on_uninstall": false,
     "enabled": true,
+    "center": {"title": "物流查询", "icon": "ph:truck", "sort": 30, "settings": ["mall.shipping.express_tracking_config"]},
     "configProvider": "Plugin\\Express\\ConfigProvider"
 }

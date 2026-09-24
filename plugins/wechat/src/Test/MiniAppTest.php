@@ -23,7 +23,7 @@ class MiniAppTest
     /**
      * 静默登陆.
      */
-    public function silentAuthorize(string $code)
+    public function silentAuthorize(string $code): void
     {
         // 静默授权
         $response = $this->app->silentAuthorize($code);
@@ -34,7 +34,7 @@ class MiniAppTest
     /**
      * 获取用户信息.
      */
-    public function performSilentLogin(string $code, string $encryptedData, string $iv)
+    public function performSilentLogin(string $code, string $encryptedData, string $iv): void
     {
         $response = $this->app->performSilentLogin($code, $encryptedData, $iv);
 
@@ -44,7 +44,7 @@ class MiniAppTest
     /**
      * 获取手机号码.
      */
-    public function getPhoneNumber(string $code)
+    public function getPhoneNumber(string $code): void
     {
         // 获取手机号码
         $response = $this->app->getPhoneNumber($code);
@@ -55,7 +55,7 @@ class MiniAppTest
     /**
      * 获取小程序码(有限制).
      */
-    public function getLimitedWxaCode()
+    public function getLimitedWxaCode(): void
     {
         $page = 'pages/index/index';
         $scene = '123456';
@@ -67,7 +67,7 @@ class MiniAppTest
     /**
      * 获取微信短链接.
      */
-    public function getMiniShortLink(string $pageUrl, string $pageTitle = '', bool $isPermanent = false)
+    public function getMiniShortLink(string $pageUrl, string $pageTitle = '', bool $isPermanent = false): void
     {
         // 是否获取永久短链（注意：永久短链有限制，具体参考小程序 https://developers.weixin.qq.com/miniprogram/dev/OpenApiDoc/qrcode-link/short-link/generateShortLink.html）
         $response = $this->app->getMiniShortLink($pageUrl, $pageTitle, $isPermanent);
@@ -78,7 +78,7 @@ class MiniAppTest
     /**
      * 获取scheme码.
      */
-    public function getSchemeCode(string $page, string $scene, string $envVersion = 'release', int $expireTime = -1, int $expireType = 0, int $expireInterval = -1)
+    public function getSchemeCode(string $page, string $scene, string $envVersion = 'release', int $expireTime = -1, int $expireType = 0, int $expireInterval = -1): void
     {
         $response = $this->app->getSchemeCode($page, $scene, $envVersion, $expireTime, $expireType, $expireInterval);
 
@@ -88,7 +88,7 @@ class MiniAppTest
     /**
      * 校验scheme码.
      */
-    public function checkSchemeCode(string $scheme, int $queryType = 0)
+    public function checkSchemeCode(string $scheme, int $queryType = 0): void
     {
         $response = $this->app->checkSchemeCode($scheme, $queryType);
 
@@ -98,7 +98,7 @@ class MiniAppTest
     /**
      * 获取加密url链接.
      */
-    public function getUrlLink(string $path, string $query = '', int $expireType = 0, int $expireTime = -1, int $expireInterval = -1, array $cloudBase = [])
+    public function getUrlLink(string $path, string $query = '', int $expireType = 0, int $expireTime = -1, int $expireInterval = -1, array $cloudBase = []): void
     {
         $response = $this->app->getUrlLink($path, $query, $expireType, $expireTime, $expireInterval, $cloudBase);
 
@@ -108,7 +108,7 @@ class MiniAppTest
     /**
      * 校验url链接.
      */
-    public function checkUrlLink(string $urlLink, int $queryType = 0)
+    public function checkUrlLink(string $urlLink, int $queryType = 0): void
     {
         $response = $this->app->checkUrlLink($urlLink, $queryType);
 

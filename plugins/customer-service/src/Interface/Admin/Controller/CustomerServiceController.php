@@ -13,23 +13,23 @@ declare(strict_types=1);
 namespace Plugin\CustomerService\Interface\Admin\Controller;
 
 use App\Interface\Admin\Controller\AbstractController;
-use App\Interface\Common\CurrentUser;
-use App\Interface\Common\Result;
-use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
+use App\Interface\Common\CurrentUser;
+use App\Interface\Common\Middleware\AccessTokenMiddleware;
+use App\Interface\Common\Result;
 use Hyperf\HttpServer\Annotation\Controller;
-use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\DeleteMapping;
 use Hyperf\HttpServer\Annotation\GetMapping;
+use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use Mine\Access\Attribute\Permission;
 use Plugin\CustomerService\Application\Admin\AppCustomerServiceCommandService;
 use Plugin\CustomerService\Application\Admin\AppCustomerServiceQueryService;
-use Plugin\CustomerService\Infrastructure\Model\CustomerServiceFaq;
 use Plugin\CustomerService\Application\Socket\CustomerServiceSocketTicketService;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceAgent;
-use Mine\Access\Attribute\Permission;
+use Plugin\CustomerService\Infrastructure\Model\CustomerServiceFaq;
 
 #[Controller(prefix: '/admin/customer-service')]
 #[Middleware(AccessTokenMiddleware::class)]

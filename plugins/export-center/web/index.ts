@@ -9,6 +9,7 @@ import type { Plugin } from '#/global'
 import locales from './locales'
 
 const pluginConfig: Plugin.PluginConfig = {
+  centerOnly: true,
   install(app: App) {
     // 注册多语言
     const i18n = app.config.globalProperties.$i18n
@@ -28,6 +29,15 @@ const pluginConfig: Plugin.PluginConfig = {
       description: '导出中心插件前端组件',
       order: 101,
     },
+  },
+  // 插件中心统一入口。导出任务页面不再依赖主应用菜单，
+  // 由插件中心通过动态组件加载。
+  center: {
+    title: '导出中心',
+    icon: 'mdi:download-box',
+    description: '管理导出任务和下载文件',
+    order: 10,
+    page: () => import('./views/task/index.vue'),
   },
 }
 

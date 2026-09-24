@@ -6,6 +6,7 @@
     "namespace": "Plugin\\ExportCenter",
     "priority": 10,
     "enabled": true,
+    "center": {"title": "导出中心", "icon": "mdi:download-box", "sort": 10},
     "dependencies": [],
     "composer_require": {
         "phpoffice/phpspreadsheet": "^2.0"

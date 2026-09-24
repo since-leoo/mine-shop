@@ -6,6 +6,7 @@
     "namespace": "Plugin\\Sms",
     "priority": 10,
     "enabled": true,
+    "center": {"title": "短信服务", "icon": "ph:chat-text", "sort": 35, "settings": ["mall.integration.sms_provider", "mall.integration.sms_config"]},
     "dependencies": [],
     "composer_require": {
         "overtrue/easy-sms": "^3.0"

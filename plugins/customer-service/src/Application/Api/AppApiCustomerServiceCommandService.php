@@ -17,8 +17,8 @@ use Hyperf\DbConnection\Db;
 use Plugin\CustomerService\Domain\Repository\CustomerServiceConversationRepository;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceConversation;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceFaq;
-use Plugin\CustomerService\Service\CustomerServiceSettingsResolver;
 use Plugin\CustomerService\Service\CustomerServiceAssignmentService;
+use Plugin\CustomerService\Service\CustomerServiceSettingsResolver;
 
 final class AppApiCustomerServiceCommandService
 {

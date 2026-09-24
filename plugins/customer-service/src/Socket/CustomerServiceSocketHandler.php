@@ -51,7 +51,7 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
         if ($event === 'auth') {
             $ticket = (string) ($payload['payload']['ticket'] ?? '');
             $principal = $this->tickets->consume($ticket);
-            if ($principal === null || ! in_array($principal['principal_type'], ['member', 'agent'], true)) {
+            if ($principal === null || ! \in_array($principal['principal_type'], ['member', 'agent'], true)) {
                 $this->responder->error($server, $frame->fd, 'Socket 凭证无效或已过期');
                 return;
             }
@@ -62,7 +62,7 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
         }
 
         $connection = $this->connections->get((string) $frame->fd);
-        $principalId = is_array($connection) ? (int) ($connection['principal_id'] ?? 0) : 0;
+        $principalId = \is_array($connection) ? (int) ($connection['principal_id'] ?? 0) : 0;
         if ($principalId <= 0) {
             $this->responder->error($server, $frame->fd, '请先认证 Socket 连接');
             return;
@@ -79,5 +79,4 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
         }
         $this->connections->del((string) $fd);
     }
-
 }

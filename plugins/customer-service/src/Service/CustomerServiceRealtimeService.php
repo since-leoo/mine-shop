@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\CustomerService\Service;
 
@@ -50,6 +58,6 @@ final class CustomerServiceRealtimeService
 
     private function publish(string $event, array $payload): void
     {
-        $this->cache->publish('customer-service:events', json_encode(['event' => $event, 'payload' => $payload], JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR));
+        $this->cache->publish('customer-service:events', json_encode(['event' => $event, 'payload' => $payload], \JSON_UNESCAPED_UNICODE | \JSON_THROW_ON_ERROR));
     }
 }

@@ -1,11 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\CustomerService\Application\Admin;
 
-use Carbon\Carbon;
 use App\Infrastructure\Model\Member\Member;
+use Carbon\Carbon;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceAgent;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceConversation;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceFaq;
@@ -22,7 +30,9 @@ final class AppCustomerServiceQueryService
     public function conversations(array $filters, int $page, int $pageSize): array
     {
         $query = CustomerServiceConversation::query()->orderByDesc('last_message_at')->orderByDesc('id');
-        if (($filters['status'] ?? '') !== '') $query->where('status', $filters['status']);
+        if (($filters['status'] ?? '') !== '') {
+            $query->where('status', $filters['status']);
+        }
         $paginator = $query->paginate($pageSize, ['*'], 'page', $page);
         return ['list' => array_map(fn (CustomerServiceConversation $conversation) => $this->conversation($conversation), $paginator->items()), 'total' => $paginator->total()];
     }
@@ -64,7 +74,7 @@ final class AppCustomerServiceQueryService
 
     public function formatMessage(array $message): array
     {
-        $content = is_array($message['content_json'] ?? null) ? $message['content_json'] : [];
+        $content = \is_array($message['content_json'] ?? null) ? $message['content_json'] : [];
         return $this->formatMessageData($message, $content);
     }
 
@@ -74,7 +84,7 @@ final class AppCustomerServiceQueryService
         $agent = $conversation->assigned_agent_id ? CustomerServiceAgent::query()->find($conversation->assigned_agent_id) : null;
         return [
             'id' => $conversation->id, 'no' => $conversation->conversation_no,
-            'status' => in_array($conversation->status, ['waiting', 'assigned'], true) ? 'queued' : $conversation->status,
+            'status' => \in_array($conversation->status, ['waiting', 'assigned'], true) ? 'queued' : $conversation->status,
             'member_id' => $conversation->member_id, 'member_name' => $member?->nickname ?: '会员 #' . $conversation->member_id,
             'member_avatar' => $member?->avatar, 'agent_name' => $agent?->display_name,
             'source' => $conversation->source, 'last_message_at' => $conversation->last_message_at?->toDateTimeString(),
@@ -83,7 +93,7 @@ final class AppCustomerServiceQueryService
 
     private function formatModelMessage(CustomerServiceMessage $message): array
     {
-        $content = is_array($message->content_json) ? $message->content_json : [];
+        $content = \is_array($message->content_json) ? $message->content_json : [];
         return $this->formatMessageData($message->toArray(), $content);
     }
 
