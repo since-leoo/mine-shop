@@ -1,7 +1,14 @@
 <?php
 
 declare(strict_types=1);
-
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Schema\Schema;
@@ -12,7 +19,7 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
+        Schema::create('settings', static function (Blueprint $table) {
             $table->id();
             $table->string('key', 100)->unique()->comment('配置键');
             $table->text('value')->nullable()->comment('配置值');
@@ -24,7 +31,7 @@ return new class extends Migration {
             $table->json('meta')->nullable()->comment('额外的渲染与校验配置');
             $table->integer('sort')->default(0)->comment('排序');
             $table->timestamps();
-            
+
             $table->index('group');
             $table->comment('商城配置表');
         });

@@ -1,9 +1,14 @@
 <?php
 
 declare(strict_types=1);
-
-
-
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 use App\Infrastructure\Model\Member\Member;
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
@@ -37,6 +42,6 @@ class AddMemberReferralFields extends Migration
 
     private static function generateCode(): string
     {
-        return strtoupper(substr(md5(uniqid((string)mt_rand(), true)), 0, 8));
+        return mb_strtoupper(mb_substr(md5(uniqid((string) mt_rand(), true)), 0, 8));
     }
 }

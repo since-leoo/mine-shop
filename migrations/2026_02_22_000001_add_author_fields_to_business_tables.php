@@ -9,9 +9,6 @@ declare(strict_types=1);
  * @contact  root@imoi.cn
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
-
-
-
 use Hyperf\Database\Migrations\Migration;
 use Hyperf\Database\Schema\Blueprint;
 use Hyperf\Database\Schema\Schema;
@@ -46,7 +43,7 @@ class AddAuthorFieldsToBusinessTables extends Migration
     public function up(): void
     {
         foreach ($this->tables as $tableName) {
-            if (!Schema::hasTable($tableName)) {
+            if (! Schema::hasTable($tableName)) {
                 continue;
             }
 
@@ -58,10 +55,10 @@ class AddAuthorFieldsToBusinessTables extends Migration
             }
 
             Schema::table($tableName, static function (Blueprint $table) use ($hasCreatedBy, $hasUpdatedBy) {
-                if (!$hasCreatedBy) {
+                if (! $hasCreatedBy) {
                     $table->unsignedBigInteger('created_by')->nullable()->comment('创建者ID');
                 }
-                if (!$hasUpdatedBy) {
+                if (! $hasUpdatedBy) {
                     $table->unsignedBigInteger('updated_by')->nullable()->comment('更新者ID');
                 }
             });
@@ -74,7 +71,7 @@ class AddAuthorFieldsToBusinessTables extends Migration
     public function down(): void
     {
         foreach ($this->tables as $tableName) {
-            if (!Schema::hasTable($tableName)) {
+            if (! Schema::hasTable($tableName)) {
                 continue;
             }
 
@@ -86,7 +83,7 @@ class AddAuthorFieldsToBusinessTables extends Migration
                 $columns[] = 'updated_by';
             }
 
-            if (!empty($columns)) {
+            if (! empty($columns)) {
                 Schema::table($tableName, static function (Blueprint $table) use ($columns) {
                     $table->dropColumn($columns);
                 });
