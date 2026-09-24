@@ -24,13 +24,13 @@ class CheckTables extends HyperfCommand
         parent::__construct('demo:command');
     }
 
-    public function configure()
+    public function configure(): void
     {
         parent::configure();
         $this->setDescription('Hyperf Demo Command');
     }
 
-    public function handle()
+    public function handle(): void
     {
         $this->line('Hello Hyperf!', 'info');
     }

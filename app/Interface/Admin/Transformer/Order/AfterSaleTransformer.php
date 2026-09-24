@@ -29,7 +29,7 @@ final class AfterSaleTransformer
     }
 
     /**
-     * @param array{after_sale: object, refund_record: object|null} $result
+     * @param array{after_sale: object, refund_record: null|object} $result
      * @return array<string, mixed>
      */
     public function transformDetailResult(array $result): array
@@ -136,7 +136,7 @@ final class AfterSaleTransformer
     }
 
     /**
-     * @return array<string, mixed>|null
+     * @return null|array<string, mixed>
      */
     private function transformRefundRecord(?object $refund): ?array
     {

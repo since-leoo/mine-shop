@@ -17,6 +17,7 @@ use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Trade\GroupBuy\ValueObject\ActivityTimeVo;
 use App\Domain\Trade\GroupBuy\ValueObject\GroupPeopleVo;
 use App\Domain\Trade\GroupBuy\ValueObject\PriceVo;
+use Carbon\Carbon;
 
 /**
  * 团购活动实体.
@@ -254,8 +255,8 @@ final class GroupBuyEntity
             return false;
         }
 
-        $startTime = \Carbon\Carbon::parse($this->startTime);
-        $now = \Carbon\Carbon::now();
+        $startTime = Carbon::parse($this->startTime);
+        $now = Carbon::now();
 
         // 如果开始时间已过，不在预热期
         if ($startTime->lte($now)) {

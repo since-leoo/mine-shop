@@ -14,7 +14,6 @@ namespace App\Infrastructure\Service\Pay;
 
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Yansongda\Artful\Exception\ContainerException;
 use Yansongda\Pay\Pay;
 
 class YsdPayService

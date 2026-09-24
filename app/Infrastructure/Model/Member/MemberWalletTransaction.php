@@ -70,14 +70,14 @@ class MemberWalletTransaction extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if (empty($this->wallet_id)) {
             $this->wallet_id = time();
         }
     }
 
-    public function updating(Updating $event)
+    public function updating(Updating $event): void
     {
         if (empty($this->wallet_id)) {
             // 从1000000000开始生成

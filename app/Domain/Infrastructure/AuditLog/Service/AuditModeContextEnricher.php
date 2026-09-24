@@ -42,7 +42,7 @@ final class AuditModeContextEnricher
         $audit = array_filter($audit, static fn (mixed $value): bool => $value !== null && $value !== '');
 
         $remark = trim((string) ($payload['remark'] ?? ''));
-        $suffix = 'audit=' . json_encode($audit, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $suffix = 'audit=' . json_encode($audit, \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE);
         $payload['remark'] = $this->limitRemark($remark === '' ? $suffix : $remark . ' | ' . $suffix);
 
         return $payload;
@@ -50,10 +50,10 @@ final class AuditModeContextEnricher
 
     private function limitRemark(string $remark): string
     {
-        if (strlen($remark) <= self::REMARK_LIMIT) {
+        if (mb_strlen($remark) <= self::REMARK_LIMIT) {
             return $remark;
         }
 
-        return substr($remark, 0, self::REMARK_LIMIT);
+        return mb_substr($remark, 0, self::REMARK_LIMIT);
     }
 }

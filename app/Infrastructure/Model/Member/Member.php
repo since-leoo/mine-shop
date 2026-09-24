@@ -108,7 +108,7 @@ class Member extends Model
         'level_info',
     ];
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if (empty($this->invite_code)) {
             $this->invite_code = self::generateUniqueInviteCode();

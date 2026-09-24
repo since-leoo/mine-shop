@@ -39,18 +39,16 @@ class DiyPageRepository extends IRepository
 
     public function findByPageKey(string $pageKey, string $pageType = DiyPageStatus::TYPE_ALL): ?DiyPage
     {
-        /** @var DiyPage|null $page */
-        $page = $this->getQuery()
+        /** @var null|DiyPage $page */
+        return $this->getQuery()
             ->where('page_key', $pageKey)
             ->where('page_type', $pageType)
             ->first();
-
-        return $page;
     }
 
     public function findDetail(int $id): ?DiyPage
     {
-        /** @var DiyPage|null $page */
+        /** @var null|DiyPage $page */
         $page = $this->getQuery()
             ->with([
                 'publishedVersion',
@@ -65,9 +63,7 @@ class DiyPageRepository extends IRepository
     public function createPage(array $data): DiyPage
     {
         /** @var DiyPage $page */
-        $page = $this->create($data);
-
-        return $page;
+        return $this->create($data);
     }
 
     public function updatePage(int $id, array $data): bool
@@ -119,37 +115,31 @@ class DiyPageRepository extends IRepository
 
     public function findDraftVersion(int $pageId): ?DiyPageVersion
     {
-        /** @var DiyPageVersion|null $version */
-        $version = DiyPageVersion::query()
+        /** @var null|DiyPageVersion $version */
+        return DiyPageVersion::query()
             ->where('page_id', $pageId)
             ->where('status', DiyPageStatus::VERSION_DRAFT)
             ->orderByDesc('id')
             ->first();
-
-        return $version;
     }
 
     public function findVersion(int $pageId, int $versionId): ?DiyPageVersion
     {
-        /** @var DiyPageVersion|null $version */
-        $version = DiyPageVersion::query()
+        /** @var null|DiyPageVersion $version */
+        return DiyPageVersion::query()
             ->where('page_id', $pageId)
             ->whereKey($versionId)
             ->first();
-
-        return $version;
     }
 
     public function findVersionWithPage(int $pageId, int $versionId): ?DiyPageVersion
     {
-        /** @var DiyPageVersion|null $version */
-        $version = DiyPageVersion::query()
+        /** @var null|DiyPageVersion $version */
+        return DiyPageVersion::query()
             ->with(['page'])
             ->where('page_id', $pageId)
             ->whereKey($versionId)
             ->first();
-
-        return $version;
     }
 
     public function storeDraft(int $pageId, array $schema, ?int $operatorId): DiyPageVersion
@@ -165,15 +155,13 @@ class DiyPageRepository extends IRepository
         }
 
         /** @var DiyPageVersion $version */
-        $version = DiyPageVersion::query()->create([
+        return DiyPageVersion::query()->create([
             'page_id' => $pageId,
             'version_no' => $this->nextVersionNo($pageId),
             'status' => DiyPageStatus::VERSION_DRAFT,
             'schema' => $schema,
             'created_by' => $operatorId,
         ]);
-
-        return $version;
     }
 
     public function nextVersionNo(int $pageId): int
@@ -208,7 +196,7 @@ class DiyPageRepository extends IRepository
 
     public function findPublishedByPageKey(string $pageKey, string $pageType = DiyPageStatus::TYPE_ALL): ?DiyPageVersion
     {
-        /** @var DiyPageVersion|null $version */
+        /** @var null|DiyPageVersion $version */
         $version = DiyPageVersion::query()
             ->where('status', DiyPageStatus::VERSION_PUBLISHED)
             ->whereHas('page', static function (Builder $query) use ($pageKey, $pageType): void {

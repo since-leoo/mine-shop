@@ -18,6 +18,7 @@ use App\Domain\Infrastructure\AuditLog\Service\AuditModeContextEnricher;
 use App\Interface\Common\Event\RequestOperationEvent;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
+use Swoole\Coroutine;
 
 #[Listener]
 class UserOperationSubscriber implements ListenerInterface
@@ -60,7 +61,7 @@ class UserOperationSubscriber implements ListenerInterface
             ];
             $handler = fn () => $this->service->create($this->auditModeContextEnricher->enrich($payload, $context));
 
-            if (class_exists(\Swoole\Coroutine::class)) {
+            if (class_exists(Coroutine::class)) {
                 \Hyperf\Engine\Coroutine::create($handler);
                 return;
             }

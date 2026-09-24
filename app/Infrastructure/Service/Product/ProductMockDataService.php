@@ -324,20 +324,19 @@ class ProductMockDataService
     /**
      * @return array{0: string[], 1: array<int, array{image_url:string,alt_text:string,sort_order:int,is_primary:bool}>}
      */
-
     private function buildGallery(string $slug, string $hint, int $count = 4): array
     {
         $images = [];
         $count = max(2, $count);
         for ($i = 1; $i <= $count; ++$i) {
-            $images[] = $this->petImageUrl($hint, 1200, 800, sprintf('%s-%s-%d', $hint, $slug, $i));
+            $images[] = $this->petImageUrl($hint, 1200, 800, \sprintf('%s-%s-%d', $hint, $slug, $i));
         }
 
         $records = [];
         foreach ($images as $index => $url) {
             $records[] = [
                 'image_url' => $url,
-                'alt_text' => sprintf('%s %s %d', $hint, '图片', $index + 1),
+                'alt_text' => \sprintf('%s %s %d', $hint, '图片', $index + 1),
                 'sort_order' => $index + 1,
                 'is_primary' => $index === 0,
             ];
@@ -528,7 +527,6 @@ class ProductMockDataService
      *
      * @param string[] $path
      */
-
     private function categoryThumbnail(array $path): string
     {
         $hint = end($path) ?: 'pet';
@@ -540,7 +538,7 @@ class ProductMockDataService
         $keywords = $this->petImageKeywords($hint);
         $lock = abs(crc32(($seed ?: $hint) . '|' . $keywords)) % 1000 + 1;
 
-        return sprintf('https://loremflickr.com/%d/%d/%s?lock=%d', $width, $height, $keywords, $lock);
+        return \sprintf('https://loremflickr.com/%d/%d/%s?lock=%d', $width, $height, $keywords, $lock);
     }
 
     private function petImageKeywords(string $hint): string
@@ -693,7 +691,6 @@ class ProductMockDataService
         ];
     }
 
-
     private function brandPresets(): array
     {
         return [
@@ -741,7 +738,6 @@ class ProductMockDataService
             ],
         ];
     }
-
 
     private function productTemplates(): array
     {
@@ -924,5 +920,4 @@ class ProductMockDataService
             ],
         ];
     }
-
 }

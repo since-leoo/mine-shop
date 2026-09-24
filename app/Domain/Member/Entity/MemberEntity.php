@@ -251,7 +251,7 @@ final class MemberEntity
             return;
         }
 
-        $this->password = password_hash($password, PASSWORD_DEFAULT);
+        $this->password = password_hash($password, \PASSWORD_DEFAULT);
         $this->markDirty('password');
     }
 
@@ -272,7 +272,6 @@ final class MemberEntity
     {
         return $this->hasPassword() && password_verify($password, (string) $this->password);
     }
-
 
     public function resetLoginPassword(string $password): self
     {
@@ -461,7 +460,7 @@ final class MemberEntity
         $this->markDirty('referrer_id');
     }
 
-    public function setLastLoginAt(Carbon $now)
+    public function setLastLoginAt(Carbon $now): void
     {
         $this->lastLoginAt = $now;
         $this->markDirty('last_login_at');

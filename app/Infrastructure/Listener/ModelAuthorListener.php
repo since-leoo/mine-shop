@@ -88,7 +88,7 @@ class ModelAuthorListener implements ListenerInterface
         // 移除表前缀进行匹配
         $tableName = preg_replace('/^mall_/', '', $table);
 
-        return in_array($tableName, self::AUTHOR_TABLES, true);
+        return \in_array($tableName, self::AUTHOR_TABLES, true);
     }
 
     /**

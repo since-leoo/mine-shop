@@ -26,7 +26,7 @@ class UpdateCommand
     #[AsCommand(
         signature: 'mine:update-20241031'
     )]
-    public function handle()
+    public function handle(): void
     {
         $this->output->title('Update 2024_10_31_193302_create_user_belongs_role');
         Db::table(\Hyperf\Config\config('permission.database.table'))->insert([

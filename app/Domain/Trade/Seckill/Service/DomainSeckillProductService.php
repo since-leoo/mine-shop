@@ -18,6 +18,7 @@ use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
+use Carbon\Carbon;
 
 /**
  * 秒杀商品领域服务.
@@ -161,7 +162,7 @@ final class DomainSeckillProductService extends IService
      * 根据 ID 获取商品实体.
      *
      * @param int $id 商品 ID
-     * @return SeckillProductEntity|null 实体或 null
+     * @return null|SeckillProductEntity 实体或 null
      */
     public function getEntity(int $id): ?SeckillProductEntity
     {
@@ -184,8 +185,8 @@ final class DomainSeckillProductService extends IService
             return;
         }
 
-        $startTime = \Carbon\Carbon::parse($session->start_time);
-        $now = \Carbon\Carbon::now();
+        $startTime = Carbon::parse($session->start_time);
+        $now = Carbon::now();
 
         // 如果开始时间已过，检查状态
         if ($startTime->lte($now)) {

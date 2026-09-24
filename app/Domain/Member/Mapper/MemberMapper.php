@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Mapper;
 
-use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Contract\MemberInput;
+use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
@@ -56,7 +56,7 @@ final class MemberMapper
     {
         $entity->setPhone($input->getPhone());
         if ($entity->getNickname() === null || trim((string) $entity->getNickname()) === '') {
-            $entity->setNickname('用户' . substr($input->getPhone(), -4));
+            $entity->setNickname('用户' . mb_substr($input->getPhone(), -4));
         }
         $entity->setSource('h5');
         $entity->setStatus($entity->getStatus() ?? 'active');

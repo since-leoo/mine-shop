@@ -108,7 +108,7 @@ class GeoRegionSyncService
         }
 
         $body = (string) $response->getBody();
-        if ($source === 'areacity' || str_ends_with(strtolower($url), '.csv')) {
+        if ($source === 'areacity' || str_ends_with(mb_strtolower($url), '.csv')) {
             return $this->parseAreaCityCsvPayload($body);
         }
 
@@ -167,7 +167,7 @@ class GeoRegionSyncService
             $childrenMap[$pid][] = $id;
         }
 
-        $buildNode = function (string $id) use (&$buildNode, $nodesById, $childrenMap): ?array {
+        $buildNode = static function (string $id) use (&$buildNode, $nodesById, $childrenMap): ?array {
             if (! isset($nodesById[$id])) {
                 return null;
             }
@@ -215,7 +215,7 @@ class GeoRegionSyncService
         return Db::transaction(static function () use ($payload, $source, $url, $versionValue, $releasedAt, $force) {
             $existing = GeoRegionVersion::query()->where('version', $versionValue)->first();
             if ($existing !== null && ! $force) {
-                throw new \RuntimeException(sprintf('Version %s already exists, use --force to overwrite', $versionValue));
+                throw new \RuntimeException(\sprintf('Version %s already exists, use --force to overwrite', $versionValue));
             }
 
             if ($existing !== null) {

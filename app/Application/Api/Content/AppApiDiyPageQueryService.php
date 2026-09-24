@@ -14,8 +14,8 @@ namespace App\Application\Api\Content;
 
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
-use App\Domain\Content\DiyPage\Service\DomainDiyPublishService;
 use App\Domain\Content\DiyPage\Service\DomainDiyPageService;
+use App\Domain\Content\DiyPage\Service\DomainDiyPublishService;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
 use App\Infrastructure\Model\Content\DiyPageVersion;
 
@@ -92,7 +92,7 @@ final class AppApiDiyPageQueryService
             return [];
         }
 
-        $result = $this->productQueryService->page(['ids' => array_slice($ids, 0, $limit), 'status' => 'active'], 1, $limit);
+        $result = $this->productQueryService->page(['ids' => \array_slice($ids, 0, $limit), 'status' => 'active'], 1, $limit);
         $products = $result['list'];
         $sort = array_flip($ids);
         usort($products, static fn (array $a, array $b): int => ($sort[(int) ($a['id'] ?? 0)] ?? 999999) <=> ($sort[(int) ($b['id'] ?? 0)] ?? 999999));

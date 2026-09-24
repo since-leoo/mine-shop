@@ -18,7 +18,6 @@ use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use Carbon\Carbon;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use RuntimeException;
 
 class DomainAfterSaleRefundCallbackService
 {
@@ -32,19 +31,19 @@ class DomainAfterSaleRefundCallbackService
     {
         $refundNo = (string) ($payload['out_refund_no'] ?? '');
         if ($refundNo === '') {
-            throw new RuntimeException('退款回调缺少退款单号');
+            throw new \RuntimeException('退款回调缺少退款单号');
         }
 
         $refund = $this->paymentRefundRepository->findByRefundNo($refundNo);
         if ($refund === null) {
-            throw new RuntimeException('退款记录不存在');
+            throw new \RuntimeException('退款记录不存在');
         }
 
         if ((string) $refund->status === 'success') {
             return;
         }
 
-        $refundStatus = strtoupper((string) ($payload['refund_status'] ?? ''));
+        $refundStatus = mb_strtoupper((string) ($payload['refund_status'] ?? ''));
         if ($refundStatus !== 'SUCCESS') {
             $this->paymentRefundRepository->updateByRefundNo($refundNo, [
                 'status' => 'failed',
@@ -65,7 +64,7 @@ class DomainAfterSaleRefundCallbackService
             'processed_at' => (string) (($payload['success_time'] ?? null) ?: Carbon::now()->toDateTimeString()),
         ]);
 
-        $extraData = is_array($refund->extra_data) ? $refund->extra_data : [];
+        $extraData = \is_array($refund->extra_data) ? $refund->extra_data : [];
         $this->dispatcher->dispatch(new AfterSaleRefundSucceeded(
             (int) ($extraData['after_sale_id'] ?? 0),
             (int) $refund->order_id,
@@ -82,7 +81,7 @@ class DomainAfterSaleRefundCallbackService
 
     private function markAfterSaleRefundFailed(mixed $extraData): void
     {
-        if (! is_array($extraData)) {
+        if (! \is_array($extraData)) {
             return;
         }
 

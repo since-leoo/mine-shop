@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Api\Support;
 
@@ -44,7 +52,7 @@ final class ApiSignatureVerifier
         }
 
         $payload = implode("\n", [
-            strtoupper($request->getMethod()),
+            mb_strtoupper($request->getMethod()),
             $request->getUri()->getPath(),
             $request->getUri()->getQuery(),
             $timestamp,
@@ -65,7 +73,7 @@ final class ApiSignatureVerifier
 
     private function bodyForHash(ServerRequestInterface $request): string
     {
-        $contentType = strtolower($request->getHeaderLine('Content-Type'));
+        $contentType = mb_strtolower($request->getHeaderLine('Content-Type'));
         if (str_starts_with($contentType, 'multipart/form-data')) {
             return '';
         }

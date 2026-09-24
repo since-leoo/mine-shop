@@ -14,7 +14,6 @@ namespace App\Domain\Trade\Review\Api\Query;
 
 use App\Domain\Trade\Review\Repository\ReviewRepository;
 use App\Infrastructure\Abstract\IService;
-use Hyperf\Collection\Collection;
 
 /**
  * 小程序评价查询服务.

@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Payment;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Event\OrderPaidForMember;
 use App\Domain\Member\Service\DomainMemberWalletService;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Service\DomainOrderPaymentService;

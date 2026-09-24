@@ -18,7 +18,6 @@ use Hyperf\DbConnection\Db;
 
 final class DomainApiGeoRegionQueryService
 {
-
     /**
      * @return array{version: null|string, updated_at: null|string, parent_code: null|string, list: array<int, array<string, mixed>>}
      */

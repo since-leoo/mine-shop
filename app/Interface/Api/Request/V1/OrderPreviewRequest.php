@@ -60,7 +60,7 @@ class OrderPreviewRequest extends BaseRequest
     {
         $params = $this->validated();
         $params['member_id'] = $memberId;
-        $params['order_type'] = $params['order_type'] ?? 'normal';
+        $params['order_type'] ??= 'normal';
         $params['coupon_id'] = isset($params['coupon_id']) ? (int) $params['coupon_id'] : null;
         $params['activity_id'] = isset($params['activity_id']) ? (int) $params['activity_id'] : null;
         $params['session_id'] = isset($params['session_id']) ? (int) $params['session_id'] : null;

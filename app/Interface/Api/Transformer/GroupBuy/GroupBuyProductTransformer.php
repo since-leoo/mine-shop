@@ -86,11 +86,11 @@ final class GroupBuyProductTransformer
 
         foreach ($list as $item) {
             $minPeople = max(2, (int) ($item['minPeople'] ?? 0));
-            $tabKey = sprintf('people_%d', $minPeople);
+            $tabKey = \sprintf('people_%d', $minPeople);
             if (! isset($sceneBuckets[$tabKey])) {
                 $sceneBuckets[$tabKey] = [
                     'key' => $tabKey,
-                    'label' => sprintf('%d人快团', $minPeople),
+                    'label' => \sprintf('%d人快团', $minPeople),
                     'count' => 0,
                     'sort' => $minPeople,
                 ];
@@ -108,7 +108,7 @@ final class GroupBuyProductTransformer
         $navTabs = array_merge([[
             'key' => 'direct_join',
             'label' => '可直接参团',
-            'count' => count($list),
+            'count' => \count($list),
         ]], $sceneTabs);
 
         return [

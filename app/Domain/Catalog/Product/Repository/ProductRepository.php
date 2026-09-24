@@ -51,7 +51,7 @@ final class ProductRepository extends IRepository
     {
         $result = $this->buildApiListQuery($params)->paginate(
             perPage: $pageSize,
-            pageName: static::PER_PAGE_PARAM_NAME,
+            pageName: self::PER_PAGE_PARAM_NAME,
             page: $page,
         );
 

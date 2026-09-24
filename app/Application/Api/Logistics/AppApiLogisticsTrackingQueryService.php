@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Application\Api\Logistics;
 
@@ -22,14 +30,14 @@ final class AppApiLogisticsTrackingQueryService
     public function trackOrder(int $memberId, string $orderNo): array
     {
         $order = $this->orderQueryService->getOrderDetail($memberId, $orderNo);
-        if (! is_object($order)) {
+        if (! \is_object($order)) {
             throw new \RuntimeException('订单不存在');
         }
 
         $packages = $order->packages ?? [];
-        $package = is_array($packages) ? ($packages[0] ?? null) : null;
-        $company = is_object($package) ? trim((string) ($package->express_company ?? '')) : '';
-        $trackingNo = is_object($package) ? trim((string) ($package->express_no ?? '')) : '';
+        $package = \is_array($packages) ? ($packages[0] ?? null) : null;
+        $company = \is_object($package) ? trim((string) ($package->express_company ?? '')) : '';
+        $trackingNo = \is_object($package) ? trim((string) ($package->express_no ?? '')) : '';
 
         if ($company === '' || $trackingNo === '') {
             throw new \RuntimeException('订单物流信息不存在');

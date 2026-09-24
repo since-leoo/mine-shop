@@ -32,7 +32,7 @@ final class DomainAfterSaleQueryService
     }
 
     /**
-     * @return array{after_sale: object, refund_record: object|null}|null
+     * @return null|array{after_sale: object, refund_record: null|object}
      */
     public function detailForAdmin(int $id): ?array
     {

@@ -128,7 +128,7 @@ final class SeckillCacheService
      * 优先从缓存读取，缓存未命中时从数据库加载并预热缓存。
      *
      * @param int $sessionId 场次 ID
-     * @return SeckillSessionEntity|null 场次实体，不存在返回 null
+     * @return null|SeckillSessionEntity 场次实体，不存在返回 null
      */
     public function getSession(int $sessionId): ?SeckillSessionEntity
     {
@@ -154,7 +154,7 @@ final class SeckillCacheService
      *
      * @param int $sessionId 场次 ID
      * @param int $skuId SKU ID
-     * @return SeckillProductEntity|null 秒杀商品实体，不存在返回 null
+     * @return null|SeckillProductEntity 秒杀商品实体，不存在返回 null
      */
     public function getProductBySkuId(int $sessionId, int $skuId): ?SeckillProductEntity
     {

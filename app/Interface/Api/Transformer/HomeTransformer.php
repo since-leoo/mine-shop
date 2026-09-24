@@ -51,7 +51,7 @@ final class HomeTransformer
     private function transformCategories(array $categories): array
     {
         return array_values(array_map(static function ($category): array {
-            if (is_array($category)) {
+            if (\is_array($category)) {
                 return [
                     'id' => (int) ($category['id'] ?? 0),
                     'name' => (string) ($category['name'] ?? ''),

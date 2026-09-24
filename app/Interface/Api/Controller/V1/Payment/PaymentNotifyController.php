@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1\Payment;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\DomainPayService;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 use App\Infrastructure\Service\Pay\YsdPayService;
 use Hyperf\HttpServer\Annotation\Controller;

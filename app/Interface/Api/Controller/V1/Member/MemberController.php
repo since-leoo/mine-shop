@@ -101,6 +101,7 @@ final class MemberController extends AbstractController
         $result = $this->referralQueryService->generateInviteQrCode($this->currentMember->id(), $page);
         return $this->success($result, '获取成功');
     }
+
     #[PostMapping(path: 'sign-in')]
     public function signIn(): Result
     {

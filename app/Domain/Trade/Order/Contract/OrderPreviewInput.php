@@ -66,7 +66,7 @@ interface OrderPreviewInput
     public function getBuyOriginalPrice(): bool;
 
     /**
-     * 是否购物车
+     * 是否购物车.
      */
     public function getFromCart(): bool;
 }

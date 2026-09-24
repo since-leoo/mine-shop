@@ -27,9 +27,9 @@ use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Db;
+use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
-use Psr\EventDispatcher\EventDispatcherInterface;
 
 class MessageService
 {

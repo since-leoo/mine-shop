@@ -15,7 +15,6 @@ namespace App\Domain\Trade\AfterSale\Service;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleApplyInput;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
-use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleType;
 use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
@@ -23,7 +22,6 @@ use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\OrderItem;
-use DomainException;
 
 final class DomainAfterSaleService
 {
@@ -63,13 +61,12 @@ final class DomainAfterSaleService
         return $this->afterSaleRepository->updateFromEntity($entity);
     }
 
-
     public function getEntity(int $id): AfterSaleEntity
     {
         /** @var AfterSale $model */
         $model = $this->afterSaleRepository->findById($id);
         if ($model === null) {
-            throw new DomainException('获取售后单失败');
+            throw new \DomainException('获取售后单失败');
         }
 
         return AfterSaleMapper::fromModel($model);
@@ -79,20 +76,20 @@ final class DomainAfterSaleService
     {
         $orderItem = $this->orderRepository->findOrderItemForAfterSale($memberId, $orderId, $orderItemId);
         if ($orderItem === null) {
-            throw new DomainException('当前订单商品不可申请售后');
+            throw new \DomainException('当前订单商品不可申请售后');
         }
 
         if ($this->afterSaleRepository->findActiveByOrderItemId($orderItemId) !== null) {
-            throw new DomainException('该订单商品已存在进行中的售后单');
+            throw new \DomainException('该订单商品已存在进行中的售后单');
         }
 
         $status = (string) $orderItem->order->status;
-        if (! in_array($status, [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value, OrderStatus::SHIPPED->value, OrderStatus::COMPLETED->value], true)) {
-            throw new DomainException('当前订单状态不支持申请售后');
+        if (! \in_array($status, [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value, OrderStatus::SHIPPED->value, OrderStatus::COMPLETED->value], true)) {
+            throw new \DomainException('当前订单状态不支持申请售后');
         }
 
         if ($status === OrderStatus::COMPLETED->value && $this->isAfterSaleWindowExpired($orderItem)) {
-            throw new DomainException('订单已超过售后申请期');
+            throw new \DomainException('订单已超过售后申请期');
         }
 
         return $orderItem;

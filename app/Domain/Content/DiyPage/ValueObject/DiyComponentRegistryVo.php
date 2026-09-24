@@ -360,7 +360,7 @@ final class DiyComponentRegistryVo
 
     private static function cleanRichText(string $content): string
     {
-        $content = preg_replace('#<(script|style|iframe)[^>]*>.*?</\\1>#is', '', $content) ?? '';
+        $content = preg_replace('#<(script|style|iframe)[^>]*>.*?</\1>#is', '', $content) ?? '';
         $content = strip_tags($content, '<p><br><strong><b><em><i><u><span><div><ul><ol><li><img><a>');
 
         return trim($content);

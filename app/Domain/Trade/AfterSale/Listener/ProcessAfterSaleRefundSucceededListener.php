@@ -12,11 +12,11 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\AfterSale\Listener;
 
+use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Service\DomainMemberWalletService;
-use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
 use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
@@ -29,7 +29,6 @@ use App\Domain\Trade\Payment\Enum\PayType;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use RuntimeException;
 
 final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
 {
@@ -60,7 +59,7 @@ final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface
         /** @var AfterSale $afterSaleModel */
         $afterSaleModel = $this->afterSaleRepository->findById($event->afterSaleId);
         if ($afterSaleModel === null) {
-            throw new RuntimeException('售后单不存在');
+            throw new \RuntimeException('售后单不存在');
         }
 
         $afterSaleEntity = AfterSaleMapper::fromModel($afterSaleModel);

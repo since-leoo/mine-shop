@@ -74,7 +74,7 @@ final class AppApiOrderPaymentService
 
     private function positiveAmount(mixed $amount): ?int
     {
-        if (! \is_numeric($amount)) {
+        if (! is_numeric($amount)) {
             return null;
         }
 

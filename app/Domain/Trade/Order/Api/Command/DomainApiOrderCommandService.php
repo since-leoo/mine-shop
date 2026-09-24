@@ -161,8 +161,8 @@ final class DomainApiOrderCommandService extends IService
      *
      * @param string $tradeNo 订单号
      * @return array{status: string, error: string} 状态信息
-     *         - status: processing（处理中）、created（成功）、failed（失败）
-     *         - error: 失败原因（仅 failed 状态有值）
+     *                                              - status: processing（处理中）、created（成功）、failed（失败）
+     *                                              - error: 失败原因（仅 failed 状态有值）
      */
     public function getSubmitResult(string $tradeNo): array
     {
@@ -222,7 +222,7 @@ final class DomainApiOrderCommandService extends IService
      * 3. 使用用户默认地址
      *
      * @param OrderPreviewInput $input 输入参数
-     * @return OrderAddressValue|null 地址值对象，无地址时返回 null
+     * @return null|OrderAddressValue 地址值对象，无地址时返回 null
      */
     private function resolveAddress(OrderPreviewInput $input): ?OrderAddressValue
     {

@@ -74,7 +74,7 @@ final class DiyPagePublishValidationVo
 
             $image = (string) ($item['image'] ?? $item['img'] ?? $item['url'] ?? '');
             if ($image === '') {
-                $issues[] = self::issue('image_required', $name, $index, sprintf('第%d张图片不能为空', $itemIndex + 1));
+                $issues[] = self::issue('image_required', $name, $index, \sprintf('第%d张图片不能为空', $itemIndex + 1));
             }
 
             if (\is_array($item['link'] ?? null)) {

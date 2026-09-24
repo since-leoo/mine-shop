@@ -64,7 +64,7 @@ class OrderPackage extends Model
         'shipping_no',
     ];
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if (empty($this->package_no)) {
             $this->package_no = uniqid();

@@ -31,6 +31,8 @@ abstract class AbstractHandler extends ExceptionHandler
 {
     use Debugging;
 
+    private const CORS_ALLOW_HEADERS = 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp';
+
     public function __construct(
         /** @phpstan-ignore-next-line */
         private readonly ConfigInterface $config,
@@ -39,8 +41,6 @@ abstract class AbstractHandler extends ExceptionHandler
     ) {}
 
     abstract public function handleResponse(\Throwable $throwable): Result;
-
-    private const CORS_ALLOW_HEADERS = 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp';
 
     public function handle(\Throwable $throwable, ResponsePlusInterface $response)
     {
@@ -67,7 +67,7 @@ abstract class AbstractHandler extends ExceptionHandler
     /**
      * 上报日志+打印错误.
      */
-    public function report(\Throwable $throwable)
+    public function report(\Throwable $throwable): void
     {
         // 如果是debug模式，打印错误到控制台
         if ($this->isDebug()) {

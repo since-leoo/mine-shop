@@ -118,12 +118,10 @@ final class DomainApiSeckillQueryService
 
     /**
      * 获取秒杀活动详情.
-     *
-     * @return string
      */
     private function resolveTopicBanner(): string
     {
         $custom = $this->systemSettingService->get('mall.seckill.topic_banner', null);
-        return is_string($custom) ? trim($custom) : '';
+        return \is_string($custom) ? trim($custom) : '';
     }
 }

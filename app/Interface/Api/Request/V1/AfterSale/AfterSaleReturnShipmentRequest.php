@@ -25,7 +25,7 @@ final class AfterSaleReturnShipmentRequest extends FormRequest
     }
 
     /**
-     * æäº¤éè´§ç©æµåæ°æ ¡éªè§åã
+     * æäº¤éè´§ç©æµåæ°æ ¡éªè§åã
      */
     public function rules(): array
     {
@@ -38,13 +38,14 @@ final class AfterSaleReturnShipmentRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'logistics_company' => 'éè´§ç©æµå¬å¸',
+            'logistics_company' => 'éè´§ç©æµå
+¬å¸',
             'logistics_no' => 'éè´§ç©æµåå·',
         ];
     }
 
     /**
-     * å°è¯·æ±æ°æ®æ å°ä¸ºéè´§ç©æµ DTOã
+     * å°è¯·æ±æ°æ®æ å°ä¸ºéè´§ç©æµ DTOã
      */
     public function toDto(int $id, int $memberId): AfterSaleReturnShipmentInput
     {

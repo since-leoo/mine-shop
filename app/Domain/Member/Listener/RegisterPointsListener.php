@@ -17,6 +17,7 @@ use App\Domain\Member\Service\DomainMemberPointsService;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\Event\Contract\ListenerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Swoole\Coroutine;
 
 /**
  * 注册送积分监听器：监听会员注册事件，赠送注册积分.
@@ -41,7 +42,7 @@ final class RegisterPointsListener implements ListenerInterface
         }
 
         $handler = fn () => $this->grantRewards($event);
-        if (class_exists(\Swoole\Coroutine::class)) {
+        if (class_exists(Coroutine::class)) {
             \Hyperf\Coroutine\co($handler);
             return;
         }

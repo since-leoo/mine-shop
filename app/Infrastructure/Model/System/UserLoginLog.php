@@ -46,7 +46,7 @@ class UserLoginLog extends Model
      */
     protected array $casts = ['id' => 'integer', 'status' => 'integer', 'login_time' => 'datetime'];
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if ($event->getModel()->login_time === null) {
             $event->getModel()->login_time = Carbon::now();

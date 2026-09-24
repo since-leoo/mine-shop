@@ -25,7 +25,7 @@ class MockProductDataCommand extends HyperfCommand
         parent::__construct('mall:mock-products');
     }
 
-    public function configure()
+    public function configure(): void
     {
         parent::configure();
         $this->setDescription('快速生成商城商品/品牌/分类的 mock 数据');

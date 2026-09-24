@@ -114,8 +114,8 @@ abstract class IRepository
      * 分页查询.
      *
      * @param array $params 筛选参数
-     * @param int|null $page 页码
-     * @param int|null $pageSize 每页数量
+     * @param null|int $page 页码
+     * @param null|int $pageSize 每页数量
      * @return array 包含 list 和 total 的数组
      */
     public function page(array $params = [], ?int $page = null, ?int $pageSize = null): array
@@ -132,7 +132,7 @@ abstract class IRepository
      * 根据 ID 查找记录.
      *
      * @param int $id 主键 ID
-     * @return object|null 模型实例或 null
+     * @return null|object 模型实例或 null
      */
     public function findById(int $id): ?object
     {
@@ -145,7 +145,7 @@ abstract class IRepository
      * 使用 FOR UPDATE 行锁，用于并发更新场景。
      *
      * @param mixed $id 主键 ID
-     * @return Model|null 模型实例或 null
+     * @return null|Model 模型实例或 null
      */
     public function findByIdForLock(mixed $id)
     {
@@ -182,7 +182,7 @@ abstract class IRepository
      *
      * @param mixed $id 主键 ID
      * @param array $data 更新数据
-     * @return Model|null 更新后的模型实例或 null
+     * @return null|Model 更新后的模型实例或 null
      */
     public function saveById(mixed $id, array $data): mixed
     {
@@ -249,7 +249,7 @@ abstract class IRepository
      * 根据筛选条件查找单条记录.
      *
      * @param array $params 筛选参数
-     * @return Model|null 模型实例或 null
+     * @return null|Model 模型实例或 null
      */
     public function findByFilter(array $params): mixed
     {

@@ -63,13 +63,13 @@ final class ReviewRepository extends IRepository
             $member = $this->getLoadedRelation($review, 'member');
             $order = $this->getLoadedRelation($review, 'order');
 
-            if ($order === null && is_object($orderItem) && method_exists($orderItem, 'relationLoaded') && $orderItem->relationLoaded('order') && method_exists($orderItem, 'getRelation')) {
+            if ($order === null && \is_object($orderItem) && method_exists($orderItem, 'relationLoaded') && $orderItem->relationLoaded('order') && method_exists($orderItem, 'getRelation')) {
                 $order = $orderItem->getRelation('order');
             }
 
-            $data['product_name'] = (string) ((is_object($orderItem) && isset($orderItem->product_name)) ? $orderItem->product_name : '');
-            $data['member_nickname'] = (string) ((is_object($member) && isset($member->nickname)) ? $member->nickname : '');
-            $data['order_no'] = (string) ((is_object($order) && isset($order->order_no)) ? $order->order_no : '');
+            $data['product_name'] = (string) ((\is_object($orderItem) && isset($orderItem->product_name)) ? $orderItem->product_name : '');
+            $data['member_nickname'] = (string) ((\is_object($member) && isset($member->nickname)) ? $member->nickname : '');
+            $data['order_no'] = (string) ((\is_object($order) && isset($order->order_no)) ? $order->order_no : '');
 
             return $data;
         });
@@ -203,7 +203,7 @@ final class ReviewRepository extends IRepository
 
         $loaded = $review->getRelation($relation);
 
-        return is_object($loaded) ? $loaded : null;
+        return \is_object($loaded) ? $loaded : null;
     }
 
     /**

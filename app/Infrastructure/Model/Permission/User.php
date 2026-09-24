@@ -90,7 +90,7 @@ final class User extends Model
         );
     }
 
-    public function deleted(Deleted $event)
+    public function deleted(Deleted $event): void
     {
         $this->roles()->detach();
         $this->policy()->delete();
@@ -104,7 +104,7 @@ final class User extends Model
         $this->attributes['password'] = password_hash((string) $value, \PASSWORD_DEFAULT);
     }
 
-    public function creating(Creating $event)
+    public function creating(Creating $event): void
     {
         if (! $this->isDirty('password')) {
             $this->resetPassword();

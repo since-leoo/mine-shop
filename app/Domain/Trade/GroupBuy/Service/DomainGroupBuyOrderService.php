@@ -26,14 +26,7 @@ final class DomainGroupBuyOrderService extends IService
     ) {}
 
     /**
-     * 验证团购活动
-     * @param int $groupBuyId
-     * @param int $skuId
-     * @param int $quantity
-     * @param int $memberId
-     * @param string|null $groupNo
-     * @param bool $buyOriginal
-     * @return GroupBuyEntity
+     * 验证团购活动.
      */
     public function validateActivity(int $groupBuyId, int $skuId, int $quantity, int $memberId, ?string $groupNo, bool $buyOriginal = false): GroupBuyEntity
     {
@@ -72,9 +65,7 @@ final class DomainGroupBuyOrderService extends IService
     }
 
     /**
-     * 创建团购订单
-     * @param OrderEntity $orderEntity
-     * @param GroupBuyEntity $entity
+     * 创建团购订单.
      */
     public function createGroupBuyOrder(OrderEntity $orderEntity, GroupBuyEntity $entity): void
     {
@@ -117,10 +108,7 @@ final class DomainGroupBuyOrderService extends IService
     }
 
     /**
-     * 判断会员是否已加入该活动
-     * @param int $groupBuyId
-     * @param int $memberId
-     * @return bool
+     * 判断会员是否已加入该活动.
      */
     public function hasMemberJoined(int $groupBuyId, int $memberId): bool
     {

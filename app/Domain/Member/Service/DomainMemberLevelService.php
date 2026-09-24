@@ -142,6 +142,50 @@ final class DomainMemberLevelService extends IService
     }
 
     /**
+     * Match the highest active table level whose threshold is not greater than the growth value.
+     */
+    public function matchLevelByGrowthValue(int $growthValue): MemberLevel
+    {
+        $matched = $this->repository->getModel()->newQuery()
+            ->where('status', 'active')
+            ->where('growth_value_min', '<=', $growthValue)
+            ->orderByDesc('level')
+            ->first();
+
+        if ($matched) {
+            return $matched;
+        }
+
+        // 回退到系统默认等级
+        $defaultLevelId = $this->mallSettingService->member()->defaultLevel();
+        $defaultLevel = $this->repository->findById($defaultLevelId);
+
+        if ($defaultLevel) {
+            return $defaultLevel;
+        }
+
+        // 如果默认等级也不存在，返回序号最小的启用等级
+        return $this->repository->getModel()->newQuery()
+            ->where('status', 'active')
+            ->orderBy('level')
+            ->firstOrFail();
+    }
+
+    /**
+     * 获取所有启用的等级列表（按等级序号升序）.
+     *
+     * @return MemberLevel[]
+     */
+    public function getActiveLevels(): array
+    {
+        return $this->repository->getModel()->newQuery()
+            ->where('status', 'active')
+            ->orderBy('level')
+            ->get()
+            ->all();
+    }
+
+    /**
      * @param array<int, array<string, mixed>> $levels
      */
     private function validateUniqueLevelNames(array $levels): void
@@ -186,7 +230,7 @@ final class DomainMemberLevelService extends IService
             ];
 
             foreach (['growth_value_max', 'discount_rate', 'point_rate', 'privileges', 'icon', 'color', 'description'] as $field) {
-                if (array_key_exists($field, $item) && $item[$field] !== null) {
+                if (\array_key_exists($field, $item) && $item[$field] !== null) {
                     $payload[$field] = $item[$field];
                 }
             }
@@ -195,49 +239,5 @@ final class DomainMemberLevelService extends IService
         }
 
         return $normalized;
-    }
-
-    /**
-     * Match the highest active table level whose threshold is not greater than the growth value.
-     */
-    public function matchLevelByGrowthValue(int $growthValue): MemberLevel
-    {
-        $matched = $this->repository->getModel()->newQuery()
-            ->where('status', 'active')
-            ->where('growth_value_min', '<=', $growthValue)
-            ->orderByDesc('level')
-            ->first();
-
-        if ($matched) {
-            return $matched;
-        }
-
-        // 回退到系统默认等级
-        $defaultLevelId = $this->mallSettingService->member()->defaultLevel();
-        $defaultLevel = $this->repository->findById($defaultLevelId);
-
-        if ($defaultLevel) {
-            return $defaultLevel;
-        }
-
-        // 如果默认等级也不存在，返回序号最小的启用等级
-        return $this->repository->getModel()->newQuery()
-            ->where('status', 'active')
-            ->orderBy('level')
-            ->firstOrFail();
-    }
-
-    /**
-     * 获取所有启用的等级列表（按等级序号升序）.
-     *
-     * @return MemberLevel[]
-     */
-    public function getActiveLevels(): array
-    {
-        return $this->repository->getModel()->newQuery()
-            ->where('status', 'active')
-            ->orderBy('level')
-            ->get()
-            ->all();
     }
 }

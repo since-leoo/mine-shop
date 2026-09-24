@@ -29,6 +29,11 @@ abstract class IService
         return $this->repository->count($params);
     }
 
+    public function create(array $params)
+    {
+        return $this->repository->create($params);
+    }
+
     public function page(array $params, int $page = 1, int $pageSize = 10): array
     {
         return $this->repository->page($params, $page, $pageSize);

@@ -90,7 +90,7 @@ final class Menu extends MineModel
             ->with('children');
     }
 
-    public function deleting(Deleting $event)
+    public function deleting(Deleting $event): void
     {
         $this->roles()->detach();
     }

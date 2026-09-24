@@ -1,6 +1,14 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace App\Interface\Api\Transformer\Seckill;
 
@@ -37,7 +45,7 @@ final class SeckillSessionTransformer
                 default => 'ended',
             },
             'statusTag' => $statusTag,
-            'remainingTime' => in_array($statusTag, ['active', 'pending'], true) ? $remainingMs : 0,
+            'remainingTime' => \in_array($statusTag, ['active', 'pending'], true) ? $remainingMs : 0,
             'productsCount' => (int) ($session->products_count ?? 0),
         ];
     }

@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\AfterSale\Service;
 
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Payment\Enum\PayType;
@@ -23,8 +23,6 @@ use App\Infrastructure\Service\Pay\YsdPayService;
 use Carbon\Carbon;
 use Hyperf\Stringable\Str;
 use Psr\EventDispatcher\EventDispatcherInterface;
-use RuntimeException;
-use Throwable;
 
 class DomainAfterSaleRefundService
 {
@@ -41,7 +39,7 @@ class DomainAfterSaleRefundService
     {
         $payment = $this->paymentRepository->findByOrderId($afterSale->getOrderId());
         if ($payment === null) {
-            throw new RuntimeException('订单支付记录不存在');
+            throw new \RuntimeException('订单支付记录不存在');
         }
 
         $refundNo = $this->generateRefundNo();
@@ -79,7 +77,7 @@ class DomainAfterSaleRefundService
         }
 
         if ((string) $payment->payment_method !== PayType::WECHAT->value) {
-            throw new RuntimeException('暂不支持该支付方式的原路退款');
+            throw new \RuntimeException('暂不支持该支付方式的原路退款');
         }
 
         return $this->refundByWechat($afterSale, $payment, $refundNo, $refundAmount);
@@ -106,7 +104,7 @@ class DomainAfterSaleRefundService
         }
 
         $response = $this->payService->refund($payload, $config, 'mini');
-        $status = strtoupper((string) ($response['status'] ?? ''));
+        $status = mb_strtoupper((string) ($response['status'] ?? ''));
 
         if ($status === 'SUCCESS' || $status === 'PROCESSING') {
             $this->paymentRefundRepository->updateByRefundNo($refundNo, [
@@ -125,7 +123,7 @@ class DomainAfterSaleRefundService
             'remark' => (string) ($response['message'] ?? '原路退款失败'),
         ]);
 
-        throw new RuntimeException((string) ($response['message'] ?? '原路退款失败'));
+        throw new \RuntimeException((string) ($response['message'] ?? '原路退款失败'));
     }
 
     private function dispatchRefundSucceeded(AfterSaleEntity $afterSale, object $payment, int $refundAmount, string $refundNo, int $operatorId, string $operatorName): void

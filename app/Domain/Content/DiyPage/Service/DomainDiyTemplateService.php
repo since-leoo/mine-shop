@@ -19,8 +19,8 @@ use App\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Domain\Content\DiyPage\Repository\DiyTemplateRepository;
 use App\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Model\Content\DiyTemplate;
 use App\Infrastructure\Model\Content\DiyPageVersion;
+use App\Infrastructure\Model\Content\DiyTemplate;
 
 final class DomainDiyTemplateService extends IService
 {

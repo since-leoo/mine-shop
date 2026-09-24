@@ -47,7 +47,7 @@ final class AfterSaleRepository extends IRepository
 
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
-        /** @var AfterSale|null $info */
+        /** @var null|AfterSale $info */
         $info = $this->model::where('order_item_id', $orderItemId)
             ->whereNotIn('status', [
                 AfterSaleStatus::COMPLETED->value,
@@ -73,7 +73,7 @@ final class AfterSaleRepository extends IRepository
 
     public function findByIdAndMember(int $id, int $memberId): AfterSale
     {
-        /** @var AfterSale|null $record */
+        /** @var null|AfterSale $record */
         $record = $this->model::where('id', $id)
             ->where('member_id', $memberId)
             ->with(['order', 'orderItem'])

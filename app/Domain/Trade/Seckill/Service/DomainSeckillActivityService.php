@@ -23,6 +23,7 @@ use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
+use Carbon\Carbon;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 /**
@@ -201,10 +202,10 @@ final class DomainSeckillActivityService extends IService
     private function hasSessionWithinCacheWarmupPeriod(int $activityId): bool
     {
         $sessions = $this->sessionRepository->findByActivityId($activityId);
-        $now = \Carbon\Carbon::now();
+        $now = Carbon::now();
 
         foreach ($sessions as $session) {
-            $startTime = \Carbon\Carbon::parse($session->start_time);
+            $startTime = Carbon::parse($session->start_time);
 
             // 如果开始时间已过，跳过
             if ($startTime->lte($now)) {

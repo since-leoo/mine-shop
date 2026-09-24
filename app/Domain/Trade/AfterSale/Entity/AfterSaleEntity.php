@@ -17,7 +17,6 @@ use App\Domain\Trade\AfterSale\Enum\AfterSaleRefundStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleReturnStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleType;
-use DomainException;
 
 final class AfterSaleEntity
 {
@@ -66,13 +65,13 @@ final class AfterSaleEntity
         $entity = new self();
         $type = AfterSaleType::tryFrom($input->getType());
         if ($type === null) {
-            throw new DomainException('售后类型不合法');
+            throw new \DomainException('售后类型不合法');
         }
         if ($input->getQuantity() < 1) {
-            throw new DomainException('售后数量必须大于 0');
+            throw new \DomainException('售后数量必须大于 0');
         }
         if ($input->getApplyAmount() < 0) {
-            throw new DomainException('售后金额不能小于 0');
+            throw new \DomainException('售后金额不能小于 0');
         }
 
         $entity->orderId = $input->getOrderId();
@@ -124,7 +123,7 @@ final class AfterSaleEntity
     public function submitBuyerReturn(string $company, string $trackingNo): self
     {
         if ($this->type === AfterSaleType::REFUND_ONLY->value) {
-            throw new DomainException('仅退款售后不支持买家退货');
+            throw new \DomainException('仅退款售后不支持买家退货');
         }
 
         $this->assertStatus([AfterSaleStatus::WAITING_BUYER_RETURN], '只有待买家退货状态才能提交退货物流');
@@ -152,7 +151,6 @@ final class AfterSaleEntity
         return $this;
     }
 
-
     public function markRefundFailed(): self
     {
         $this->assertStatus([AfterSaleStatus::REFUNDING], '只有退款处理中状态才能标记退款失败');
@@ -160,6 +158,7 @@ final class AfterSaleEntity
         $this->refundStatus = AfterSaleRefundStatus::FAILED->value;
         return $this;
     }
+
     public function markSellerReceived(): self
     {
         $this->assertStatus([AfterSaleStatus::WAITING_SELLER_RECEIVE], '只有待商家收货状态才能确认收货');
@@ -173,7 +172,7 @@ final class AfterSaleEntity
     public function markReshipped(string $company, string $trackingNo): self
     {
         if ($this->type !== AfterSaleType::EXCHANGE->value) {
-            throw new DomainException('只有换货售后才能执行补发');
+            throw new \DomainException('只有换货售后才能执行补发');
         }
 
         $this->assertStatus([AfterSaleStatus::WAITING_RESHIP], '只有待补发状态才能执行补发');
@@ -188,7 +187,7 @@ final class AfterSaleEntity
     public function confirmExchangeReceived(): self
     {
         if ($this->type !== AfterSaleType::EXCHANGE->value) {
-            throw new DomainException('只有换货售后才能确认收货');
+            throw new \DomainException('只有换货售后才能确认收货');
         }
 
         $this->assertStatus([AfterSaleStatus::RESHIPPED], '只有已补发状态才能确认换货收货');
@@ -223,48 +222,235 @@ final class AfterSaleEntity
         ], static fn ($value) => $value !== null);
     }
 
-    public function getId(): int { return $this->id; }
-    public function setId(int $id): self { $this->id = $id; return $this; }
-    public function getAfterSaleNo(): string { return $this->afterSaleNo; }
-    public function setAfterSaleNo(string $afterSaleNo): self { $this->afterSaleNo = $afterSaleNo; return $this; }
-    public function getOrderId(): int { return $this->orderId; }
-    public function setOrderId(int $orderId): self { $this->orderId = $orderId; return $this; }
-    public function getOrderItemId(): int { return $this->orderItemId; }
-    public function setOrderItemId(int $orderItemId): self { $this->orderItemId = $orderItemId; return $this; }
-    public function getMemberId(): int { return $this->memberId; }
-    public function setMemberId(int $memberId): self { $this->memberId = $memberId; return $this; }
-    public function getType(): string { return $this->type; }
-    public function setType(string $type): self { $this->type = $type; return $this; }
-    public function getStatus(): string { return $this->status; }
-    public function setStatus(string $status): self { $this->status = $status; return $this; }
-    public function getRefundStatus(): string { return $this->refundStatus; }
-    public function setRefundStatus(string $refundStatus): self { $this->refundStatus = $refundStatus; return $this; }
-    public function getReturnStatus(): string { return $this->returnStatus; }
-    public function setReturnStatus(string $returnStatus): self { $this->returnStatus = $returnStatus; return $this; }
-    public function getApplyAmount(): int { return $this->applyAmount; }
-    public function setApplyAmount(int $applyAmount): self { $this->applyAmount = $applyAmount; return $this; }
-    public function getRefundAmount(): int { return $this->refundAmount; }
-    public function setRefundAmount(int $refundAmount): self { $this->refundAmount = $refundAmount; return $this; }
-    public function getQuantity(): int { return $this->quantity; }
-    public function setQuantity(int $quantity): self { $this->quantity = $quantity; return $this; }
-    public function getReason(): string { return $this->reason; }
-    public function setReason(string $reason): self { $this->reason = $reason; return $this; }
-    public function getDescription(): ?string { return $this->description; }
-    public function setDescription(?string $description): self { $this->description = $description; return $this; }
-    public function getRejectReason(): ?string { return $this->rejectReason; }
-    public function setRejectReason(?string $rejectReason): self { $this->rejectReason = $rejectReason; return $this; }
-    public function getImages(): ?array { return $this->images; }
-    public function setImages(?array $images): self { $this->images = $images; return $this; }
-    public function getBuyerReturnLogisticsCompany(): ?string { return $this->buyerReturnLogisticsCompany; }
-    public function setBuyerReturnLogisticsCompany(?string $company): self { $this->buyerReturnLogisticsCompany = $company; return $this; }
-    public function getReturnLogisticsCompany(): ?string { return $this->buyerReturnLogisticsCompany; }
-    public function getBuyerReturnLogisticsNo(): ?string { return $this->buyerReturnLogisticsNo; }
-    public function setBuyerReturnLogisticsNo(?string $trackingNo): self { $this->buyerReturnLogisticsNo = $trackingNo; return $this; }
-    public function getReturnLogisticsNo(): ?string { return $this->buyerReturnLogisticsNo; }
-    public function getReshipLogisticsCompany(): ?string { return $this->reshipLogisticsCompany; }
-    public function setReshipLogisticsCompany(?string $company): self { $this->reshipLogisticsCompany = $company; return $this; }
-    public function getReshipLogisticsNo(): ?string { return $this->reshipLogisticsNo; }
-    public function setReshipLogisticsNo(?string $trackingNo): self { $this->reshipLogisticsNo = $trackingNo; return $this; }
+    public function getId(): int
+    {
+        return $this->id;
+    }
+
+    public function setId(int $id): self
+    {
+        $this->id = $id;
+        return $this;
+    }
+
+    public function getAfterSaleNo(): string
+    {
+        return $this->afterSaleNo;
+    }
+
+    public function setAfterSaleNo(string $afterSaleNo): self
+    {
+        $this->afterSaleNo = $afterSaleNo;
+        return $this;
+    }
+
+    public function getOrderId(): int
+    {
+        return $this->orderId;
+    }
+
+    public function setOrderId(int $orderId): self
+    {
+        $this->orderId = $orderId;
+        return $this;
+    }
+
+    public function getOrderItemId(): int
+    {
+        return $this->orderItemId;
+    }
+
+    public function setOrderItemId(int $orderItemId): self
+    {
+        $this->orderItemId = $orderItemId;
+        return $this;
+    }
+
+    public function getMemberId(): int
+    {
+        return $this->memberId;
+    }
+
+    public function setMemberId(int $memberId): self
+    {
+        $this->memberId = $memberId;
+        return $this;
+    }
+
+    public function getType(): string
+    {
+        return $this->type;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+        return $this;
+    }
+
+    public function getRefundStatus(): string
+    {
+        return $this->refundStatus;
+    }
+
+    public function setRefundStatus(string $refundStatus): self
+    {
+        $this->refundStatus = $refundStatus;
+        return $this;
+    }
+
+    public function getReturnStatus(): string
+    {
+        return $this->returnStatus;
+    }
+
+    public function setReturnStatus(string $returnStatus): self
+    {
+        $this->returnStatus = $returnStatus;
+        return $this;
+    }
+
+    public function getApplyAmount(): int
+    {
+        return $this->applyAmount;
+    }
+
+    public function setApplyAmount(int $applyAmount): self
+    {
+        $this->applyAmount = $applyAmount;
+        return $this;
+    }
+
+    public function getRefundAmount(): int
+    {
+        return $this->refundAmount;
+    }
+
+    public function setRefundAmount(int $refundAmount): self
+    {
+        $this->refundAmount = $refundAmount;
+        return $this;
+    }
+
+    public function getQuantity(): int
+    {
+        return $this->quantity;
+    }
+
+    public function setQuantity(int $quantity): self
+    {
+        $this->quantity = $quantity;
+        return $this;
+    }
+
+    public function getReason(): string
+    {
+        return $this->reason;
+    }
+
+    public function setReason(string $reason): self
+    {
+        $this->reason = $reason;
+        return $this;
+    }
+
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
+    public function setDescription(?string $description): self
+    {
+        $this->description = $description;
+        return $this;
+    }
+
+    public function getRejectReason(): ?string
+    {
+        return $this->rejectReason;
+    }
+
+    public function setRejectReason(?string $rejectReason): self
+    {
+        $this->rejectReason = $rejectReason;
+        return $this;
+    }
+
+    public function getImages(): ?array
+    {
+        return $this->images;
+    }
+
+    public function setImages(?array $images): self
+    {
+        $this->images = $images;
+        return $this;
+    }
+
+    public function getBuyerReturnLogisticsCompany(): ?string
+    {
+        return $this->buyerReturnLogisticsCompany;
+    }
+
+    public function setBuyerReturnLogisticsCompany(?string $company): self
+    {
+        $this->buyerReturnLogisticsCompany = $company;
+        return $this;
+    }
+
+    public function getReturnLogisticsCompany(): ?string
+    {
+        return $this->buyerReturnLogisticsCompany;
+    }
+
+    public function getBuyerReturnLogisticsNo(): ?string
+    {
+        return $this->buyerReturnLogisticsNo;
+    }
+
+    public function setBuyerReturnLogisticsNo(?string $trackingNo): self
+    {
+        $this->buyerReturnLogisticsNo = $trackingNo;
+        return $this;
+    }
+
+    public function getReturnLogisticsNo(): ?string
+    {
+        return $this->buyerReturnLogisticsNo;
+    }
+
+    public function getReshipLogisticsCompany(): ?string
+    {
+        return $this->reshipLogisticsCompany;
+    }
+
+    public function setReshipLogisticsCompany(?string $company): self
+    {
+        $this->reshipLogisticsCompany = $company;
+        return $this;
+    }
+
+    public function getReshipLogisticsNo(): ?string
+    {
+        return $this->reshipLogisticsNo;
+    }
+
+    public function setReshipLogisticsNo(?string $trackingNo): self
+    {
+        $this->reshipLogisticsNo = $trackingNo;
+        return $this;
+    }
 
     /**
      * @param array<int, AfterSaleStatus> $statuses
@@ -277,6 +463,6 @@ final class AfterSaleEntity
             }
         }
 
-        throw new DomainException($message);
+        throw new \DomainException($message);
     }
 }

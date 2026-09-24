@@ -157,7 +157,7 @@ final class DomainSeckillSessionService extends IService
      * 根据 ID 获取场次实体.
      *
      * @param int $id 场次 ID
-     * @return SeckillSessionEntity|null 实体或 null
+     * @return null|SeckillSessionEntity 实体或 null
      */
     public function getEntity(int $id): ?SeckillSessionEntity
     {

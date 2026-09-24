@@ -60,7 +60,7 @@ class SyncGeoRegionsCommand extends HyperfCommand
         return self::SUCCESS;
     }
 
-    protected function configure()
+    protected function configure(): void
     {
         parent::configure();
         $this->setDescription('Sync geo regions data into geo_regions');
@@ -74,4 +74,3 @@ class SyncGeoRegionsCommand extends HyperfCommand
         $this->addOption('chunk-size', null, InputOption::VALUE_OPTIONAL, 'Records per insert chunk', 200);
     }
 }
-
