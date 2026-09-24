@@ -22,7 +22,6 @@ use App\Domain\Trade\GroupBuy\Listener\GroupBuyOrderPaidListener;
 use App\Domain\Trade\Order\Listener\OrderCreatedListener;
 use App\Domain\Trade\Order\Listener\OrderStatusNotifyListener;
 use Hyperf\ExceptionHandler\Listener\ErrorExceptionHandler;
-use Mine\Core\Subscriber\BootApplicationSubscriber;
 use Mine\Core\Subscriber\DbQueryExecutedSubscriber;
 use Mine\Core\Subscriber\FailToHandleSubscriber;
 use Mine\Core\Subscriber\QueueHandleSubscriber;
