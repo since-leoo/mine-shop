@@ -9,8 +9,8 @@ const http = useHttp()
 export interface MessageTemplate {
   id: number
   name: string
-  title_template: string
-  content_template: string
+  title: string
+  content: string
   type: string
   category: string
   description?: string
@@ -19,6 +19,7 @@ export interface MessageTemplate {
   created_by: number
   created_at: string
   updated_at: string
+  statusLoading?: boolean
 }
 
 export interface TemplateListParams {
@@ -35,8 +36,8 @@ export interface TemplateListParams {
 
 export interface CreateTemplateData {
   name: string
-  title_template: string
-  content_template: string
+  title: string
+  content: string
   type: string
   category: string
   description?: string

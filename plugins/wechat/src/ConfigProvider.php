@@ -23,7 +23,6 @@ class ConfigProvider
     {
         // Initial configuration
         return [
-            // 合并到  config/autoload/annotations.php 文件
             'annotations' => [
                 'scan' => [
                     'paths' => [
@@ -35,6 +34,7 @@ class ConfigProvider
                 MiniAppInterface::class => MiniAppFactory::class,
                 OfficialAccountInterface::class => OfficialAccountFactory::class,
             ],
+            'wechat' => require __DIR__ . '/../publish/wechat.php',
         ];
     }
 }

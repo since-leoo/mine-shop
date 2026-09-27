@@ -1,0 +1,18 @@
+{
+  "name": "since/system-message",
+  "version": "1.0.0",
+  "description": "系统消息通知管理插件，提供站内消息、模板和通知偏好管理",
+  "author": "Since Team",
+  "namespace": "Plugin\\SystemMessage",
+  "priority": 15,
+  "enabled": true,
+  "center": {
+    "title": "系统消息",
+    "icon": "mdi:bell-outline",
+    "sort": 15
+  },
+  "dependencies": [],
+  "composer_require": {},
+  "rollback_on_uninstall": false,
+  "configProvider": "Plugin\\SystemMessage\\ConfigProvider"
+}

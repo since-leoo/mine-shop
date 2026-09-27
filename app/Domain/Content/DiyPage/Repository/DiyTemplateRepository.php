@@ -37,7 +37,7 @@ class DiyTemplateRepository extends IRepository
 
     public function createTemplate(array $data): DiyTemplate
     {
-        /** @var DiyTemplate $template */
+        /* @var DiyTemplate $template */
         return $this->create($data);
     }
 
@@ -48,7 +48,7 @@ class DiyTemplateRepository extends IRepository
 
     public function findDetail(int $id): ?DiyTemplate
     {
-        /** @var null|DiyTemplate $template */
+        /* @var null|DiyTemplate $template */
         return $this->getQuery()
             ->with(['category'])
             ->whereKey($id)

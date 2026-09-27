@@ -26,8 +26,51 @@ const tabs = computed(() => [
 </template>
 
 <style scoped>
-.customer-service-plugin { background: var(--el-bg-color-page, #f6f8fc); }
+.customer-service-plugin {
+  --el-bg-color-page: #f6f8fc;
+  --el-bg-color: #fff;
+  --el-fill-color-blank: #fff;
+  background: var(--el-bg-color-page, #f6f8fc);
+}
 .service-tabs { background: var(--el-bg-color, #fff); border-bottom: 1px solid var(--el-border-color-lighter); }
 .service-tabs :deep(.el-tabs__header) { margin: 0; }
 .service-tabs :deep(.el-tabs__nav-wrap::after) { display: none; }
+:global(html.dark) .customer-service-plugin {
+  --el-bg-color-page: #0d1420;
+  --el-bg-color: #161e2d;
+  --el-fill-color-blank: #161e2d;
+  --el-fill-color-light: #202a3a;
+  --el-border-color: #2a3448;
+  --el-border-color-light: #303b50;
+  --el-border-color-lighter: #2a3448;
+  color-scheme: dark;
+}
+:global(html.dark) .service-tabs { color: #edf1fa; }
+:global(html.dark) .service-tabs :deep(.el-tabs__item) { color: #aab5c8; }
+:global(html.dark) .service-tabs :deep(.el-tabs__item.is-active) { color: #8f84ff; }
+</style>
+
+<style lang="scss">
+html.dark .customer-service-plugin {
+  --el-bg-color-page: #0d1420;
+  --el-bg-color: #161e2d;
+  --el-fill-color-blank: #161e2d;
+  --el-fill-color-light: #202a3a;
+  --el-border-color: #2a3448;
+  --el-border-color-light: #303b50;
+  --el-border-color-lighter: #2a3448;
+  color-scheme: dark;
+}
+
+html.dark .customer-service-plugin .service-tabs {
+  color: #edf1fa;
+}
+
+html.dark .customer-service-plugin .service-tabs .el-tabs__item {
+  color: #aab5c8;
+}
+
+html.dark .customer-service-plugin .service-tabs .el-tabs__item.is-active {
+  color: #8f84ff;
+}
 </style>

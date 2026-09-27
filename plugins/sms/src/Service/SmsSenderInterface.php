@@ -12,11 +12,9 @@ declare(strict_types=1);
 
 namespace Plugin\Sms\Service;
 
+use Plugin\Sms\Model\SmsMessage;
+
 interface SmsSenderInterface
 {
-    /**
-     * @param array<string, mixed> $payload
-     * @param array<string, mixed> $config
-     */
-    public function send(string $phone, array $payload, array $config): void;
+    public function send(SmsMessage $message): void;
 }

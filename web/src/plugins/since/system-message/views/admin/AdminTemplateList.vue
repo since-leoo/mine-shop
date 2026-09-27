@@ -11,6 +11,24 @@
       </div>
     </div>
 
+    <el-dialog v-model="createVisible" title="创建消息模板" width="620px" destroy-on-close>
+      <el-form label-position="top">
+        <el-form-item label="模板名称" required><el-input v-model="createForm.name" maxlength="100" /></el-form-item>
+        <el-form-item label="模板类型" required>
+          <el-select v-model="createForm.type" style="width:100%">
+            <el-option value="system" label="系统模板" /><el-option value="announcement" label="公告模板" />
+            <el-option value="alert" label="警报模板" /><el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="分类" required><el-input v-model="createForm.category" /></el-form-item>
+        <el-form-item label="标题模板" required><el-input v-model="createForm.title" maxlength="255" /></el-form-item>
+        <el-form-item :label="createForm.type === 'sms' ? '短信内容模板' : '内容模板'" required><el-input v-model="createForm.content" type="textarea" :rows="5" maxlength="10000" show-word-limit /></el-form-item>
+        <el-form-item label="描述"><el-input v-model="createForm.description" type="textarea" :rows="2" /></el-form-item>
+        <el-form-item label="启用"><el-switch v-model="createForm.is_active" /></el-form-item>
+      </el-form>
+      <template #footer><el-button @click="createVisible = false">取消</el-button><el-button type="primary" :loading="createLoading" @click="submitCreate">保存</el-button></template>
+    </el-dialog>
+
     <!-- 筛选栏 -->
     <div class="filter-bar">
       <div class="filter-left">
@@ -24,12 +42,12 @@
           <el-option value="system" label="系统模板" />
           <el-option value="announcement" label="公告模板" />
           <el-option value="alert" label="警报模板" />
-          <el-option value="reminder" label="提醒模板" />
+          <el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" />
           <el-option value="marketing" label="营销模板" />
         </el-select>
         
         <el-select
-          v-model="filters.status"
+          v-model="filters.is_active"
           placeholder="模板状态"
           style="width: 120px"
           clearable
@@ -126,7 +144,7 @@
       <el-table-column label="状态" width="80">
         <template #default="{ row }">
           <el-switch
-            :model-value="row.status === 'active'"
+            :model-value="row.is_active"
             @change="toggleStatus(row)"
             :loading="row.statusLoading"
           />
@@ -219,7 +237,8 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTemplateStore } from '../../store/template'
 import { ElMessage } from 'element-plus'
-import type { MessageTemplate, TemplateListParams } from '../../api/template'
+import type { CreateTemplateData, MessageTemplate, TemplateListParams } from '../../api/template'
+import { templateApi } from '../../api/template'
 import dayjs from 'dayjs'
 
 const router = useRouter()
@@ -228,12 +247,15 @@ const templateStore = useTemplateStore()
 // 筛选条件
 const filters = reactive<TemplateListParams>({
   type: undefined,
-  status: undefined
+  is_active: undefined
 })
 
 const searchKeyword = ref('')
 const selectedRowKeys = ref<number[]>([])
 const batchLoading = ref(false)
+const createVisible = ref(false)
+const createLoading = ref(false)
+const createForm = reactive<CreateTemplateData>({ name: '', title: '', content: '', type: 'system', category: 'default', description: '', is_active: true })
 
 // 预览相关
 const previewVisible = ref(false)
@@ -320,17 +342,36 @@ const loadTemplates = async () => {
 
 // 创建模板
 const createTemplate = () => {
-  router.push('/admin/template/create')
+  Object.assign(createForm, { name: '', title: '', content: '', type: 'system', category: 'default', description: '', is_active: true })
+  createVisible.value = true
+}
+
+const submitCreate = async () => {
+  if (!createForm.name.trim() || !createForm.title.trim() || !createForm.content.trim()) {
+    ElMessage.warning('请填写模板名称、标题和内容')
+    return
+  }
+  createLoading.value = true
+  try {
+    await templateApi.create(createForm)
+    createVisible.value = false
+    await loadTemplates()
+    ElMessage.success('模板创建成功')
+  } catch {
+    ElMessage.error('模板创建失败')
+  } finally {
+    createLoading.value = false
+  }
 }
 
 // 编辑模板
 const editTemplate = (record: MessageTemplate) => {
-  router.push(`/admin/template/edit/${record.id}`)
+  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'edit', id: String(record.id) } })
 }
 
 // 复制模板
 const duplicateTemplate = (record: MessageTemplate) => {
-  router.push(`/admin/template/create?duplicate=${record.id}`)
+  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'create', duplicate: String(record.id) } })
 }
 
 // 预览模板

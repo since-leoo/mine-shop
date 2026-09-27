@@ -37,8 +37,4 @@ final class Plugin extends AbstractPlugin
             ],
         ];
     }
-
-    public function install(): void {}
-
-    public function uninstall(): void {}
 }

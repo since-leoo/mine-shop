@@ -16,8 +16,11 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
-use Overtrue\EasySms\Strategies\OrderStrategy;
+use Carbon\Carbon;
 use Plugin\Sms\Contract\SmsVerificationServiceInterface;
+use Plugin\Sms\Model\SmsMessage;
+use Plugin\SystemMessage\Infrastructure\Model\SystemMessage\Message;
+use Random\RandomException;
 
 final class EasySmsVerificationService implements SmsVerificationServiceInterface
 {
@@ -35,33 +38,59 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         private readonly ?SmsSenderInterface $sender = null,
     ) {}
 
+    /**
+     * Send an SMS verification code.
+     *
+     * @return array{
+     *     phone: string,
+     *     scene: string,
+     *     code?: string
+     * }
+     * @throws RandomException
+     * @throws \Throwable
+     */
     public function sendCode(string $phone, string $scene): array
     {
-        $this->assertProductionSmsEnabled();
-        $this->assertCanSend($phone, $scene);
+        $code = null;
 
-        $code = mb_str_pad((string) random_int(0, 999999), 6, '0', \STR_PAD_LEFT);
-        $this->storeVerificationCode($phone, $scene, $code);
+        try {
+            $this->assertProductionSmsEnabled();
+            $this->assertCanSend($phone, $scene);
 
-        $result = [
-            'phone' => $phone,
-            'scene' => $scene,
-        ];
+            $code = mb_str_pad((string) random_int(0, 999999), 6, '0', \STR_PAD_LEFT);
+            $this->storeVerificationCode($phone, $scene, $code);
 
-        if ($this->isNonProduction()) {
-            $result['code'] = $code;
-            $this->logNonProductionCode($phone, $scene, $code);
+            $result = [
+                'phone' => $phone,
+                'scene' => $scene,
+            ];
+
+            // Non-production mode
+            if ($this->isNonProduction()) {
+                $result['code'] = $code;
+                $this->logNonProductionCode($phone, $scene, $code);
+                $this->recordSmsMessage($phone, $scene, $code, true);
+
+                return $result;
+            }
+
+            // Production mode
+            $this->dispatchSms($phone, $code);
+            $this->recordSmsMessage($phone, $scene, $code, true);
 
             return $result;
+        } catch (\Throwable $e) {
+            $this->recordSmsMessage($phone, $scene, $code, false, $e->getMessage());
+            throw $e;
         }
-
-        $this->dispatchSms($phone, $code);
-
-        return $result;
     }
 
+    /**
+     * Verify the SMS verification code.
+     */
     public function verifyCode(string $phone, string $scene, string $code): bool
     {
+        // Verify the SMS verification code.
         $cachedCode = (string) $this->redis()->get($this->codeKey($phone, $scene));
         if ($cachedCode === '' || ! hash_equals($cachedCode, $code)) {
             return false;
@@ -72,20 +101,28 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         return true;
     }
 
+    /**
+     * Assert that the SMS verification code can be sent.
+     */
     private function assertCanSend(string $phone, string $scene): void
     {
+        // Assert that the SMS verification code can be sent.
         if ($this->redis()->get($this->resendKey($phone, $scene)) !== null) {
-            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
         }
 
         $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);
         if ($dailyCount >= self::DAILY_LIMIT) {
-            // throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
         }
     }
 
+    /**
+     * Assert that production SMS is enabled.
+     */
     private function assertProductionSmsEnabled(): void
     {
+        // Assert that production SMS is enabled.
         if ($this->isNonProduction()) {
             return;
         }
@@ -96,6 +133,9 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         }
     }
 
+    /**
+     * Store the verification code in the cache.
+     */
     private function storeVerificationCode(string $phone, string $scene, string $code): void
     {
         $this->redis()->set($this->codeKey($phone, $scene), $code, ['EX' => self::CODE_TTL]);
@@ -105,57 +145,80 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         $this->redis()->set($this->dailyLimitKey($phone), (string) ($dailyCount + 1), ['EX' => $this->secondsUntilDayEnd()]);
     }
 
+    /**
+     * Dispatch the SMS verification code to the given phone number.
+     */
     private function dispatchSms(string $phone, string $code): void
     {
         $integration = $this->mallSettingService->integration();
         $smsConfig = $integration->smsConfig();
         $template = (string) ($smsConfig['template_code'] ?? $smsConfig['template_id'] ?? $integration->smsTemplate());
 
-        $payload = [
-            'template' => $template,
-            'data' => ['code' => $code],
-            'content' => str_replace(['{{$code}}', '{$code}'], $code, $integration->smsTemplate()),
-        ];
-
-        ($this->sender ?? new EasySmsSender())->send($phone, $payload, $this->buildEasySmsConfig());
+        $content = str_replace(['{{$code}}', '{$code}'], $code, $integration->smsTemplate());
+        ($this->sender ?? new EasySmsSender($this->mallSettingService))->send(new SmsMessage($phone, ['code' => $code], $template, $content));
     }
 
     /**
-     * @return array<string, mixed>
+     * Record the SMS message.
      */
-    private function buildEasySmsConfig(): array
+    private function recordSmsMessage(string $phone, string $scene, ?string $code, bool $success, ?string $failureReason = null): void
     {
-        $integration = $this->mallSettingService->integration();
-        $provider = $integration->smsProvider();
-        $smsConfig = $integration->smsConfig();
+        $sentAt = Carbon::now();
 
-        return [
-            'timeout' => 5.0,
-            'default' => [
-                'strategy' => OrderStrategy::class,
-                'gateways' => [$provider],
-            ],
-            'gateways' => [
-                'aliyun' => [
-                    'access_key_id' => (string) ($smsConfig['access_key_id'] ?? ''),
-                    'access_key_secret' => (string) ($smsConfig['access_key_secret'] ?? ''),
-                    'sign_name' => (string) ($smsConfig['sign_name'] ?? ''),
+        try {
+            Message::create([
+                'title' => '短信验证码（' . $scene . '）',
+                'content' => $code === null ? '短信验证码发送失败' : '短信验证码：' . $code,
+                'type' => 'system',
+                'priority' => 1,
+                'recipient_type' => 'all',
+                'channels' => ['sms'],
+                'sent_at' => $sentAt,
+                'status' => $success ? 'sent' : 'failed',
+                'remark' => '短信插件发送记录',
+                'extra_data' => [
+                    'phone' => $phone,
+                    'code' => $code,
+                    'scene' => $scene,
+                    'sent_at' => $sentAt->toDateTimeString(),
+                    'status' => $success ? 'sent' : 'failed',
+                    'failure_reason' => $failureReason,
+                    'provider' => $this->smsProvider(),
                 ],
-                'tencent' => [
-                    'sdk_app_id' => (string) ($smsConfig['sdk_app_id'] ?? $smsConfig['app_id'] ?? ''),
-                    'secret_id' => (string) ($smsConfig['secret_id'] ?? $smsConfig['access_key_id'] ?? ''),
-                    'secret_key' => (string) ($smsConfig['secret_key'] ?? $smsConfig['access_key_secret'] ?? ''),
-                    'sign_name' => (string) ($smsConfig['sign_name'] ?? ''),
-                ],
-            ],
-        ];
+            ]);
+        } catch (\Throwable $e) {
+            // 记录失败不能覆盖短信发送本身的结果。
+            logger()->warning('Unable to record SMS message', [
+                'phone' => $phone,
+                'scene' => $scene,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
+    /**
+     * Get the SMS provider.
+     */
+    private function smsProvider(): string
+    {
+        try {
+            return $this->mallSettingService->integration()->smsProvider();
+        } catch (\Throwable) {
+            return 'unknown';
+        }
+    }
+
+    /**
+     * Determine if the current environment is non-production.
+     */
     private function isNonProduction(): bool
     {
         return env('APP_ENV', 'dev') !== 'production';
     }
 
+    /**
+     * Log the SMS verification code in non-production mode.
+     */
     private function logNonProductionCode(string $phone, string $scene, string $code): void
     {
         if (! \function_exists('logger')) {
@@ -168,6 +231,9 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         }
     }
 
+    /**
+     * Get the number of seconds until the end of the day.
+     */
     private function secondsUntilDayEnd(): int
     {
         $tomorrow = strtotime('tomorrow');
@@ -175,21 +241,33 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
         return max(60, $tomorrow - time());
     }
 
+    /**
+     * Get the cache instance with the plugin cache prefix.
+     */
     private function redis(): ICache
     {
         return $this->cache->setPrefix(self::CACHE_PREFIX);
     }
 
+    /**
+     * Generate the cache key for the verification code.
+     */
     private function codeKey(string $phone, string $scene): string
     {
         return \sprintf('code:%s:%s', $scene, $phone);
     }
 
+    /**
+     * Generate the cache key for the rate limit.
+     */
     private function resendKey(string $phone, string $scene): string
     {
         return \sprintf('rate:%s:%s', $scene, $phone);
     }
 
+    /**
+     * Generate the cache key for the daily limit.
+     */
     private function dailyLimitKey(string $phone): string
     {
         return \sprintf('daily:%s:%s', date('Ymd'), $phone);

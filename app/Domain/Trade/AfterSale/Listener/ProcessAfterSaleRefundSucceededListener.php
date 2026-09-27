@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\AfterSale\Listener;
 
-use App\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use App\Domain\Member\Enum\MemberWalletTransactionType;
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Repository\MemberRepository;
@@ -28,6 +27,7 @@ use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\Enum\PayType;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use Hyperf\Event\Contract\ListenerInterface;
+use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
 use Psr\EventDispatcher\EventDispatcherInterface;
 
 final class ProcessAfterSaleRefundSucceededListener implements ListenerInterface

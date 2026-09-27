@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Plugin;
 
-use SinceLeoo\Plugin\Contract\PluginDiscovererInterface;
-use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 use App\Application\Admin\Infrastructure\AppSystemSettingCommandService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
+use SinceLeoo\Plugin\Contract\PluginDiscovererInterface;
 
 /**
  * 插件中心查询服务。
@@ -92,7 +92,7 @@ final class AppPluginCenterQueryService
         $definitions = [];
         foreach ($groups as $group) {
             foreach (($group['settings'] ?? []) as $key => $definition) {
-                if ($keys !== [] && ! in_array($key, $keys, true)) {
+                if ($keys !== [] && ! \in_array($key, $keys, true)) {
                     continue;
                 }
                 if ($keys === [] && ! str_starts_with((string) $key, $name . '.')) {
@@ -131,7 +131,7 @@ final class AppPluginCenterQueryService
             }
             if (($definition['is_sensitive'] ?? false) && $value === '********') {
                 $value = $this->settings->get($key, $definition['default'] ?? null);
-            } elseif (($definition['is_sensitive'] ?? false)) {
+            } elseif ($definition['is_sensitive'] ?? false) {
                 $value = $this->restoreMasked($value, $this->settings->get($key, $definition['default'] ?? null));
             }
             return $this->commandService->update($key, $value);
@@ -165,7 +165,7 @@ final class AppPluginCenterQueryService
     {
         if (\is_array($value) && \is_array($current)) {
             foreach ($value as $key => $item) {
-                if (array_key_exists($key, $current)) {
+                if (\array_key_exists($key, $current)) {
                     $value[$key] = $this->restoreMasked($item, $current[$key]);
                 }
             }

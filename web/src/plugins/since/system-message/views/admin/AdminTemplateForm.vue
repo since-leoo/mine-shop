@@ -49,13 +49,17 @@
               />
             </el-form-item>
 
+            <el-form-item label="标题模板" prop="title" required>
+              <el-input v-model="formData.title" placeholder="请输入消息标题模板" maxlength="255" />
+            </el-form-item>
+
             <el-form-item label="模板类型" prop="type" required>
               <el-select v-model="formData.type" placeholder="选择模板类型">
                 <el-option value="system" label="系统模板" />
                 <el-option value="announcement" label="公告模板" />
                 <el-option value="alert" label="警报模板" />
                 <el-option value="reminder" label="提醒模板" />
-                <el-option value="marketing" label="营销模板" />
+                <el-option value="marketing" label="营销模板" /><el-option value="sms" label="短信模板" />
               </el-select>
             </el-form-item>
 
@@ -274,7 +278,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { useTemplateStore } from '../../store/template'
 import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
@@ -282,8 +286,8 @@ import type { CreateTemplateData } from '../../api/template'
 import dayjs from 'dayjs'
 
 const route = useRoute()
-const router = useRouter()
 const templateStore = useTemplateStore()
+const emit = defineEmits<{ close: [] }>()
 
 // 表单引用
 const formRef = ref()
@@ -294,7 +298,8 @@ const variableModalVisible = ref(false)
 const previewModalVisible = ref(false)
 
 // 是否编辑模式
-const isEdit = computed(() => !!route.params.id)
+const templateId = computed(() => Number(route.query.id ?? route.params.id ?? 0))
+const isEdit = computed(() => templateId.value > 0 && route.query.template === 'edit')
 
 // 表单数据
 const formData = reactive<CreateTemplateData & { 
@@ -307,8 +312,10 @@ const formData = reactive<CreateTemplateData & {
   name: '',
   description: '',
   type: 'system',
+  title: '',
   content: '',
-  status: 'active'
+  category: 'default',
+  is_active: true
 })
 
 // 变量相关
@@ -341,6 +348,7 @@ const rules = {
   type: [
     { required: true, message: '请选择模板类型', trigger: 'change' }
   ],
+  title: [{ required: true, message: '请输入标题模板', trigger: 'blur' }],
   content: [
     { required: true, message: '请输入模板内容', trigger: 'blur' },
     { max: 5000, message: '模板内容长度不能超过5000字符', trigger: 'blur' }
@@ -383,8 +391,10 @@ const formatTime = (time: string) => {
 
 // 返回上一页
 const goBack = () => {
-  router.back()
+  emit('close')
 }
+
+const emitClose = () => emit('close')
 
 // 分析模板变量
 const analyzeVariables = () => {
@@ -506,21 +516,23 @@ const saveTemplate = async () => {
       name: formData.name,
       description: formData.description,
       type: formData.type,
+      title: formData.title,
       content: formData.content,
-      status: formData.status,
+      category: formData.category,
+      is_active: formData.is_active,
       variables: detectedVariables.value,
       variable_descriptions: variableDescriptions.value
     }
     
     if (isEdit.value) {
-      await templateStore.actions.update(Number(route.params.id), data)
+      await templateStore.actions.update(templateId.value, data)
       ElMessage.success('模板更新成功')
     } else {
       await templateStore.actions.create(data)
       ElMessage.success('模板创建成功')
     }
     
-    router.push('/admin/template')
+    emitClose()
   } catch (error) {
     ElMessage.error('保存失败')
   } finally {
@@ -533,7 +545,7 @@ const loadTemplateDetail = async () => {
   if (!isEdit.value) return
   
   try {
-    const response = await templateStore.actions.getDetail(Number(route.params.id))
+    const response = await templateStore.actions.getDetail(templateId.value)
     const template = response.data
     
     Object.assign(formData, {
@@ -541,8 +553,10 @@ const loadTemplateDetail = async () => {
       name: template.name,
       description: template.description,
       type: template.type,
+      title: template.title,
       content: template.content,
-      status: template.status,
+      category: template.category,
+      is_active: template.is_active,
       usage_count: template.usage_count,
       last_used_at: template.last_used_at,
       created_at: template.created_at,
@@ -558,7 +572,7 @@ const loadTemplateDetail = async () => {
     }
   } catch (error) {
     ElMessage.error('加载模板详情失败')
-    router.push('/admin/template')
+    emitClose()
   }
 }
 
@@ -577,8 +591,10 @@ onMounted(async () => {
         name: `${template.name} - 副本`,
         description: template.description,
         type: template.type,
+        title: template.title,
         content: template.content,
-        status: 'inactive' // 复制的模板默认禁用
+        category: template.category,
+        is_active: false // 复制的模板默认禁用
       })
       
       analyzeVariables()

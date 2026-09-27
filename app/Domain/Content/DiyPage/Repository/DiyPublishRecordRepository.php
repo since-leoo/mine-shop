@@ -43,13 +43,13 @@ class DiyPublishRecordRepository extends IRepository
 
     public function createRecord(array $data): DiyPagePublishRecord
     {
-        /** @var DiyPagePublishRecord $record */
+        /* @var DiyPagePublishRecord $record */
         return DiyPagePublishRecord::query()->create($data);
     }
 
     public function findRecord(int $id): ?DiyPagePublishRecord
     {
-        /** @var null|DiyPagePublishRecord $record */
+        /* @var null|DiyPagePublishRecord $record */
         return DiyPagePublishRecord::query()->whereKey($id)->first();
     }
 
@@ -62,13 +62,13 @@ class DiyPublishRecordRepository extends IRepository
 
     public function createPreviewToken(array $data): DiyPagePreviewToken
     {
-        /** @var DiyPagePreviewToken $token */
+        /* @var DiyPagePreviewToken $token */
         return DiyPagePreviewToken::query()->create($data);
     }
 
     public function findPreviewToken(string $token): ?DiyPagePreviewToken
     {
-        /** @var null|DiyPagePreviewToken $model */
+        /* @var null|DiyPagePreviewToken $model */
         return DiyPagePreviewToken::query()
             ->where('token', $token)
             ->first();

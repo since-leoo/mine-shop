@@ -322,7 +322,137 @@ onBeforeUnmount(() => { socket?.close(); socket = undefined })
   .accent-mint .metric-icon { color: #67d9b4; background: #183d39; }
   .accent-amber .metric-icon { color: #f6c46e; background: #493818; }
 }
+:global(body.dark) {
+  .customer-workbench {
+    --ink: #edf1fa;
+    --muted: #9aa6bc;
+    --line: #2a3448;
+    --panel: #161e2d;
+    --canvas: #0d1420;
+  }
+  .agent-profile, .workspace, .conversation-panel, .detail-panel, .chat-heading, .composer,
+  .message-content p, .product-card, .transfer-agent { background: var(--panel); }
+  .chat-panel { background: #111a29; }
+  .conversation-search :deep(.el-input__wrapper) { background: #202a3a; }
+  .conversation-item:hover { background: #202a3a; }
+  .conversation-item.selected { background: rgb(101 89 220 / 26%); }
+  .filter-tabs button { color: #aab5c8; }
+  .filter-tabs button.active { color: #c4beff; background: rgb(101 89 220 / 28%); }
+  .session-note, .system-message { color: #aab5c8; background: #202a3a; }
+  .message-content p { color: #e8edf8; }
+  .detail-card dt, .detail-card dd, .status-chip, .transfer-hint,
+  .quick-reply, .transfer-agent small { color: #aab5c8; }
+  .status-chip { background: #202a3a; }
+  .quick-reply { border-color: #303b50; background: #1c2636; }
+  .transfer-agent { border-color: #303b50; }
+}
 .chat-panel { min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; }
 .message-stream { min-height: 0; }
 @media (max-width: 1180px) { .customer-workbench { min-width:960px; }.workspace { grid-template-columns:280px minmax(400px,1fr) 220px; }.metric-card { padding:13px; }.metric-card em { display:none; } }
+</style>
+
+<style lang="scss">
+html.dark .customer-workbench,
+body.dark .customer-workbench {
+  --ink: #edf1fa;
+  --muted: #9aa6bc;
+  --line: #2a3448;
+  --panel: #161e2d;
+  --canvas: #0d1420;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+html.dark .customer-workbench .agent-profile,
+html.dark .customer-workbench .workspace,
+html.dark .customer-workbench .conversation-panel,
+html.dark .customer-workbench .detail-panel,
+html.dark .customer-workbench .chat-heading,
+html.dark .customer-workbench .composer,
+html.dark .customer-workbench .message-content p,
+html.dark .customer-workbench .product-card,
+html.dark .customer-workbench .transfer-agent,
+body.dark .customer-workbench .agent-profile,
+body.dark .customer-workbench .workspace,
+body.dark .customer-workbench .conversation-panel,
+body.dark .customer-workbench .detail-panel,
+body.dark .customer-workbench .chat-heading,
+body.dark .customer-workbench .composer,
+body.dark .customer-workbench .message-content p,
+body.dark .customer-workbench .product-card,
+body.dark .customer-workbench .transfer-agent {
+  background: var(--panel);
+}
+
+html.dark .customer-workbench .chat-panel,
+body.dark .customer-workbench .chat-panel {
+  background: #111a29;
+}
+
+html.dark .customer-workbench .conversation-search .el-input__wrapper,
+body.dark .customer-workbench .conversation-search .el-input__wrapper {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .conversation-item:hover,
+body.dark .customer-workbench .conversation-item:hover {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .conversation-item.selected,
+body.dark .customer-workbench .conversation-item.selected {
+  background: rgb(101 89 220 / 26%);
+}
+
+html.dark .customer-workbench .filter-tabs button,
+body.dark .customer-workbench .filter-tabs button,
+html.dark .customer-workbench .detail-card dt,
+html.dark .customer-workbench .detail-card dd,
+html.dark .customer-workbench .status-chip,
+html.dark .customer-workbench .transfer-hint,
+html.dark .customer-workbench .quick-reply,
+html.dark .customer-workbench .transfer-agent small,
+body.dark .customer-workbench .detail-card dt,
+body.dark .customer-workbench .detail-card dd,
+body.dark .customer-workbench .status-chip,
+body.dark .customer-workbench .transfer-hint,
+body.dark .customer-workbench .quick-reply,
+body.dark .customer-workbench .transfer-agent small {
+  color: #aab5c8;
+}
+
+html.dark .customer-workbench .filter-tabs button.active,
+body.dark .customer-workbench .filter-tabs button.active {
+  color: #c4beff;
+  background: rgb(101 89 220 / 28%);
+}
+
+html.dark .customer-workbench .session-note,
+html.dark .customer-workbench .system-message,
+body.dark .customer-workbench .session-note,
+body.dark .customer-workbench .system-message {
+  color: #aab5c8;
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .message-content p,
+body.dark .customer-workbench .message-content p {
+  color: #e8edf8;
+}
+
+html.dark .customer-workbench .status-chip,
+body.dark .customer-workbench .status-chip {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .quick-reply,
+body.dark .customer-workbench .quick-reply {
+  border-color: #303b50;
+  background: #1c2636;
+}
+
+html.dark .customer-workbench .transfer-agent,
+body.dark .customer-workbench .transfer-agent {
+  border-color: #303b50;
+}
 </style>

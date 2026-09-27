@@ -1,0 +1,172 @@
+export default {
+  menu: {
+    messageCenter: 'Message Center',
+    adminSystemMessage: 'System Message Management',
+    systemMessage: 'System Message',
+    messageManagement: 'Message Management',
+    templateManagement: 'Template Management',
+    notificationSettings: 'Notification Settings'
+  },
+  message: {
+    center: {
+      title: 'Message Center',
+      markAllRead: 'Mark All Read',
+      notificationSettings: 'Notification Settings',
+      allMarkedAsRead: 'All messages marked as read',
+      operationFailed: 'Operation failed, please try again',
+      noMessages: 'No messages',
+      loadMore: 'Load More',
+      refresh: 'Refresh'
+    },
+    list: {
+      title: 'Message List',
+      search: 'Search Messages',
+      searchPlaceholder: 'Search message title or content',
+      type: 'Type',
+      priority: 'Priority',
+      status: 'Status',
+      time: 'Time',
+      actions: 'Actions',
+      markAsRead: 'Mark as Read',
+      delete: 'Delete',
+      batchMarkRead: 'Batch Mark Read',
+      batchDelete: 'Batch Delete',
+      loadFailed: 'Failed to load message list',
+      markedAsRead: 'Marked as read',
+      deleteSuccess: 'Delete successful',
+      deleteFailed: 'Delete failed',
+      batchOperationFailed: 'Batch operation failed',
+      batchDeleteFailed: 'Batch delete failed',
+      confirmDelete: 'Are you sure you want to delete this message?',
+      selected: 'Selected',
+      items: 'items',
+      cancelSelection: 'Cancel Selection'
+    },
+    detail: {
+      title: 'Message Detail',
+      back: 'Back',
+      markAsRead: 'Mark as Read',
+      delete: 'Delete Message',
+      notFound: 'Message Not Found',
+      notFoundDesc: 'The message you are looking for may have been deleted or does not exist',
+      backToList: 'Back to List',
+      additionalInfo: 'Additional Information',
+      readTime: 'Read Time: '
+    },
+    settings: {
+      title: 'Notification Settings',
+      description: 'Manage your message notification preferences',
+      channels: 'Notification Channels',
+      messageTypes: 'Message Types',
+      doNotDisturb: 'Do Not Disturb',
+      priority: 'Priority Filter',
+      save: 'Save Settings',
+      reset: 'Reset to Default',
+      resetAll: 'Reset All Settings',
+      saveSuccess: 'Settings saved successfully',
+      saveFailed: 'Failed to save settings',
+      resetSuccess: 'Settings reset successfully',
+      resetFailed: 'Reset failed',
+      enableDnd: 'Enable Do Not Disturb',
+      dndDesc: 'Do not receive notifications during specified time periods',
+      startTime: 'Start Time',
+      endTime: 'End Time',
+      minPriority: 'Minimum Priority',
+      minPriorityDesc: 'Only receive notifications for messages with specified priority and above',
+      dndActive: 'Do Not Disturb Mode Active',
+      dndActiveDesc: 'Current time is within do not disturb period, you will not receive notifications'
+    },
+    types: {
+      system: 'System Message',
+      announcement: 'Announcement',
+      alert: 'Alert',
+      reminder: 'Reminder',
+      marketing: 'Marketing Message'
+    },
+    status: {
+      draft: 'Draft',
+      scheduled: 'Scheduled',
+      sending: 'Sending',
+      sent: 'Sent',
+      failed: 'Failed',
+      read: 'Read',
+      unread: 'Unread'
+    },
+    priority: {
+      low: 'Low Priority',
+      lower: 'Lower Priority',
+      normal: 'Normal Priority',
+      higher: 'Higher Priority',
+      high: 'High Priority'
+    },
+    channels: {
+      database: 'In-app Message',
+      email: 'Email',
+      sms: 'SMS',
+      push: 'Push Notification'
+    }
+  },
+  admin: {
+    dashboard: {
+      title: 'Message Management Dashboard',
+      totalMessages: 'Total Messages',
+      todaySent: 'Sent Today',
+      unreadMessages: 'Unread Messages',
+      activeUsers: 'Active Users',
+      sentMessages: 'Sent Messages',
+      failedMessages: 'Failed Messages',
+      refreshData: 'Refresh Data',
+      createMessage: 'Create Message',
+      messageTrend: 'Message Sending Trend',
+      typeDistribution: 'Message Type Distribution',
+      recentMessages: 'Recent Messages',
+      systemStatus: 'System Status',
+      viewAll: 'View All',
+      messageQueue: 'Message Queue',
+      databaseService: 'Database Service',
+      emailService: 'Email Service',
+      smsService: 'SMS Service',
+      normal: 'Normal',
+      connected: 'Connected',
+      partialError: 'Partial Error',
+      running: 'Running Normally',
+      chartPlaceholder: 'Chart feature under development...'
+    },
+    message: {
+      title: 'Message Management',
+      create: 'Create Message',
+      edit: 'Edit Message',
+      send: 'Send Message',
+      schedule: 'Schedule Send',
+      batchSend: 'Batch Send',
+      copy: 'Copy',
+      preview: 'Preview'
+    },
+    template: {
+      title: 'Template Management',
+      create: 'Create Template',
+      edit: 'Edit Template',
+      preview: 'Preview Template',
+      copy: 'Copy Template',
+      import: 'Import Template',
+      export: 'Export Template'
+    }
+  },
+  common: {
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    save: 'Save',
+    delete: 'Delete',
+    edit: 'Edit',
+    view: 'View',
+    back: 'Back',
+    loading: 'Loading...',
+    noData: 'No Data',
+    operation: 'Operation',
+    success: 'Success',
+    failed: 'Failed',
+    error: 'Error',
+    warning: 'Warning',
+    info: 'Info'
+  }
+}

@@ -47,6 +47,7 @@ class ConfigProvider
             'processes' => [
                 ExportConsumerProcess::class,
             ],
+            'export' => require __DIR__ . '/../publish/export.php',
         ];
     }
 }

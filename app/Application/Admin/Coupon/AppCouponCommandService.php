@@ -26,7 +26,6 @@ final class AppCouponCommandService extends IService
 {
     public function __construct(
         private readonly DomainCouponService $couponService,
-        private readonly AppCouponQueryService $queryService
     ) {}
 
     /**

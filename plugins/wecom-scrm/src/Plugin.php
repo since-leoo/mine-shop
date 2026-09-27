@@ -16,22 +16,9 @@ use SinceLeoo\Plugin\Contract\AbstractPlugin;
 
 final class Plugin extends AbstractPlugin
 {
-    public function install(): void
-    {
-        $source = \dirname(__DIR__) . '/web';
-        $target = BASE_PATH . '/web/src/plugins/since/wecom-scrm';
-        if (is_dir($source)) {
-            $this->copyDirectory($source, $target);
-        }
-    }
+    public function install(): void {}
 
-    public function uninstall(): void
-    {
-        $target = BASE_PATH . '/web/src/plugins/since/wecom-scrm';
-        if (is_dir($target)) {
-            $this->deleteDirectory($target);
-        }
-    }
+    public function uninstall(): void {}
 
     public static function mallGroup(): array
     {
@@ -88,32 +75,5 @@ final class Plugin extends AbstractPlugin
                     'sort' => 50,
                 ],
             ]];
-    }
-
-    private function copyDirectory(string $source, string $target): void
-    {
-        if (! is_dir($target)) {
-            mkdir($target, 0o755, true);
-        }
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($source, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::SELF_FIRST);
-        foreach ($iterator as $item) {
-            $path = $target . \DIRECTORY_SEPARATOR . $iterator->getSubPathname();
-            if ($item->isDir()) {
-                if (! is_dir($path)) {
-                    mkdir($path, 0o755, true);
-                }
-            } else {
-                copy($item->getPathname(), $path);
-            }
-        }
-    }
-
-    private function deleteDirectory(string $directory): void
-    {
-        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory, \RecursiveDirectoryIterator::SKIP_DOTS), \RecursiveIteratorIterator::CHILD_FIRST);
-        foreach ($iterator as $item) {
-            $item->isDir() ? rmdir($item->getPathname()) : unlink($item->getPathname());
-        }
-        rmdir($directory);
     }
 }

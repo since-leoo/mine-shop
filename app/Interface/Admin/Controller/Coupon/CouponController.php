@@ -65,7 +65,7 @@ final class CouponController extends AbstractController
     #[Permission(code: 'coupon:read')]
     public function show(int $id): Result
     {
-        $coupon = $this->queryService->findById($id);
+        $coupon = $this->queryService->find($id);
         return $coupon ? $this->success($coupon) : $this->error('优惠券不存在', 404);
     }
 

@@ -128,7 +128,7 @@ final class MemberRepository extends IRepository
 
     public function findModelByPhone(string $phone): ?Member
     {
-        /** @var null|Member $member */
+        /* @var null|Member $member */
         return $this->getQuery()->where('phone', $phone)->first();
     }
 

@@ -13,6 +13,7 @@ use DG\BypassFinals;
 use Hyperf\Contract\ApplicationInterface;
 use Hyperf\Di\ClassLoader;
 use SinceLeoo\Plugin\PluginBootstrap;
+use Swoole\Coroutine;
 
 /*
  * This file is part of MineAdmin.
@@ -48,7 +49,7 @@ if (extension_loaded('pcntl')) {
     ClassLoader::init();
 }
 
-if (class_exists(\Swoole\Coroutine::class)) {
+if (class_exists(Coroutine::class)) {
     $container = require BASE_PATH . '/config/container.php';
     $container->get(ApplicationInterface::class);
 }

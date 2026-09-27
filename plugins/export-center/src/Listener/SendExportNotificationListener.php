@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace Plugin\ExportCenter\Listener;
 
-use App\Domain\Infrastructure\SystemMessage\Enum\MessageType;
-use App\Domain\Infrastructure\SystemMessage\Facade\SystemMessage;
 use Hyperf\Event\Annotation\Listener;
 use Hyperf\Event\Contract\ListenerInterface;
 use Plugin\ExportCenter\Event\ExportTaskCompleted;
 use Plugin\ExportCenter\Event\ExportTaskFailed;
+use Plugin\SystemMessage\Contract\SystemMessageInterface as SystemMessage;
+use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Enum\MessageType;
 
 /**
  * 导出任务通知监听器.

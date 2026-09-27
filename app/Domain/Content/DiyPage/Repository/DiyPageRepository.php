@@ -39,7 +39,7 @@ class DiyPageRepository extends IRepository
 
     public function findByPageKey(string $pageKey, string $pageType = DiyPageStatus::TYPE_ALL): ?DiyPage
     {
-        /** @var null|DiyPage $page */
+        /* @var null|DiyPage $page */
         return $this->getQuery()
             ->where('page_key', $pageKey)
             ->where('page_type', $pageType)
@@ -62,7 +62,7 @@ class DiyPageRepository extends IRepository
 
     public function createPage(array $data): DiyPage
     {
-        /** @var DiyPage $page */
+        /* @var DiyPage $page */
         return $this->create($data);
     }
 
@@ -115,7 +115,7 @@ class DiyPageRepository extends IRepository
 
     public function findDraftVersion(int $pageId): ?DiyPageVersion
     {
-        /** @var null|DiyPageVersion $version */
+        /* @var null|DiyPageVersion $version */
         return DiyPageVersion::query()
             ->where('page_id', $pageId)
             ->where('status', DiyPageStatus::VERSION_DRAFT)
@@ -125,7 +125,7 @@ class DiyPageRepository extends IRepository
 
     public function findVersion(int $pageId, int $versionId): ?DiyPageVersion
     {
-        /** @var null|DiyPageVersion $version */
+        /* @var null|DiyPageVersion $version */
         return DiyPageVersion::query()
             ->where('page_id', $pageId)
             ->whereKey($versionId)
@@ -134,7 +134,7 @@ class DiyPageRepository extends IRepository
 
     public function findVersionWithPage(int $pageId, int $versionId): ?DiyPageVersion
     {
-        /** @var null|DiyPageVersion $version */
+        /* @var null|DiyPageVersion $version */
         return DiyPageVersion::query()
             ->with(['page'])
             ->where('page_id', $pageId)
@@ -154,7 +154,7 @@ class DiyPageRepository extends IRepository
             return $draft;
         }
 
-        /** @var DiyPageVersion $version */
+        /* @var DiyPageVersion $version */
         return DiyPageVersion::query()->create([
             'page_id' => $pageId,
             'version_no' => $this->nextVersionNo($pageId),
