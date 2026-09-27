@@ -28,6 +28,20 @@ use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 
 class MiniAppAppHandler extends AbstractWechat implements MiniAppInterface
 {
+    public function sendSubscribeMessage(string $openid, string $templateId, array $data, string $page = ''): array
+    {
+        $payload = [
+            'touser' => $openid,
+            'template_id' => $templateId,
+            'data' => $data,
+        ];
+        if ($page !== '') {
+            $payload['page'] = $page;
+        }
+
+        return $this->getClient()->postJson('/cgi-bin/message/subscribe/send', $payload)->toArray();
+    }
+
     /**
      * 获取授权登陆.
      */

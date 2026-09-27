@@ -34,6 +34,7 @@ class UpdateTemplateRequest extends FormRequest
             'category' => ['sometimes', 'string', 'max:50'],
             'description' => ['nullable', 'string', 'max:500'],
             'variables' => ['nullable', 'array'], 'variables.*' => ['string', 'max:50'],
+            'extra_data' => ['nullable', 'array'],
             'is_active' => ['sometimes', 'boolean'],
         ];
     }

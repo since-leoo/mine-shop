@@ -15,6 +15,7 @@ namespace Plugin\Sms\Service;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
+use Hyperf\AsyncQueue\Annotation\AsyncQueueMessage;
 use Overtrue\EasySms\EasySms;
 use Overtrue\EasySms\Exceptions\InvalidArgumentException;
 use Overtrue\EasySms\Exceptions\NoGatewayAvailableException;

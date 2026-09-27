@@ -15,6 +15,14 @@ namespace Plugin\Wechat\Interfaces;
 interface MiniAppInterface
 {
     /**
+     * 发送小程序订阅消息。
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    public function sendSubscribeMessage(string $openid, string $templateId, array $data, string $page = ''): array;
+
+    /**
      * 获取微信二维码
      * 本函数用于生成微信小程序二维码，可以根据传入的页面路径、场景值等信息生成对应的二维码图片.
      *

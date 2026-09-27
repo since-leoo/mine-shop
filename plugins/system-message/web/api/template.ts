@@ -16,6 +16,7 @@ export interface MessageTemplate {
   description?: string
   variables: string[]
   is_active: boolean
+  extra_data?: Record<string, any>
   created_by: number
   created_at: string
   updated_at: string
@@ -42,6 +43,7 @@ export interface CreateTemplateData {
   description?: string
   variables?: string[]
   is_active?: boolean
+  extra_data?: Record<string, any>
 }
 
 export interface UpdateTemplateData extends Partial<CreateTemplateData> {}

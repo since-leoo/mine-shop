@@ -99,8 +99,24 @@
               <el-checkbox value="database" label="站内信" />
               <el-checkbox value="email" label="邮件" />
               <el-checkbox value="sms" label="短信" />
+              <el-checkbox value="miniapp" label="小程序订阅消息" />
             </el-checkbox-group>
           </el-form-item>
+
+          <template v-if="formData.channels?.includes('miniapp')">
+            <el-form-item label="小程序 OpenID" required>
+              <el-input v-model="formData.extra_data!.openid" placeholder="请输入接收用户的 OpenID" />
+            </el-form-item>
+            <el-form-item label="订阅消息模板 ID" required>
+              <el-input v-model="formData.extra_data!.template_id" placeholder="请输入微信订阅消息模板 ID" />
+            </el-form-item>
+            <el-form-item label="小程序页面路径">
+              <el-input v-model="formData.extra_data!.miniapp_page" placeholder="例如：pages/order/detail?id=123" />
+            </el-form-item>
+            <el-form-item label="订阅消息数据 JSON">
+              <el-input v-model="miniappDataText" type="textarea" :rows="4" placeholder='例如：{"thing1":{"value":"订单已发货"}}' />
+            </el-form-item>
+          </template>
 
           <el-form-item label="发送时间">
             <el-radio-group v-model="sendTimeType">
@@ -184,6 +200,7 @@ const sending = ref(false)
 // 发送时间类型
 const sendTimeType = ref<'now' | 'scheduled'>('now')
 const scheduledTime = ref<string>()
+const miniappDataText = ref('')
 
 // 表单数据
 const formData = reactive<CreateMessageData & { id?: number }>({
@@ -255,6 +272,7 @@ const resetForm = () => {
     template_variables: {},
     extra_data: {}
   })
+  miniappDataText.value = ''
   sendTimeType.value = 'now'
   scheduledTime.value = undefined
 }
@@ -281,6 +299,7 @@ const loadMessageData = () => {
     template_variables: msg.template_variables || {},
     extra_data: msg.extra_data || {}
   })
+  miniappDataText.value = msg.extra_data?.miniapp_data ? JSON.stringify(msg.extra_data.miniapp_data, null, 2) : ''
 
   sendTimeType.value = msg.scheduled_at ? 'scheduled' : 'now'
   if (msg.scheduled_at) {
@@ -301,6 +320,18 @@ const handleClose = () => {
   emit('update:visible', false)
 }
 
+const buildSubmitData = () => {
+  if (formData.channels?.includes('miniapp') && miniappDataText.value.trim()) {
+    try {
+      formData.extra_data!.miniapp_data = JSON.parse(miniappDataText.value)
+    } catch {
+      ElMessage.error('小程序订阅消息数据必须是有效 JSON')
+      return null
+    }
+  }
+  return { ...formData }
+}
+
 // 保存草稿
 const saveDraft = async () => {
   try {
@@ -311,7 +342,9 @@ const saveDraft = async () => {
   
   saving.value = true
   try {
-    const data = { ...formData, status: 'draft' }
+    const baseData = buildSubmitData()
+    if (!baseData) return
+    const data = { ...baseData, status: 'draft' }
     
     if (props.mode === 'edit' && formData.id) {
       await messageStore.adminActions.update(formData.id, data)
@@ -339,8 +372,10 @@ const sendMessage = async () => {
   
   sending.value = true
   try {
+    const baseData = buildSubmitData()
+    if (!baseData) return
     const data = { 
-      ...formData, 
+      ...baseData,
       status: formData.scheduled_at ? 'scheduled' : 'sent'
     }
     

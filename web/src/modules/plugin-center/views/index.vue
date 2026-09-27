@@ -9,19 +9,26 @@ const route = useRoute()
 const router = useRouter()
 const pluginStore = usePluginStore()
 const plugins = computed(() => pluginStore.getPluginCenterList())
-const pluginKey = computed(() => String(route.params.pluginName ?? ''))
-const current = computed(() => plugins.value.find(item => item.key === pluginKey.value))
-const isDetail = computed(() => Boolean(pluginKey.value) && Boolean(current.value))
+const selectedPluginKey = ref(String(route.params.pluginName ?? ''))
+const pluginKey = computed(() => selectedPluginKey.value)
+const current = computed(() => plugins.value.find(item => item.key === selectedPluginKey.value))
+const isDetail = computed(() => Boolean(selectedPluginKey.value) && Boolean(current.value))
 const isSettings = computed(() => route.query.tab === 'settings')
 const settingsPlugin = ref<NonNullable<typeof current.value>>()
 const settingsVisible = ref(false)
 
-function openPlugin(key: string) { router.push({ name: 'MinePluginCenterRoute', params: { pluginName: key } }) }
-function goBack() { router.push({ name: 'MinePluginCenterRoute' }) }
+function openPlugin(key: string) { selectedPluginKey.value = key }
+function goBack() {
+  if (pluginKey.value === 'since/system-message' && route.query.template) {
+    selectedPluginKey.value = 'since/system-message'
+    return
+  }
+  router.replace({ name: 'MinePluginCenterRoute' })
+}
 function openSettings(item: NonNullable<typeof current.value>) {
   const settings = item.center?.settings
   if (!settings) return
-  if (settings.route) { router.push(settings.route); return }
+    if (settings.route) { router.replace(settings.route); return }
   settingsPlugin.value = item
   settingsVisible.value = true
 }

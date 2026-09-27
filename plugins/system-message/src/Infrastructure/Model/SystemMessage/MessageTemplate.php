@@ -28,6 +28,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $type 消息类型
  * @property string $format 内容格式
  * @property array $variables 可用变量列表
+ * @property null|array $extra_data 渠道扩展参数
  * @property bool $is_active 是否启用
  * @property int $created_by 创建者
  * @property int $updated_by 更新者
@@ -50,6 +51,10 @@ class MessageTemplate extends Model
 
     public const TYPE_SMS = 'sms';
 
+    public const TYPE_MINIAPP = 'miniapp';
+
+    public const TYPE_EMAIL = 'email';
+
     public const FORMAT_TEXT = 'text';
 
     public const FORMAT_HTML = 'html';
@@ -60,12 +65,13 @@ class MessageTemplate extends Model
 
     protected array $fillable = [
         'name', 'title', 'content', 'type', 'format',
-        'variables', 'is_active', 'created_by', 'updated_by', 'remark',
+        'variables', 'extra_data', 'is_active', 'created_by', 'updated_by', 'remark',
     ];
 
     protected array $casts = [
         'id' => 'integer',
         'variables' => 'json',
+        'extra_data' => 'json',
         'is_active' => 'boolean',
         'created_by' => 'integer',
         'updated_by' => 'integer',
@@ -170,6 +176,8 @@ class MessageTemplate extends Model
             self::TYPE_ALERT => '警报',
             self::TYPE_REMINDER => '提醒',
             self::TYPE_SMS => '短信',
+            self::TYPE_MINIAPP => '小程序',
+            self::TYPE_EMAIL => '邮件',
         ];
     }
 

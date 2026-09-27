@@ -67,6 +67,15 @@ class UpdateMessageRequest extends FormRequest
             if (isset($data['recipient_type']) && $data['recipient_type'] !== Message::RECIPIENT_ALL && empty($data['recipient_ids'])) {
                 $validator->errors()->add('recipient_ids', '当收件人类型不是"所有用户"时，必须指定收件人ID');
             }
+            if (\in_array('miniapp', $data['channels'] ?? [], true)) {
+                $extra = $data['extra_data'] ?? [];
+                if (empty($extra['openid'])) {
+                    $validator->errors()->add('extra_data.openid', '小程序渠道必须提供 OpenID');
+                }
+                if (empty($extra['template_id']) && empty($extra['miniapp_template_id'])) {
+                    $validator->errors()->add('extra_data.template_id', '小程序渠道必须提供订阅消息模板 ID');
+                }
+            }
         });
     }
 }

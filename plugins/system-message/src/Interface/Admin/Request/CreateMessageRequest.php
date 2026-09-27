@@ -76,6 +76,15 @@ class CreateMessageRequest extends FormRequest
                 $data['channels'] = ['database'];
                 $validator->setData($data);
             }
+            if (\in_array('miniapp', $data['channels'] ?? [], true)) {
+                $extra = $data['extra_data'] ?? [];
+                if (empty($extra['openid'])) {
+                    $validator->errors()->add('extra_data.openid', '小程序渠道必须提供 OpenID');
+                }
+                if (empty($extra['template_id']) && empty($extra['miniapp_template_id'])) {
+                    $validator->errors()->add('extra_data.template_id', '小程序渠道必须提供订阅消息模板 ID');
+                }
+            }
         });
     }
 }

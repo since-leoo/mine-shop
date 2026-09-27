@@ -26,7 +26,7 @@ class CreateMessageTemplatesTable extends Migration
             $table->string('name', 100)->comment('模板名称');
             $table->string('title', 255)->comment('消息标题模板');
             $table->text('content')->comment('消息内容模板');
-            $table->enum('type', ['system', 'announcement', 'alert', 'reminder', 'sms'])
+            $table->enum('type', ['system', 'announcement', 'alert', 'reminder', 'sms', 'miniapp', 'email'])
                 ->default('system')
                 ->comment('消息类型');
             $table->enum('format', ['text', 'html', 'markdown'])
@@ -34,6 +34,7 @@ class CreateMessageTemplatesTable extends Migration
                 ->comment('内容格式');
             $table->json('variables')->nullable()->comment('可用变量列表');
             $table->boolean('is_active')->default(true)->comment('是否启用');
+            $table->json('extra_data')->nullable()->comment('渠道扩展参数');
             $table->bigInteger('created_by')->unsigned()->nullable()->comment('创建者');
             $table->bigInteger('updated_by')->unsigned()->nullable()->comment('更新者');
             $table->timestamps();

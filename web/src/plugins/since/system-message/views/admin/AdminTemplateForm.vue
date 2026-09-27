@@ -59,16 +59,21 @@
                 <el-option value="announcement" label="公告模板" />
                 <el-option value="alert" label="警报模板" />
                 <el-option value="reminder" label="提醒模板" />
-                <el-option value="marketing" label="营销模板" /><el-option value="sms" label="短信模板" />
+                <el-option value="marketing" label="营销模板" /><el-option value="sms" label="短信模板" /><el-option value="miniapp" label="小程序模板" /><el-option value="email" label="邮件模板" />
               </el-select>
             </el-form-item>
 
-            <el-form-item label="模板状态" prop="status">
-              <el-radio-group v-model="formData.status">
-                <el-radio value="active">启用</el-radio>
-                <el-radio value="inactive">禁用</el-radio>
+            <el-form-item label="模板状态" prop="is_active">
+              <el-radio-group v-model="formData.is_active">
+                <el-radio :value="true">启用</el-radio>
+                <el-radio :value="false">禁用</el-radio>
               </el-radio-group>
             </el-form-item>
+          </el-card>
+
+          <el-card v-if="formData.type === 'miniapp'" header="小程序订阅消息配置" class="form-card">
+            <el-form-item label="微信订阅消息模板 ID" required><el-input v-model="miniappConfig.template_id" /></el-form-item>
+            <el-form-item label="小程序页面路径" required><el-input v-model="miniappConfig.miniapp_page" placeholder="例如：pages/order/detail" /></el-form-item>
           </el-card>
 
           <!-- 模板内容 -->
@@ -87,7 +92,8 @@
                   </el-button>
                 </div>
                 
-                <el-input 
+                <MaRichEditor v-if="formData.type === 'email'" :key="`${templateId}-${formData.content !== ''}`" :initial-value="formData.content" :height="360" @update:model-value="formData.content = $event; analyzeVariables()" />
+                <el-input v-else
                   v-model="formData.content" 
                   type="textarea"
                   placeholder="请输入模板内容，使用 {{变量名}} 格式插入变量"
@@ -284,6 +290,7 @@ import { ElMessage } from 'element-plus'
 import { ArrowLeft } from '@element-plus/icons-vue'
 import type { CreateTemplateData } from '../../api/template'
 import dayjs from 'dayjs'
+import MaRichEditor from '@/components/ma-rich-editor/index.vue'
 
 const route = useRoute()
 const templateStore = useTemplateStore()
@@ -323,6 +330,7 @@ const detectedVariables = ref<string[]>([])
 const variableDescriptions = ref<Record<string, string>>({})
 const previewValues = ref<Record<string, string>>({})
 const previewContent = ref('')
+const miniappConfig = reactive({ template_id: '', miniapp_page: '' })
 
 // 新变量
 const newVariableName = ref('')
@@ -367,7 +375,8 @@ const getTypeTagType = (type: string) => {
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',
-    marketing: 'info'
+    marketing: 'info',
+    miniapp: 'success'
   }
   return types[type] || 'info'
 }
@@ -379,7 +388,8 @@ const getTypeLabel = (type: string) => {
     announcement: '公告模板',
     alert: '警报模板',
     reminder: '提醒模板',
-    marketing: '营销模板'
+    marketing: '营销模板',
+    miniapp: '小程序模板'
   }
   return labels[type] || type
 }
@@ -512,7 +522,7 @@ const saveTemplate = async () => {
   
   saving.value = true
   try {
-    const data = {
+    const data: CreateTemplateData & Record<string, any> = {
       name: formData.name,
       description: formData.description,
       type: formData.type,
@@ -522,6 +532,10 @@ const saveTemplate = async () => {
       is_active: formData.is_active,
       variables: detectedVariables.value,
       variable_descriptions: variableDescriptions.value
+    }
+    if (formData.type === 'miniapp') {
+      if (!miniappConfig.template_id || !miniappConfig.miniapp_page) { ElMessage.error('请完整填写小程序模板 ID 和页面路径'); return }
+      data.extra_data = { ...miniappConfig }
     }
     
     if (isEdit.value) {
@@ -570,6 +584,8 @@ const loadTemplateDetail = async () => {
     if (template.variable_descriptions) {
       variableDescriptions.value = template.variable_descriptions
     }
+    const extraData = template.extra_data || {}
+    Object.assign(miniappConfig, extraData)
   } catch (error) {
     ElMessage.error('加载模板详情失败')
     emitClose()

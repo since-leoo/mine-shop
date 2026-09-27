@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { computed, inject, provide, ref } from 'vue'
+import { useRoute } from 'vue-router'
 import AdminDashboard from './admin/AdminDashboard.vue'
 import AdminMessageList from './admin/AdminMessageList.vue'
 import AdminTemplateList from './admin/AdminTemplateList.vue'
@@ -9,13 +9,13 @@ import AdminTemplateForm from './admin/AdminTemplateForm.vue'
 
 defineOptions({ name: 'system-message:plugin-center' })
 
-const active = ref('dashboard')
 const route = useRoute()
-const router = useRouter()
-const editingTemplate = computed(() => Boolean(route.query.template))
-const templateFormKey = computed(() => `${String(route.query.template ?? '')}:${String(route.query.id ?? '')}:${String(route.query.duplicate ?? '')}`)
-watch(() => route.query.tab, tab => { if (tab) active.value = String(tab) }, { immediate: true })
-function closeTemplateForm() { router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates' } }) }
+const active = ref(String(route.query.tab ?? 'dashboard'))
+const templateRequest = ref<{ template: string; id?: string; duplicate?: string } | null>(route.query.template ? { template: String(route.query.template), id: route.query.id ? String(route.query.id) : undefined, duplicate: route.query.duplicate ? String(route.query.duplicate) : undefined } : null)
+const editingTemplate = computed(() => templateRequest.value !== null)
+const templateFormKey = computed(() => templateRequest.value ? `${templateRequest.value.template}:${templateRequest.value.id ?? ''}:${templateRequest.value.duplicate ?? ''}` : '')
+provide('system-message-open-template', (request: { template: string; id?: string; duplicate?: string }) => { templateRequest.value = request; active.value = 'templates' })
+function closeTemplateForm() { templateRequest.value = null; active.value = 'templates' }
 const tabs = computed(() => [
   { key: 'dashboard', label: '消息概览', component: AdminDashboard },
   { key: 'messages', label: '消息管理', component: AdminMessageList },
@@ -31,9 +31,7 @@ const tabs = computed(() => [
     </el-tabs>
     <div class="plugin-content min-h-0 flex-1 overflow-auto rounded-lg bg-[var(--el-bg-color)] p-4">
       <AdminTemplateForm v-if="editingTemplate" :key="templateFormKey" @close="closeTemplateForm" />
-      <keep-alive>
-        <component v-if="!editingTemplate" :is="tabs.find(tab => tab.key === active)?.component" />
-      </keep-alive>
+      <component v-if="!editingTemplate" :is="tabs.find(tab => tab.key === active)?.component" />
     </div>
   </div>
 </template>

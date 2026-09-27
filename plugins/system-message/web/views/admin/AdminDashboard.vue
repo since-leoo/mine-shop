@@ -3,7 +3,7 @@
     <div class="dashboard-header">
       <h1>消息管理仪表板</h1>
       <div class="header-actions">
-        <el-button type="primary" @click="$router.push('/admin/system-message/list')">
+        <el-button type="primary" @click="$router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'messages' } })">
           消息列表
         </el-button>
         <el-button @click="refreshData" :loading="loading">
@@ -84,7 +84,7 @@
             <template #header>
               <div class="card-header">
                 <span>最近消息</span>
-                <el-button type="primary" link @click="$router.push('/admin/message')">
+          <el-button type="primary" link @click="$router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'messages' } })">
                   查看全部
                 </el-button>
               </div>
@@ -275,7 +275,7 @@ const formatTime = (time: string) => {
 
 // 查看消息详情
 const viewMessage = (msg: MessageType) => {
-  router.push(`/admin/message/${msg.id}`)
+  router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'messages', message: String(msg.id) } })
 }
 
 // 加载统计数据

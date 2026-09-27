@@ -179,6 +179,7 @@ class SystemMessage
             'type' => $template->type,
             'template_id' => $templateId,
             'template_variables' => $variables,
+            'extra_data' => $template->extra_data ?? [],
             'status' => MessageStatus::DRAFT->value,
         ], $recipients, $options);
 

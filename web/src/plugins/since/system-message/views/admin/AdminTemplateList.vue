@@ -17,14 +17,21 @@
         <el-form-item label="模板类型" required>
           <el-select v-model="createForm.type" style="width:100%">
             <el-option value="system" label="系统模板" /><el-option value="announcement" label="公告模板" />
-            <el-option value="alert" label="警报模板" /><el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" />
+            <el-option value="alert" label="警报模板" /><el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" /><el-option value="miniapp" label="小程序模板" /><el-option value="email" label="邮件模板" />
           </el-select>
         </el-form-item>
         <el-form-item label="分类" required><el-input v-model="createForm.category" /></el-form-item>
         <el-form-item label="标题模板" required><el-input v-model="createForm.title" maxlength="255" /></el-form-item>
-        <el-form-item :label="createForm.type === 'sms' ? '短信内容模板' : '内容模板'" required><el-input v-model="createForm.content" type="textarea" :rows="5" maxlength="10000" show-word-limit /></el-form-item>
+        <el-form-item :label="createForm.type === 'email' ? '邮件内容' : (createForm.type === 'sms' ? '短信内容模板' : '内容模板')" required>
+          <MaRichEditor v-if="createForm.type === 'email'" initial-value="" :height="260" @update:model-value="createForm.content = $event" />
+          <el-input v-else v-model="createForm.content" type="textarea" :rows="5" maxlength="10000" show-word-limit />
+        </el-form-item>
+        <template v-if="createForm.type === 'miniapp'">
+          <el-form-item label="微信订阅消息模板 ID" required><el-input v-model="miniappConfig.template_id" /></el-form-item>
+          <el-form-item label="小程序页面路径" required><el-input v-model="miniappConfig.miniapp_page" placeholder="例如：pages/order/detail" /></el-form-item>
+        </template>
         <el-form-item label="描述"><el-input v-model="createForm.description" type="textarea" :rows="2" /></el-form-item>
-        <el-form-item label="启用"><el-switch v-model="createForm.is_active" /></el-form-item>
+        <el-form-item label="模板状态"><el-radio-group v-model="createForm.is_active"><el-radio :value="true">启用</el-radio><el-radio :value="false">禁用</el-radio></el-radio-group></el-form-item>
       </el-form>
       <template #footer><el-button @click="createVisible = false">取消</el-button><el-button type="primary" :loading="createLoading" @click="submitCreate">保存</el-button></template>
     </el-dialog>
@@ -42,7 +49,7 @@
           <el-option value="system" label="系统模板" />
           <el-option value="announcement" label="公告模板" />
           <el-option value="alert" label="警报模板" />
-          <el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" />
+          <el-option value="reminder" label="提醒模板" /><el-option value="sms" label="短信模板" /><el-option value="miniapp" label="小程序模板" /><el-option value="email" label="邮件模板" />
           <el-option value="marketing" label="营销模板" />
         </el-select>
         
@@ -233,15 +240,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, reactive, onMounted, inject } from 'vue'
 import { useTemplateStore } from '../../store/template'
 import { ElMessage } from 'element-plus'
 import type { CreateTemplateData, MessageTemplate, TemplateListParams } from '../../api/template'
 import { templateApi } from '../../api/template'
 import dayjs from 'dayjs'
+import MaRichEditor from '@/components/ma-rich-editor/index.vue'
 
-const router = useRouter()
+const openTemplate = inject<(request: { template: string; id?: string; duplicate?: string }) => void>('system-message-open-template')
 const templateStore = useTemplateStore()
 
 // 筛选条件
@@ -256,6 +263,7 @@ const batchLoading = ref(false)
 const createVisible = ref(false)
 const createLoading = ref(false)
 const createForm = reactive<CreateTemplateData>({ name: '', title: '', content: '', type: 'system', category: 'default', description: '', is_active: true })
+const miniappConfig = reactive({ template_id: '', miniapp_page: '' })
 
 // 预览相关
 const previewVisible = ref(false)
@@ -271,7 +279,9 @@ const getTypeTagType = (type: string) => {
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',
-    marketing: 'info'
+    marketing: 'info',
+    miniapp: 'success',
+    email: 'warning'
   }
   return types[type] || 'info'
 }
@@ -283,7 +293,9 @@ const getTypeLabel = (type: string) => {
     announcement: '公告模板',
     alert: '警报模板',
     reminder: '提醒模板',
-    marketing: '营销模板'
+    marketing: '营销模板',
+    miniapp: '小程序模板',
+    email: '邮件模板'
   }
   return labels[type] || type
 }
@@ -342,7 +354,8 @@ const loadTemplates = async () => {
 
 // 创建模板
 const createTemplate = () => {
-  Object.assign(createForm, { name: '', title: '', content: '', type: 'system', category: 'default', description: '', is_active: true })
+  Object.assign(createForm, { name: '', title: '', content: '', type: 'system', category: 'default', description: '', is_active: true, extra_data: undefined })
+  Object.assign(miniappConfig, { template_id: '', miniapp_page: '' })
   createVisible.value = true
 }
 
@@ -353,6 +366,13 @@ const submitCreate = async () => {
   }
   createLoading.value = true
   try {
+    if (createForm.type === 'miniapp') {
+      if (!miniappConfig.template_id || !miniappConfig.miniapp_page) {
+        ElMessage.warning('请完整填写小程序模板 ID 和页面路径')
+        return
+      }
+      createForm.extra_data = { ...miniappConfig }
+    }
     await templateApi.create(createForm)
     createVisible.value = false
     await loadTemplates()
@@ -366,12 +386,12 @@ const submitCreate = async () => {
 
 // 编辑模板
 const editTemplate = (record: MessageTemplate) => {
-  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'edit', id: String(record.id) } })
+  if (openTemplate) openTemplate({ template: 'edit', id: String(record.id) })
 }
 
 // 复制模板
 const duplicateTemplate = (record: MessageTemplate) => {
-  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'create', duplicate: String(record.id) } })
+  if (openTemplate) openTemplate({ template: 'create', duplicate: String(record.id) })
 }
 
 // 预览模板
@@ -406,10 +426,10 @@ const updatePreview = () => {
 const toggleStatus = async (record: MessageTemplate) => {
   record.statusLoading = true
   try {
-    const newStatus = record.status === 'active' ? 'inactive' : 'active'
-    await templateStore.actions.updateStatus(record.id, newStatus)
-    record.status = newStatus
-    ElMessage.success(`模板已${newStatus === 'active' ? '启用' : '禁用'}`)
+    const isActive = !record.is_active
+    await templateStore.actions.update(record.id, { is_active: isActive })
+    record.is_active = isActive
+    ElMessage.success(`模板已${isActive ? '启用' : '禁用'}`)
   } catch (error) {
     ElMessage.error('状态更新失败')
   } finally {
@@ -434,7 +454,7 @@ const batchEnable = async () => {
   batchLoading.value = true
   try {
     const promises = selectedRowKeys.value.map(id => 
-      templateStore.actions.updateStatus(id, 'active')
+      templateStore.actions.update(id, { is_active: true })
     )
     await Promise.all(promises)
     ElMessage.success(`已启用 ${selectedRowKeys.value.length} 个模板`)
@@ -454,7 +474,7 @@ const batchDisable = async () => {
   batchLoading.value = true
   try {
     const promises = selectedRowKeys.value.map(id => 
-      templateStore.actions.updateStatus(id, 'inactive')
+      templateStore.actions.update(id, { is_active: false })
     )
     await Promise.all(promises)
     ElMessage.success(`已禁用 ${selectedRowKeys.value.length} 个模板`)

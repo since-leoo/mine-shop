@@ -18,10 +18,12 @@ defineOptions({ name: 'MaRichEditor' })
 
 const {
   modelValue = '',
+  initialValue,
   placeholder = '请输入内容',
   height = 360,
 } = defineProps<{
   modelValue?: string
+  initialValue?: string
   placeholder?: string
   height?: number
 }>()
@@ -61,11 +63,9 @@ const handleCreated = (editor: IDomEditor) => {
 }
 
 onBeforeUnmount(() => {
-  const editor = editorRef.value
-  if (editor) {
-    editor.destroy()
-  }
+  editorRef.value?.destroy()
 })
+
 </script>
 
 <template>
@@ -79,7 +79,8 @@ onBeforeUnmount(() => {
     <Editor
       class="ma-rich-editor__content"
       :style="{ height: `${height}px` }"
-      :model-value="modelValue"
+      :model-value="initialValue !== undefined ? undefined : modelValue"
+      :default-html="initialValue !== undefined ? initialValue : undefined"
       :default-config="editorConfig"
       mode="default"
       @update:model-value="val => emit('update:modelValue', val as string)"

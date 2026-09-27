@@ -26,6 +26,9 @@
           <el-option value="alert" label="警报模板" />
           <el-option value="reminder" label="提醒模板" />
           <el-option value="sms" label="短信模板" />
+          <el-option value="email" label="邮件模板" />
+          <el-option value="miniapp" label="小程序模板" />
+          <el-option value="email" label="邮件模板" />
           <el-option value="marketing" label="营销模板" />
         </el-select>
         
@@ -250,7 +253,9 @@ const getTypeTagType = (type: string) => {
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',
-    marketing: 'info'
+    marketing: 'info',
+    miniapp: 'success',
+    email: 'warning'
   }
   return types[type] || 'info'
 }
@@ -262,7 +267,9 @@ const getTypeLabel = (type: string) => {
     announcement: '公告模板',
     alert: '警报模板',
     reminder: '提醒模板',
-    marketing: '营销模板'
+    marketing: '营销模板',
+    miniapp: '小程序模板',
+    email: '邮件模板'
   }
   return labels[type] || type
 }
@@ -321,17 +328,17 @@ const loadTemplates = async () => {
 
 // 创建模板
 const createTemplate = () => {
-  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'create' } })
+  router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'templates', template: 'create' } })
 }
 
 // 编辑模板
 const editTemplate = (record: MessageTemplate) => {
-  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'edit', id: String(record.id) } })
+  router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'templates', template: 'edit', id: String(record.id) } })
 }
 
 // 复制模板
 const duplicateTemplate = (record: MessageTemplate) => {
-  router.push({ path: '/plugin-center/since/system-message', query: { tab: 'templates', template: 'create', duplicate: String(record.id) } })
+  router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: 'since/system-message' }, query: { tab: 'templates', template: 'create', duplicate: String(record.id) } })
 }
 
 // 预览模板
@@ -366,10 +373,10 @@ const updatePreview = () => {
 const toggleStatus = async (record: MessageTemplate) => {
   record.statusLoading = true
   try {
-    const newStatus = record.status === 'active' ? 'inactive' : 'active'
-    await templateStore.actions.updateStatus(record.id, newStatus)
-    record.status = newStatus
-    ElMessage.success(`模板已${newStatus === 'active' ? '启用' : '禁用'}`)
+    const isActive = !record.is_active
+    await templateStore.actions.update(record.id, { is_active: isActive })
+    record.is_active = isActive
+    ElMessage.success(`模板已${isActive ? '启用' : '禁用'}`)
   } catch (error) {
     ElMessage.error('状态更新失败')
   } finally {
@@ -394,7 +401,7 @@ const batchEnable = async () => {
   batchLoading.value = true
   try {
     const promises = selectedRowKeys.value.map(id => 
-      templateStore.actions.updateStatus(id, 'active')
+      templateStore.actions.update(id, { is_active: true })
     )
     await Promise.all(promises)
     ElMessage.success(`已启用 ${selectedRowKeys.value.length} 个模板`)
@@ -414,7 +421,7 @@ const batchDisable = async () => {
   batchLoading.value = true
   try {
     const promises = selectedRowKeys.value.map(id => 
-      templateStore.actions.updateStatus(id, 'inactive')
+      templateStore.actions.update(id, { is_active: false })
     )
     await Promise.all(promises)
     ElMessage.success(`已禁用 ${selectedRowKeys.value.length} 个模板`)
