@@ -157,11 +157,9 @@ class Order extends Model
         return $relation;
     }
 
-    public function member(): BelongsTo
+    public function member(): HasOne
     {
-        $relation = $this->belongsTo(Member::class, 'member_id', 'id');
-        $relation->select(['id', 'nickname', 'phone']);
-        return $relation;
+        return $this->hasOne(Member::class, 'member_id', 'id')->select(['id', 'nickname', 'phone']);
     }
 
     public function packages(): HasMany

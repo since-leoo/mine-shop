@@ -40,6 +40,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $country
  * @property string $level
  * @property null|int $level_id
+ * @property null|int $member_id
  * @property int $growth_value
  * @property int $total_orders
  * @property int $total_amount
@@ -76,6 +77,7 @@ class Member extends Model
         'country',
         'level',
         'level_id',
+        'member_id',
         'growth_value',
         'total_orders',
         'total_amount',
