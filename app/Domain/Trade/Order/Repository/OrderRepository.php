@@ -377,7 +377,9 @@ final class OrderRepository extends IRepository
         $query = $this->perQuery($this->getQuery()->with(['member', 'items', 'address']), $params);
 
         foreach ($query->cursor() as $order) {
-            $orderData = $order->toArray();
+            // cursor() 不保证关联已经完成预加载；显式加载后再转数组，确保
+            // ExportColumn 的 member.* / address.* 点号路径可以取到值。
+            $orderData = $order->loads(['member', 'address']);
             $items = $order->items;
 
             if ($items->isEmpty()) {
