@@ -29,9 +29,10 @@ final class GroupBuyOrderRepository extends IRepository
      */
     public function getExportData(array $params): iterable
     {
-        $query = $this->perQuery($this->getQuery()->with(['groupBuy', 'member']), $params);
+        $query = $this->perQuery($this->getQuery(), $params);
 
         foreach ($query->cursor() as $order) {
+            $order->loads(['groupBuy', 'member']);
             yield $order;
         }
     }

@@ -47,6 +47,7 @@ final class GroupBuyRepository extends IRepository
         $query = $this->perQuery($this->getQuery()->with(['product']), $params);
 
         foreach ($query->cursor() as $item) {
+            $item->loads(['product']);
             yield $item;
         }
     }
