@@ -42,7 +42,10 @@ final class CouponRepository extends IRepository
      */
     public function createFromEntity(CouponEntity $entity): Coupon
     {
-        $coupon = Coupon::create($entity->toArray());
+        $coupon = $this->create($entity->toArray());
+        if (! isset($coupon->id)) {
+            throw new \RuntimeException('Failed to create coupon');
+        }
         $entity->setId((int) $coupon->id);
         return $coupon;
     }
@@ -55,7 +58,7 @@ final class CouponRepository extends IRepository
      */
     public function updateFromEntity(CouponEntity $entity): bool
     {
-        $coupon = Coupon::find($entity->getId());
+        $coupon = $this->findById($entity->getId());
         if ($coupon === null) {
             return false;
         }
@@ -72,8 +75,8 @@ final class CouponRepository extends IRepository
     {
         return [
             'total' => Coupon::count(),
-            'active' => Coupon::where('status', 'active')->count(),
-            'inactive' => Coupon::where('status', 'inactive')->count(),
+            'active' => $this->model->where('status', 'active')->count(),
+            'inactive' => $this->model->where('status', 'inactive')->count(),
         ];
     }
 
@@ -85,7 +88,7 @@ final class CouponRepository extends IRepository
      */
     public function countIssued(int $couponId): int
     {
-        return CouponUser::where('coupon_id', $couponId)->count();
+        return $this->model->where('coupon_id', $couponId)->count();
     }
 
     /**
@@ -97,7 +100,7 @@ final class CouponRepository extends IRepository
      */
     public function countIssuedByMember(int $couponId, int $memberId): int
     {
-        return CouponUser::where('coupon_id', $couponId)
+        return $this->model->where('coupon_id', $couponId)
             ->where('member_id', $memberId)
             ->count();
     }
@@ -127,7 +130,7 @@ final class CouponRepository extends IRepository
     public function syncUsageStatistics(int $couponId): void
     {
         // 统计指定优惠券的已使用数量
-        $used = CouponUser::where('coupon_id', $couponId)
+        $used = $this->model->where('coupon_id', $couponId)
             ->where('status', 'used')
             ->count();
 
@@ -175,8 +178,7 @@ final class CouponRepository extends IRepository
     private function buildAvailableQuery(array $filters = []): Builder
     {
         $now = Carbon::now();
-        $query = $this->getModel()
-            ->newQuery()
+        $query = $this->model
             ->where('status', 'active')
             ->where('start_time', '<=', $now)
             ->where('end_time', '>=', $now)

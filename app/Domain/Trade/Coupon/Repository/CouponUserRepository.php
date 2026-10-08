@@ -31,14 +31,17 @@ final class CouponUserRepository extends IRepository
 
     public function createFromEntity(CouponUserEntity $entity): CouponUser
     {
-        $couponUser = CouponUser::create($entity->toArray());
+        $couponUser = $this->create($entity->toArray());
+        if (! isset($couponUser->id)) {
+            throw new \RuntimeException('Failed to create coupon user');
+        }
         $entity->setId((int) $couponUser->id);
         return $couponUser;
     }
 
     public function updateFromEntity(CouponUserEntity $entity): bool
     {
-        $couponUser = CouponUser::find($entity->getId());
+        $couponUser = $this->findById($entity->getId());
         if ($couponUser === null) {
             return false;
         }
@@ -74,33 +77,33 @@ final class CouponUserRepository extends IRepository
 
     public function countUsedByCouponId(int $couponId): int
     {
-        return CouponUser::where('coupon_id', $couponId)
+        return $this->model->where('coupon_id', $couponId)
             ->where('status', 'used')
             ->count();
     }
 
     public function countByCouponId(int $couponId): int
     {
-        return CouponUser::where('coupon_id', $couponId)->count();
+        return $this->model->where('coupon_id', $couponId)->count();
     }
 
     public function countByMember(int $memberId, ?string $status = null): int
     {
-        return CouponUser::where('member_id', $memberId)
+        return $this->model->where('member_id', $memberId)
             ->when($status !== null, static fn ($query) => $query->where('status', $status))
             ->count();
     }
 
     public function countByMemberForCoupon(int $memberId, int $couponId): int
     {
-        return CouponUser::where('member_id', $memberId)
+        return $this->model->where('member_id', $memberId)
             ->where('coupon_id', $couponId)
             ->count();
     }
 
     public function listByMember(int $memberId, ?string $status = null, int $limit = 50): array
     {
-        return CouponUser::with('coupon')
+        return $this->model->with('coupon')
             ->where('member_id', $memberId)
             ->when($status !== null, static fn ($query) => $query->where('status', $status))
             ->orderByDesc('id')
@@ -119,7 +122,7 @@ final class CouponUserRepository extends IRepository
             return [];
         }
 
-        return CouponUser::query()
+        return $this->model->query()
             ->selectRaw('coupon_id, COUNT(*) as total')
             ->where('member_id', $memberId)
             ->whereIn('coupon_id', $couponIds)
@@ -140,7 +143,7 @@ final class CouponUserRepository extends IRepository
             return [];
         }
 
-        return CouponUser::with('coupon')
+        return $this->model->with('coupon')
             ->where('member_id', $memberId)
             ->whereIn('coupon_id', $couponIds)
             ->where('status', 'unused')

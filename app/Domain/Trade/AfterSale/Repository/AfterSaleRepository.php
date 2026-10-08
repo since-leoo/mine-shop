@@ -48,7 +48,7 @@ final class AfterSaleRepository extends IRepository
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
         /** @var null|AfterSale $info */
-        $info = $this->model::where('order_item_id', $orderItemId)
+        $info = $this->model->where('order_item_id', $orderItemId)
             ->whereNotIn('status', [
                 AfterSaleStatus::COMPLETED->value,
                 AfterSaleStatus::CLOSED->value,
@@ -60,7 +60,7 @@ final class AfterSaleRepository extends IRepository
 
     public function paginateByMember(int $memberId, string $status = 'all', int $page = 1, int $pageSize = 10): LengthAwarePaginatorInterface
     {
-        $query = $this->model::where('member_id', $memberId)
+        $query = $this->model->where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->orderByDesc('id');
 
@@ -74,7 +74,7 @@ final class AfterSaleRepository extends IRepository
     public function findByIdAndMember(int $id, int $memberId): AfterSale
     {
         /** @var null|AfterSale $record */
-        $record = $this->model::where('id', $id)
+        $record = $this->model->where('id', $id)
             ->where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->first();
@@ -101,7 +101,7 @@ final class AfterSaleRepository extends IRepository
      */
     public function findDetailById(int $id): ?AfterSale
     {
-        return AfterSale::query()
+        return $this->model->whereKey($id)
             ->with(['order', 'orderItem'])
             ->whereKey($id)
             ->first();
