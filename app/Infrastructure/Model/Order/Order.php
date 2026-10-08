@@ -159,7 +159,7 @@ class Order extends Model
 
     public function member(): HasOne
     {
-        return $this->hasOne(Member::class, 'member_id', 'id')->select(['id', 'nickname', 'phone']);
+        return $this->hasOne(Member::class, 'id', 'member_id')->select(['id', 'nickname', 'phone']);
     }
 
     public function packages(): HasMany
