@@ -192,6 +192,7 @@
   display: flex;
   flex-direction: column;
   > .page-nav { margin: 0 -24rpx; flex-shrink: 0; }
+  > .page-nav:not(.page-nav--h5) { width: calc(100% + 48rpx); }
   &__hero { flex-shrink: 0; }
   &__scroll { height: 0; flex: 1; min-height: 0; }
   &--state { height: auto; min-height: 360rpx; }
@@ -203,4 +204,6 @@
   &__body { overflow-wrap: anywhere; line-height: 1.6; }
   &__footer { flex-wrap: wrap; }
   &__action { white-space: nowrap; box-sizing: border-box; }
+
+  &--weapp { padding-bottom: env(safe-area-inset-bottom); }
 }

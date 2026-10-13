@@ -396,7 +396,7 @@ export default function AddressEdit() {
             ) : null}
             <PickerView
               className="address-edit__region-view"
-              indicatorStyle="height: 44px;"
+              indicatorStyle={isH5() ? 'height: 44px;' : 'height: 88rpx;'}
               value={draftRegionIndex}
               onChange={handleDraftRegionChange}
             >

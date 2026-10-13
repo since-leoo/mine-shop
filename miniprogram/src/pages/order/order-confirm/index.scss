@@ -387,3 +387,21 @@
     .bottom-bar__submit { width: 112PX; }
   }
 }
+
+.order-confirm:not(.order-confirm--h5) {
+  &.order-confirm--loading {
+    padding-top: 0;
+
+    > .page-nav {
+      width: calc(100% + 64rpx);
+      margin: 0 -32rpx 24rpx;
+    }
+  }
+
+  .order-confirm__unavailable {
+    padding: 80rpx 32rpx;
+    color: $warm-text-secondary;
+    font-size: 28rpx;
+    text-align: center;
+  }
+}

@@ -45,15 +45,17 @@ export default function CouponDetail() {
   const usable = !detail?.status || detail.status === 'default';
 
   if (loading) {
-    return <View className="coupon-detail-page__state"><Text className="coupon-detail-page__state-text">加载中...</Text></View>;
+    const state = <View className="coupon-detail-page__state"><Text className="coupon-detail-page__state-text">加载中...</Text></View>;
+    return isH5() ? state : <View className="coupon-detail-page"><CouponNav title="优惠券详情" />{state}</View>;
   }
 
   if (!detail) {
-    return <View className="coupon-detail-page__state"><Text className="coupon-detail-page__state-text">优惠券不存在</Text></View>;
+    const state = <View className="coupon-detail-page__state"><Text className="coupon-detail-page__state-text">优惠券不存在</Text></View>;
+    return isH5() ? state : <View className="coupon-detail-page"><CouponNav title="优惠券详情" />{state}</View>;
   }
 
   return (
-    <View className={`coupon-detail-page ${isH5() ? 'coupon-detail-page--h5' : ''}`}>
+    <View className={`coupon-detail-page ${isH5() ? 'coupon-detail-page--h5' : 'coupon-detail-page--weapp'}`}>
             <View className="coupon-detail-page__hero-wrap">
         <CouponNav title="优惠券详情" />
         <View className="coupon-detail-page__hero">

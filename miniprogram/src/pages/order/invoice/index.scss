@@ -102,6 +102,7 @@
   padding-top: 0;
   padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
   > .page-nav { margin: 0 (-$warm-spacing-lg) 24rpx; }
+  > .page-nav:not(.page-nav--h5) { width: calc(100% + #{$warm-spacing-lg * 2}); }
   &__notice { margin: 0 0 24rpx; color: $warm-text-secondary; font-size: 26rpx; line-height: 1.7; }
   &__label { width: 144rpx; }
   &__input { min-width: 0; }

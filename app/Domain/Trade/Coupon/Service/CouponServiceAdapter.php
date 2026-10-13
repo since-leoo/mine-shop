@@ -22,7 +22,7 @@ final class CouponServiceAdapter implements CouponServiceInterface
 {
     public function __construct(
         private readonly CouponUserRepository $couponUserRepository,
-        private readonly DomainCouponUserService $couponUserService,
+        private readonly \App\Domain\Trade\Coupon\Repository\CouponRepository $coupons,
     ) {}
 
     public function findUsableCoupon(int $memberId, int $couponId): ?array
@@ -48,7 +48,13 @@ final class CouponServiceAdapter implements CouponServiceInterface
 
     public function settleCoupon(int $couponUserId, int $orderId): void
     {
-        $entity = $this->couponUserService->getEntity($couponUserId);
-        $this->couponUserService->markUsed($entity, $orderId);
+        $couponId = $this->couponUserRepository->useForOrder($couponUserId, $orderId);
+        $this->coupons->syncUsageStatistics($couponId);
+    }
+    public function releaseOrderCoupons(int $orderId): void
+    {
+        foreach ($this->couponUserRepository->releaseForOrder($orderId) as $couponId) {
+            $this->coupons->syncUsageStatistics($couponId);
+        }
     }
 }

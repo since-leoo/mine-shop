@@ -22,7 +22,7 @@ import UserProfileHeader from '../diy/UserProfileHeader/index';
 import UserStats from '../diy/UserStats/index';
 import UserOrderPanel from '../diy/UserOrderPanel/index';
 import UserMenuList from '../diy/UserMenuList/index';
-import { diyStyle, handleComponentClick } from './style';
+import { diyStyle, handleComponentClick, schemaSize } from './style';
 import './index.scss';
 
 interface DiyRendererProps {
@@ -87,7 +87,7 @@ export default function DiyRenderer({ page, className = '', transparent = false 
         '--diy-primary-color': theme.primaryColor,
         '--diy-price-color': theme.priceColor,
         '--diy-page-background-color': theme.backgroundColor,
-        '--diy-card-radius': `${theme.cardRadius}px`,
+        '--diy-card-radius': schemaSize(theme.cardRadius),
       } as Record<string, string>}
     >
       {components.filter((component) => component.enabled !== false && registry[component.type]).map((component) => (

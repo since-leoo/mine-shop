@@ -13,10 +13,13 @@ declare(strict_types=1);
 namespace App\Interface\Api\Transformer;
 
 use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Infrastructure\Plugin\Contract\ProductReviewQueryInterface;
 use App\Infrastructure\Model\Order\Order;
 
 final class OrderTransformer
 {
+    public function __construct(private readonly ProductReviewQueryInterface $reviews) {}
+
     /**
      * 转换订单基础信息，默认包含商品与地址信息。
      */
@@ -111,17 +114,11 @@ final class OrderTransformer
      */
     private function hasPendingReviewItem(Order $order): bool
     {
-        if (! $order->relationLoaded('items')) {
-            return true;
+        if (! $this->reviews->enabled() || ! $order->relationLoaded('items')) {
+            return false;
         }
-
-        return $order->items->contains(static function ($item): bool {
-            if (! method_exists($item, 'relationLoaded') || ! $item->relationLoaded('review')) {
-                return true;
-            }
-
-            return $item->review === null;
-        });
+        $ids = $order->items->pluck('id')->map(static fn ($id): int => (int) $id)->all();
+        return array_diff($ids, $this->reviews->reviewedOrderItemIds($ids)) !== [];
     }
 
     private function resolveStatusName(string $status): string

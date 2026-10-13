@@ -125,4 +125,13 @@ final class DomainAfterSaleService
             AfterSaleType::EXCHANGE->value,
         ];
     }
+
+    public function getLockedEntity(int $id): AfterSaleEntity
+    {
+        $model = $this->afterSaleRepository->findByIdForLock($id);
+        if ($model === null) {
+            throw new \RuntimeException('售后单不存在');
+        }
+        return AfterSaleMapper::fromModel($model);
+    }
 }

@@ -19,14 +19,14 @@ class CreateAfterSaleTables extends Migration
     {
         Schema::create('order_trade_after_sale', static function (Blueprint $table) {
             $table->comment('售后单表');
-            $table->id();
+            $table->id()->comment('售后单主键');
             $table->string('after_sale_no', 32)->unique()->comment('售后单号');
             $table->unsignedBigInteger('order_id')->comment('订单ID');
             $table->unsignedBigInteger('order_item_id')->comment('订单商品项ID');
             $table->unsignedBigInteger('member_id')->comment('会员ID');
             $table->enum('type', ['refund_only', 'return_refund', 'exchange'])->comment('售后类型');
             $table->enum('status', ['pending_review', 'waiting_buyer_return', 'waiting_seller_receive', 'waiting_refund', 'refunding', 'waiting_reship', 'reshipped', 'completed', 'closed'])->default('pending_review')->comment('售后状态');
-            $table->enum('refund_status', ['none', 'pending', 'processing', 'refunded'])->default('pending')->comment('退款状态');
+            $table->string('refund_status', 30)->default('pending')->comment('退款状态：none无需退款、pending待退款、processing退款中、refunded已退款、failed退款失败');
             $table->enum('return_status', ['not_required', 'pending', 'buyer_shipped', 'seller_received', 'seller_reshipped', 'buyer_received'])->default('not_required')->comment('退货/换货物流状态');
             $table->unsignedInteger('apply_amount')->default(0)->comment('申请金额，单位分');
             $table->unsignedInteger('refund_amount')->default(0)->comment('审核退款金额，单位分');
@@ -38,7 +38,8 @@ class CreateAfterSaleTables extends Migration
             $table->string('buyer_return_logistics_no', 64)->nullable()->comment('买家退货物流单号');
             $table->string('reship_logistics_company', 64)->nullable()->comment('商家补发物流公司');
             $table->string('reship_logistics_no', 64)->nullable()->comment('商家补发物流单号');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable()->comment('售后申请时间');
+            $table->timestamp('updated_at')->nullable()->comment('售后更新时间');
 
             $table->index(['order_id'], 'idx_trade_after_sale_order_id');
             $table->index(['order_item_id'], 'idx_trade_after_sale_order_item_id');

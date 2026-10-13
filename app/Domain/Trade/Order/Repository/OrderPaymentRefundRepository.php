@@ -28,9 +28,8 @@ class OrderPaymentRefundRepository
 
     public function updateByRefundNo(string $refundNo, array $data): bool
     {
-        return (bool) OrderPaymentRefund::query()
-            ->where('refund_no', $refundNo)
-            ->update($data);
+        $record = $this->findByRefundNo($refundNo);
+        return $record !== null && $record->fill($data)->save();
     }
 
     public function findLatestByAfterSaleId(int $afterSaleId): ?OrderPaymentRefund
@@ -43,5 +42,22 @@ class OrderPaymentRefundRepository
             ->where('extra_data->after_sale_id', $afterSaleId)
             ->orderByDesc('id')
             ->first();
+    }
+
+    public function findForUpdate(string $refundNo): ?OrderPaymentRefund
+    {
+        return OrderPaymentRefund::query()->where('refund_no', $refundNo)->lockForUpdate()->first();
+    }
+
+    public function outstandingAmount(int $paymentId): int
+    {
+        return (int) OrderPaymentRefund::query()->where('payment_id', $paymentId)
+            ->whereIn('status', ['requested', 'refunding', 'unknown'])->sum('refund_amount');
+    }
+
+    public function recoverable(int $limit = 100): array
+    {
+        return OrderPaymentRefund::query()->whereIn('status', ['requested', 'refunding', 'unknown'])
+            ->orderBy('updated_at')->limit($limit)->get()->all();
     }
 }

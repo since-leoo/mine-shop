@@ -434,8 +434,8 @@ final class OrderEntity
 
     public function cancel(): void
     {
-        if (! \in_array($this->getStatus(), [OrderStatus::PENDING->value, OrderStatus::PAID->value], true)) {
-            throw new \RuntimeException('当前订单状态不可取消');
+        if ($this->getStatus() !== OrderStatus::PENDING->value || $this->getPayStatus() === PaymentStatus::PAID->value) {
+            throw new \DomainException('已支付订单请申请退款，当前状态不可取消');
         }
 
         $this->setStatus(OrderStatus::CANCELLED->value);

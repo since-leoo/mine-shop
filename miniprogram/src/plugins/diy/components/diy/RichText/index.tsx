@@ -1,6 +1,6 @@
 import { RichText as TaroRichText, View } from '@tarojs/components';
 import { DiyComponent } from '../../diy-renderer/types';
-import { diyComponentStyle } from '../../diy-renderer/style';
+import { diyComponentStyle, schemaSize } from '../../diy-renderer/style';
 import './index.scss';
 
 interface Props {
@@ -12,7 +12,7 @@ export default function RichText({ component }: Props) {
   if (!content) return null;
 
   return (
-    <View className="diy-rich-text" style={{ padding: `${Number(component.props?.padding ?? 12)}px`, ...diyComponentStyle(component) }}>
+    <View className="diy-rich-text" style={{ padding: schemaSize(component.props?.padding ?? 12), ...diyComponentStyle(component) }}>
       <TaroRichText nodes={content} />
     </View>
   );

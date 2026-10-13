@@ -158,37 +158,37 @@ export default function AfterServiceDetail() {
 
       <View className="after-service-detail__card">
         <Text className="after-service-detail__title">基础信息</Text>
-        <View className="after-service-detail__row"><Text>订单号</Text><Text className="after-service-detail__copy" onClick={() => handleCopy('订单号', detail.orderNo)}>{detail.orderNo || '--'}</Text></View>
-        <View className="after-service-detail__row"><Text>申请金额</Text><Text>{formatAmount(detail.applyAmount)}</Text></View>
-        <View className="after-service-detail__row"><Text>退款金额</Text><Text>{formatAmount(detail.refundAmount)}</Text></View>
-        <View className="after-service-detail__row"><Text>申请原因</Text><Text>{detail.reason || '--'}</Text></View>
-        <View className="after-service-detail__row"><Text>问题描述</Text><Text>{detail.description || '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">订单号</Text><Text className="after-service-detail__row-value after-service-detail__copy" onClick={() => handleCopy('订单号', detail.orderNo)}>{detail.orderNo || '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">申请金额</Text><Text className="after-service-detail__row-value">{formatAmount(detail.applyAmount)}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">退款金额</Text><Text className="after-service-detail__row-value">{formatAmount(detail.refundAmount)}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">申请原因</Text><Text className="after-service-detail__row-value">{detail.reason || '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">问题描述</Text><Text className="after-service-detail__row-value">{detail.description || '--'}</Text></View>
         {detail.rejectReason ? (
-          <View className="after-service-detail__row"><Text>驳回原因</Text><Text className="after-service-detail__highlight">{detail.rejectReason}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">驳回原因</Text><Text className="after-service-detail__row-value after-service-detail__highlight">{detail.rejectReason}</Text></View>
         ) : null}
       </View>
 
       <View className="after-service-detail__card">
         <Text className="after-service-detail__title">商品信息</Text>
-        <View className="after-service-detail__row"><Text>商品名称</Text><Text>{detail.product?.productName || '--'}</Text></View>
-        <View className="after-service-detail__row"><Text>规格</Text><Text>{detail.product?.skuName || '--'}</Text></View>
-        <View className="after-service-detail__row"><Text>数量</Text><Text>{detail.quantity}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">商品名称</Text><Text className="after-service-detail__row-value">{detail.product?.productName || '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">规格</Text><Text className="after-service-detail__row-value">{detail.product?.skuName || '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">数量</Text><Text className="after-service-detail__row-value">{detail.quantity}</Text></View>
       </View>
 
       <View className="after-service-detail__card">
         <Text className="after-service-detail__title">物流信息</Text>
-        <View className="after-service-detail__row"><Text>买家退货物流</Text><Text className="after-service-detail__copy" onClick={() => handleCopy('退货物流单号', detail.buyerReturnLogisticsNo)}>{detail.buyerReturnLogisticsCompany ? `${detail.buyerReturnLogisticsCompany} ${detail.buyerReturnLogisticsNo || ''}` : '--'}</Text></View>
-        <View className="after-service-detail__row"><Text>商家补发物流</Text><Text className="after-service-detail__copy" onClick={() => handleCopy('补发物流单号', detail.reshipLogisticsNo)}>{detail.reshipLogisticsCompany ? `${detail.reshipLogisticsCompany || '--'} ${detail.reshipLogisticsNo || ''}` : '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">买家退货物流</Text><Text className="after-service-detail__row-value after-service-detail__copy" onClick={() => handleCopy('退货物流单号', detail.buyerReturnLogisticsNo)}>{detail.buyerReturnLogisticsCompany ? `${detail.buyerReturnLogisticsCompany} ${detail.buyerReturnLogisticsNo || ''}` : '--'}</Text></View>
+        <View className="after-service-detail__row"><Text className="after-service-detail__row-label">商家补发物流</Text><Text className="after-service-detail__row-value after-service-detail__copy" onClick={() => handleCopy('补发物流单号', detail.reshipLogisticsNo)}>{detail.reshipLogisticsCompany ? `${detail.reshipLogisticsCompany || '--'} ${detail.reshipLogisticsNo || ''}` : '--'}</Text></View>
       </View>
 
       {hasRefundRecord(detail) ? (
         <View className="after-service-detail__card">
           <Text className="after-service-detail__title">退款记录</Text>
-          <View className="after-service-detail__row"><Text>退款状态</Text><Text>{getRefundRecordStatusText(detail)}</Text></View>
-          <View className="after-service-detail__row"><Text>退款单号</Text><Text className="after-service-detail__copy" onClick={() => handleCopy('退款单号', detail.refundRecord?.refundNo)}>{detail.refundRecord?.refundNo || '--'}</Text></View>
-          <View className="after-service-detail__row"><Text>退款金额</Text><Text>{formatAmount(detail.refundRecord?.refundAmount || 0)}</Text></View>
-          <View className="after-service-detail__row"><Text>退款备注</Text><Text>{detail.refundRecord?.remark || '--'}</Text></View>
-          <View className="after-service-detail__row"><Text>到账时间</Text><Text>{detail.refundRecord?.processedAt || '--'}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">退款状态</Text><Text className="after-service-detail__row-value">{getRefundRecordStatusText(detail)}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">退款单号</Text><Text className="after-service-detail__row-value after-service-detail__copy" onClick={() => handleCopy('退款单号', detail.refundRecord?.refundNo)}>{detail.refundRecord?.refundNo || '--'}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">退款金额</Text><Text className="after-service-detail__row-value">{formatAmount(detail.refundRecord?.refundAmount || 0)}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">退款备注</Text><Text className="after-service-detail__row-value">{detail.refundRecord?.remark || '--'}</Text></View>
+          <View className="after-service-detail__row"><Text className="after-service-detail__row-label">到账时间</Text><Text className="after-service-detail__row-value">{detail.refundRecord?.processedAt || '--'}</Text></View>
         </View>
       ) : null}
 

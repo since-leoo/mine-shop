@@ -1,20 +1,22 @@
 <script setup lang="ts">
-import type { FaqVo } from '../../api/customer-service'
+import type { Category, FaqVo } from '../../api/customer-service'
 import { CirclePlus, Delete, EditPen, Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { computed, onMounted, ref } from 'vue'
-import { getFaqs, removeFaq, saveFaq } from '../../api/customer-service'
+import { getCategories, getFaqs, removeFaq, saveFaq } from '../../api/customer-service'
 
 defineOptions({ name: 'customer-service:faq' })
 
 const loading = ref(false)
+const issueCategories = ref<Category[]>([])
+const selectedCategory = ref('')
 const keyword = ref('')
 const items = ref<FaqVo[]>([])
 const dialogVisible = ref(false)
 const saving = ref(false)
-const form = ref<Partial<FaqVo>>({ question: '', answer: '', category_name: '售后服务', enabled: true, sort: 0 })
+const form = ref<Partial<FaqVo>>({ question: '', answer: '', category_name: '售后服务', enabled: true, sort: 0, publish: false, alternate_questions: [] })
 
-const filteredItems = computed(() => items.value.filter(item => !keyword.value || `${item.question}${item.answer}${item.category_name || ''}`.toLowerCase().includes(keyword.value.toLowerCase())))
+const filteredItems = computed(() => items.value.filter(item => (!selectedCategory.value || (item.category_name || '未分类') === selectedCategory.value) && (!keyword.value || `${item.question}${item.answer}${item.category_name || ''}`.toLowerCase().includes(keyword.value.toLowerCase()))))
 const categories = computed(() => [...new Set(items.value.map(item => item.category_name || '未分类'))])
 
 function apiData<T>(response: { data: T }): T { return response.data }
@@ -30,12 +32,12 @@ async function loadFaqs() {
 }
 
 function openCreate() {
-  form.value = { question: '', answer: '', category_name: categories.value[0] || '售后服务', enabled: true, sort: 0 }
+  form.value = { question: '', answer: '', category_name: categories.value[0] || '售后服务', enabled: true, sort: 0, publish: false, alternate_questions: [] }
   dialogVisible.value = true
 }
 
 function openEdit(item: FaqVo) {
-  form.value = { ...item }
+  form.value = { ...item, publish: false, effective_at: undefined, expires_at: undefined, alternate_questions: [...item.alternate_questions || []] }
   dialogVisible.value = true
 }
 
@@ -46,6 +48,7 @@ async function submit() {
   }
   saving.value = true
   try {
+    form.value.category_name = issueCategories.value.find(c => c.id === form.value.category_id)?.name || form.value.category_name
     const saved = apiData(await saveFaq(form.value))
     const index = items.value.findIndex(item => item.id === saved.id)
     if (index === -1) items.value.unshift(saved)
@@ -67,7 +70,7 @@ async function remove(item: FaqVo) {
   catch {}
 }
 
-onMounted(loadFaqs)
+onMounted(() => { void loadFaqs(); void getCategories().then(response => { issueCategories.value = response.data }).catch(() => undefined) })
 </script>
 
 <template>
@@ -80,12 +83,12 @@ onMounted(loadFaqs)
     <section class="faq-toolbar"><el-input v-model="keyword" :prefix-icon="Search" clearable placeholder="搜索问题、答案或分类" /><div class="faq-summary"><span>{{ items.length }} 条知识</span><i /> <span>{{ categories.length }} 个分类</span></div></section>
 
     <section v-if="filteredItems.length" class="faq-layout">
-      <aside class="category-nav"><span class="nav-label">问题分类</span><button class="selected">全部问题 <b>{{ items.length }}</b></button><button v-for="category in categories" :key="category">{{ category }} <b>{{ items.filter(item => (item.category_name || '未分类') === category).length }}</b></button><div class="tip"><strong>使用建议</strong><p>保持答案简短清晰，并在政策变动后及时更新。</p></div></aside>
-      <div class="faq-list"><article v-for="item in filteredItems" :key="item.id" class="faq-card"><div class="faq-category"><span>{{ item.category_name || '未分类' }}</span><em :class="{ disabled: !item.enabled }">{{ item.enabled ? '已启用' : '已停用' }}</em></div><h2>{{ item.question }}</h2><p>{{ item.answer }}</p><footer><span>更新于 {{ item.updated_at || '—' }}</span><div><el-button text :icon="EditPen" @click="openEdit(item)">编辑</el-button><el-button text type="danger" :icon="Delete" @click="remove(item)">删除</el-button></div></footer></article></div>
+      <aside class="category-nav"><span class="nav-label">问题分类</span><button :class="{ selected: !selectedCategory }" @click="selectedCategory = ''">全部问题 <b>{{ items.length }}</b></button><button v-for="category in categories" :key="category" :class="{ selected: selectedCategory === category }" @click="selectedCategory = category">{{ category }} <b>{{ items.filter(item => (item.category_name || '未分类') === category).length }}</b></button><div class="tip"><strong>使用建议</strong><p>保持答案简短清晰，并在政策变动后及时更新。</p></div></aside>
+      <div class="faq-list"><article v-for="item in filteredItems" :key="item.id" class="faq-card"><div class="faq-category"><span>{{ item.category_name || '未分类' }}</span><em :class="{ disabled: !item.enabled }">{{ item.enabled ? '已启用' : '已停用' }}</em><em v-if="item.published_revision_id">已有发布版本 #{{ item.published_revision_id }}</em></div><h2>{{ item.question }}</h2><p>{{ item.answer }}</p><footer><span>更新于 {{ item.updated_at || '—' }}</span><div><el-button text :icon="EditPen" @click="openEdit(item)">编辑</el-button><el-button text type="danger" :icon="Delete" @click="remove(item)">删除</el-button></div></footer></article></div>
     </section>
     <el-empty v-else class="empty-state" :image-size="120" description="还没有匹配的常见问题"><el-button type="primary" @click="openCreate">创建第一条问题</el-button></el-empty>
 
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑常见问题' : '新建常见问题'" width="560px" destroy-on-close><el-form label-position="top"><el-form-item label="问题" required><el-input v-model="form.question" maxlength="100" show-word-limit placeholder="例如：订单发货后多久可以收到？" /></el-form-item><el-form-item label="标准答案" required><el-input v-model="form.answer" type="textarea" :autosize="{ minRows: 5, maxRows: 9 }" maxlength="2000" show-word-limit placeholder="请输入清晰、可直接发送给客户的答案" /></el-form-item><div class="form-row"><el-form-item label="分类"><el-input v-model="form.category_name" placeholder="例如：售后服务" /></el-form-item><el-form-item label="排序"><el-input-number v-model="form.sort" :min="0" controls-position="right" /></el-form-item><el-form-item label="启用"><el-switch v-model="form.enabled" /></el-form-item></div></el-form><template #footer><el-button @click="dialogVisible = false">取消</el-button><el-button type="primary" :loading="saving" @click="submit">保存</el-button></template></el-dialog>
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑常见问题' : '新建常见问题'" width="560px" destroy-on-close><el-form label-position="top"><el-form-item label="问题" required><el-input v-model="form.question" maxlength="100" show-word-limit placeholder="例如：订单发货后多久可以收到？" /></el-form-item><el-form-item label="标准答案" required><el-input v-model="form.answer" type="textarea" :autosize="{ minRows: 5, maxRows: 9 }" maxlength="2000" show-word-limit placeholder="请输入清晰、可直接发送给客户的答案" /></el-form-item><div class="form-row"><el-form-item label="分类"><el-select v-model="form.category_id" clearable placeholder="选择问题类目"><el-option v-for="c in issueCategories" :key="c.id" :value="c.id" :label="c.name" /></el-select></el-form-item><el-form-item label="排序"><el-input-number v-model="form.sort" :min="0" controls-position="right" /></el-form-item><el-form-item label="启用"><el-switch v-model="form.enabled" /></el-form-item></div><el-form-item label="相似问法（输入后回车）"><el-select v-model="form.alternate_questions" multiple filterable allow-create default-first-option :reserve-keyword="false" /></el-form-item><el-form-item label="同时发布新版本到 AI 知识库"><el-switch v-model="form.publish" active-text="本次保存同时发布" /></el-form-item><el-alert v-if="form.published_revision_id" :closable="false" type="info" :title="`已有发布版本 #${form.published_revision_id}。仅保存草稿时，旧发布版继续使用；停用问题可下架。`" /><el-form-item v-if="form.publish" label="本次新版本生效时间（留空立即生效）"><el-date-picker v-model="form.effective_at" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" clearable /></el-form-item><el-form-item v-if="form.publish" label="本次新版本失效时间（留空长期有效）"><el-date-picker v-model="form.expires_at" type="datetime" value-format="YYYY-MM-DD HH:mm:ss" clearable /></el-form-item></el-form><template #footer><el-button @click="dialogVisible = false">取消</el-button><el-button type="primary" :loading="saving" @click="submit">保存</el-button></template></el-dialog>
   </main>
 </template>
 

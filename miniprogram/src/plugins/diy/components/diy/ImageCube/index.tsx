@@ -1,6 +1,6 @@
 import { Image, Text, View } from '@tarojs/components';
 import { DiyComponent, DiyImageItem, DiyImageProps } from '../../diy-renderer/types';
-import { diyComponentStyle, handleDiyLinkClick, imageOf } from '../../diy-renderer/style';
+import { diyComponentStyle, handleDiyLinkClick, imageOf, schemaSize } from '../../diy-renderer/style';
 import { imageItemStyle, imageMode, imageOuterStyle } from '../imageStyle';
 import './index.scss';
 
@@ -14,7 +14,7 @@ export default function ImageCube({ component }: Props) {
   const layout = component.props?.layout || 'one';
 
   return (
-    <View className={`diy-image-cube diy-image-cube--${layout}`} style={{ ...imageOuterStyle(component.props), ...diyComponentStyle(component), gap: `${Number(component.props?.gap ?? 8)}px` }}>
+    <View className={`diy-image-cube diy-image-cube--${layout}`} style={{ ...imageOuterStyle(component.props), ...diyComponentStyle(component), gap: schemaSize(component.props?.gap ?? 8) }}>
       {items.slice(0, 10).map((item, index) => {
         const image = imageOf(item);
 

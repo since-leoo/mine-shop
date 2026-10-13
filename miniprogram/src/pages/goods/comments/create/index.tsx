@@ -2,7 +2,7 @@ import { View, Text, Image, Textarea } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import PageNav from '../../../../components/page-nav';
-import { isH5 } from '../../../../common/platform';
+import { isH5, isMiniProgram } from '../../../../common/platform';
 import { uploadImage } from '../../../../services/upload';
 import { request } from '../../../../services/request';
 import './index.scss';
@@ -143,7 +143,7 @@ export default function CreateCommentPage() {
   }, [isAllowedSubmit, submitting, goodRateValue, commentText, uploadFiles, isAnonymous, conveyRateValue, serviceRateValue]);
 
   return (
-    <View className={`create-comment-page ${isH5() ? 'create-comment-page--h5' : ''}`}>
+    <View className={`create-comment-page ${isH5() ? 'create-comment-page--h5' : isMiniProgram() ? 'create-comment-page--weapp' : ''}`}>
       <PageNav title="发表评价" />
       <View className="comment-form-card">
         <View className="goods-info-row">

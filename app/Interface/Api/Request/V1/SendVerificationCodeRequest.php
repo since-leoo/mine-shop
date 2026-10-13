@@ -32,7 +32,7 @@ final class SendVerificationCodeRequest extends BaseRequest
     {
         return [
             'phone' => ['required', 'regex:/^1[3-9]\d{9}$/'],
-            'scene' => ['required', 'string', Rule::in(['register', 'forgot_password'])],
+            'scene' => ['required', 'string', Rule::in(['register', 'forgot_password', 'login'])],
         ];
     }
 }

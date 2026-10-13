@@ -16,6 +16,7 @@ use App\Domain\Auth\Service\DomainTokenService;
 use App\Domain\Member\Api\Command\DomainApiMemberPasswordAuthService;
 use App\Domain\Member\Contract\ForgotPasswordInput;
 use App\Domain\Member\Contract\H5LoginInput;
+use App\Domain\Member\Contract\H5SmsLoginInput;
 use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Contract\VerificationCodeSendInput;
 use App\Domain\Member\Entity\MemberEntity;
@@ -33,6 +34,11 @@ final class AppApiAuthCommandService
     public function loginByPassword(H5LoginInput $input): array
     {
         return $this->issueTokenPayload($this->passwordAuthService->loginByPassword($input));
+    }
+
+    public function loginBySms(H5SmsLoginInput $input): array
+    {
+        return $this->issueTokenPayload($this->passwordAuthService->loginBySms($input));
     }
 
     /**

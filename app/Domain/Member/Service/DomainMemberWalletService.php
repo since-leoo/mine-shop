@@ -81,4 +81,13 @@ final class DomainMemberWalletService extends IService
 
         return MemberWalletMapper::fromModel($model);
     }
+
+    public function getEntityForUpdate(int $memberId, string $type): MemberWalletEntity
+    {
+        $model = $this->repository->findByMemberIdAndTypeForUpdate($memberId, $type);
+        if ($model === null) {
+            throw new \RuntimeException('钱包不存在');
+        }
+        return MemberWalletMapper::fromModel($model);
+    }
 }

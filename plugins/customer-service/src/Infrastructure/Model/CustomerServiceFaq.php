@@ -18,7 +18,7 @@ final class CustomerServiceFaq extends Model
 {
     protected ?string $table = 'customer_service_faqs';
 
-    protected array $fillable = ['question', 'answer', 'category_name', 'sort', 'enabled'];
+    protected array $fillable = ['question', 'answer', 'category_name', 'sort', 'enabled', 'category_id', 'published_revision_id', 'alternate_questions'];
 
-    protected array $casts = ['sort' => 'integer', 'enabled' => 'boolean'];
+    protected array $casts = ['alternate_questions' => 'array', 'category_id' => 'integer', 'published_revision_id' => 'integer', 'sort' => 'integer', 'enabled' => 'boolean'];
 }

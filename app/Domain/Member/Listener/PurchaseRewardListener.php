@@ -40,27 +40,27 @@ final class PurchaseRewardListener implements ListenerInterface
             return;
         }
 
-        \Hyperf\Coroutine\co(function () use ($event) {
-            // 发放消费返积分
-            $balanceEvent = $this->pointsService->grantPurchasePoints(
-                $event->memberId,
-                $event->payAmountCents,
-                $event->orderNo,
-            );
-            if ($balanceEvent !== null) {
-                event($balanceEvent);
-            }
+        // outbox 消费事务需要等待奖励处理完成，失败由 outbox 重试。
+        // 发放消费返积分
+        $balanceEvent = $this->pointsService->grantPurchasePoints(
+            $event->memberId,
+            $event->payAmountCents,
+            $event->orderNo,
+        );
+        if ($balanceEvent !== null) {
+            event($balanceEvent);
+        }
 
-            // 增加成长值（实付金额单位为分，直接作为成长值增量）
-            $growthEvent = $this->growthService->addGrowthValue(
-                $event->memberId,
-                $event->payAmountCents,
-                'order_payment',
-                '消费增加成长值:' . $event->orderNo,
-            );
-            if ($growthEvent !== null) {
-                event($growthEvent);
-            }
-        });
+        // 增加成长值（实付金额单位为分，直接作为成长值增量）
+        $growthEvent = $this->growthService->addGrowthValue(
+            $event->memberId,
+            $event->payAmountCents,
+            'order_payment',
+            '消费增加成长值:' . $event->orderNo,
+        );
+        if ($growthEvent !== null) {
+            event($growthEvent);
+        }
+
     }
 }

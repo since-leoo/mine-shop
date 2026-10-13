@@ -23,7 +23,7 @@ class CreateMallMembersTable extends Migration
         Schema::create('members', static function (Blueprint $table) {
             $table->comment('会员表');
             $table->id();
-            $table->string('openid', 100)->unique()->comment('微信OpenID');
+            $table->string('openid', 100)->nullable()->unique()->comment('微信OpenID，非微信会员为空');
             $table->string('unionid', 100)->nullable()->comment('微信UnionID');
             $table->string('nickname', 100)->nullable()->comment('昵称');
             $table->string('avatar', 255)->nullable()->comment('头像');

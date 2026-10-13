@@ -13,11 +13,9 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Payment;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
-use App\Domain\Trade\Order\Service\DomainOrderService;
-use App\Domain\Trade\Payment\DomainPayService;
+use App\Application\Api\Payment\AppPaymentCallbackService;
+use App\Domain\Trade\Payment\Contract\PaymentGatewayInterface;
 use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
-use App\Infrastructure\Service\Pay\YsdPayService;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Psr\Http\Message\ResponseInterface;
@@ -27,10 +25,8 @@ use Psr\Http\Message\ServerRequestInterface;
 final class PaymentNotifyController
 {
     public function __construct(
-        private readonly DomainAfterSaleRefundCallbackService $refundCallbackService,
-        private readonly DomainOrderService $orderService,
-        private readonly DomainPayService $domainPayService,
-        private readonly YsdPayService $payService,
+        private readonly AppPaymentCallbackService $callbacks,
+        private readonly PaymentGatewayInterface $payService,
         private readonly DomainMallSettingService $mallSettingService,
         private readonly WechatPayConfigResolver $wechatPayConfigResolver,
         private readonly ServerRequestInterface $request,
@@ -41,12 +37,7 @@ final class PaymentNotifyController
     {
         $config = $this->getWechatConfig();
         $payload = $this->payService->callback($this->request, $config);
-        $orderNo = (string) ($payload['out_trade_no'] ?? '');
-
-        if ($orderNo !== '') {
-            $orderEntity = $this->orderService->getEntity(0, $orderNo);
-            $this->domainPayService->notify($orderEntity, $payload);
-        }
+        $this->callbacks->paid($payload);
 
         return $this->payService->success($config);
     }
@@ -56,7 +47,7 @@ final class PaymentNotifyController
     {
         $config = $this->getWechatConfig();
         $payload = $this->payService->callback($this->request, $config);
-        $this->refundCallbackService->handleWechatRefundCallback($payload);
+        $this->callbacks->refunded($payload);
 
         return $this->payService->success($config);
     }

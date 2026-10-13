@@ -14,6 +14,7 @@ namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Contract\ForgotPasswordInput;
 use App\Domain\Member\Contract\H5LoginInput;
+use App\Domain\Member\Contract\H5SmsLoginInput;
 use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Contract\VerificationCodeSendInput;
 use App\Domain\Member\Entity\MemberEntity;
@@ -70,6 +71,15 @@ final class DomainApiMemberPasswordAuthService extends IService
         $member->loginByPassword($input->getPassword(), $input->getIp());
         $this->memberRepository->updateEntity($member);
 
+        return $member;
+    }
+
+    public function loginBySms(H5SmsLoginInput $input): MemberEntity
+    {
+        $this->consumeCode($input->getPhone(), 'login', $input->getCode());
+        $member = $this->getEntityByPhone($input->getPhone());
+        $member->loginBySms($input->getIp());
+        $this->memberRepository->updateEntity($member);
         return $member;
     }
 

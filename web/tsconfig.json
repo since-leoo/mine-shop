@@ -12,10 +12,48 @@
     "module": "ESNext",
     "moduleResolution": "Bundler",
     "paths": {
-      "@/*": ["src/*"],
-      "#/*": ["types/*"],
-      "$/*": ["src/plugins/*"],
-      "~/*": ["src/modules/*"]
+      "@/*": [
+        "src/*"
+      ],
+      "#/*": [
+        "types/*"
+      ],
+      "$/*": [
+        "src/plugins/*"
+      ],
+      "~/*": [
+        "src/modules/*"
+      ],
+      "vue": [
+        "node_modules/vue"
+      ],
+      "vue-router": [
+        "node_modules/vue-router"
+      ],
+      "vue-i18n": [
+        "node_modules/vue-i18n"
+      ],
+      "element-plus": [
+        "node_modules/element-plus"
+      ],
+      "@element-plus/icons-vue": [
+        "node_modules/@element-plus/icons-vue"
+      ],
+      "@mineadmin/pro-table": [
+        "node_modules/@mineadmin/pro-table"
+      ],
+      "@mineadmin/form": [
+        "node_modules/@mineadmin/form"
+      ],
+      "lodash-es": [
+        "node_modules/lodash-es"
+      ],
+      "sortablejs": [
+        "node_modules/sortablejs"
+      ],
+      "@mineadmin/search": [
+        "node_modules/@mineadmin/search"
+      ]
     },
     "resolveJsonModule": true,
     "types": [
@@ -47,5 +85,8 @@
     "src/**/*.vue",
     "src/**/*.mjs"
   ],
-  "exclude": ["node_modules", "dist"]
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

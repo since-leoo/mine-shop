@@ -1,14 +1,6 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace Plugin\CustomerService\Socket;
 
@@ -16,7 +8,8 @@ use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
 use Plugin\CustomerService\Application\Socket\CustomerServiceSocketTicketService;
-use Plugin\CustomerService\Service\CustomerServiceRealtimeService;
+use Plugin\CustomerService\Domain\Contract\CustomerServiceAuthorizationInterface;
+use Plugin\CustomerService\Domain\Contract\CustomerServicePresenceInterface;
 
 final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageInterface, OnCloseInterface
 {
@@ -26,7 +19,8 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
         private readonly CustomerServiceSocketResponder $responder,
         private readonly CustomerServiceSocketEventDispatcher $dispatcher,
         private readonly CustomerServiceSocketTicketService $tickets,
-        private readonly CustomerServiceRealtimeService $realtime,
+        private readonly CustomerServicePresenceInterface $presence,
+        private readonly CustomerServiceAuthorizationInterface $authorization,
     ) {}
 
     public function onOpen($server, $request): void
@@ -36,47 +30,59 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
 
     public function onMessage($server, $frame): void
     {
-        $payload = $this->protocol->decode((string) $frame->data);
-        if ($payload === null) {
+        $message = $this->protocol->decode((string) $frame->data);
+        if ($message === null) {
             $this->responder->error($server, $frame->fd, '消息格式无效');
             return;
         }
-
-        $event = (string) ($payload['event'] ?? '');
-        if ($event === 'ping') {
-            $this->responder->send($server, $frame->fd, 'pong', ['at' => time()]);
-            return;
-        }
-
-        if ($event === 'auth') {
-            $ticket = (string) ($payload['payload']['ticket'] ?? '');
-            $principal = $this->tickets->consume($ticket);
-            if ($principal === null || ! \in_array($principal['principal_type'], ['member', 'agent'], true)) {
-                $this->responder->error($server, $frame->fd, 'Socket 凭证无效或已过期');
+        try {
+            $connection = $this->connections->get((string) $frame->fd);
+            if ($message['event'] === 'auth') {
+                if ($connection !== null) {
+                    throw new \DomainException('连接已认证，请重新建立连接后切换身份');
+                }
+                $principal = $this->tickets->consume((string) ($message['payload']['ticket'] ?? ''));
+                if ($principal === null) {
+                    throw new \DomainException('Socket 凭证无效或已过期');
+                }
+                if ($principal['principal_type'] === 'agent') {
+                    $this->authorization->authorizeAgentAction((int) $principal['admin_user_id'], (int) $principal['principal_id'], 'auth');
+                }
+                $connection = $principal + ['admin_user_id' => 0, 'connected_at' => time(), 'connection_id' => bin2hex(random_bytes(24))];
+                $this->presence->refresh($connection['principal_type'], (int) $connection['principal_id'], $connection['connection_id']);
+                $this->connections->set((string) $frame->fd, $connection);
+                $this->responder->send($server, $frame->fd, 'authenticated', ['principal_type' => $connection['principal_type'], 'principal_id' => (int) $connection['principal_id']]);
                 return;
             }
-            $this->connections->set((string) $frame->fd, ['principal_type' => $principal['principal_type'], 'principal_id' => (int) $principal['principal_id'], 'admin_user_id' => (int) ($principal['admin_user_id'] ?? 0), 'connected_at' => time()]);
-            $this->realtime->online($principal['principal_type'], (int) $principal['principal_id']);
-            $this->responder->send($server, $frame->fd, 'authenticated', ['principal_type' => $principal['principal_type'], 'principal_id' => (int) $principal['principal_id']]);
-            return;
+            if ($connection === null) {
+                throw new \DomainException('请先认证 Socket 连接');
+            }
+            if ($message['event'] === 'ping') {
+                if ($connection['principal_type'] === 'agent') {
+                    $this->authorization->authorizeAgentAction((int) $connection['admin_user_id'], (int) $connection['principal_id'], 'ping');
+                }
+                $this->presence->refresh($connection['principal_type'], (int) $connection['principal_id'], $connection['connection_id']);
+                $this->responder->send($server, $frame->fd, 'pong', ['at' => time()]);
+                return;
+            }
+            $this->dispatcher->dispatch($server, $frame->fd, $connection['principal_type'], (int) $connection['principal_id'], (int) $connection['admin_user_id'], $message);
+        } catch (\DomainException|\InvalidArgumentException $exception) {
+            $this->responder->error($server, $frame->fd, $exception->getMessage());
+        } catch (\Throwable) {
+            $this->responder->error($server, $frame->fd, '客服连接暂不可用，请重试');
         }
-
-        $connection = $this->connections->get((string) $frame->fd);
-        $principalId = \is_array($connection) ? (int) ($connection['principal_id'] ?? 0) : 0;
-        if ($principalId <= 0) {
-            $this->responder->error($server, $frame->fd, '请先认证 Socket 连接');
-            return;
-        }
-
-        $this->dispatcher->dispatch($server, $frame->fd, (string) $connection['principal_type'], $principalId, (int) ($connection['admin_user_id'] ?? 0), $payload);
     }
 
     public function onClose($server, int $fd, int $reactorId): void
     {
         $connection = $this->connections->get((string) $fd);
-        if ($connection !== null) {
-            $this->realtime->offline((string) $connection['principal_type'], (int) $connection['principal_id']);
-        }
         $this->connections->del((string) $fd);
+        if ($connection !== null) {
+            try {
+                $this->presence->disconnect($connection['principal_type'], (int) $connection['principal_id'], $connection['connection_id']);
+            } catch (\Throwable) {
+                // The bounded lease expires even if Redis is unavailable during disconnect.
+            }
+        }
     }
 }

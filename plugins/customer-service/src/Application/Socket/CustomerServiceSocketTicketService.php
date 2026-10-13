@@ -12,14 +12,13 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Application\Socket;
 
-use App\Infrastructure\Abstract\ICache;
+use Plugin\CustomerService\Domain\Contract\CustomerServiceTicketStoreInterface;
+use Plugin\CustomerService\Service\CustomerServiceSettingsResolver;
 
+/** 将 HTTP 已认证身份换成短期一次性票据，避免在 WebSocket URL 中暴露登录令牌。 */
 final class CustomerServiceSocketTicketService
 {
-    public function __construct(private readonly ICache $cache)
-    {
-        $this->cache->setPrefix('customer-service:socket-ticket');
-    }
+    public function __construct(private readonly CustomerServiceTicketStoreInterface $store, private readonly CustomerServiceSettingsResolver $settings) {}
 
     public function issueMemberTicket(int $memberId): array
     {
@@ -37,10 +36,11 @@ final class CustomerServiceSocketTicketService
         if ($ticket === '' || mb_strlen($ticket) !== 48) {
             return null;
         }
-        $payload = $this->cache->get($ticket);
-        $this->cache->delete($ticket);
-        $decoded = \is_string($payload) ? json_decode($payload, true) : null;
-        if (! \is_array($decoded) || ! isset($decoded['principal_type'], $decoded['principal_id'])) {
+        $decoded = $this->store->consume($ticket);
+        if (! \is_array($decoded) || ! in_array($decoded['principal_type'] ?? null, ['member', 'agent'], true) || (int) ($decoded['principal_id'] ?? 0) <= 0) {
+            return null;
+        }
+        if ($decoded['principal_type'] === 'agent' && (int) ($decoded['admin_user_id'] ?? 0) <= 0) {
             return null;
         }
         return array_filter([
@@ -52,9 +52,15 @@ final class CustomerServiceSocketTicketService
 
     private function issue(array $principal): array
     {
+        if (! ($this->settings->toArray()['enabled'] ?? false)) {
+            throw new \DomainException('客服服务暂未开启');
+        }
+        if ((int) $principal['principal_id'] <= 0) {
+            throw new \InvalidArgumentException('无效的客服身份');
+        }
         $ticket = bin2hex(random_bytes(24));
         $expiresIn = 60;
-        $this->cache->set($ticket, json_encode($principal, \JSON_THROW_ON_ERROR), ['EX' => $expiresIn]);
+        $this->store->put($ticket, $principal, $expiresIn);
         return ['ticket' => $ticket, 'expires_in' => $expiresIn];
     }
 }

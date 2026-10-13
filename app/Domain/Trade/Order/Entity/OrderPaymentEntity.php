@@ -70,6 +70,7 @@ final class OrderPaymentEntity
         string $paymentMethod,
         int $paymentAmount
     ): self {
+        $this->setPaymentNo('PAY' . bin2hex(random_bytes(16)));
         $this->setOrderId($orderId);
         $this->setOrderNo($orderNo);
         $this->setMemberId($memberId);

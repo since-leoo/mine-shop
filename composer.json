@@ -130,6 +130,12 @@
       "rm -rf runtime/container"
     ],
     "test": [
+      "@test:unit",
+      "@test:integration"
+    ],
+    "test:unit": "php vendor/bin/phpunit -c phpunit.unit.xml",
+    "test:integration": "php vendor/bin/phpunit -c phpunit.integration.xml",
+    "test:application": [
       "co-phpunit --prepend tests/bootstrap.php --group=migrations --colors=always",
       "co-phpunit --prepend tests/bootstrap.php --exclude-group=migrations"
     ],

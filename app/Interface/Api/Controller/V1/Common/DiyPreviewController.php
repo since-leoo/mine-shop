@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1\Common;
 
-use App\Application\Api\Content\AppApiDiyPageQueryService;
+use App\Domain\Infrastructure\Plugin\Contract\DiyPageQueryInterface;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\DiyPageTransformer;
 use App\Interface\Common\Controller\AbstractController;
@@ -26,7 +26,7 @@ use Hyperf\HttpServer\Annotation\Middleware;
 final class DiyPreviewController extends AbstractController
 {
     public function __construct(
-        private readonly AppApiDiyPageQueryService $queryService,
+        private readonly DiyPageQueryInterface $queryService,
         private readonly DiyPageTransformer $transformer,
     ) {}
 

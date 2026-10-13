@@ -3,6 +3,8 @@ import Taro, { useRouter, usePullDownRefresh, useReachBottom } from '@tarojs/tar
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { fetchWalletTransactions } from '../../../services/usercenter/fetchWalletTransactions';
 import PageNav from '../../../components/page-nav';
+import { isMiniProgram } from '../../../common/platform';
+import { getMiniProgramNavMetrics } from '../../../utils/system-info';
 import './index.scss';
 
 const TYPE_LABELS: Record<string, string> = {
@@ -68,6 +70,8 @@ function parseTimeToMs(timeStr: string): number {
 export default function WalletTransactions() {
   const router = useRouter();
   const initialType = router.params.type === 'points' ? 'points' : 'balance';
+  const weapp = isMiniProgram();
+  const navMetrics = weapp ? getMiniProgramNavMetrics() : null;
 
   const [walletType, setWalletType] = useState(initialType);
   const [list, setList] = useState<TransactionItem[]>([]);
@@ -203,10 +207,12 @@ export default function WalletTransactions() {
   }, []);
 
   return (
-    <View className="wallet-page">
-      <PageNav title={walletType === 'points' ? '积分明细' : '余额明细'} />
+    <View className={`wallet-page${weapp ? ' wallet-page--weapp' : ''}`}>
+      {weapp ? (
+        <View className="wallet-page__nav"><PageNav title={walletType === 'points' ? '积分明细' : '余额明细'} /></View>
+      ) : <PageNav title={walletType === 'points' ? '积分明细' : '余额明细'} />}
       {/* Tabs */}
-      <View className="wallet-page__tabs">
+      <View className="wallet-page__tabs" style={navMetrics ? { top: `calc(${navMetrics.statusBarHeight + navMetrics.navHeight}px + 20rpx)` } : undefined}>
         <View className="wallet-tabs">
           <View
             className={`wallet-tabs__item ${walletType === 'balance' ? 'wallet-tabs__item--active' : ''}`}

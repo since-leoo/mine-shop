@@ -30,6 +30,8 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
 
     private const DAILY_LIMIT = 10;
 
+    private const MAX_ATTEMPTS = 5;
+
     private const CACHE_PREFIX = '/plugin/sms/verification';
 
     public function __construct(
@@ -51,70 +53,104 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
      */
     public function sendCode(string $phone, string $scene): array
     {
+        $this->assertInput($phone, $scene);
         $code = null;
-
+        $reservation = null;
         try {
             $this->assertProductionSmsEnabled();
-            $this->assertCanSend($phone, $scene);
-
-            $code = mb_str_pad((string) random_int(0, 999999), 6, '0', \STR_PAD_LEFT);
-            $this->storeVerificationCode($phone, $scene, $code);
-
-            $result = [
-                'phone' => $phone,
-                'scene' => $scene,
-            ];
-
-            // Non-production mode
+            $reservation = bin2hex(random_bytes(16));
+            $this->reserveSend($phone, $scene, $reservation);
+            $code = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            if (! $this->isNonProduction()) {
+                $this->dispatchSms($phone, $code);
+            }
+            // 供应商成功后才发布验证码；慢响应也不能覆盖后来发送的新验证码。
+            $this->storeVerificationCode($phone, $scene, $code, $reservation);
+            $result = ['phone' => $phone, 'scene' => $scene];
             if ($this->isNonProduction()) {
                 $result['code'] = $code;
                 $this->logNonProductionCode($phone, $scene, $code);
-                $this->recordSmsMessage($phone, $scene, $code, true);
-
-                return $result;
             }
-
-            // Production mode
-            $this->dispatchSms($phone, $code);
             $this->recordSmsMessage($phone, $scene, $code, true);
-
             return $result;
-        } catch (\Throwable $e) {
-            $this->recordSmsMessage($phone, $scene, $code, false, $e->getMessage());
-            throw $e;
+        } catch (\Throwable $error) {
+            if ($reservation !== null) {
+                $this->releaseSend($phone, $scene, $reservation);
+            }
+            $this->recordSmsMessage($phone, $scene, null, false, $error->getMessage());
+            throw $error;
         }
     }
 
-    /**
-     * Verify the SMS verification code.
-     */
     public function verifyCode(string $phone, string $scene, string $code): bool
     {
-        // Verify the SMS verification code.
-        $cachedCode = (string) $this->redis()->get($this->codeKey($phone, $scene));
-        if ($cachedCode === '' || ! hash_equals($cachedCode, $code)) {
-            return false;
-        }
-
-        $this->redis()->delete($this->codeKey($phone, $scene));
-
-        return true;
+        $this->assertInput($phone, $scene);
+        if (! preg_match('/^\d{6}$/D', $code)) return false;
+        // 比较、错误计数和消费必须在同一条 Redis 操作中完成，避免并发重复登录。
+        $script = <<<'LUA'
+local code = redis.call('GET', KEYS[1])
+if not code then return 0 end
+if code ~= ARGV[1] then
+    local attempts = redis.call('INCR', KEYS[2])
+    redis.call('EXPIRE', KEYS[2], math.max(1, redis.call('TTL', KEYS[1])))
+    if attempts >= tonumber(ARGV[2]) then redis.call('DEL', KEYS[1]) end
+    return 0
+end
+redis.call('DEL', KEYS[1], KEYS[2])
+return 1
+LUA;
+        return $this->redis()->eval($script, [
+            $this->fullKey($this->codeKey($phone, $scene)), $this->fullKey($this->attemptKey($phone, $scene)),
+            $code, self::MAX_ATTEMPTS,
+        ], 2);
     }
 
-    /**
-     * Assert that the SMS verification code can be sent.
-     */
-    private function assertCanSend(string $phone, string $scene): void
+    private function assertInput(string $phone, string $scene): void
     {
-        // Assert that the SMS verification code can be sent.
-        if ($this->redis()->get($this->resendKey($phone, $scene)) !== null) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS verification code was sent too frequently.');
+        if (! preg_match('/^1[3-9]\d{9}$/D', $phone) || ! in_array($scene, ['register', 'forgot_password', 'login'], true)) {
+            throw new \InvalidArgumentException('短信手机号或场景无效');
         }
+    }
 
-        $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);
-        if ($dailyCount >= self::DAILY_LIMIT) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Daily SMS verification code limit reached.');
+    private function reserveSend(string $phone, string $scene, string $token): void
+    {
+        $script = <<<'LUA'
+if redis.call('EXISTS', KEYS[1]) == 1 then return 0 end
+if tonumber(redis.call('GET', KEYS[2]) or '0') >= tonumber(ARGV[3]) then return 0 end
+redis.call('SET', KEYS[1], ARGV[1], 'EX', ARGV[2])
+redis.call('INCR', KEYS[2])
+redis.call('EXPIRE', KEYS[2], ARGV[4])
+redis.call('SET', KEYS[3], ARGV[1], 'EX', ARGV[5])
+redis.call('SET', KEYS[4], KEYS[2], 'EX', ARGV[5])
+return 1
+LUA;
+        $reserved = $this->redis()->eval($script, [
+            $this->fullKey($this->resendKey($phone, $scene)), $this->fullKey($this->dailyLimitKey($phone)),
+            $this->fullKey($this->generationKey($phone, $scene)), $this->fullKey('reservation:' . $token),
+            $token, self::RESEND_INTERVAL, self::DAILY_LIMIT, $this->secondsUntilDayEnd(), self::CODE_TTL,
+        ], 4);
+        if (! $reserved) {
+            throw new \DomainException('验证码发送过于频繁或已达每日上限，请稍后再试');
         }
+    }
+
+    private function releaseSend(string $phone, string $scene, string $token): void
+    {
+        // 只退还本次发送预留，旧请求失败不能删除另一个请求的锁或扣减其额度。
+        $script = <<<'LUA'
+if redis.call('GET', KEYS[1]) == ARGV[1] then redis.call('DEL', KEYS[1]) end
+if redis.call('GET', KEYS[3]) == ARGV[1] then redis.call('DEL', KEYS[3]) end
+local reservedDay = redis.call('GET', KEYS[4])
+redis.call('DEL', KEYS[4])
+if reservedDay == KEYS[2] and tonumber(redis.call('GET', KEYS[2]) or '0') > 0 then
+    redis.call('DECR', KEYS[2])
+end
+return 1
+LUA;
+        $this->redis()->eval($script, [
+            $this->fullKey($this->resendKey($phone, $scene)), $this->fullKey($this->dailyLimitKey($phone)),
+            $this->fullKey($this->generationKey($phone, $scene)), $this->fullKey('reservation:' . $token), $token,
+        ], 4);
     }
 
     /**
@@ -136,13 +172,20 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     /**
      * Store the verification code in the cache.
      */
-    private function storeVerificationCode(string $phone, string $scene, string $code): void
+    private function storeVerificationCode(string $phone, string $scene, string $code, string $token): void
     {
-        $this->redis()->set($this->codeKey($phone, $scene), $code, ['EX' => self::CODE_TTL]);
-        $this->redis()->set($this->resendKey($phone, $scene), (string) time(), ['EX' => self::RESEND_INTERVAL]);
-
-        $dailyCount = (int) ($this->redis()->get($this->dailyLimitKey($phone)) ?? 0);
-        $this->redis()->set($this->dailyLimitKey($phone), (string) ($dailyCount + 1), ['EX' => $this->secondsUntilDayEnd()]);
+        $script = <<<'LUA'
+if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
+redis.call('SET', KEYS[2], ARGV[2], 'EX', ARGV[3])
+redis.call('DEL', KEYS[3], KEYS[4])
+return 1
+LUA;
+        $stored = $this->redis()->eval($script, [
+            $this->fullKey($this->generationKey($phone, $scene)), $this->fullKey($this->codeKey($phone, $scene)),
+            $this->fullKey($this->attemptKey($phone, $scene)), $this->fullKey('reservation:' . $token),
+            $token, $code, self::CODE_TTL,
+        ], 4);
+        if (! $stored) throw new \DomainException('验证码已更新，请使用最新验证码');
     }
 
     /**
@@ -188,11 +231,15 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
             ]);
         } catch (\Throwable $e) {
             // 记录失败不能覆盖短信发送本身的结果。
-            logger()->warning('Unable to record SMS message', [
-                'phone' => $phone,
-                'scene' => $scene,
-                'error' => $e->getMessage(),
-            ]);
+            try {
+                logger()->warning('Unable to record SMS message', [
+                    'phone' => $phone,
+                    'scene' => $scene,
+                    'error' => $e->getMessage(),
+                ]);
+            } catch (\Throwable) {
+                // 日志设施不可用时仍保留原始短信发送结果。
+            }
         }
     }
 
@@ -252,6 +299,21 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
     /**
      * Generate the cache key for the verification code.
      */
+    private function fullKey(string $key): string
+    {
+        return $this->redis()->getPrefix() . ':' . $key;
+    }
+
+    private function attemptKey(string $phone, string $scene): string
+    {
+        return sprintf('attempt:%s:%s', $scene, $phone);
+    }
+
+    private function generationKey(string $phone, string $scene): string
+    {
+        return sprintf('generation:%s:%s', $scene, $phone);
+    }
+
     private function codeKey(string $phone, string $scene): string
     {
         return \sprintf('code:%s:%s', $scene, $phone);

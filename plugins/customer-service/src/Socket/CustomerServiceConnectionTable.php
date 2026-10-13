@@ -25,6 +25,7 @@ final class CustomerServiceConnectionTable
         $table->column('principal_id', Table::TYPE_INT, 8);
         $table->column('admin_user_id', Table::TYPE_INT, 8);
         $table->column('connected_at', Table::TYPE_INT, 8);
+        $table->column('connection_id', Table::TYPE_STRING, 48);
         if (! $table->create()) {
             throw new \RuntimeException('客服连接表创建失败');
         }
@@ -33,7 +34,9 @@ final class CustomerServiceConnectionTable
 
     public function set(string $fd, array $data): void
     {
-        $this->table->set($fd, $data);
+        if (! $this->table->set($fd, $data)) {
+            throw new \RuntimeException('客服连接数已达上限');
+        }
     }
 
     public function get(string $fd): ?array

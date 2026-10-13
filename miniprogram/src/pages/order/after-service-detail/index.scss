@@ -91,7 +91,7 @@
     color: $warm-text-secondary;
   }
 
-  &__row text:last-child {
+  &__row text.after-service-detail__row-value {
     max-width: 70%;
     text-align: right;
     word-break: break-all;
@@ -217,12 +217,13 @@
   background: $warm-bg-page;
   padding: 0 24rpx calc(180rpx + env(safe-area-inset-bottom));
   > .page-nav { margin: 0 -24rpx 24rpx; }
+  > .page-nav:not(.page-nav--h5) { width: calc(100% + 48rpx); }
   &__hero { background: $warm-gradient-primary; }
   &__status, &__type { color: white; }
   &__type, &__timeline-content { min-width: 0; overflow-wrap: anywhere; line-height: 1.6; }
   &__row { line-height: 1.6; align-items: flex-start; }
-  &__row > :first-child { flex-shrink: 0; }
-  &__row > :last-child { min-width: 0; max-width: 70%; text-align: right; overflow-wrap: anywhere; }
+  &__row-label { flex-shrink: 0; }
+  &__row-value { min-width: 0; max-width: 70%; text-align: right; overflow-wrap: anywhere; }
   &__actions { bottom: 0; left: 0; right: 0; padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom)); background: $warm-bg-white; z-index: 100; flex-wrap: wrap; box-shadow: $warm-shadow-sm; }
   &__actions:empty { display: none; }
   &__btn { background: $warm-gradient-primary; min-width: 0; min-height: 88rpx; box-sizing: border-box; display: flex; justify-content: center; align-items: center; white-space: nowrap; }

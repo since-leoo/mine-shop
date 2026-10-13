@@ -17,7 +17,6 @@ use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Factory\OrderTypeStrategyFactory;
-use App\Domain\Trade\Order\Job\OrderCreateJob;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
@@ -25,8 +24,6 @@ use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Domain\Trade\Order\Service\OrderPendingCacheService;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Model\Order\Order;
-use Hyperf\AsyncQueue\Driver\DriverFactory;
 
 /**
  * 面向 API 场景的订单写领域服务.
@@ -41,10 +38,8 @@ final class DomainApiOrderCommandService extends IService
         public readonly OrderRepository $repository,
         private readonly DomainOrderService $orderService,
         private readonly OrderTypeStrategyFactory $strategyFactory,
-        private readonly DomainOrderStockService $stockService,
         private readonly DomainMemberAddressService $addressService,
         private readonly OrderPendingCacheService $pendingCacheService,
-        private readonly DriverFactory $driverFactory,
     ) {}
 
     /**
@@ -76,51 +71,21 @@ final class DomainApiOrderCommandService extends IService
         return $this->buildOrder($input);
     }
 
-    /**
-     * 提交订单（异步）.
-     *
-     * 采用异步下单模式，流程如下：
-     * 1. 同步阶段：校验参数 → 计算价格 → Lua 原子扣库存
-     * 2. 异步阶段：投递 Job 到队列 → 异步入库
-     *
-     * 前端通过轮询 getSubmitResult 获取最终结果。
-     *
-     * @param OrderSubmitInput $input 提交输入参数
-     * @return OrderEntity 包含 tradeNo 的订单实体（status=processing）
-     * @throws \RuntimeException 库存不足或参数校验失败时抛出
-     */
-    public function submit(OrderSubmitInput $input): OrderEntity
+    /** 构建提交快照；持久化、幂等库存与任务投递由应用层协调。 */
+    public function prepareSubmission(OrderSubmitInput $input): array
     {
-        // 1. 构建 + 校验 + 算价
         $entity = $this->buildOrder($input);
+        if ($entity->getAddress() === null) {
+            throw new \DomainException('请提供收货地址');
+        }
         $activeId = $entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id') ?: 0;
-        $stockHashKey = DomainOrderStockService::resolveStockKey($entity->getOrderType(), (int) $activeId);
-
-        // 2. Lua 原子扣库存（无需分布式锁）
-        $items = array_map(static fn ($item) => $item->toArray(), $entity->getItems());
-        $this->stockService->reserve($items, $stockHashKey);
-
-        // 3. 生成 tradeNo，构建快照，写入 Redis pending 状态
-        $tradeNo = Order::generateOrderNo();
-        $entity->setOrderNo($tradeNo);
-        $entitySnapshot = $this->buildSnapshot($entity);
-        $addressPayload = $entity->getAddress()?->toArray() ?? [];
-
-        // 缓存下单状态为pending
-        $this->pendingCacheService->markProcessing($tradeNo, $entitySnapshot);
-
-        // 4. 投递异步 Job
-        $this->driverFactory->get('default')->push(new OrderCreateJob(
-            tradeNo: $tradeNo,
-            entitySnapshot: $entitySnapshot,
-            itemsPayload: $items,
-            addressPayload: $addressPayload,
-            couponUserIds: $entity->getAppliedCouponUserIds(),
-            orderType: $entity->getOrderType(),
-            stockHashKey: $stockHashKey,
-        ));
-
-        return $entity;
+        return [
+            'snapshot' => $this->buildSnapshot($entity),
+            'items' => array_map(static fn ($item) => $item->toArray(), $entity->getItems()),
+            'address' => $entity->getAddress()->toArray(),
+            'coupon_user_ids' => $entity->getAppliedCouponUserIds(),
+            'stock_key' => DomainOrderStockService::resolveStockKey($entity->getOrderType(), (int) $activeId),
+        ];
     }
 
     /**

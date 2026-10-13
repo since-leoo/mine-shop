@@ -5,7 +5,7 @@ import locales from './locales'
 const pluginConfig: Plugin.PluginConfig = {
   centerOnly: true,
   install(app: App) {
-    const i18n = app.config.globalProperties.$i18n
+    const i18n = app.config.globalProperties.$i18n as { mergeLocaleMessage: (locale: string, messages: any) => void } | undefined
     if (i18n) {
       Object.entries(locales).forEach(([locale, messages]) => i18n.mergeLocaleMessage(locale, messages))
     }
@@ -26,7 +26,7 @@ const pluginConfig: Plugin.PluginConfig = {
     description: '统一管理客服会话、坐席和常见问题',
     order: 20,
     page: () => import('./views/PluginPage.vue'),
-    settings: { page: () => import('@/modules/plugin-center/components/PluginSettingsPage.vue') },
+    settings: { page: () => import('./views/configuration/index.vue') },
   },
 }
 

@@ -130,7 +130,7 @@ final class CouponRepository extends IRepository
     public function syncUsageStatistics(int $couponId): void
     {
         // 统计指定优惠券的已使用数量
-        $used = $this->model->where('coupon_id', $couponId)
+        $used = \App\Infrastructure\Model\Coupon\CouponUser::where('coupon_id', $couponId)
             ->where('status', 'used')
             ->count();
 

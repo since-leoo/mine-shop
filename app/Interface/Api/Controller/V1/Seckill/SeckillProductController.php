@@ -22,7 +22,7 @@ use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
-use Hyperf\HttpServer\Contract\RequestInterface;
+use App\Interface\Api\Request\V1\Seckill\SeckillPromotionRequest;
 
 #[Controller(prefix: '/api/v1/seckill/products')]
 #[Middleware(ApiSignatureMiddleware::class)]
@@ -30,20 +30,21 @@ final class SeckillProductController extends AbstractController
 {
     public function __construct(
         private readonly AppApiSeckillProductQueryService $queryService,
-        private readonly SeckillProductTransformer $transformer,
-        private readonly RequestInterface $request
+        private readonly SeckillProductTransformer $transformer
     ) {}
 
     /**
      * 秒杀商品列表（小程序促销页用）.
      */
     #[GetMapping(path: '')]
-    public function index(): Result
+    public function index(SeckillPromotionRequest $request): Result
     {
-        $limit = (int) $this->request->query('limit', 20);
-        $data = $this->queryService->getPromotionList($limit);
-
-        return $this->success($data);
+        try {
+            $data = $this->queryService->getPromotionList($request->toDto());
+        } catch (\DomainException $exception) {
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, $exception->getMessage());
+        }
+        return $this->success($this->transformer->transformPromotionList($data));
     }
 
     #[GetMapping(path: '{sessionId}/{spuId}')]

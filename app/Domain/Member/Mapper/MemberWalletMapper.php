@@ -35,6 +35,7 @@ class MemberWalletMapper
         $entity->setTotalRecharge($model->total_recharge);
         $entity->setTotalConsume($model->total_consume);
         $entity->setStatus($model->status);
+        $entity->restorePayPassword((string) $model->pay_password);
 
         return $entity;
     }

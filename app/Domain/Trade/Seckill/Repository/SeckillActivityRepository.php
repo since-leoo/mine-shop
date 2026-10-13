@@ -25,6 +25,13 @@ final class SeckillActivityRepository extends IRepository
 {
     public function __construct(protected readonly SeckillActivity $model) {}
 
+    /** 可预览未来和结束场次，但不暴露停用/取消内容。 */
+    public function findVisibleById(int $id): ?SeckillActivity
+    {
+        return SeckillActivity::query()->where('is_enabled', true)
+            ->where('status', '!=', SeckillStatus::CANCELLED->value)->find($id);
+    }
+
     public function createFromEntity(SeckillActivityEntity $entity): SeckillActivity
     {
         $activity = SeckillActivity::create($entity->toArray());

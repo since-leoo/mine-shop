@@ -1,5 +1,6 @@
 import { View, Text, Image } from '@tarojs/components';
 import { useMemo } from 'react';
+import { isMiniProgram } from '../../common/platform';
 import Price from '../Price';
 import './index.scss';
 
@@ -43,7 +44,7 @@ export default function GoodsCard({
   };
 
   return (
-    <View className="goods-card" onClick={handleClick}>
+    <View className={`goods-card${isMiniProgram() ? ' goods-card--weapp' : ''}`} onClick={handleClick}>
       <View className="goods-card__main">
         <View className="goods-card__thumb">
           {data.thumb && (

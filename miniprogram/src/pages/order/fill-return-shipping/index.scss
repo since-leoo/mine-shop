@@ -57,6 +57,7 @@
   box-sizing: border-box;
   padding: 0 24rpx calc(32rpx + env(safe-area-inset-bottom));
   > .page-nav { margin: 0 -24rpx 24rpx; }
+  > .page-nav:not(.page-nav--h5) { width: calc(100% + 48rpx); }
   &__card { border-radius: 28rpx; box-shadow: $warm-shadow-sm; }
   &__input { color: $warm-text-primary; min-width: 0; display: flex; align-items: center; }
   .weui-input { font: inherit; color: inherit; width: 100%; box-sizing: border-box; }

@@ -23,7 +23,10 @@ final class AppApiOrderCommandService
 {
     public function __construct(
         private readonly DomainApiOrderCommandService $orderCommandService,
-        private readonly DomainMallSettingService $mallSettingService
+        private readonly DomainMallSettingService $mallSettingService,
+        private readonly AppOrderSubmissionService $submissions,
+        private readonly AppOrderCancellationService $cancellation,
+        private readonly \App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface $submissionStore,
     ) {}
 
     /**
@@ -39,10 +42,12 @@ final class AppApiOrderCommandService
      */
     public function submit(OrderSubmitInput $input): array
     {
-        $entity = $this->orderCommandService->submit($input);
+        $payload = $this->orderCommandService->prepareSubmission($input);
+        $tradeNo = \App\Infrastructure\Model\Order\Order::generateOrderNo();
+        $this->submissions->submit($tradeNo, $input->getMemberId(), $payload);
 
         return [
-            'trade_no' => $entity->getOrderNo(),
+            'trade_no' => $tradeNo,
             'status' => 'processing',
             'pay_methods' => $this->resolvePaymentMethods(),
         ];
@@ -53,9 +58,13 @@ final class AppApiOrderCommandService
      *
      * @return array{status: string, trade_no: string, error: string, pay_methods: array}
      */
-    public function getSubmitResult(string $tradeNo): array
+    public function getSubmitResult(string $tradeNo, int $memberId): array
     {
-        $result = $this->orderCommandService->getSubmitResult($tradeNo);
+        $row = $this->submissionStore->find($tradeNo);
+        if ($row === null || (int) $row['member_id'] !== $memberId) {
+            throw new \RuntimeException('订单提交不存在');
+        }
+        $result = ['status' => in_array($row['status'], ['pending', 'reserved'], true) ? 'processing' : $row['status'], 'error' => $row['last_error'] ?? ''];
 
         return [
             'trade_no' => $tradeNo,
@@ -91,15 +100,7 @@ final class AppApiOrderCommandService
      */
     public function cancel(int $memberId, string $orderNo): void
     {
-        $entity = $this->orderCommandService->getEntity(orderNo: $orderNo);
-
-        if ($entity->getMemberId() !== $memberId) {
-            throw new \RuntimeException('订单不存在');
-        }
-
-        $entity->cancel();
-
-        Db::transaction(fn () => $this->orderCommandService->cancel($entity));
+        $this->cancellation->cancel($orderNo, $memberId, reason: '用户取消订单');
     }
 
     /**

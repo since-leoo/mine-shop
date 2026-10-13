@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Api\Seckill;
 
 use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillProductDetailService;
+use App\Domain\Trade\Seckill\Contract\SeckillPromotionQueryInput;
 use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillQueryService;
 
 final class AppApiSeckillProductQueryService
@@ -28,10 +29,10 @@ final class AppApiSeckillProductQueryService
     }
 
     /**
-     * @return array{list: array, endTime: ?string, title: string, statusTag: string, time: int}
+     * 仅编排查询，展示字段由 Interface Transformer 负责。
      */
-    public function getPromotionList(int $limit = 20): array
+    public function getPromotionList(SeckillPromotionQueryInput $input): ?array
     {
-        return $this->queryService->getPromotionList($limit);
+        return $this->queryService->getPromotionList($input);
     }
 }

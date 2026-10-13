@@ -16,14 +16,15 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Event\OrderCancelledEvent;
 use App\Domain\Trade\Order\Event\OrderShippedEvent;
 use Hyperf\Event\Contract\ListenerInterface;
-use Plugin\SystemMessage\Contract\SystemMessageInterface as SystemMessage;
-use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service\OutboundWebhookDispatcher;
+use App\Domain\Infrastructure\Plugin\Contract\SystemNotificationInterface;
+use App\Domain\Trade\Shared\Contract\TradeWebhookInterface;
 
 final class OrderStatusNotifyListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainMallSettingService $mallSettingService,
-        private readonly OutboundWebhookDispatcher $webhookDispatcher
+        private readonly TradeWebhookInterface $webhookDispatcher,
+        private readonly SystemNotificationInterface $notifications,
     ) {}
 
     public function listen(): array
@@ -96,6 +97,6 @@ final class OrderStatusNotifyListener implements ListenerInterface
             return;
         }
 
-        SystemMessage::notify($title, $content);
+        $this->notifications->notify($title, $content);
     }
 }

@@ -80,7 +80,8 @@ class OrderPaymentRepository extends IRepository
      */
     public function updateById(int $id, array $data): bool
     {
-        return $this->model::where('id', $id)->update($data) > 0;
+        $record = $this->model::where('id', $id)->first();
+        return $record !== null && $record->fill($data)->save();
     }
 
     /**
@@ -88,6 +89,49 @@ class OrderPaymentRepository extends IRepository
      */
     public function updateByPaymentNo(string $paymentNo, array $data): bool
     {
-        return $this->model::where('payment_no', $paymentNo)->update($data) > 0;
+        $record = $this->findByPaymentNo($paymentNo);
+        return $record !== null && $record->fill($data)->save();
+    }
+
+    public function findForOrder(int $orderId, string $method): ?OrderPayment
+    {
+        return $this->model::where('order_id', $orderId)->where('payment_method', $method)->orderByDesc('id')->first();
+    }
+
+    public function findPaidByOrderIdForUpdate(int $orderId): ?OrderPayment
+    {
+        return $this->model::where('order_id', $orderId)->whereIn('status', ['paid', 'refunded'])
+            ->orderByDesc('id')->lockForUpdate()->first();
+    }
+
+    public function unreconciledWechat(int $limit = 100): array
+    {
+        return $this->model::where('payment_method', 'wechat')->where('status', 'pending')
+            ->orderBy('updated_at')->limit($limit)->get()->all();
+    }
+
+    public function closePendingFromChannel(int $id, string $state): void
+    {
+        $status = match ($state) {
+            'CLOSED', 'REVOKED' => 'cancelled',
+            'PAYERROR' => 'failed',
+            default => throw new \DomainException('支付渠道状态不是确定终态'),
+        };
+        // 条件更新防止查单结果覆盖已提交的成功回调。
+        $this->model::where('id', $id)->where('status', 'pending')->update([
+            'status' => $status, 'remark' => '渠道查单: ' . $state, 'updated_at' => date('Y-m-d H:i:s'),
+        ]);
+    }
+
+    public function touchReconciled(int $id): void
+    {
+        $this->model::where('id', $id)->update(['updated_at' => date('Y-m-d H:i:s')]);
+    }
+
+    public function sumBalancePaidToday(int $memberId): int
+    {
+        return (int) $this->model::where('member_id', $memberId)->where('payment_method', 'balance')
+            ->whereNotNull('paid_at')->where('paid_at', '>=', \Carbon\Carbon::now()->startOfDay())
+            ->sum('paid_amount');
     }
 }

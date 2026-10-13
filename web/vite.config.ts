@@ -27,6 +27,7 @@ export default async ({ mode, command }) => {
     // 开发服务器选项 https://cn.vite.dev/config/#server-options
     server: {
       open: true,
+      fs: { allow: [path.resolve(__dirname, '..')] },
       port: Number(env.VITE_APP_PORT ?? process.env.port),
       proxy: {
         [proxyPrefix]: {
@@ -67,6 +68,7 @@ export default async ({ mode, command }) => {
     },
     plugins: createVitePlugins(env, command === 'build'),
     resolve: {
+      dedupe: [...Object.keys(pkg.dependencies), '@element-plus/icons-vue'],
       alias: {
         '@': path.resolve(__dirname, 'src'),
         '#': path.resolve(__dirname, 'types'),

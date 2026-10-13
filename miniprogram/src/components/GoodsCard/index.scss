@@ -146,3 +146,13 @@
   font-weight: 300;
   line-height: 1;
 }
+
+// 小程序沿用 375px 设计稿的 16px 圆角，并为加购按钮预留价格空间。
+.goods-card--weapp {
+  border-radius: 32rpx;
+
+  .goods-card__thumb:empty { display: block; }
+  .goods-card__tag { max-width: 100%; box-sizing: border-box; }
+  .goods-card__down { flex-wrap: wrap; gap: 6rpx 8rpx; min-height: 56rpx; padding-right: 64rpx; }
+  .goods-card__origin-price { margin-left: 0; }
+}

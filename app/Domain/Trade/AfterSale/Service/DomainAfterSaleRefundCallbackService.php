@@ -1,102 +1,86 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace App\Domain\Trade\AfterSale\Service;
 
-use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
-use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
-use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
-use Carbon\Carbon;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
+use App\Domain\Trade\Order\Service\DomainOrderService;
+use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
 
 class DomainAfterSaleRefundCallbackService
 {
     public function __construct(
-        private readonly OrderPaymentRefundRepository $paymentRefundRepository,
-        private readonly AfterSaleRepository $afterSaleRepository,
-        private readonly EventDispatcherInterface $dispatcher,
+        private readonly OrderPaymentRefundRepository $refunds,
+        private readonly OrderPaymentRepository $payments,
+        private readonly DomainOrderService $orders,
+        private readonly DomainAfterSaleService $afterSales,
+        private readonly DomainRefundSettlementService $settlement,
+        private readonly TradeOutboxInterface $outbox,
     ) {}
 
+    /** 应用层事务覆盖本方法、账目与 outbox；失败不会留下提前写入的 success。 */
     public function handleWechatRefundCallback(array $payload): void
     {
-        $refundNo = (string) ($payload['out_refund_no'] ?? '');
-        if ($refundNo === '') {
-            throw new \RuntimeException('退款回调缺少退款单号');
-        }
-
-        $refund = $this->paymentRefundRepository->findByRefundNo($refundNo);
-        if ($refund === null) {
-            throw new \RuntimeException('退款记录不存在');
-        }
-
-        if ((string) $refund->status === 'success') {
-            return;
-        }
-
-        $refundStatus = mb_strtoupper((string) ($payload['refund_status'] ?? ''));
-        if ($refundStatus !== 'SUCCESS') {
-            $this->paymentRefundRepository->updateByRefundNo($refundNo, [
-                'status' => 'failed',
-                'third_party_refund_no' => $payload['refund_id'] ?? null,
-                'third_party_response' => $payload,
-                'remark' => (string) ($payload['refund_status'] ?? '退款失败'),
-            ]);
-            $this->markAfterSaleRefundFailed($refund->extra_data ?? []);
-
-            return;
-        }
-
-        $refundAmount = (int) (($payload['amount']['refund'] ?? null) ?: $refund->refund_amount);
-        $this->paymentRefundRepository->updateByRefundNo($refundNo, [
-            'status' => 'success',
-            'third_party_refund_no' => $payload['refund_id'] ?? null,
-            'third_party_response' => $payload,
-            'processed_at' => (string) (($payload['success_time'] ?? null) ?: Carbon::now()->toDateTimeString()),
-        ]);
-
-        $extraData = \is_array($refund->extra_data) ? $refund->extra_data : [];
-        $this->dispatcher->dispatch(new AfterSaleRefundSucceeded(
-            (int) ($extraData['after_sale_id'] ?? 0),
-            (int) $refund->order_id,
-            (int) $refund->member_id,
-            $refundAmount,
-            (int) $refund->payment_id,
-            (string) $refund->payment_no,
-            'wechat',
-            $refundNo,
-            (int) ($refund->operator_id ?? 0),
-            (string) ($refund->operator_name ?? 'system'),
-        ));
+        $this->complete($payload, 'wechat');
     }
 
-    private function markAfterSaleRefundFailed(mixed $extraData): void
+    public function complete(array $payload, string $method): void
     {
-        if (! \is_array($extraData)) {
+        $refundNo = (string) ($payload['out_refund_no'] ?? '');
+        $snapshot = $this->refunds->findByRefundNo($refundNo);
+        if ($snapshot === null) {
+            throw new \RuntimeException('退款记录不存在');
+        }
+        $this->orders->getLockedEntity($snapshot->order_no);
+        $payment = $this->payments->findPaidByOrderIdForUpdate((int) $snapshot->order_id);
+        $refund = $this->refunds->findForUpdate($refundNo);
+        if ($refund === null || $payment === null || $payment->payment_method !== $method) {
+            throw new \DomainException('退款支付记录不匹配');
+        }
+        if (($payload['out_trade_no'] ?? '') !== $refund->order_no
+            || ($payload['amount']['refund'] ?? null) !== (int) $refund->refund_amount
+            || ($payload['amount']['total'] ?? null) !== (int) $payment->paid_amount) {
+            throw new \DomainException('退款通知订单或金额不匹配');
+        }
+        if ($refund->status === 'success') {
             return;
         }
-
-        $afterSaleId = (int) ($extraData['after_sale_id'] ?? 0);
-        if ($afterSaleId <= 0) {
-            return;
+        $status = strtoupper((string) ($payload['refund_status'] ?? $payload['status'] ?? ''));
+        if ($status === 'SUCCESS') {
+            $this->settlement->settle($refund, $method);
+            $this->refunds->updateByRefundNo($refundNo, [
+                'status' => 'success', 'third_party_refund_no' => $payload['refund_id'] ?? null,
+                'third_party_response' => $payload, 'processed_at' => date('Y-m-d H:i:s'),
+            ]);
+            // 晚到支付从未发放购买奖励，因此不发送售后奖励回退事件。
+            if ((int) ($refund->extra_data['after_sale_id'] ?? 0) === 0) {
+                return;
+            }
+            $this->outbox->append('refunded:' . $refundNo, 'refund.succeeded', [
+                'after_sale_id' => (int) $refund->extra_data['after_sale_id'], 'order_id' => (int) $refund->order_id,
+                'member_id' => (int) $refund->member_id, 'refund_amount' => (int) $refund->refund_amount,
+                'payment_id' => (int) $refund->payment_id, 'payment_no' => $refund->payment_no,
+                'payment_method' => $method, 'refund_no' => $refundNo,
+                'operator_id' => (int) $refund->operator_id, 'operator_name' => (string) $refund->operator_name,
+            ]);
+        } elseif ($status === 'CLOSED') {
+            $this->refunds->updateByRefundNo($refundNo, ['status' => 'failed', 'third_party_response' => $payload]);
+            if ((int) ($refund->extra_data['after_sale_id'] ?? 0) === 0) {
+                return;
+            }
+            $afterSale = $this->afterSales->getLockedEntity((int) $refund->extra_data['after_sale_id']);
+            if ($afterSale->getStatus() === 'refunding') {
+                $afterSale->markRefundFailed();
+                $this->afterSales->saveEntity($afterSale);
+            }
+        } elseif ($status === 'ABNORMAL') {
+            $this->refunds->updateByRefundNo($refundNo, ['status' => 'unknown', 'third_party_response' => $payload]);
+        } elseif ($status === 'PROCESSING') {
+            $this->refunds->updateByRefundNo($refundNo, ['status' => 'refunding', 'third_party_response' => $payload]);
+        } else {
+            throw new \DomainException('未知退款状态，保留待确认');
         }
-
-        $afterSaleModel = $this->afterSaleRepository->findById($afterSaleId);
-        if ($afterSaleModel === null) {
-            return;
-        }
-
-        $entity = AfterSaleMapper::fromModel($afterSaleModel);
-        $entity->markRefundFailed();
-        $this->afterSaleRepository->updateFromEntity($entity);
     }
 }

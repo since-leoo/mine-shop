@@ -32,7 +32,6 @@ class AddAuthorFieldsToBusinessTables extends Migration
         'shipping_templates',
         'group_buys',
         'seckill_activities',
-        'reviews',
         'member_levels',
         'member_tags',
     ];

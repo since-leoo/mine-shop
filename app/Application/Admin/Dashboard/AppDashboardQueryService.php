@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Application\Admin\Dashboard;
 
-use App\Domain\Infrastructure\Statistics\Service\DomainStatisticsService;
+use App\Domain\Infrastructure\Plugin\Contract\AnalyticsQueryInterface;
 use Carbon\Carbon;
 
 /**
@@ -21,7 +21,7 @@ use Carbon\Carbon;
 final class AppDashboardQueryService
 {
     public function __construct(
-        private readonly DomainStatisticsService $statisticsService,
+        private readonly AnalyticsQueryInterface $statisticsService,
     ) {}
 
     /**

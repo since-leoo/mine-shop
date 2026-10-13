@@ -28,6 +28,7 @@ final class ProductListRequest extends BaseRequest
             'is_hot' => ['nullable', 'boolean'],
             'is_new' => ['nullable', 'boolean'],
             'status' => ['nullable', 'string', 'max:32'],
+            'sort' => ['nullable', 'string', 'in:price_asc,price_desc'],
             'page' => ['nullable', 'integer', 'min:1'],
             'page_size' => ['nullable', 'integer', 'min:1', 'max:200'],
         ];

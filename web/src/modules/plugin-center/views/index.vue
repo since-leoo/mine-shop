@@ -9,21 +9,27 @@ const route = useRoute()
 const router = useRouter()
 const pluginStore = usePluginStore()
 const plugins = computed(() => pluginStore.getPluginCenterList())
-const selectedPluginKey = ref(String(route.params.pluginName ?? ''))
-const pluginKey = computed(() => selectedPluginKey.value)
-const current = computed(() => plugins.value.find(item => item.key === selectedPluginKey.value))
-const isDetail = computed(() => Boolean(selectedPluginKey.value) && Boolean(current.value))
+// pluginName 是可重复路径参数，直达和刷新时由 Router 解析为数组。
+const pluginKey = computed(() => {
+  const name = route.params.pluginName
+  return Array.isArray(name) ? name.join('/') : String(name ?? '')
+})
+const current = computed(() => plugins.value.find(item => item.key === pluginKey.value))
+const isDetail = computed(() => Boolean(pluginKey.value) && Boolean(current.value))
 const isSettings = computed(() => route.query.tab === 'settings')
 const settingsPlugin = ref<NonNullable<typeof current.value>>()
 const settingsVisible = ref(false)
 
-function openPlugin(key: string) { selectedPluginKey.value = key }
+function openPlugin(key: string) {
+  router.push({ name: 'MinePluginCenterRoute', params: { pluginName: key.split('/') } })
+}
 function goBack() {
   if (pluginKey.value === 'since/system-message' && route.query.template) {
-    selectedPluginKey.value = 'since/system-message'
+    router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: ['since', 'system-message'] } })
     return
   }
-  router.replace({ name: 'MinePluginCenterRoute' })
+  // 命名路由默认继承当前参数，返回总览时需显式清空插件路径。
+  router.replace({ name: 'MinePluginCenterRoute', params: { pluginName: [] } })
 }
 function openSettings(item: NonNullable<typeof current.value>) {
   const settings = item.center?.settings

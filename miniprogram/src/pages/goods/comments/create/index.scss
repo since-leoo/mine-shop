@@ -296,3 +296,9 @@
   .submit-btn { height: 44PX; border-radius: 24PX; }
   .submit-btn__text { font-size: 15PX; }
 }
+
+.create-comment-page--weapp {
+  // 提交栏包含安全区，页面占位也必须包含，保证最后一行能完整滚动出来。
+  .submit-placeholder { height: calc(120rpx + env(safe-area-inset-bottom)); }
+  .upload-area__add { box-sizing: border-box; }
+}

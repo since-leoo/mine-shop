@@ -1,4 +1,4 @@
-import { View, Text, Image, Swiper, SwiperItem, RootPortal } from '@tarojs/components';
+import { View, Text, Image, Swiper, SwiperItem, RootPortal, ScrollView, Button } from '@tarojs/components';
 import Taro, { useShareAppMessage } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchGood, fetchSeckillGood } from '../../../services/good/fetchGood';
@@ -15,7 +15,7 @@ import defaultAvatar from '../../../assets/usercenter/avatar-default.svg';
 import homeIcon from '../../../assets/detail-bottom/home-line.svg';
 import cartIcon from '../../../assets/detail-bottom/cart-line.svg';
 import PageNav from '../../../components/page-nav';
-import { isH5, supportsRootPortal } from '../../../common/platform';
+import { isH5, isMiniProgram, supportsRootPortal } from '../../../common/platform';
 import './index.scss';
 
 interface SkuItem {
@@ -534,11 +534,7 @@ export default function GoodsDetails() {
       return;
     }
     trackEvent('goods_share_click', { spuId, orderType: orderType || 'normal', activityId: activityId || groupBuyId || '' });
-    Taro.showShareMenu({ withShareTicket: true })
-      .catch(() => {})
-      .finally(() => {
-        Taro.showToast({ title: '请点击右上角进行分享', icon: 'none' });
-      });
+    if (!isMiniProgram()) Taro.showShareMenu({ withShareTicket: true }).catch(() => {});
   }, [spuId, orderType, activityId, groupBuyId]);
 
   const handleGroupJoinClick = useCallback((team: GroupTeam) => {
@@ -587,8 +583,41 @@ export default function GoodsDetails() {
     path: `/pages/goods/details/index?spuId=${spuId}`,
     imageUrl: primaryImage || images[0] || '',
   }));
+  const specPopupBody = (
+    <>
+      <View className="spec-popup__header">
+        <Image className="spec-popup__img" src={specImg || primaryImage} mode="aspectFill" />
+        <View className="spec-popup__header-info">
+          <Text className="spec-popup__price">¥{formatPrice(groupBuyIntentRef.current?.buyOriginalPrice ? originPriceCent : selectSkuSellsPrice || minSalePrice)}</Text>
+          {selectedAttrStr ? <Text className="spec-popup__selected-specs">{selectedAttrStr}</Text> : <Text className="spec-popup__hint">请选择规格</Text>}
+        </View>
+      </View>
+      <View className="spec-popup__specs">
+        {specList.map((spec: any) => (
+          <View key={spec.specId} className="spec-popup__spec-group">
+            <Text className="spec-popup__spec-title">{spec.title}</Text>
+            <View className="spec-popup__spec-values">
+              {(spec.specValueList || []).map((val: any) => (
+                <View key={val.specValueId} className={`spec-popup__spec-tag ${selectedSku[String(spec.specId)] === String(val.specValueId) ? 'spec-popup__spec-tag--active' : ''}`} onClick={() => handleSpecSelect(spec.specId, val.specValueId)}>
+                  <Text className="spec-popup__spec-tag-text">{val.specValue}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </View>
+      <View className="spec-popup__quantity">
+        <Text className="spec-popup__quantity-label">购买数量</Text>
+        <View className="spec-popup__stepper">
+          <View className="spec-popup__stepper-btn" onClick={() => handleBuyNumChange(-1)}><Text className="spec-popup__stepper-btn-text">-</Text></View>
+          <Text className="spec-popup__stepper-num">{buyNum}</Text>
+          <View className="spec-popup__stepper-btn" onClick={() => handleBuyNumChange(1)}><Text className="spec-popup__stepper-btn-text">+</Text></View>
+        </View>
+      </View>
+    </>
+  );
   if (loading || loadError) {
-    return <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : ''}`}>
+    return <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : isMiniProgram() ? 'goods-detail-page--weapp' : ''}`}>
       <PageNav title="商品详情" />
       <View className="goods-detail-state">
         <Text>{loading ? '正在加载商品…' : loadError}</Text>
@@ -597,7 +626,7 @@ export default function GoodsDetails() {
     </View>;
   }
   return (
-    <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : ''} ${isGroupBuyMode ? 'goods-detail-page--group' : ''} ${isSeckillMode ? 'goods-detail-page--seckill' : ''}`}>
+    <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : isMiniProgram() ? 'goods-detail-page--weapp' : ''} ${isGroupBuyMode ? 'goods-detail-page--group' : ''} ${isSeckillMode ? 'goods-detail-page--seckill' : ''}`}>
       <PageNav title="商品详情" />
       {images.length === 0 && <View className="goods-swiper goods-swiper--empty"><Text>暂无商品图片</Text></View>}
       {images.length > 0 && (
@@ -644,10 +673,17 @@ export default function GoodsDetails() {
             <View className="goods-info__title-row">
               <Text className="goods-info__title">{mainTitle}</Text>
               {!isGroupBuyMode && (
-                <View className="goods-info__share" onClick={handleShareClick}>
-                  <Text className="goods-info__share-icon">↗</Text>
-                  <Text>分享</Text>
-                </View>
+                isMiniProgram() ? (
+                  <Button className="goods-info__share" openType="share" onClick={handleShareClick}>
+                    <Text className="goods-info__share-icon">↗</Text>
+                    <Text>分享</Text>
+                  </Button>
+                ) : (
+                  <View className="goods-info__share" onClick={handleShareClick}>
+                    <Text className="goods-info__share-icon">↗</Text>
+                    <Text>分享</Text>
+                  </View>
+                )
               )}
             </View>
             {subTitle && <Text className="goods-info__intro">{subTitle}</Text>}
@@ -868,7 +904,7 @@ export default function GoodsDetails() {
 
       {isGroupBuyMode && (useRootPortal ? (
         <RootPortal>
-          <View className={`goods-group-bottom ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
+          <View className={`goods-group-bottom ${isMiniProgram() ? 'goods-group-bottom--weapp' : ''} ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
             <View className="goods-group-bottom__origin" onClick={() => handleGroupBottomClick('origin')}>
               <Text className="goods-group-bottom__origin-price">¥{formatPrice(originPriceCent)}</Text>
               <Text className="goods-group-bottom__origin-text">原价购买</Text>
@@ -880,7 +916,7 @@ export default function GoodsDetails() {
           </View>
         </RootPortal>
       ) : (
-        <View className={`goods-group-bottom ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
+        <View className={`goods-group-bottom ${isMiniProgram() ? 'goods-group-bottom--weapp' : ''} ${showSpecPopup ? 'goods-group-bottom--hidden' : ''}`}>
           <View className="goods-group-bottom__origin" onClick={() => handleGroupBottomClick('origin')}>
             <Text className="goods-group-bottom__origin-price">¥{formatPrice(originPriceCent)}</Text>
             <Text className="goods-group-bottom__origin-text">原价购买</Text>
@@ -893,42 +929,18 @@ export default function GoodsDetails() {
       ))}
 
       {showSpecPopup && (
-        <View className={`spec-mask ${specPopupVisible ? 'spec-mask--show' : ''}`} onClick={closeSpecPopup}>
+        <View className={`spec-mask ${specPopupVisible ? 'spec-mask--show' : ''}`} catchMove={isMiniProgram()} onClick={closeSpecPopup}>
           <View className={`spec-popup-panel ${specPopupVisible ? 'spec-popup-panel--show' : ''}`} onClick={(e) => e.stopPropagation()}>
             <View className="spec-popup">
               <View className="spec-popup__topbar">
                 <Text className="spec-popup__topbar-title">选择规格</Text>
                 <Text className="spec-popup__topbar-close" onClick={closeSpecPopup}>×</Text>
               </View>
-              <View className="spec-popup__header">
-                <Image className="spec-popup__img" src={specImg || primaryImage} mode="aspectFill" />
-                <View className="spec-popup__header-info">
-                  <Text className="spec-popup__price">¥{formatPrice(groupBuyIntentRef.current?.buyOriginalPrice ? originPriceCent : selectSkuSellsPrice || minSalePrice)}</Text>
-                  {selectedAttrStr ? <Text className="spec-popup__selected-specs">{selectedAttrStr}</Text> : <Text className="spec-popup__hint">请选择规格</Text>}
-                </View>
-              </View>
-              <View className="spec-popup__specs">
-                {specList.map((spec: any) => (
-                  <View key={spec.specId} className="spec-popup__spec-group">
-                    <Text className="spec-popup__spec-title">{spec.title}</Text>
-                    <View className="spec-popup__spec-values">
-                      {(spec.specValueList || []).map((val: any) => (
-                        <View key={val.specValueId} className={`spec-popup__spec-tag ${selectedSku[String(spec.specId)] === String(val.specValueId) ? 'spec-popup__spec-tag--active' : ''}`} onClick={() => handleSpecSelect(spec.specId, val.specValueId)}>
-                          <Text className="spec-popup__spec-tag-text">{val.specValue}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </View>
-                ))}
-              </View>
-              <View className="spec-popup__quantity">
-                <Text className="spec-popup__quantity-label">购买数量</Text>
-                <View className="spec-popup__stepper">
-                  <View className="spec-popup__stepper-btn" onClick={() => handleBuyNumChange(-1)}><Text className="spec-popup__stepper-btn-text">-</Text></View>
-                  <Text className="spec-popup__stepper-num">{buyNum}</Text>
-                  <View className="spec-popup__stepper-btn" onClick={() => handleBuyNumChange(1)}><Text className="spec-popup__stepper-btn-text">+</Text></View>
-                </View>
-              </View>
+              {isMiniProgram() ? (
+                <ScrollView className="spec-popup__body" scrollY>
+                  {specPopupBody}
+                </ScrollView>
+              ) : specPopupBody}
               <View className="spec-popup__footer">
                 <View className={`spec-popup__confirm-btn ${purchasePending ? 'spec-popup__confirm-btn--disabled' : ''}`} onClick={handleSpecConfirm}>
                   <Text className="spec-popup__confirm-text">{purchasePending ? '处理中…' : buyType === 1 ? (isSeckillMode ? '立即抢购' : '立即购买') : '加入购物车'}</Text>

@@ -18,7 +18,7 @@ class CreateMallPaymentsTable extends Migration
     public function up(): void
     {
         Schema::create('order_payments', static function (Blueprint $table) {
-            $table->id();
+            $table->id()->comment('支付记录主键');
             $table->string('payment_no', 50)->unique()->comment('支付单号');
             $table->unsignedBigInteger('order_id')->comment('订单ID');
             $table->string('order_no', 50)->comment('订单号');
@@ -28,7 +28,7 @@ class CreateMallPaymentsTable extends Migration
             $table->unsignedInteger('paid_amount')->default(0)->comment('实付金额(分)');
             $table->unsignedInteger('refund_amount')->default(0)->comment('已退款金额(分)');
             $table->string('currency', 10)->default('CNY')->comment('货币类型');
-            $table->string('status', 30)->default('pending')->comment('支付状态');
+            $table->string('status', 30)->default('pending')->comment('支付状态：pending待支付、paid已支付、failed失败、cancelled已取消、refunded已全额退款');
             $table->string('third_party_no', 100)->nullable()->comment('第三方支付单号');
             $table->json('third_party_response')->nullable()->comment('第三方响应数据');
             $table->json('callback_data')->nullable()->comment('回调数据');
@@ -36,7 +36,8 @@ class CreateMallPaymentsTable extends Migration
             $table->timestamp('expired_at')->nullable()->comment('过期时间');
             $table->string('remark', 500)->nullable()->comment('备注');
             $table->json('extra_data')->nullable()->comment('额外数据');
-            $table->timestamps();
+            $table->timestamp('created_at')->nullable()->comment('记录创建时间');
+            $table->timestamp('updated_at')->nullable()->comment('记录更新时间');
 
             $table->index('order_id');
             $table->index('member_id');

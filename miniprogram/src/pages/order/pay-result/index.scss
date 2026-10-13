@@ -6,8 +6,8 @@
   background: $warm-bg-cream;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 0 32rpx 48rpx;
+  align-items: stretch;
+  padding: 0 0 calc(80rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
   overflow: hidden;
 
@@ -16,25 +16,26 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    padding-top: 160rpx;
   }
 
   &__icon-wrap {
-    margin-top: 160rpx;
-    width: 120rpx;
-    height: 120rpx;
+    margin-top: 0;
+    width: 160rpx;
+    height: 160rpx;
     border-radius: 50%;
     background: $warm-gradient-mint;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 60rpx;
+    margin-bottom: 0;
     box-shadow: 0 8rpx 24rpx rgba(126, 184, 162, 0.3);
   }
 
   &__icon {
-    width: 60rpx;
-    height: 60rpx;
-    font-size: 52rpx;
+    width: 80rpx;
+    height: 80rpx;
+    font-size: 80rpx;
     line-height: 1;
     color: $warm-text-white;
     font-weight: bold;
@@ -44,43 +45,45 @@
   }
 
   &__title {
-    font-size: $warm-font-xl;
-    font-weight: bold;
+    font-size: 44rpx;
+    font-weight: 800;
     color: $warm-text-primary;
-    margin-bottom: 16rpx;
+    margin-top: 40rpx;
+    margin-bottom: 0;
   }
 
   &__amount {
     display: flex;
-    align-items: center;
+    align-items: baseline;
+    gap: 8rpx;
     margin-top: 16rpx;
-    margin-bottom: 80rpx;
+    margin-bottom: 0;
   }
 
   &__amount-label {
     font-size: $warm-font-md;
-    color: $warm-text-secondary;
+    color: $warm-text-muted;
   }
 
   &__price {
-    font-size: $warm-font-lg;
-    color: $warm-text-primary;
+    font-size: 40rpx;
+    color: $warm-primary;
     font-weight: bold;
   }
 
   &__buttons {
     display: flex;
     gap: 32rpx;
-    padding: 0 $warm-spacing-lg;
+    padding: 80rpx 48rpx 0;
     width: 100%;
     box-sizing: border-box;
-    margin-bottom: 60rpx;
+    margin-bottom: 0;
   }
 
   &__btn {
     flex: 1;
-    height: 80rpx;
-    border-radius: 44rpx;
+    height: 88rpx;
+    border-radius: 48rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -117,6 +120,8 @@
 
   &__recommend-header {
     width: 100%;
+    padding: 60rpx 32rpx 16rpx;
+    box-sizing: border-box;
   }
 
   &__recommend-title-row {
@@ -127,14 +132,14 @@
   }
 
   &__recommend-bar {
-    width: 6rpx;
-    height: 28rpx;
+    width: 8rpx;
+    height: 36rpx;
     border-radius: 4rpx;
     background: $warm-primary;
   }
 
   &__recommend-title {
-    font-size: $warm-font-md;
+    font-size: 30rpx;
     color: $warm-text-primary;
     font-weight: 700;
   }
@@ -142,26 +147,28 @@
   &__recommend-grid {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: $warm-spacing-sm;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20rpx;
+    padding: 0 32rpx 24rpx;
+    box-sizing: border-box;
   }
 
   &__goods-card {
     background: $warm-bg-white;
-    border-radius: 32rpx;
+    border-radius: 28rpx;
     overflow: hidden;
     box-shadow: $warm-shadow-sm;
   }
 
   &__goods-img {
     width: 100%;
-    height: 220rpx;
+    height: 260rpx;
     display: block;
     background: $warm-bg-warm;
   }
 
   &__goods-info {
-    padding: $warm-spacing-sm;
+    padding: 20rpx 24rpx 24rpx;
   }
 
   &__goods-name {
@@ -169,24 +176,25 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
-    min-height: 64rpx;
-    line-height: 1.35;
-    font-size: $warm-font-sm;
+    min-height: 72rpx;
+    line-height: 1.4;
+    font-size: 26rpx;
     color: $warm-text-primary;
     font-weight: 600;
-    margin-bottom: 10rpx;
+    margin-bottom: 0;
   }
 
   &__goods-price-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 8rpx;
+    margin-top: 16rpx;
   }
 
   &__goods-price {
     color: $warm-primary;
-    font-weight: 700;
+    font-size: 36rpx;
+    font-weight: 800;
   }
 
   &__goods-plus {

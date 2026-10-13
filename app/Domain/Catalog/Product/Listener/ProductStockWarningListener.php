@@ -15,14 +15,15 @@ namespace App\Domain\Catalog\Product\Listener;
 use App\Domain\Catalog\Product\Event\ProductStockWarningEvent;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use Hyperf\Event\Contract\ListenerInterface;
-use Plugin\SystemMessage\Contract\SystemMessageInterface as SystemMessage;
+use App\Domain\Infrastructure\Plugin\Contract\SystemNotificationInterface;
 use Psr\Log\LoggerInterface;
 
 final class ProductStockWarningListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainMallSettingService $mallSettingService,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly SystemNotificationInterface $notifications,
     ) {}
 
     public function listen(): array
@@ -46,7 +47,7 @@ final class ProductStockWarningListener implements ListenerInterface
 
         $integration = $this->mallSettingService->integration();
         if ($integration->isChannelEnabled('system')) {
-            SystemMessage::sendToAll(
+            $this->notifications->broadcast(
                 \sprintf('SKU %d 库存预警', $event->getSkuId()),
                 \sprintf(
                     'SKU %d 当前库存：%d，已达到预警阈值 %d，请及时补货。',

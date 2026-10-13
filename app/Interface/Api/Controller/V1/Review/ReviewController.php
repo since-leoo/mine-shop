@@ -12,12 +12,11 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Controller\V1\Review;
 
-use App\Application\Api\Review\AppApiReviewCommandService;
-use App\Application\Api\Review\AppApiReviewQueryService;
+use App\Domain\Infrastructure\Plugin\Contract\ProductReviewCommandInterface;
+use App\Domain\Infrastructure\Plugin\Contract\ProductReviewQueryInterface;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\Review\CreateReviewRequest;
-use App\Interface\Api\Transformer\ReviewTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\CurrentMember;
 use App\Interface\Common\Result;
@@ -32,9 +31,8 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 final class ReviewController extends AbstractController
 {
     public function __construct(
-        private readonly AppApiReviewCommandService $commandService,
-        private readonly AppApiReviewQueryService $queryService,
-        private readonly ReviewTransformer $transformer,
+        private readonly ProductReviewCommandInterface $commandService,
+        private readonly ProductReviewQueryInterface $queryService,
         private readonly CurrentMember $currentMember,
         private readonly RequestInterface $request,
     ) {}
@@ -51,7 +49,7 @@ final class ReviewController extends AbstractController
             $request->toDto()
         );
 
-        return $this->success(['id' => $review->id], '评价提交成功');
+        return $this->success(['id' => $review], '评价提交成功');
     }
 
     /**
@@ -73,7 +71,7 @@ final class ReviewController extends AbstractController
 
         $result = $this->queryService->listByProduct($id, $filters, $page, $pageSize);
 
-        return $this->success($this->transformer->transformListResult($result));
+        return $this->success($result);
     }
 
     /**
@@ -96,6 +94,6 @@ final class ReviewController extends AbstractController
         $limit = (int) $this->request->query('limit', 3);
         $summary = $this->queryService->getProductSummary($id, $limit);
 
-        return $this->success($this->transformer->transformSummaryResult($summary));
+        return $this->success($summary);
     }
 }

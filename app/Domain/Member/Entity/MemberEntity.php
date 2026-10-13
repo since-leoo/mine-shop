@@ -283,6 +283,19 @@ final class MemberEntity
         return $this;
     }
 
+    public function loginBySms(?string $ip = null): self
+    {
+        if ($this->status !== 'active') {
+            throw new \DomainException('会员账号已停用');
+        }
+        $this->setLastLoginAt(Carbon::now());
+        if ($ip !== null && trim($ip) !== '') {
+            $this->setLastLoginIp($ip);
+        }
+        $this->setSource($this->source ?? 'h5');
+        return $this;
+    }
+
     public function getBirthday(): ?Carbon
     {
         return $this->birthday;

@@ -33,7 +33,13 @@ final class MemberWalletRepository
             ->lockForUpdate()
             ->first();
 
-        $info?->fill($wallet->toArray())->save();
+        if ($info === null) {
+            throw new \RuntimeException('钱包不存在');
+        }
+        if ($wallet->getChangeBalance() !== 0 && (int) $info->balance !== $wallet->getBeforeBalance()) {
+            throw new \DomainException('钱包余额已变化，请重试');
+        }
+        $info->fill($wallet->toArray())->save();
     }
 
     /**
@@ -65,5 +71,10 @@ final class MemberWalletRepository
     public function updateOrCreate(array $condition, array $data): Model
     {
         return $this->model::query()->updateOrCreate($condition, $data);
+    }
+
+    public function findByMemberIdAndTypeForUpdate(int $memberId, string $type): ?MemberWallet
+    {
+        return $this->model->newQuery()->where('member_id', $memberId)->where('type', $type)->lockForUpdate()->first();
     }
 }

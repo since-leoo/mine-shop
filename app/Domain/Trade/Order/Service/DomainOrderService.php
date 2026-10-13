@@ -27,6 +27,13 @@ use App\Infrastructure\Model\Order\Order;
  */
 final class DomainOrderService extends IService
 {
+    public function getCreatedEventEntity(string $orderNo, bool $fromCart): \App\Domain\Trade\Order\Entity\OrderEntity
+    {
+        $order = $this->getEntity(orderNo: $orderNo);
+        $order->setExtra('from_cart', $fromCart);
+        return $order;
+    }
+
     public function __construct(
         public readonly OrderRepository $repository,
         public readonly DomainMallSettingService $mallSettingService,
@@ -95,5 +102,15 @@ final class DomainOrderService extends IService
     public function countByMemberAndStatuses(int $memberId): array
     {
         return $this->repository->countByMemberAndStatuses($memberId);
+    }
+
+    /** 必须在应用事务中调用，状态判断基于锁内重新读取的数据。 */
+    public function getLockedEntity(string $orderNo): OrderEntity
+    {
+        $model = $this->repository->findByOrderNoForUpdate($orderNo);
+        if ($model === null) {
+            throw new \RuntimeException('订单不存在');
+        }
+        return OrderMapper::fromModel($model);
     }
 }

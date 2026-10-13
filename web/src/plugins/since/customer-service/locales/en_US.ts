@@ -1,9 +1,2 @@
-export default {
-  customerService: {
-    title: 'Customer Service',
-    subtitle: 'Manage queue, conversations, and customer requests',
-    queue: 'In queue',
-    active: 'Active',
-    closed: 'Closed',
-  },
-}
+export * from '../../../../../../plugins/customer-service/web/locales/en_US'
+export { default } from '../../../../../../plugins/customer-service/web/locales/en_US'

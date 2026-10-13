@@ -13,10 +13,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Model\Order;
 
 use App\Infrastructure\Model\Concerns\LoadsRelations;
-use App\Infrastructure\Model\Review\Review;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Relations\BelongsTo;
-use Hyperf\Database\Model\Relations\HasOne;
 use Hyperf\DbConnection\Model\Model;
 
 /**
@@ -70,8 +68,4 @@ class OrderItem extends Model
         return $this->belongsTo(Order::class, 'order_id', 'id');
     }
 
-    public function review(): HasOne
-    {
-        return $this->hasOne(Review::class, 'order_item_id', 'id');
-    }
 }

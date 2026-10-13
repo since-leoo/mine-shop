@@ -257,6 +257,10 @@
   padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
 }
 
+.coupon-detail-page--weapp .coupon-detail-page__footer {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
+}
+
 .coupon-detail-page { padding-bottom: calc(220rpx + env(safe-area-inset-bottom)); }
 .coupon-detail-page__btn--disabled { background: #d1beb5; box-shadow: none; }
 .coupon-detail-page__ticket-title, .coupon-detail-page__ticket-value, .coupon-detail-page__panel-value { overflow-wrap: anywhere; }

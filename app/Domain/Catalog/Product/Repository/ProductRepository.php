@@ -185,6 +185,11 @@ final class ProductRepository extends IRepository
      */
     private function buildApiListQuery(array $params): Builder
     {
-        return $this->perQuery($this->getQuery(), $params)->select(self::API_LIST_COLUMNS);
+        $query = $this->perQuery($this->getQuery(), $params)->select(self::API_LIST_COLUMNS);
+        if (\in_array($params['sort'] ?? null, ['price_asc', 'price_desc'], true)) {
+            // 同价商品按主键稳定排序，避免翻页时重复或遗漏。
+            $query->reorder()->orderBy('min_price', $params['sort'] === 'price_asc' ? 'asc' : 'desc')->orderBy('id', 'desc');
+        }
+        return $query;
     }
 }

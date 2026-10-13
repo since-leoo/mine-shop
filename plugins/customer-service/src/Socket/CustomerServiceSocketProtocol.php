@@ -16,12 +16,16 @@ final class CustomerServiceSocketProtocol
 {
     public function decode(string $frame): ?array
     {
+        if (strlen($frame) > 65536) {
+            return null;
+        }
         try {
-            $payload = json_decode($frame, true, 512, \JSON_THROW_ON_ERROR);
+            $payload = json_decode($frame, true, 32, \JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
             return null;
         }
-        return \is_array($payload) && \is_string($payload['event'] ?? null) ? $payload : null;
+        return \is_array($payload) && \is_string($payload['event'] ?? null)
+            && strlen($payload['event']) <= 64 && is_array($payload['payload'] ?? []) ? $payload : null;
     }
 
     public function encode(string $event, array $payload = [], array $context = []): string

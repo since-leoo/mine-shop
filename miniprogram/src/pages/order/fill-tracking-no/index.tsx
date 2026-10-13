@@ -1,2 +1,6 @@
-// 旧入口复用真实退货流程，保持同一份校验和提交逻辑。
-export { default } from '../fill-return-shipping';
+import ReturnShippingForm from '../fill-return-shipping/return-shipping-form';
+
+// 旧入口复用表单组件，避免重复注册退货物流页面。
+export default function FillTrackingNo() {
+  return <ReturnShippingForm />;
+}

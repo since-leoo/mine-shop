@@ -155,6 +155,11 @@ final class MemberWalletEntity
         $this->payPassword = ! empty($payPassword) ? password_hash($payPassword, \PASSWORD_BCRYPT) : '';
     }
 
+    public function restorePayPassword(string $hash): void
+    {
+        $this->payPassword = $hash;
+    }
+
     public function setStatus(string $status): void
     {
         $this->status = $status;
@@ -253,6 +258,20 @@ final class MemberWalletEntity
     /**
      * 执行余额变更（整数运算，单位为分或积分）.
      */
+    /** 原路退回消费款，不计入充值累计。 */
+    public function refundConsumption(int $amount): void
+    {
+        if ($amount <= 0) {
+            throw new \DomainException('退款金额必须大于 0');
+        }
+        $this->changeBalance = $amount;
+        $this->beforeBalance = $this->balance;
+        $this->balance += $amount;
+        $this->afterBalance = $this->balance;
+        $this->totalConsume = max(0, $this->totalConsume - $amount);
+        $this->source = 'refund';
+    }
+
     public function changeBalance(): void
     {
         if ($this->changeBalance === 0) {
@@ -287,11 +306,10 @@ final class MemberWalletEntity
             'member_id' => $this->getMemberId(),
             'type' => $this->getType(),
             'balance' => $this->getBalance(),
-            'change_balance' => $this->getChangeBalance(),
-            'before_balance' => $this->getBeforeBalance(),
-            'after_balance' => $this->getAfterBalance(),
             'frozen_balance' => $this->getFrozenBalance(),
             'total_recharge' => $this->getTotalRecharge(),
+            'total_consume' => $this->totalConsume,
+            'status' => $this->status,
             'pay_password' => $this->getPayPassword(),
         ];
     }

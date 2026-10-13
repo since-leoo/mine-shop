@@ -24,6 +24,7 @@ final class OrderCreatedListener implements ListenerInterface
 {
     public function __construct(
         private readonly DomainApiMemberCartCommandService $cartCommandService,
+        private readonly \App\Domain\Trade\Order\Service\DomainOrderStockService $stockService,
     ) {}
 
     public function listen(): array
@@ -39,6 +40,9 @@ final class OrderCreatedListener implements ListenerInterface
 
         $order = $event->order;
 
+        if ($order->getOrderType() === 'normal') {
+            $this->stockService->notifyLowStock(array_map(static fn (OrderItemEntity $item) => $item->toArray(), $order->getItems()));
+        }
         $this->removeCartItem($order);
     }
 

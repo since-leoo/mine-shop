@@ -30,7 +30,7 @@ final class OrderRepository extends IRepository
     /** 业务方法。 */
     public function handleItems(Collection $items): Collection
     {
-        return $items->map(static fn (Order $order) => $order->loads(['member', 'items.review', 'address', 'packages']));
+        return $items->map(static fn (Order $order) => $order->loads(['member', 'items', 'address', 'packages']));
     }
 
     /** 业务方法。 */
@@ -58,10 +58,10 @@ final class OrderRepository extends IRepository
     {
         /** @var null|Order $order */
         $order = $this->getQuery()
-            ->with(['member', 'items.review', 'address', 'packages'])
+            ->with(['member', 'items', 'address', 'packages'])
             ->find($id);
 
-        return $order?->loads(['member', 'items.review', 'address', 'packages']);
+        return $order?->loads(['member', 'items', 'address', 'packages']);
     }
 
     /** 业务方法。 */
@@ -170,7 +170,7 @@ final class OrderRepository extends IRepository
     ): LengthAwarePaginatorInterface {
         $query = $this->getQuery()
             ->where('member_id', $memberId)
-            ->with(['items.review', 'address']);
+            ->with(['items', 'address']);
 
         $query = $this->applyStatusScope($query, $status);
 
@@ -185,7 +185,7 @@ final class OrderRepository extends IRepository
         return $this->getQuery()
             ->where('member_id', $memberId)
             ->where('order_no', $orderNo)
-            ->with(['items.review', 'address', 'packages', 'logs'])
+            ->with(['items', 'address', 'packages', 'logs'])
             ->first();
     }
 
@@ -208,7 +208,7 @@ final class OrderRepository extends IRepository
         return $this->getQuery()
             ->where('status', OrderStatus::PENDING->value)
             ->where('expire_time', '<=', Carbon::now())
-            ->with('items.review')
+            ->with('items')
             ->limit($limit)
             ->get();
     }
@@ -234,7 +234,7 @@ final class OrderRepository extends IRepository
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
-            ->with(['items.review', 'address'])
+            ->with(['items', 'address'])
             ->when(! empty($params['order_no']), static fn (Builder $q) => $q->where('order_no', 'like', '%' . $params['order_no'] . '%'))
             ->when(! empty($params['pay_no']), static fn (Builder $q) => $q->where('pay_no', 'like', '%' . $params['pay_no'] . '%'))
             ->when(! empty($params['member_id']), static fn (Builder $q) => $q->where('member_id', (int) $params['member_id']))
@@ -286,6 +286,22 @@ final class OrderRepository extends IRepository
             })
             ->with('order')
             ->first();
+    }
+
+    /**
+     * 获取订单信息，用于更新.
+     */
+    public function findByOrderNoForUpdate(string $orderNo): ?Order
+    {
+        return $this->getQuery()->where('order_no', $orderNo)->lockForUpdate()->first();
+    }
+
+    /**
+     * 根据订单号获取订单信息.
+     */
+    public function findExistingByOrderNo(string $orderNo): ?Order
+    {
+        return $this->getQuery()->where('order_no', $orderNo)->first();
     }
 
     private function applyStatusScope(Builder $query, string $status): Builder

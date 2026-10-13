@@ -1,218 +1,126 @@
 <script setup lang="ts">
-import type { AgentStatus, AgentVo, ConversationVo, MessageVo, StatisticsVo } from '../../api/customer-service'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import type { AgentStatus, AgentVo, Category, ConversationVo, FaqVo, MessageVo, StatisticsVo } from '../../api/customer-service'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { ArrowDown, ChatDotRound, Check, CircleClose, Connection, DocumentCopy, MoreFilled, Picture, Promotion, Search, Service, ShoppingBag, SwitchButton } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { acceptConversation, closeConversation, getAgents, getConversations, getCurrentAgent, getMessages, getQueue, getSocketTicket, getStatistics, sendMessage, transferConversation, updateAgentStatus } from '../../api/customer-service'
-
+import hasAuth from '@/utils/permission/hasAuth'
+import { acceptConversation, classifyConversation, closeConversation, getAgents, getCategories, getConversations, getCurrentAgent, getFaqs, getMessages, getQueue, getSocketTicket, getStatistics, receptionLabels, sendMessage, takeoverConversation, transferConversation, updateAgentStatus } from '../../api/customer-service'
+import { categoryPath } from '../configuration/model'
 defineOptions({ name: 'customer-service:workbench' })
-
-const loading = ref(false)
-const messageLoading = ref(false)
-const draft = ref('')
-const search = ref('')
-const activeFilter = ref<'all' | 'queued' | 'active' | 'closed'>('all')
-const transferVisible = ref(false)
-const selected = ref<ConversationVo>()
-const conversations = ref<ConversationVo[]>([])
-const queuedConversations = ref<ConversationVo[]>([])
-const messages = ref<MessageVo[]>([])
-const agents = ref<AgentVo[]>([])
+const loading = ref(false), messageLoading = ref(false), draft = ref(''), search = ref('')
+const activeFilter = ref('all'), transferVisible = ref(false), faqVisible = ref(false), connectionLabel = ref('正在连接')
+const selected = ref<ConversationVo>(), conversations = ref<ConversationVo[]>([]), queuedConversations = ref<ConversationVo[]>([])
+const messages = ref<MessageVo[]>([]), agents = ref<AgentVo[]>([]), categories = ref<Category[]>([]), faqs = ref<FaqVo[]>([])
 const statistics = ref<StatisticsVo>({ queued_count: 0, active_count: 0, today_closed_count: 0 })
-const currentAgent = ref<AgentVo>({ id: 0, name: '当前坐席', status: 'online', active_conversation_count: 0, max_conversations: 5 })
+const currentAgent = ref<AgentVo>({ id: 0, name: '当前坐席', status: 'offline', active_conversation_count: 0, max_conversations: 5 })
 const messageScroller = ref<HTMLElement>()
-let refreshTimer: ReturnType<typeof setInterval> | undefined
-let socket: WebSocket | undefined
-
-function socketUrl(): string {
-  const configured = import.meta.env.VITE_CUSTOMER_SERVICE_SOCKET_URL as string | undefined
-  if (configured) return configured
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.hostname}/customer-service`
+let refreshTimer: ReturnType<typeof setInterval> | undefined, heartbeat: ReturnType<typeof setInterval> | undefined, reconnect: ReturnType<typeof setTimeout> | undefined, authTimeout: ReturnType<typeof setTimeout> | undefined
+let socket: WebSocket | undefined, stopped = false, authenticated = false, socketGeneration = 0, selectionGeneration = 0, cursor = 0, syncingGeneration = -1, refreshing = false, lastPong = 0
+const handoffReasons: Record<string, string> = { requested: '用户主动转人工', agent_takeover: '人工主动接管', ai_disabled: 'AI 接待已关闭', ai_unavailable: 'AI 暂不可用', classification_conflict: '问题匹配到多个类目', category_requires_human: '该类目由人工接待', round_limit: '达到 AI 接待轮次上限', unsupported_message_type: '需要人工查看图片或商品', outside_business_hours: '当前不在营业时间', queue_timeout: '等待超过排队时限', legacy_client: '客户端版本需要人工接待' }
+const statusOptions: Array<{ value: AgentStatus, label: string }> = [{ value: 'online', label: '在线接待' }, { value: 'busy', label: '忙碌中' }, { value: 'away', label: '暂时离开' }, { value: 'offline', label: '离线' }]
+function matchesFilter(item: ConversationVo) {
+  if (activeFilter.value === 'all') return true
+  if (activeFilter.value === 'ai_active') return item.reception_state === 'ai_active'
+  if (activeFilter.value === 'queued' && item.reception_state) return ['human_waiting', 'human_assigned', 'human_deferred'].includes(item.reception_state)
+  return item.status === activeFilter.value
 }
-
-function normalizeSocketMessage(message: any): MessageVo {
-  const content = message.content_json || message.contentJson || {}
-  return {
-    id: Number(message.id || 0),
-    type: message.message_type === 'product' ? 'product_card' : (message.message_type || 'text'),
-    content: content.text || content.answer || content.title || '',
-    sender_type: message.sender_type || 'system',
-    created_at: message.sent_at || new Date().toISOString(),
-    extra: { image_url: content.url, product_id: content.product_id, product_name: content.title, product_image: content.image, product_price: content.price },
-  }
-}
-
-async function connectSocket() {
-  try {
-    const ticketResponse = await getSocketTicket()
-    const ticket = apiData(ticketResponse).ticket
-    socket?.close()
-    socket = new WebSocket(socketUrl())
-    socket.onopen = () => socket?.send(JSON.stringify({ event: 'auth', payload: { ticket } }))
-    socket.onmessage = (event) => {
-      const data = JSON.parse(event.data)
-      if (data.event === 'message:created' && data.conversation_no && selected.value?.no === data.conversation_no) {
-        const message = normalizeSocketMessage(data.payload || {})
-        if (!messages.value.some(item => item.id === message.id && message.id > 0)) messages.value.push(message)
-        void nextTick().then(() => messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight }))
-      }
-      if (data.event === 'conversation:queued' || data.event === 'conversation:assigned') void refreshWorkbench()
-    }
-    socket.onclose = () => { window.setTimeout(() => { if (socket && socket.readyState === WebSocket.CLOSED) void connectSocket() }, 2000) }
-  }
-  catch {}
-}
-
-const statusOptions: Array<{ value: AgentStatus, label: string, description: string }> = [
-  { value: 'online', label: '在线接待', description: '可以接收新的会话' },
-  { value: 'busy', label: '忙碌中', description: '暂停分配新的会话' },
-  { value: 'away', label: '暂时离开', description: '保留已有会话' },
-]
-
-const filteredConversations = computed(() => conversations.value.filter((item) => {
-  const matchingFilter = activeFilter.value === 'all' || item.status === activeFilter.value
-  const keyword = search.value.trim().toLowerCase()
-  return matchingFilter && (!keyword || item.member_name.toLowerCase().includes(keyword) || item.no.toLowerCase().includes(keyword))
-}))
-
-const activeLabel = computed(() => selected.value?.status === 'queued' ? '等待接待' : selected.value?.status === 'closed' ? '会话已关闭' : '接待中')
+const filteredConversations = computed(() => conversations.value.filter(item => matchesFilter(item) && (!search.value.trim() || `${item.member_name}${item.no}`.toLowerCase().includes(search.value.trim().toLowerCase()))))
+const activeLabel = computed(() => selected.value?.reception_state ? receptionLabels[selected.value.reception_state] : selected.value?.status === 'queued' ? '等待接待' : selected.value?.status === 'closed' ? '会话已关闭' : '接待中')
 const activeStatusClass = computed(() => selected.value?.status || 'active')
 const agentLoad = computed(() => `${currentAgent.value.active_conversation_count || 0}/${currentAgent.value.max_conversations || 5}`)
-
+const canReply = computed(() => hasAuth('customer-service:conversation:reply') && selected.value?.reception_state === 'human_active' && selected.value.assigned_agent_id === currentAgent.value.id)
+const canAccept = computed(() => hasAuth('customer-service:conversation:accept') && ['human_waiting', 'human_assigned'].includes(selected.value?.reception_state || '') && (!selected.value?.assigned_agent_id || selected.value.assigned_agent_id === currentAgent.value.id))
+const canTakeover = computed(() => hasAuth('customer-service:conversation:accept') && ['ai_active', 'human_deferred'].includes(selected.value?.reception_state || ''))
 function apiData<T>(response: { data: T }): T { return response.data }
-
-async function loadWorkbench() {
-  loading.value = true
-  try {
-    const [queueResponse, conversationResponse, agentResponse, statisticResponse, currentAgentResponse] = await Promise.all([
-      getQueue(), getConversations({ page: 1, page_size: 100 }), getAgents(), getStatistics(), getCurrentAgent(),
-    ])
-    queuedConversations.value = apiData(queueResponse)
-    conversations.value = apiData(conversationResponse).list || []
-    agents.value = apiData(agentResponse)
-    statistics.value = apiData(statisticResponse)
-    currentAgent.value = apiData(currentAgentResponse)
-    if (!selected.value && conversations.value[0]) await selectConversation(conversations.value[0])
-  }
-  catch {
-    ElMessage.warning('暂时无法加载客服数据，请确认客服服务已安装并启用。')
-  }
-  finally { loading.value = false }
+function errorText(e: any) { return e?.response?.data?.message || e?.response?.data?.msg || e?.message || '操作失败，请重试' }
+function normalizeSocketMessage(message: any): MessageVo {
+  if (message.type) return message
+  const content = message.content_json || message.contentJson || {}
+  return { id: Number(message.id || 0), sequence: Number(message.sequence || 0), client_message_id: message.client_message_id || message.clientMessageId, type: message.message_type === 'product' ? 'product_card' : message.message_type || 'text', content: content.text || content.answer || content.title || '', sender_type: message.sender_type || 'system', created_at: message.sent_at || '', extra: { image_url: content.url, product_id: content.product_id, product_name: content.title, product_image: content.image, product_price: content.price } }
 }
-
-async function selectConversation(conversation: ConversationVo) {
-  selected.value = conversation
-  messageLoading.value = true
-  try {
-    messages.value = apiData(await getMessages(conversation.no))
-    await nextTick()
-    messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight, behavior: 'smooth' })
-  }
-  catch { messages.value = [] }
-  finally { messageLoading.value = false }
+function merge(incoming: MessageVo) {
+  const index = messages.value.findIndex(item => (incoming.id > 0 && item.id === incoming.id) || (incoming.client_message_id && item.client_message_id === incoming.client_message_id))
+  if (index < 0) messages.value.push(incoming)
+  else messages.value[index] = { ...messages.value[index], ...incoming }
+  messages.value.sort((a, b) => (a.sequence || Number.MAX_SAFE_INTEGER) - (b.sequence || Number.MAX_SAFE_INTEGER))
 }
-
-async function accept(conversation: ConversationVo = selected.value!) {
-  if (!conversation) return
+function socketUrl(ticket: { gateway_url?: string, socket_path?: string }) { return import.meta.env.VITE_CUSTOMER_SERVICE_SOCKET_URL || `${(ticket.gateway_url || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}`).replace(/\/$/, '')}${ticket.socket_path || '/customer-service'}` }
+function scheduleReconnect() { if (stopped) return; authenticated = false; clearInterval(heartbeat); clearTimeout(authTimeout); connectionLabel.value = '连接中断，正在重连'; clearTimeout(reconnect); reconnect = setTimeout(() => { void connectSocket() }, 2000) }
+async function connectSocket() {
+  const generation = ++socketGeneration; socket?.close(); authenticated = false; clearInterval(heartbeat); clearTimeout(authTimeout)
   try {
-    if (!['online', 'busy'].includes(currentAgent.value.status)) {
-      await updateAgentStatus(currentAgent.value.id, 'online')
-      currentAgent.value.status = 'online'
+    const socketConfig = apiData(await getSocketTicket()); const ticket = socketConfig.ticket
+    if (stopped || generation !== socketGeneration) return
+    const transport = new WebSocket(socketUrl(socketConfig)); socket = transport
+    const current = () => !stopped && generation === socketGeneration
+    transport.onopen = () => { if (!current()) return; connectionLabel.value = '正在认证'; transport.send(JSON.stringify({ event: 'auth', payload: { ticket } })); authTimeout = setTimeout(() => { if (!authenticated && current()) transport.close() }, 10000) }
+    transport.onmessage = event => {
+      if (!current()) return
+      let data: any; try { data = JSON.parse(event.data) } catch { return }
+      if (data.event === 'authenticated') { if (authenticated) return; authenticated = true; connectionLabel.value = '已连接'; clearTimeout(authTimeout); lastPong = Date.now(); heartbeat = setInterval(() => { if (Date.now() - lastPong > 60000) { transport.close(); return }; if (transport.readyState === WebSocket.OPEN) transport.send(JSON.stringify({ event: 'ping', payload: {} })) }, 25000); void refreshWorkbench(); return }
+      if (data.event === 'pong') { lastPong = Date.now(); return }
+      if (!authenticated) return
+      const no = data.conversation_no || data.payload?.conversation_no
+      if (data.event === 'message:created' && no === selected.value?.no) { merge({ ...normalizeSocketMessage(data.payload || {}), delivery: 'sent' }); void scrollBottom() }
+      if (data.event?.startsWith('conversation:')) void refreshWorkbench()
+      if (data.event === 'system:error') ElMessage.error(data.payload?.message || '客服连接异常')
     }
-    await acceptConversation(conversation.no)
-    conversation.status = 'active'
-    conversation.agent_name = currentAgent.value.name
-    queuedConversations.value = queuedConversations.value.filter(item => item.no !== conversation.no)
-    statistics.value.queued_count = Math.max(0, statistics.value.queued_count - 1)
-    statistics.value.active_count += 1
-    ElMessage.success('已开始接待该用户')
-  }
-  catch { ElMessage.error('接待失败，请稍后重试') }
+    transport.onclose = () => { if (current()) scheduleReconnect() }
+    transport.onerror = () => transport.close()
+  } catch { if (generation === socketGeneration) scheduleReconnect() }
 }
-
-async function changeStatus(status: AgentStatus) {
+async function scrollBottom() { await nextTick(); messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight }) }
+async function syncMessages() {
+  if (!selected.value || syncingGeneration === selectionGeneration) return
+  const no = selected.value.no, generation = selectionGeneration; syncingGeneration = generation
   try {
-    await updateAgentStatus(currentAgent.value.id, status)
-    currentAgent.value.status = status
-    ElMessage.success('接待状态已更新')
-  }
-  catch { ElMessage.error('状态更新失败') }
+    while (!stopped && generation === selectionGeneration) {
+      const page = apiData(await getMessages(no, { after_sequence: cursor, limit: 100 })) || []
+      if (generation !== selectionGeneration) return
+      page.forEach(message => merge({ ...message, delivery: 'sent' }))
+      const next = Math.max(cursor, ...page.map(m => m.sequence || 0))
+      if (next <= cursor || page.length < 100) { cursor = next; break }; cursor = next
+    }
+  } finally { if (syncingGeneration === generation) syncingGeneration = -1 }
 }
-
-async function transfer(agent: AgentVo) {
-  if (!selected.value) return
+async function selectConversation(conversation: ConversationVo) {
+  selected.value = conversation; ++selectionGeneration; cursor = 0; messages.value = []; messageLoading.value = true
+  try { await syncMessages(); await scrollBottom() } catch (e) { ElMessage.error(errorText(e)) } finally { messageLoading.value = false }
+}
+async function loadWorkbench(initial = false) {
+  if (refreshing) return; refreshing = true; if (initial) loading.value = true
   try {
-    await transferConversation(selected.value.no, agent.id)
-    selected.value.agent_name = agent.name
-    transferVisible.value = false
-    ElMessage.success(`已转接给 ${agent.name}`)
-  }
-  catch { ElMessage.error('转接失败，请稍后重试') }
+    const [queueResponse, conversationResponse, agentResponse, statisticResponse, currentAgentResponse] = await Promise.all([getQueue(), getConversations({ page: 1, page_size: 100 }), getAgents(), getStatistics(), getCurrentAgent()])
+    if (stopped) return
+    queuedConversations.value = apiData(queueResponse); conversations.value = apiData(conversationResponse).list || []; agents.value = apiData(agentResponse); statistics.value = apiData(statisticResponse); currentAgent.value = apiData(currentAgentResponse)
+    if (selected.value) { const current = conversations.value.find(item => item.no === selected.value?.no); if (current) selected.value = current; else { selected.value = undefined; messages.value = []; ++selectionGeneration } }
+    if (!selected.value && conversations.value[0]) await selectConversation(conversations.value[0])
+  } catch (e) { if (initial) ElMessage.error(errorText(e)) } finally { loading.value = false; refreshing = false }
 }
-
+async function refreshWorkbench() { await loadWorkbench(); try { await syncMessages() } catch {} }
+async function accept(conversation: ConversationVo = selected.value!, takeover = false) {
+  if (!conversation) return
+  try { if (!['online', 'busy'].includes(currentAgent.value.status)) await changeStatus('online'); await (takeover ? takeoverConversation(conversation.no) : acceptConversation(conversation.no)); await refreshWorkbench(); ElMessage.success('已开始接待') } catch (e) { ElMessage.error(errorText(e)) }
+}
+async function changeStatus(status: AgentStatus) { try { await updateAgentStatus(currentAgent.value.id, status); currentAgent.value.status = status } catch (e) { ElMessage.error(errorText(e)) } }
+async function transfer(agent: AgentVo) { if (!selected.value) return; try { await transferConversation(selected.value.no, agent.id); transferVisible.value = false; await refreshWorkbench(); ElMessage.success(`已转接给 ${agent.name}`) } catch (e) { ElMessage.error(errorText(e)) } }
+async function classify(categoryId: number) { if (!selected.value) return; try { await classifyConversation(selected.value.no, categoryId); await refreshWorkbench() } catch (e) { ElMessage.error(errorText(e)) } }
 async function close() {
   if (!selected.value) return
-  try {
-    await ElMessageBox.confirm('关闭后用户将无法继续在此会话中发送消息，确定关闭吗？', '关闭会话', { confirmButtonText: '确认关闭', cancelButtonText: '取消', type: 'warning' })
-    await closeConversation(selected.value.no)
-    selected.value.status = 'closed'
-    statistics.value.active_count = Math.max(0, statistics.value.active_count - 1)
-    statistics.value.today_closed_count += 1
-    ElMessage.success('会话已关闭')
-  }
-  catch {}
+  try { await ElMessageBox.confirm('确认结束本次会话？', '关闭会话', { type: 'warning' }); await closeConversation(selected.value.no); await refreshWorkbench() } catch (e) { if (e !== 'cancel' && e !== 'close') ElMessage.error(errorText(e)) }
 }
-
-async function submitMessage() {
-  const content = draft.value.trim()
-  if (!content || !selected.value || selected.value.status === 'closed') return
-  try {
-    if (socket?.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ event: 'message:send', payload: { conversation_no: selected.value.no, message_type: 'text', client_message_id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, text: content } }))
-      draft.value = ''
-      return
-    }
-    const response = await sendMessage(selected.value.no, { type: 'text', content })
-    messages.value.push(apiData(response))
-    draft.value = ''
-    await nextTick()
-    messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight, behavior: 'smooth' })
-  }
-  catch { ElMessage.error('发送失败，请检查连接后重试') }
+async function submitMessage(existing?: MessageVo) {
+  const content = existing?.content || draft.value.trim(); if (!content || !selected.value || !canReply.value) return
+  const no = selected.value.no, id = existing?.client_message_id || `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  const pending: MessageVo = { id: 0, type: 'text', content, sender_type: 'agent', created_at: new Date().toLocaleTimeString(), client_message_id: id, delivery: 'sending' }
+  merge(pending); if (!existing) draft.value = ''; await scrollBottom()
+  try { const saved = apiData(await sendMessage(no, { type: 'text', content, client_message_id: id })); if (selected.value?.no === no) merge({ ...saved, delivery: 'sent' }) }
+  catch (e) { if (selected.value?.no === no) { const current = messages.value.find(m => m.client_message_id === id); if (!current?.id) merge({ ...pending, delivery: 'failed' }) }; ElMessage.error(errorText(e)) }
 }
-
-function sendProductCard() {
-  ElMessage.info('商品卡片选择器将在商品查询接口完成后启用。')
-}
-
-function setFilter(value: 'all' | 'queued' | 'active' | 'closed') {
-  activeFilter.value = value
-}
-
-watch(activeFilter, () => { if (activeFilter.value === 'queued') conversations.value = [...queuedConversations.value, ...conversations.value.filter(item => item.status !== 'queued')] })
-async function refreshWorkbench() {
-  try {
-    await loadWorkbench()
-    if (selected.value) {
-      messages.value = apiData(await getMessages(selected.value.no))
-      await nextTick()
-      messageScroller.value?.scrollTo({ top: messageScroller.value.scrollHeight })
-    }
-  }
-  catch {}
-}
-
-onMounted(async () => {
-  await loadWorkbench()
-  void connectSocket()
-  refreshTimer = setInterval(() => { void refreshWorkbench() }, 3000)
-})
-onBeforeUnmount(() => {
-  if (refreshTimer) clearInterval(refreshTimer)
-  socket?.close()
-  socket = undefined
-})
+async function showFaq() { try { faqs.value = apiData(await getFaqs({ page: 1, page_size: 100 })).list || []; faqVisible.value = true } catch (e) { ElMessage.error(errorText(e)) } }
+function setFilter(value: string) { activeFilter.value = value }
+onMounted(async () => { await loadWorkbench(true); void getCategories().then(r => { categories.value = r.data }).catch(() => undefined); void connectSocket(); refreshTimer = setInterval(() => { void refreshWorkbench() }, 15000) })
+onBeforeUnmount(() => { stopped = true; ++socketGeneration; ++selectionGeneration; clearInterval(refreshTimer); clearInterval(heartbeat); clearTimeout(reconnect); clearTimeout(authTimeout); socket?.close(); socket = undefined })
 </script>
 
 <template>
@@ -227,7 +135,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
       <div class="header-actions">
-        <div class="connection"><span class="live-dot" /> Socket 服务已连接</div>
+        <div class="connection"><span class="live-dot" :style="{ background: connectionLabel === '已连接' ? '#18bc86' : '#e49a2b' }" /> {{ connectionLabel }}</div>
         <el-dropdown trigger="click" @command="changeStatus">
           <button class="agent-profile">
             <el-avatar :size="34" class="agent-avatar">客</el-avatar>
@@ -257,15 +165,15 @@ onBeforeUnmount(() => {
         <div class="panel-heading"><div><h2>会话列表</h2><span>{{ filteredConversations.length }} 个会话</span></div><el-button circle plain :icon="Search" aria-label="搜索会话" /></div>
         <el-input v-model="search" class="conversation-search" :prefix-icon="Search" placeholder="搜索用户或会话编号" clearable />
         <div class="filter-tabs" role="tablist">
-          <button v-for="tab in [{ value: 'all', label: '全部' }, { value: 'queued', label: '排队' }, { value: 'active', label: '接待中' }, { value: 'closed', label: '已关闭' }]" :key="tab.value" :class="{ active: activeFilter === tab.value }" @click="setFilter(tab.value)">
+          <button v-for="tab in [{ value: 'all', label: '全部' }, { value: 'ai_active', label: 'AI' }, { value: 'queued', label: '排队' }, { value: 'active', label: '接待中' }, { value: 'closed', label: '已关闭' }]" :key="tab.value" :class="{ active: activeFilter === tab.value }" @click="setFilter(tab.value)">
             {{ tab.label }}<span v-if="tab.value === 'queued' && statistics.queued_count">{{ statistics.queued_count }}</span>
           </button>
         </div>
         <div class="conversation-list">
           <button v-for="conversation in filteredConversations" :key="conversation.no" class="conversation-item" :class="{ selected: selected?.no === conversation.no }" @click="selectConversation(conversation)">
             <el-avatar :size="42" :src="conversation.member_avatar">{{ conversation.member_name.slice(0, 1) }}</el-avatar>
-            <span class="conversation-copy"><b>{{ conversation.member_name }}</b><small>{{ conversation.last_message || (conversation.status === 'queued' ? '正在等待客服接待' : '暂无新消息') }}</small></span>
-            <span class="conversation-meta"><time>{{ conversation.last_message_at || '刚刚' }}</time><i v-if="conversation.unread_count">{{ conversation.unread_count }}</i><em :class="conversation.status">{{ conversation.status === 'queued' ? `排队 ${conversation.queue_position || ''}` : conversation.status === 'active' ? '接待中' : '已关闭' }}</em></span>
+            <span class="conversation-copy"><b>{{ conversation.member_name }}</b><small>{{ conversation.last_message || (conversation.reception_state === 'ai_active' ? 'AI 正在接待' : conversation.status === 'queued' ? '正在等待客服接待' : '暂无新消息') }}</small></span>
+            <span class="conversation-meta"><time>{{ conversation.last_message_at || '刚刚' }}</time><i v-if="conversation.unread_count">{{ conversation.unread_count }}</i><em :class="conversation.status">{{ conversation.reception_state ? receptionLabels[conversation.reception_state] : conversation.status === 'queued' ? `排队 ${conversation.queue_position || ''}` : conversation.status === 'active' ? '接待中' : '已关闭' }}</em></span>
           </button>
           <el-empty v-if="!filteredConversations.length" :image-size="82" description="暂无匹配的会话" />
         </div>
@@ -273,28 +181,29 @@ onBeforeUnmount(() => {
 
       <section class="chat-panel">
         <template v-if="selected">
-          <header class="chat-heading"><div class="customer-title"><el-avatar :size="42" :src="selected.member_avatar">{{ selected.member_name.slice(0, 1) }}</el-avatar><div><h2>{{ selected.member_name }}</h2><p><span class="status-dot" :class="activeStatusClass" /> {{ activeLabel }} · {{ selected.source || '微信小程序' }}</p></div></div><div class="chat-actions"><el-button v-if="selected.status === 'queued'" type="primary" @click="accept()">立即接待</el-button><el-button v-if="selected.status === 'active'" plain @click="transferVisible = true">转接</el-button><el-dropdown><el-button circle plain :icon="MoreFilled" aria-label="更多会话操作" /></el-dropdown></div></header>
+          <header class="chat-heading"><div class="customer-title"><el-avatar :size="42" :src="selected.member_avatar">{{ selected.member_name.slice(0, 1) }}</el-avatar><div><h2>{{ selected.member_name }}</h2><p><span class="status-dot" :class="activeStatusClass" /> {{ activeLabel }} · {{ selected.source || '微信小程序' }}</p></div></div><div class="chat-actions"><el-button v-if="canAccept" type="primary" @click="accept()">立即接待</el-button><el-button v-if="canTakeover" type="primary" @click="accept(selected, true)">接管 AI / 留言</el-button><el-button v-if="canReply && hasAuth('customer-service:conversation:transfer')" plain @click="transferVisible = true">转接</el-button><el-dropdown><el-button circle plain :icon="MoreFilled" aria-label="更多会话操作" /></el-dropdown></div></header>
           <div ref="messageScroller" v-loading="messageLoading" class="message-stream">
             <div class="session-note"><span>会话编号 {{ selected.no }}</span><span> · </span><span>{{ selected.order_no ? `关联订单 ${selected.order_no}` : '来自客户服务入口' }}</span></div>
-            <div v-for="message in messages" :key="message.id" class="message-row" :class="message.sender_type">
-              <el-avatar v-if="message.sender_type !== 'system'" :size="30" :src="message.sender_type === 'member' ? selected.member_avatar : undefined">{{ message.sender_type === 'member' ? selected.member_name.slice(0, 1) : '客' }}</el-avatar>
+            <div v-for="message in messages" :key="message.id || message.client_message_id" class="message-row" :class="message.sender_type">
+              <el-avatar v-if="message.sender_type !== 'system'" :size="30" :src="message.sender_type === 'member' ? selected.member_avatar : undefined">{{ message.sender_type === 'member' ? selected.member_name.slice(0, 1) : message.sender_type === 'ai' ? 'AI' : '客' }}</el-avatar>
               <div v-if="message.type === 'system'" class="system-message">{{ message.content }}</div>
-              <div v-else class="message-content"><div v-if="message.type === 'product_card'" class="product-card"><img :src="message.extra?.product_image" alt=""><div><b>{{ message.extra?.product_name }}</b><small>￥{{ message.extra?.product_price }}</small><span>查看商品 <el-icon><ArrowDown /></el-icon></span></div></div><img v-else-if="message.type === 'image'" class="chat-image" :src="message.extra?.image_url" alt="客户发送的图片"><p v-else>{{ message.content }}</p><time>{{ message.created_at }}</time></div>
+              <div v-else class="message-content"><div v-if="message.type === 'product_card'" class="product-card"><img :src="message.extra?.product_image" alt=""><div><b>{{ message.extra?.product_name }}</b><small>￥{{ message.extra?.product_price }}</small><span>查看商品 <el-icon><ArrowDown /></el-icon></span></div></div><img v-else-if="message.type === 'image'" class="chat-image" :src="message.extra?.image_url" alt="客户发送的图片"><p v-else>{{ message.content }}</p><time>{{ message.created_at }}<span v-if="message.delivery === 'sending'"> · 发送中</span><el-button v-if="message.delivery === 'failed'" link type="danger" @click="submitMessage(message)">未确认，点击重试</el-button></time></div>
             </div>
             <el-empty v-if="!messageLoading && !messages.length" :image-size="96" description="还没有消息，开始服务吧" />
           </div>
-          <footer class="composer"><div class="composer-tools"><el-button text :icon="Picture" aria-label="发送图片" :disabled="selected.status === 'closed'" /><el-button text :icon="ShoppingBag" aria-label="发送商品卡片" :disabled="selected.status === 'closed'" @click="sendProductCard" /><el-button text :icon="DocumentCopy" aria-label="插入常见问题" :disabled="selected.status === 'closed'" /></div><el-input v-model="draft" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" resize="none" :disabled="selected.status === 'closed'" placeholder="输入回复内容，按 Enter 发送，Shift + Enter 换行" @keydown.enter.exact.prevent="submitMessage" /><div class="composer-footer"><span>{{ draft.length }}/1000</span><div><el-button v-if="selected.status === 'active'" text type="danger" :icon="CircleClose" @click="close">关闭会话</el-button><el-button type="primary" :disabled="!draft.trim() || selected.status === 'closed'" @click="submitMessage">发送 <kbd>Enter</kbd></el-button></div></div></footer>
+          <footer class="composer"><div class="composer-tools"><el-tooltip content="当前工作台支持文本回复，可查看用户图片"><el-button text :icon="Picture" aria-label="图片回复暂未开放" disabled /></el-tooltip><el-tooltip content="可查看用户发送的商品卡片"><el-button text :icon="ShoppingBag" aria-label="商品卡回复暂未开放" disabled /></el-tooltip><el-button text :icon="DocumentCopy" aria-label="插入常见问题" :disabled="!canReply" @click="showFaq" /></div><el-input v-model="draft" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }" resize="none" :disabled="!canReply" placeholder="输入回复内容，按 Enter 发送，Shift + Enter 换行" @keydown.enter.exact.prevent="submitMessage()" /><div class="composer-footer"><span>{{ draft.length }}/1000</span><div><el-button v-if="canReply && hasAuth('customer-service:conversation:close')" text type="danger" :icon="CircleClose" @click="close">关闭会话</el-button><el-button type="primary" :disabled="!draft.trim() || !canReply" @click="submitMessage()">发送 <kbd>Enter</kbd></el-button></div></div></footer>
         </template>
         <el-empty v-else class="selection-empty" :image-size="120" description="从左侧选择一个会话开始接待" />
       </section>
 
       <aside class="detail-panel">
-        <template v-if="selected"><section class="detail-card"><div class="detail-title"><h3>客户信息</h3><el-button link type="primary">查看档案</el-button></div><div class="member-summary"><el-avatar :size="48" :src="selected.member_avatar">{{ selected.member_name.slice(0, 1) }}</el-avatar><div><b>{{ selected.member_name }}</b><span>ID: {{ selected.member_id || '—' }}</span></div></div><dl><div><dt>会话来源</dt><dd>{{ selected.source || '微信小程序' }}</dd></div><div><dt>当前坐席</dt><dd>{{ selected.agent_name || '尚未分配' }}</dd></div><div><dt>关联订单</dt><dd class="order-link">{{ selected.order_no || '暂无关联订单' }}</dd></div></dl></section><section class="detail-card queue-card"><div class="detail-title"><h3>接待状态</h3><span class="status-chip" :class="currentAgent.status"><span class="status-dot" :class="currentAgent.status" />{{ statusOptions.find(item => item.value === currentAgent.status)?.label }}</span></div><p>当前已接待 <b>{{ agentLoad }}</b> 个会话</p><el-progress :percentage="Math.round(((currentAgent.active_conversation_count || 0) / (currentAgent.max_conversations || 5)) * 100)" :show-text="false" :stroke-width="6" color="#6366f1" /><el-button class="block-button" plain :icon="SwitchButton" @click="changeStatus(currentAgent.status === 'online' ? 'busy' : 'online')">{{ currentAgent.status === 'online' ? '暂停接待' : '恢复接待' }}</el-button></section><section class="detail-card"><div class="detail-title"><h3>快捷回复</h3><el-button link type="primary">管理</el-button></div><button class="quick-reply" @click="draft = '您好，已收到您的问题，我正在为您核实，请稍候。'">您好，已收到您的问题，我正在为您核实。</button><button class="quick-reply" @click="draft = '感谢您的耐心等待，还有其他需要帮助的吗？'">感谢您的耐心等待，还有其他需要帮助的吗？</button></section></template>
+        <template v-if="selected"><section class="detail-card"><div class="detail-title"><h3>客户信息</h3><el-button link type="primary">查看档案</el-button></div><div class="member-summary"><el-avatar :size="48" :src="selected.member_avatar">{{ selected.member_name.slice(0, 1) }}</el-avatar><div><b>{{ selected.member_name }}</b><span>ID: {{ selected.member_id || '—' }}</span></div></div><dl><div><dt>会话来源</dt><dd>{{ selected.source || '微信小程序' }}</dd></div><div><dt>当前坐席</dt><dd>{{ selected.reception_state === 'ai_active' ? 'AI Agent' : selected.agent_name || '尚未分配' }}</dd></div><div><dt>关联订单</dt><dd class="order-link">{{ selected.order_no || '暂无关联订单' }}</dd></div></dl><el-select :model-value="selected.category_id" :disabled="selected.status === 'closed' || !hasAuth('customer-service:conversation:accept')" placeholder="问题类目" @change="classify"><el-option v-for="c in categories" :key="c.id" :value="c.id" :label="categoryPath(categories, c.id)" /></el-select><p v-if="selected.handoff_reason">转人工原因：{{ handoffReasons[selected.handoff_reason] || 'AI 未能解决，请人工处理' }}</p></section><section class="detail-card queue-card"><div class="detail-title"><h3>接待状态</h3><span class="status-chip" :class="currentAgent.status"><span class="status-dot" :class="currentAgent.status" />{{ statusOptions.find(item => item.value === currentAgent.status)?.label }}</span></div><p>当前已接待 <b>{{ agentLoad }}</b> 个会话</p><el-progress :percentage="Math.round(((currentAgent.active_conversation_count || 0) / (currentAgent.max_conversations || 5)) * 100)" :show-text="false" :stroke-width="6" color="#6366f1" /><el-button class="block-button" plain :icon="SwitchButton" @click="changeStatus(currentAgent.status === 'online' ? 'busy' : 'online')">{{ currentAgent.status === 'online' ? '暂停接待' : '恢复接待' }}</el-button></section><section class="detail-card"><div class="detail-title"><h3>快捷回复</h3><el-button link type="primary">管理</el-button></div><button class="quick-reply" @click="draft = '您好，已收到您的问题，我正在为您核实，请稍候。'">您好，已收到您的问题，我正在为您核实。</button><button class="quick-reply" @click="draft = '感谢您的耐心等待，还有其他需要帮助的吗？'">感谢您的耐心等待，还有其他需要帮助的吗？</button></section></template>
         <el-empty v-else :image-size="80" description="选择会话后查看客户信息" />
       </aside>
     </section>
 
-    <el-dialog v-model="transferVisible" title="转接会话" width="440px" destroy-on-close><p class="transfer-hint">选择一位在线坐席，当前会话将转交给对方继续处理。</p><div class="agent-list"><button v-for="agent in agents.filter(item => item.id !== currentAgent.id && item.status === 'online')" :key="agent.id" class="transfer-agent" @click="transfer(agent)"><el-avatar :size="38" :src="agent.avatar">{{ agent.name.slice(0, 1) }}</el-avatar><span><b>{{ agent.name }}</b><small><span class="status-dot online" />在线 · {{ agent.active_conversation_count || 0 }}/{{ agent.max_conversations || 5 }} 会话</small></span><el-icon><ArrowDown /></el-icon></button><el-empty v-if="!agents.filter(item => item.id !== currentAgent.id && item.status === 'online').length" :image-size="64" description="当前没有可转接的在线坐席" /></div></el-dialog>
+    <el-dialog v-model="transferVisible" title="转接会话" width="440px" destroy-on-close><p class="transfer-hint">选择一位在线坐席，当前会话将转交给对方继续处理。</p><div class="agent-list"><button v-for="agent in agents.filter(item => item.id !== currentAgent.id && item.status === 'online' && item.enabled !== false)" :key="agent.id" class="transfer-agent" @click="transfer(agent)"><el-avatar :size="38" :src="agent.avatar">{{ agent.name.slice(0, 1) }}</el-avatar><span><b>{{ agent.name }}</b><small><span class="status-dot online" />在线 · {{ agent.active_conversation_count || 0 }}/{{ agent.max_conversations || 5 }} 会话</small></span><el-icon><ArrowDown /></el-icon></button><el-empty v-if="!agents.filter(item => item.id !== currentAgent.id && item.status === 'online' && item.enabled !== false).length" :image-size="64" description="当前没有可转接的在线坐席" /></div></el-dialog>
+    <el-dialog v-model="faqVisible" title="选择常见问题回复" width="620px"><el-empty v-if="!faqs.length" description="暂无可用知识" /><el-button v-for="faq in faqs.filter(f => f.enabled)" :key="faq.id" class="quick-reply" @click="draft = faq.answer; faqVisible = false">{{ faq.question }}</el-button></el-dialog>
   </main>
 </template>
 
@@ -355,7 +264,137 @@ onBeforeUnmount(() => {
   .accent-mint .metric-icon { color: #67d9b4; background: #183d39; }
   .accent-amber .metric-icon { color: #f6c46e; background: #493818; }
 }
+:global(body.dark) {
+  .customer-workbench {
+    --ink: #edf1fa;
+    --muted: #9aa6bc;
+    --line: #2a3448;
+    --panel: #161e2d;
+    --canvas: #0d1420;
+  }
+  .agent-profile, .workspace, .conversation-panel, .detail-panel, .chat-heading, .composer,
+  .message-content p, .product-card, .transfer-agent { background: var(--panel); }
+  .chat-panel { background: #111a29; }
+  .conversation-search :deep(.el-input__wrapper) { background: #202a3a; }
+  .conversation-item:hover { background: #202a3a; }
+  .conversation-item.selected { background: rgb(101 89 220 / 26%); }
+  .filter-tabs button { color: #aab5c8; }
+  .filter-tabs button.active { color: #c4beff; background: rgb(101 89 220 / 28%); }
+  .session-note, .system-message { color: #aab5c8; background: #202a3a; }
+  .message-content p { color: #e8edf8; }
+  .detail-card dt, .detail-card dd, .status-chip, .transfer-hint,
+  .quick-reply, .transfer-agent small { color: #aab5c8; }
+  .status-chip { background: #202a3a; }
+  .quick-reply { border-color: #303b50; background: #1c2636; }
+  .transfer-agent { border-color: #303b50; }
+}
 .chat-panel { min-height: 0; grid-template-rows: auto minmax(0, 1fr) auto; }
 .message-stream { min-height: 0; }
 @media (max-width: 1180px) { .customer-workbench { min-width:960px; }.workspace { grid-template-columns:280px minmax(400px,1fr) 220px; }.metric-card { padding:13px; }.metric-card em { display:none; } }
+</style>
+
+<style lang="scss">
+html.dark .customer-workbench,
+body.dark .customer-workbench {
+  --ink: #edf1fa;
+  --muted: #9aa6bc;
+  --line: #2a3448;
+  --panel: #161e2d;
+  --canvas: #0d1420;
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+html.dark .customer-workbench .agent-profile,
+html.dark .customer-workbench .workspace,
+html.dark .customer-workbench .conversation-panel,
+html.dark .customer-workbench .detail-panel,
+html.dark .customer-workbench .chat-heading,
+html.dark .customer-workbench .composer,
+html.dark .customer-workbench .message-content p,
+html.dark .customer-workbench .product-card,
+html.dark .customer-workbench .transfer-agent,
+body.dark .customer-workbench .agent-profile,
+body.dark .customer-workbench .workspace,
+body.dark .customer-workbench .conversation-panel,
+body.dark .customer-workbench .detail-panel,
+body.dark .customer-workbench .chat-heading,
+body.dark .customer-workbench .composer,
+body.dark .customer-workbench .message-content p,
+body.dark .customer-workbench .product-card,
+body.dark .customer-workbench .transfer-agent {
+  background: var(--panel);
+}
+
+html.dark .customer-workbench .chat-panel,
+body.dark .customer-workbench .chat-panel {
+  background: #111a29;
+}
+
+html.dark .customer-workbench .conversation-search .el-input__wrapper,
+body.dark .customer-workbench .conversation-search .el-input__wrapper {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .conversation-item:hover,
+body.dark .customer-workbench .conversation-item:hover {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .conversation-item.selected,
+body.dark .customer-workbench .conversation-item.selected {
+  background: rgb(101 89 220 / 26%);
+}
+
+html.dark .customer-workbench .filter-tabs button,
+body.dark .customer-workbench .filter-tabs button,
+html.dark .customer-workbench .detail-card dt,
+html.dark .customer-workbench .detail-card dd,
+html.dark .customer-workbench .status-chip,
+html.dark .customer-workbench .transfer-hint,
+html.dark .customer-workbench .quick-reply,
+html.dark .customer-workbench .transfer-agent small,
+body.dark .customer-workbench .detail-card dt,
+body.dark .customer-workbench .detail-card dd,
+body.dark .customer-workbench .status-chip,
+body.dark .customer-workbench .transfer-hint,
+body.dark .customer-workbench .quick-reply,
+body.dark .customer-workbench .transfer-agent small {
+  color: #aab5c8;
+}
+
+html.dark .customer-workbench .filter-tabs button.active,
+body.dark .customer-workbench .filter-tabs button.active {
+  color: #c4beff;
+  background: rgb(101 89 220 / 28%);
+}
+
+html.dark .customer-workbench .session-note,
+html.dark .customer-workbench .system-message,
+body.dark .customer-workbench .session-note,
+body.dark .customer-workbench .system-message {
+  color: #aab5c8;
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .message-content p,
+body.dark .customer-workbench .message-content p {
+  color: #e8edf8;
+}
+
+html.dark .customer-workbench .status-chip,
+body.dark .customer-workbench .status-chip {
+  background: #202a3a;
+}
+
+html.dark .customer-workbench .quick-reply,
+body.dark .customer-workbench .quick-reply {
+  border-color: #303b50;
+  background: #1c2636;
+}
+
+html.dark .customer-workbench .transfer-agent,
+body.dark .customer-workbench .transfer-agent {
+  border-color: #303b50;
+}
 </style>

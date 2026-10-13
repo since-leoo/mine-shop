@@ -1,2 +1,6 @@
-// 兼容原结算抬头入口；与发票页共用真实本机保存能力和校验。
-export { default } from '../invoice';
+import InvoiceForm from '../invoice/invoice-form';
+
+// 旧入口复用表单组件，不能导入已注册的发票页面入口。
+export default function Receipt() {
+  return <InvoiceForm />;
+}

@@ -25,8 +25,8 @@ final class CustomerServiceSocketResponder
         }
     }
 
-    public function error(Server $server, int $fd, string $message): void
+    public function error(Server $server, int $fd, string $message, array $context = []): void
     {
-        $this->send($server, $fd, 'system:error', ['message' => $message]);
+        $this->send($server, $fd, 'system:error', ['message' => $message], $context);
     }
 }

@@ -27,16 +27,15 @@ use Hyperf\HttpServer\Contract\RequestInterface;
 use Mine\Access\Attribute\Permission;
 use Plugin\CustomerService\Application\Admin\AppCustomerServiceCommandService;
 use Plugin\CustomerService\Application\Admin\AppCustomerServiceQueryService;
+use Plugin\CustomerService\Application\Api\AppApiCustomerServiceQueryService;
 use Plugin\CustomerService\Application\Socket\CustomerServiceSocketTicketService;
-use Plugin\CustomerService\Infrastructure\Model\CustomerServiceAgent;
-use Plugin\CustomerService\Infrastructure\Model\CustomerServiceFaq;
 
 #[Controller(prefix: '/admin/customer-service')]
 #[Middleware(AccessTokenMiddleware::class)]
 #[Middleware(PermissionMiddleware::class)]
 final class CustomerServiceController extends AbstractController
 {
-    public function __construct(private readonly AppCustomerServiceCommandService $command, private readonly AppCustomerServiceQueryService $query, private readonly CurrentUser $currentUser, private readonly RequestInterface $request, private readonly CustomerServiceSocketTicketService $tickets) {}
+    public function __construct(private readonly AppCustomerServiceCommandService $command, private readonly AppCustomerServiceQueryService $query, private readonly CurrentUser $currentUser, private readonly RequestInterface $request, private readonly CustomerServiceSocketTicketService $tickets, private readonly AppApiCustomerServiceQueryService $memberQuery) {}
 
     #[PostMapping(path: 'socket-ticket')]
     #[Permission(code: 'customer-service:conversation:read')]
@@ -44,7 +43,7 @@ final class CustomerServiceController extends AbstractController
     {
         $adminUserId = $this->currentUser->id();
         $agent = $this->command->agent($adminUserId, $this->currentUser->user()?->nickname ?? '客服');
-        return $this->success($this->tickets->issueAgentTicket((int) $agent->id, $adminUserId));
+        return $this->success($this->tickets->issueAgentTicket((int) $agent->id, $adminUserId) + array_intersect_key($this->memberQuery->config(), array_flip(['gateway_url', 'socket_path'])));
     }
 
     #[GetMapping(path: 'queue')]
@@ -65,11 +64,11 @@ final class CustomerServiceController extends AbstractController
     #[Permission(code: 'customer-service:conversation:read')]
     public function messages(string $conversationNo): Result
     {
-        return $this->success($this->query->messages($conversationNo));
+        return $this->success($this->query->messages($conversationNo, $this->request->query('after_sequence') !== null ? (int) $this->request->query('after_sequence') : null, (int) $this->request->query('limit', 100)));
     }
 
     #[PostMapping(path: 'conversations/{conversationNo}/messages')]
-    #[Permission(code: 'customer-service:conversation:read')]
+    #[Permission(code: 'customer-service:conversation:reply')]
     public function sendMessage(string $conversationNo): Result
     {
         $agent = $this->command->agent($this->currentUser->id(), $this->currentUser->user()?->nickname ?? '客服');
@@ -101,6 +100,7 @@ final class CustomerServiceController extends AbstractController
     }
 
     #[GetMapping(path: 'agents')]
+    #[Permission(code: 'customer-service:conversation:read')]
     public function agents(): Result
     {
         return $this->success($this->query->agents());
@@ -115,16 +115,14 @@ final class CustomerServiceController extends AbstractController
     }
 
     #[PostMapping(path: 'agents/{id}/status')]
+    #[Permission(code: 'customer-service:conversation:read')]
     public function status(int $id): Result
     {
-        $agent = CustomerServiceAgent::query()->find($id);
-        if ($agent === null || (int) $agent->admin_user_id !== $this->currentUser->id()) {
-            throw new \DomainException('只能修改自己的坐席状态');
-        }
-        return $this->success($this->command->updateAgentStatus($this->currentUser->id(), $this->currentUser->user()?->nickname ?? '客服', (string) $this->request->input('status')));
+        return $this->success($this->command->updateAgentStatus($this->currentUser->id(), $this->currentUser->user()?->nickname ?? '客服', (string) $this->request->input('status'), $id));
     }
 
     #[GetMapping(path: 'statistics')]
+    #[Permission(code: 'customer-service:conversation:read')]
     public function statistics(): Result
     {
         return $this->success($this->query->statistics());
@@ -155,7 +153,40 @@ final class CustomerServiceController extends AbstractController
     #[Permission(code: 'customer-service:faq:delete')]
     public function deleteFaq(int $id): Result
     {
-        CustomerServiceFaq::query()->whereKey($id)->delete();
+        $this->command->deleteFaq($id);
         return $this->success([], '常见问题已删除');
+    }
+
+    #[PutMapping(path: 'agents/{id}')]
+    #[Permission(code: 'customer-service:config:manage')]
+    public function configureAgent(int $id): Result
+    {
+        return $this->success($this->command->configureAgent($id, $this->request->all()));
+    }
+
+    #[PostMapping(path: 'conversations/{conversationNo}/takeover')]
+    #[Permission(code: 'customer-service:conversation:accept')]
+    public function takeover(string $conversationNo): Result
+    {
+        return $this->success($this->command->takeover($this->currentUser->id(), $this->currentUser->user()?->nickname ?? '客服', $conversationNo));
+    }
+
+    #[PostMapping(path: 'conversations/{conversationNo}/category')]
+    #[Permission(code: 'customer-service:conversation:accept')]
+    public function classify(string $conversationNo): Result
+    {
+        $this->query->assertAccessible($conversationNo);
+        return $this->success($this->command->classify($conversationNo, (int) $this->request->input('category_id')));
+    }
+
+    #[GetMapping(path: 'categories')]
+    #[Permission(code: 'customer-service:conversation:read')]
+    public function categories(): Result { return $this->success($this->memberQuery->categories()); }
+
+    #[GetMapping(path: 'ai-runs')]
+    #[Permission(code: 'customer-service:config:manage')]
+    public function aiRuns(): Result
+    {
+        return $this->success($this->query->aiRuns());
     }
 }

@@ -1,149 +1,71 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace App\Domain\Trade\AfterSale\Service;
 
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
-use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
-use App\Domain\Trade\Payment\Enum\PayType;
-use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
-use App\Infrastructure\Service\Pay\YsdPayService;
-use Carbon\Carbon;
-use Hyperf\Stringable\Str;
-use Psr\EventDispatcher\EventDispatcherInterface;
+use App\Domain\Trade\Order\Service\DomainOrderService;
+use App\Infrastructure\Model\Order\OrderPaymentRefund;
 
+/** 准备可重试的退款申请，不进行网络调用；应用层负责事务。 */
 class DomainAfterSaleRefundService
 {
     public function __construct(
-        private readonly OrderPaymentRepository $paymentRepository,
-        private readonly OrderPaymentRefundRepository $paymentRefundRepository,
-        private readonly YsdPayService $payService,
-        private readonly DomainMallSettingService $mallSettingService,
-        private readonly WechatPayConfigResolver $wechatPayConfigResolver,
-        private readonly EventDispatcherInterface $dispatcher,
+        private readonly DomainAfterSaleService $afterSales,
+        private readonly DomainOrderService $orders,
+        private readonly OrderPaymentRepository $payments,
+        private readonly OrderPaymentRefundRepository $refunds,
     ) {}
 
-    public function refund(AfterSaleEntity $afterSale, int $operatorId, string $operatorName): string
+    /** 审核与自动退款申请同事务保存；外部请求在事务提交后发起。 */
+    public function approve(\App\Domain\Trade\AfterSale\Contract\AfterSaleReviewInput $input, bool $autoRefund): ?OrderPaymentRefund
     {
-        $payment = $this->paymentRepository->findByOrderId($afterSale->getOrderId());
-        if ($payment === null) {
-            throw new \RuntimeException('订单支付记录不存在');
+        $snapshot = $this->afterSales->getEntity($input->getId());
+        $order = $this->orders->getEntity($snapshot->getOrderId());
+        $this->orders->getLockedEntity($order->getOrderNo());
+        $afterSale = $this->afterSales->getLockedEntity($input->getId());
+        if ($input->getApprovedRefundAmount() !== null) {
+            $afterSale->setRefundAmount($input->getApprovedRefundAmount());
         }
+        $afterSale->approve();
+        $this->afterSales->saveEntity($afterSale);
+        return $autoRefund && $afterSale->getStatus() === 'waiting_refund'
+            ? $this->prepare($input->getId(), $input->getOperatorId(), $input->getOperatorName())
+            : null;
+    }
 
-        $refundNo = $this->generateRefundNo();
-        $refundAmount = $afterSale->getRefundAmount();
-
-        $this->paymentRefundRepository->create([
-            'refund_no' => $refundNo,
-            'payment_id' => $payment->id,
-            'payment_no' => $payment->payment_no,
-            'order_id' => $payment->order_id,
-            'order_no' => $payment->order_no,
-            'member_id' => $payment->member_id,
-            'refund_amount' => $refundAmount,
-            'refund_reason' => $afterSale->getReason(),
-            'status' => 'refunding',
-            'operator_type' => 'admin',
-            'operator_id' => $operatorId,
-            'operator_name' => $operatorName,
-            'remark' => '后台确认退款',
-            'extra_data' => [
-                'after_sale_id' => $afterSale->getId(),
-                'after_sale_no' => $afterSale->getAfterSaleNo(),
-            ],
+    public function prepare(int $afterSaleId, int $operatorId, string $operatorName): OrderPaymentRefund
+    {
+        $snapshot = $this->afterSales->getEntity($afterSaleId);
+        $order = $this->orders->getEntity($snapshot->getOrderId());
+        $this->orders->getLockedEntity($order->getOrderNo());
+        $payment = $this->payments->findPaidByOrderIdForUpdate($order->getId());
+        $afterSale = $this->afterSales->getLockedEntity($afterSaleId);
+        // 申请未确定失败前始终沿用原退款号，防止网络超时后重试生成第二笔退款。
+        $existing = $this->refunds->findLatestByAfterSaleId($afterSaleId);
+        if ($existing !== null && $existing->status !== 'failed') {
+            return $existing;
+        }
+        if ($payment === null || ! in_array($payment->payment_method, ['balance', 'wechat'], true)) {
+            throw new \DomainException('没有可退款的支付记录');
+        }
+        $amount = $afterSale->getRefundAmount();
+        $available = (int) $payment->paid_amount - (int) $payment->refund_amount - $this->refunds->outstandingAmount((int) $payment->id);
+        if ($amount <= 0 || $amount > $available) {
+            throw new \DomainException('退款金额超过可退余额');
+        }
+        $afterSale->markRefunding();
+        $this->afterSales->saveEntity($afterSale);
+        return $this->refunds->create([
+            'refund_no' => 'REF' . bin2hex(random_bytes(16)),
+            'payment_id' => $payment->id, 'payment_no' => $payment->payment_no,
+            'order_id' => $payment->order_id, 'order_no' => $payment->order_no,
+            'member_id' => $payment->member_id, 'refund_amount' => $amount,
+            'refund_reason' => $afterSale->getReason(), 'status' => 'requested',
+            'operator_type' => 'admin', 'operator_id' => $operatorId, 'operator_name' => $operatorName,
+            'extra_data' => ['after_sale_id' => $afterSaleId, 'payment_method' => $payment->payment_method, 'paid_amount' => (int) $payment->paid_amount],
         ]);
-
-        if ($payment->payment_method === PayType::BALANCE->value) {
-            $this->paymentRefundRepository->updateByRefundNo($refundNo, [
-                'status' => 'success',
-                'processed_at' => Carbon::now()->toDateTimeString(),
-            ]);
-
-            $this->dispatchRefundSucceeded($afterSale, $payment, $refundAmount, $refundNo, $operatorId, $operatorName);
-
-            return 'success';
-        }
-
-        if ((string) $payment->payment_method !== PayType::WECHAT->value) {
-            throw new \RuntimeException('暂不支持该支付方式的原路退款');
-        }
-
-        return $this->refundByWechat($afterSale, $payment, $refundNo, $refundAmount);
-    }
-
-    private function refundByWechat(AfterSaleEntity $afterSale, object $payment, string $refundNo, int $refundAmount): string
-    {
-        $config = $this->wechatPayConfigResolver->resolve($this->mallSettingService->payment()->wechatConfig());
-        $notifyUrl = (string) ($config['refund_notify_url'] ?? $config['notify_url'] ?? '');
-
-        $payload = [
-            'out_trade_no' => (string) $payment->order_no,
-            'out_refund_no' => $refundNo,
-            'reason' => $afterSale->getReason(),
-            'amount' => [
-                'refund' => $refundAmount,
-                'total' => (int) $payment->paid_amount,
-                'currency' => 'CNY',
-            ],
-        ];
-
-        if ($notifyUrl !== '') {
-            $payload['notify_url'] = $notifyUrl;
-        }
-
-        $response = $this->payService->refund($payload, $config, 'mini');
-        $status = mb_strtoupper((string) ($response['status'] ?? ''));
-
-        if ($status === 'SUCCESS' || $status === 'PROCESSING') {
-            $this->paymentRefundRepository->updateByRefundNo($refundNo, [
-                'status' => 'refunding',
-                'third_party_refund_no' => $response['refund_id'] ?? null,
-                'third_party_response' => $response,
-            ]);
-
-            return 'processing';
-        }
-
-        $this->paymentRefundRepository->updateByRefundNo($refundNo, [
-            'status' => 'failed',
-            'third_party_refund_no' => $response['refund_id'] ?? null,
-            'third_party_response' => $response,
-            'remark' => (string) ($response['message'] ?? '原路退款失败'),
-        ]);
-
-        throw new \RuntimeException((string) ($response['message'] ?? '原路退款失败'));
-    }
-
-    private function dispatchRefundSucceeded(AfterSaleEntity $afterSale, object $payment, int $refundAmount, string $refundNo, int $operatorId, string $operatorName): void
-    {
-        $this->dispatcher->dispatch(new AfterSaleRefundSucceeded(
-            $afterSale->getId(),
-            $afterSale->getOrderId(),
-            $afterSale->getMemberId(),
-            $refundAmount,
-            (int) $payment->id,
-            (string) $payment->payment_no,
-            (string) $payment->payment_method,
-            $refundNo,
-            $operatorId,
-            $operatorName,
-        ));
-    }
-
-    private function generateRefundNo(): string
-    {
-        return 'REF' . date('YmdHis') . Str::upper(Str::random(6));
     }
 }

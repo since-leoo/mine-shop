@@ -26,29 +26,24 @@ final class AppAfterSaleCommandService
     public function __construct(
         private readonly DomainAfterSaleService $afterSaleService,
         private readonly AppAfterSaleQueryService $queryService,
-        private readonly DomainAfterSaleRefundService $refundService,
+        private readonly AppAfterSaleRefundService $refundService,
+        private readonly DomainAfterSaleRefundService $refundPreparation,
+        private readonly \App\Domain\Trade\Shared\Contract\TransactionManagerInterface $transactions,
         private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
     /**
      * @return array<string, mixed>
      */
-    #[Transactional]
     public function approve(AfterSaleReviewInput $input): array
     {
-        $entity = $this->afterSaleService->getEntity($input->getId());
-        if ($input->getApprovedRefundAmount() !== null) {
-            $entity->setRefundAmount($input->getApprovedRefundAmount());
+        $refund = $this->transactions->run(fn () => $this->refundPreparation->approve(
+            $input, ! $this->mallSettingService->payment()->refundReview()
+        ));
+        if ($refund !== null) {
+            $this->refundService->process($refund->refund_no);
         }
-
-        $entity->approve();
-        $this->afterSaleService->saveEntity($entity);
-
-        if (! $this->mallSettingService->payment()->refundReview() && $entity->getStatus() === 'waiting_refund') {
-            $this->refundApprovedEntity($entity, $input->getOperatorId(), $input->getOperatorName());
-        }
-
-        return $this->detail($entity->getId());
+        return $this->detail($input->getId());
     }
 
     /**
@@ -81,16 +76,10 @@ final class AppAfterSaleCommandService
     /**
      * @return array<string, mixed>
      */
-    #[Transactional]
     public function refund(AfterSaleActionInput $input): array
     {
-        $entity = $this->afterSaleService->getEntity($input->getId());
-        $entity->markRefunding();
-        $this->afterSaleService->saveEntity($entity);
-
-        $this->refundService->refund($entity, $input->getOperatorId(), $input->getOperatorName());
-
-        return $this->detail($entity->getId());
+        $this->refundService->refund($input->getId(), $input->getOperatorId(), $input->getOperatorName());
+        return $this->detail($input->getId());
     }
 
     /**
@@ -127,17 +116,4 @@ final class AppAfterSaleCommandService
         return $this->queryService->detail($id) ?? [];
     }
 
-    private function refundApprovedEntity(AfterSaleEntity $entity, int $operatorId, string $operatorName): void
-    {
-        $entity->markRefunding();
-        $this->afterSaleService->saveEntity($entity);
-
-        try {
-            $this->refundService->refund($entity, $operatorId, $operatorName);
-        } catch (\Throwable $throwable) {
-            $entity->markRefundFailed();
-            $this->afterSaleService->saveEntity($entity);
-            throw $throwable;
-        }
-    }
 }

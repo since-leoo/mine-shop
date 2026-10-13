@@ -1,5 +1,6 @@
 import { View } from '@tarojs/components';
 import { DiyComponent } from '../../diy-renderer/types';
+import { schemaSize } from '../../diy-renderer/style';
 import './index.scss';
 
 interface Props {
@@ -11,7 +12,7 @@ export default function Divider({ component }: Props) {
   const margin = Number(component.props?.margin ?? 24);
 
   return (
-    <View className="diy-divider" style={{ paddingLeft: `${margin}px`, paddingRight: `${margin}px` }}>
+    <View className="diy-divider" style={{ paddingLeft: schemaSize(margin), paddingRight: schemaSize(margin) }}>
       <View className="diy-divider__line" style={{ background: color }} />
     </View>
   );

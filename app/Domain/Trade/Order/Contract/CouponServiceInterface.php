@@ -30,4 +30,6 @@ interface CouponServiceInterface
      * 核销优惠券.
      */
     public function settleCoupon(int $couponUserId, int $orderId): void;
+    /** 仅释放该订单核销的券；重复调用无副作用。 */
+    public function releaseOrderCoupons(int $orderId): void;
 }

@@ -112,7 +112,7 @@ class Order extends Model
 
     public static function generateOrderNo(): string
     {
-        return 'ORD' . date('YmdHis') . mb_str_pad((string) mt_rand(0, 9999), 4, '0', \STR_PAD_LEFT);
+        return 'ORD' . date('YmdHis') . bin2hex(random_bytes(6));
     }
 
     public function items(): HasMany
@@ -219,6 +219,8 @@ class Order extends Model
 
     public function cancel(OrderEntity $entity): void
     {
+        $this->pay_status = $entity->getPayStatus();
+        $this->shipping_status = $entity->getShippingStatus();
         $this->status = $entity->getStatus();
         $this->save();
     }

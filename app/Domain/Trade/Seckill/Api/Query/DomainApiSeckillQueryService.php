@@ -14,6 +14,7 @@ namespace App\Domain\Trade\Seckill\Api\Query;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
 use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
+use App\Domain\Trade\Seckill\Contract\SeckillPromotionQueryInput;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
@@ -28,48 +29,36 @@ final class DomainApiSeckillQueryService
     ) {}
 
     /**
-     * 获取当前秒杀场次的商品列表（小程序促销页用）.
-     *
-     * @return array{list: array, endTime: ?string, title: string, activityId: ?int, sessionId: ?int, statusTag: string, time: int}
+     * 显式场次必须属于所选活动；未传参数时继续使用默认活动与最近场次。
+     * 返回查询模型，避免领域层组装页面展示字段。
      */
-    public function getPromotionList(int $limit = 20): array
+    public function getPromotionList(SeckillPromotionQueryInput $input): ?array
     {
-        $empty = ['list' => [], 'endTime' => null, 'title' => '', 'activityId' => null, 'sessionId' => null, 'statusTag' => 'expired', 'time' => 0, 'banner' => ''];
-        $activity = $this->activityRepository->findLatestEnabledActiveOrPending();
+        $activityId = $input->getActivityId();
+        $sessionId = $input->getSessionId();
+        $session = $sessionId ? $this->sessionRepository->findVisibleById($sessionId) : null;
+        if ($sessionId && ! $session) {
+            return null;
+        }
+        if ($session && $activityId && (int) $session->activity_id !== $activityId) {
+            throw new \DomainException('秒杀场次不属于当前活动');
+        }
+        // 仅指定场次时，从真实归属解析活动，不回落到其他活动。
+        $resolvedActivityId = $activityId ?? ($session ? (int) $session->activity_id : null);
+        $activity = $resolvedActivityId
+            ? $this->activityRepository->findVisibleById($resolvedActivityId)
+            : $this->activityRepository->findLatestEnabledActiveOrPending();
         if (! $activity) {
-            return $empty;
+            return null;
         }
-        $session = $this->sessionRepository->findNearestEnabledActiveOrPending($activity->id);
+        $session ??= $this->sessionRepository->findNearestEnabledActiveOrPending((int) $activity->id);
         if (! $session) {
-            return $empty;
+            return null;
         }
-        $seckillProducts = $this->productRepository->findEnabledBySessionIdWithProduct($session->id, $limit);
-
-        $list = array_map(static fn (SeckillProduct $sp) => [
-            'spuId' => (string) $sp->product_id,
-            'thumb' => $sp->product->main_image ?? '',
-            'title' => $sp->product->name ?? '',
-            'price' => $sp->seckill_price,
-            'originPrice' => $sp->original_price,
-            'tags' => [],
-        ], $seckillProducts);
-
-        $status = $session->getDynamicStatus();
-        $statusTag = match ($status->value) {
-            'active' => 'running',
-            'pending' => 'notStart',
-            default => 'expired',
-        };
-        $remainMs = max(0, ($session->end_time?->getTimestamp() - time()) * 1000);
-
         return [
-            'list' => $list,
-            'endTime' => $session->end_time?->toDateTimeString(),
-            'title' => $activity->title ?: '限时秒杀',
-            'activityId' => $activity->id,
-            'sessionId' => $session->id,
-            'statusTag' => $statusTag,
-            'time' => $remainMs,
+            'activity' => $activity,
+            'session' => $session,
+            'products' => $this->productRepository->findEnabledBySessionIdWithProduct((int) $session->id, $input->getLimit()),
             'banner' => $this->resolveTopicBanner(),
         ];
     }

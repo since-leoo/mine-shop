@@ -250,6 +250,11 @@ final class DomainOrderStockService
      * @param array<int, int> $deducted 已扣减的 SKU 和数量
      * @param string $stockHashKey 库存 Hash Key
      */
+    public function notifyLowStock(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
+    {
+        $this->triggerStockWarnings($this->normalizeItems($items), $stockHashKey);
+    }
+
     private function triggerStockWarnings(array $deducted, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
         // 仅普通商品库存触发预警
@@ -263,7 +268,7 @@ final class DomainOrderStockService
         }
 
         foreach (array_keys($deducted) as $skuId) {
-            $remaining = (int) $this->redis()->hGet($stockHashKey, (string) $skuId);
+            $remaining = (int) $this->redis()->setPrefix('product')->hGet('stock', (string) $skuId);
             if ($remaining <= $threshold) {
                 event(new ProductStockWarningEvent($skuId, $remaining, $threshold));
             }

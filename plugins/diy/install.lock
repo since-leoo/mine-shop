@@ -1,0 +1,5 @@
+{
+  "version": "1.0.0",
+  "bundled": true,
+  "schema_verification": "Run php bin/hyperf.php migrate; the database migrations table tracks schema completion."
+}

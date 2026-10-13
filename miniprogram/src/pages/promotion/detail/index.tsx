@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { fetchPromotion, fetchSeckillSessions, DEFAULT_SECKILL_TOPIC_BANNER } from '../../../services/promotion/detail';
 import PageNav from '../../../components/page-nav';
 import { isH5 } from '../../../common/platform';
+import { getMiniProgramNavMetrics } from '../../../utils/system-info';
 import defaultSeckillTopicBanner from '../../../assets/seckill/topic-banner-default.png';
 import './index.scss';
 
@@ -225,6 +226,8 @@ export default function PromotionDetail() {
   const [activeSessionId, setActiveSessionId] = useState('');
   const [sessions, setSessions] = useState<SessionItem[]>([]);
   const h5 = isH5();
+  const navMetrics = useMemo(() => h5 ? null : getMiniProgramNavMetrics(), [h5]);
+  const navHeight = navMetrics ? navMetrics.statusBarHeight + navMetrics.navHeight : 0;
 
   const endTimeRef = useRef(0);
   const requestRef = useRef(0);
@@ -366,13 +369,13 @@ export default function PromotionDetail() {
     : statusTag === 'finish' ? '已结束' : computeProgress(item) >= 100 ? '已售罄' : '立即抢购';
 
   return (
-    <View className={`promotion-detail ${h5 ? 'promotion-detail--h5' : ''}`}>
+    <View className={`promotion-detail ${h5 ? 'promotion-detail--h5' : 'promotion-detail--weapp'}`}>
       <PageNav title="" showTitle={false} light background="transparent" />
 
-      <View className="promotion-detail__hero">
+      <View className="promotion-detail__hero" style={navMetrics ? { marginTop: `-${navHeight}px` } : undefined}>
         <Image className="promotion-detail__hero-banner" src={resolvedBanner} mode="aspectFill" />
         <View className="promotion-detail__hero-mask" />
-        <View className="promotion-detail__hero-body">
+        <View className="promotion-detail__hero-body" style={navMetrics ? { paddingTop: `calc(${navHeight}px + 28rpx)` } : undefined}>
           <Text className="promotion-detail__hero-eyebrow">SECKILL FESTIVAL</Text>
           <Text className="promotion-detail__hero-title">秒杀狂欢日</Text>
           <Text className="promotion-detail__hero-subtitle">整点开抢 · 爆款限量 · 手慢就没</Text>

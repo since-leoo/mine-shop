@@ -1,5 +1,17 @@
 @use '../../../styles/variables' as *;
 
+// 微信顶部占位由设备状态栏和胶囊决定，不能按设计稿的固定 rpx 回拉。
+.promotion-detail--weapp {
+  .promotion-detail__hero {
+    height: auto;
+    min-height: 444rpx;
+  }
+  .promotion-detail__hero-body {
+    height: auto;
+    min-height: 444rpx;
+  }
+}
+
 .promotion-detail {
   &__featured-price-row, &__goods-price-row { flex-wrap: wrap; }
   &__featured-price, &__goods-price { overflow-wrap: anywhere; }

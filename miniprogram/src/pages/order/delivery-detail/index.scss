@@ -142,6 +142,7 @@
   box-sizing: border-box;
   padding-top: 0;
   > .page-nav { margin: 0 (-$warm-spacing-lg) 24rpx; }
+  > .page-nav:not(.page-nav--h5) { width: calc(100% + #{$warm-spacing-lg * 2}); }
   &__info-row { align-items: flex-start; gap: 24rpx; }
   &__info-label, &__copy-btn { flex-shrink: 0; white-space: nowrap; }
   &__info-value-row { min-width: 0; }

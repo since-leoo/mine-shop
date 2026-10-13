@@ -521,6 +521,7 @@ export default function OrderConfirm() {
   if (loading) {
     return (
       <View className={`order-confirm order-confirm--loading warm-page-enter ${isH5() ? 'order-confirm--h5' : ''}`}>
+        {!isH5() && <PageNav title="确认订单" />}
         <View className="order-confirm__skeleton-card warm-skeleton" />
         <View className="order-confirm__skeleton-line warm-skeleton" />
         <View className="order-confirm__skeleton-card warm-skeleton" />
@@ -530,7 +531,17 @@ export default function OrderConfirm() {
     );
   }
 
-  if (!settleData) return null;
+  if (!settleData) {
+    if (isH5()) return null;
+    return (
+      <View className="order-confirm">
+        <PageNav title="确认订单" />
+        <View className="order-confirm__unavailable">
+          <Text>订单信息加载失败，请返回重新选择商品</Text>
+        </View>
+      </View>
+    );
+  }
 
   const addressText = userAddress
     ? `${userAddress.provinceName || ''}${userAddress.cityName || ''}${userAddress.districtName || ''}${userAddress.detailAddress || ''}`

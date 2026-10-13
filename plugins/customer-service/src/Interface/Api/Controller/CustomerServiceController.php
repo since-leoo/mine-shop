@@ -54,14 +54,14 @@ final class CustomerServiceController extends AbstractController
     #[PostMapping(path: 'conversations')]
     public function open(): Result
     {
-        $conversation = $this->commandService->open($this->currentMember->id(), 'miniapp', (string) $this->request->input('subject', ''));
+        $conversation = $this->commandService->open($this->currentMember->id(), 'miniapp', (string) $this->request->input('subject', ''), (int) $this->request->input('protocol_version', 1), (int) $this->request->input('category_id') ?: null);
         return $this->success($conversation->toArray(), '客服会话已创建');
     }
 
     #[GetMapping(path: 'conversations/{conversationNo}/messages')]
     public function messages(string $conversationNo): Result
     {
-        $messages = $this->queryService->messages($this->currentMember->id(), $conversationNo, (int) $this->request->query('before_id', 0) ?: null, (int) $this->request->query('limit', 30));
+        $messages = $this->queryService->messages($this->currentMember->id(), $conversationNo, (int) $this->request->query('before_id', 0) ?: null, (int) $this->request->query('limit', 30), $this->request->query('after_sequence') !== null ? (int) $this->request->query('after_sequence') : null);
         return $this->success(array_map(static fn ($message) => $message->toArray(), $messages));
     }
 
@@ -77,5 +77,24 @@ final class CustomerServiceController extends AbstractController
     {
         $this->commandService->close($this->currentMember->id(), $conversationNo);
         return $this->success([], '会话已关闭');
+    }
+
+    #[GetMapping(path: 'categories')]
+    public function categories(): Result { return $this->success($this->queryService->categories()); }
+
+    #[GetMapping(path: 'conversations/{conversationNo}')]
+    public function conversation(string $conversationNo): Result { return $this->success($this->queryService->conversation($this->currentMember->id(), $conversationNo)); }
+
+    #[PostMapping(path: 'conversations/{conversationNo}/request-human')]
+    public function requestHuman(string $conversationNo): Result { return $this->success($this->commandService->requestHuman($this->currentMember->id(), $conversationNo)); }
+
+    #[PostMapping(path: 'conversations/{conversationNo}/category')]
+    public function classify(string $conversationNo): Result { return $this->success($this->commandService->classify($this->currentMember->id(), $conversationNo, (int) $this->request->input('category_id'))); }
+
+    #[PostMapping(path: 'conversations/{conversationNo}/rating')]
+    public function rating(string $conversationNo): Result
+    {
+        $this->commandService->rating($this->currentMember->id(), $conversationNo, (int) $this->request->input('score'), (string) $this->request->input('comment', ''));
+        return $this->success();
     }
 }

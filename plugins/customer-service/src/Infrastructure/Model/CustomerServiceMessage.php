@@ -20,11 +20,11 @@ final class CustomerServiceMessage extends Model
 
     protected array $fillable = [
         'conversation_id', 'sender_type', 'sender_id', 'client_message_id', 'message_type',
-        'content_json', 'reply_to_message_id', 'sent_at', 'recalled_at',
+        'content_json', 'reply_to_message_id', 'sent_at', 'recalled_at', 'sequence', 'ai_run_id', 'visibility', 'evidence_json',
     ];
 
     protected array $casts = [
-        'conversation_id' => 'integer', 'sender_id' => 'integer', 'reply_to_message_id' => 'integer',
+        'sequence' => 'integer', 'ai_run_id' => 'integer', 'evidence_json' => 'array', 'conversation_id' => 'integer', 'sender_id' => 'integer', 'reply_to_message_id' => 'integer',
         'content_json' => 'array', 'sent_at' => 'datetime', 'recalled_at' => 'datetime',
     ];
 }

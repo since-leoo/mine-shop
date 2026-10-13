@@ -155,4 +155,42 @@ final class CouponUserRepository extends IRepository
             ->keyBy('coupon_id')
             ->all();
     }
+
+    /**
+     * 使用优惠券.
+     *
+     * @param int $id coupon_user.id
+     * @param int $orderId 订单 ID
+     * @return int 优惠券 ID
+     */
+    public function useForOrder(int $id, int $orderId): int
+    {
+        $row = $this->getQuery()->where('id', $id)->lockForUpdate()->first();
+        if ($row !== null && $row->status === 'used' && (int) $row->order_id === $orderId) {
+            return (int) $row->coupon_id;
+        }
+        if ($row === null || $row->status !== 'unused' || ($row->expire_at !== null && Carbon::parse($row->expire_at)->isPast())) {
+            throw new \DomainException('优惠券已使用或过期');
+        }
+        $row->update(['status' => 'used', 'order_id' => $orderId, 'used_at' => Carbon::now()]);
+        return (int) $row->coupon_id;
+    }
+
+    /**
+     * 释放优惠券.
+     *
+     * @param int $orderId 订单 ID
+     * @return array 优惠券 ID 列表
+     */
+    public function releaseForOrder(int $orderId): array
+    {
+        $rows = $this->getQuery()->where('order_id', $orderId)->where('status', 'used')->lockForUpdate()->get();
+        $couponIds = [];
+        foreach ($rows as $row) {
+            $couponIds[] = (int) $row->coupon_id;
+            $expired = $row->expire_at !== null && Carbon::parse($row->expire_at)->isPast();
+            $row->update(['status' => $expired ? 'expired' : 'unused', 'order_id' => null, 'used_at' => null]);
+        }
+        return array_values(array_unique($couponIds));
+    }
 }

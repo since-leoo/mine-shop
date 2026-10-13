@@ -1,0 +1,18 @@
+{
+  "name": "since/product-review",
+  "version": "1.0.0",
+  "description": "商品评价插件，保留现有接口及历史数据",
+  "author": "Since",
+  "namespace": "Plugin\\ProductReview",
+  "priority": 10,
+  "enabled": true,
+  "dependencies": [],
+  "composer_require": {},
+  "rollback_on_uninstall": false,
+  "center": {
+    "title": "商品评价",
+    "icon": "carbon:application",
+    "sort": 40
+  },
+  "configProvider": "Plugin\\ProductReview\\ConfigProvider"
+}

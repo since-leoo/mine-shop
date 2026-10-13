@@ -231,3 +231,10 @@
 .wallet-page__summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .wallet-page__summary-value { overflow-wrap: anywhere; }
 .wallet-page__retry { margin-top: 16rpx; padding: 20rpx; color: $warm-primary; font-size: $warm-font-md; }
+
+.wallet-page--weapp .wallet-page__nav {
+  position: sticky;
+  top: 0;
+  z-index: 11;
+  background: $warm-bg-page;
+}

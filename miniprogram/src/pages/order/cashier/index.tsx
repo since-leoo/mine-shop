@@ -248,7 +248,7 @@ export default function Cashier() {
 
   return (
     <View className={`cashier ${isH5() ? 'cashier--h5' : ''} warm-page-enter`}>
-      {isH5() ? <PageNav title="支付方式" /> : null}
+      <PageNav title="支付方式" />
       <View className="cashier__amount-card">
         <Text className="cashier__amount-label">{'\u652f\u4ed8\u91d1\u989d'}</Text>
         <View className="cashier__amount-value">

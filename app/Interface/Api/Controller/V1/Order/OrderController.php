@@ -73,7 +73,7 @@ final class OrderController extends AbstractController
     #[GetMapping(path: 'submit-result/{tradeNo}')]
     public function submitResult(string $tradeNo): Result
     {
-        $result = $this->checkoutService->getSubmitResult($tradeNo);
+        $result = $this->checkoutService->getSubmitResult($tradeNo, $this->currentMember->id());
 
         return $this->success($result);
     }

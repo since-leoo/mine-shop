@@ -12,11 +12,18 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage;
 
+use App\Domain\Trade\Shared\Contract\TradeWebhookInterface;
+use Plugin\SystemMessage\Infrastructure\Adapter\TradeWebhookAdapter;
+
 final class ConfigProvider
 {
     public function __invoke(): array
     {
         return [
+            'plugin_capabilities' => [
+                \App\Domain\Infrastructure\Plugin\Contract\SystemNotificationInterface::class => \Plugin\SystemMessage\Infrastructure\Adapter\SystemNotificationAdapter::class,
+                TradeWebhookInterface::class => TradeWebhookAdapter::class,
+            ],
             'annotations' => [
                 'scan' => [
                     'paths' => [__DIR__],

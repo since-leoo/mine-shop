@@ -5,7 +5,7 @@ import { isLoggedIn } from '../../../common/auth';
 import { redirectToLogin } from '../../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../../common/platform';
 import { fetchPerson, updateProfile, uploadImage } from '../../../services/usercenter/fetchPerson';
-import { authorizeProfile, bindPhoneNumber } from '../../../services/usercenter/authorizeProfile';
+import { bindPhoneNumber } from '../../../services/usercenter/authorizeProfile';
 import PageNav from '../../../components/page-nav';
 import './index.scss';
 
@@ -34,6 +34,7 @@ export default function PersonInfo() {
     gender: 0,
   });
   const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const loadData = useCallback(() => {
     const sequence = ++requestRef.current;
@@ -91,37 +92,28 @@ export default function PersonInfo() {
     });
   }, [info.nickName]);
 
-  const handleUseWechatProfile = useCallback(() => {
-    if (!isMiniProgram()) return;
+  const handleChooseAvatar = useCallback(async (e: any) => {
+    const avatarUrl = e?.detail?.avatarUrl;
+    if (!isMiniProgram() || !avatarUrl || submittingRef.current) return;
 
-    Taro.getUserProfile({
-      desc: '用于完善会员资料',
-    })
-      .then((res) => {
-        const nickName = res.userInfo?.nickName || '';
-        const avatarUrl = res.userInfo?.avatarUrl || '';
-        const payload: any = {};
-        if (nickName) payload.nickname = nickName;
-        if (avatarUrl) payload.avatarUrl = avatarUrl;
-        if (typeof res.userInfo?.gender === 'number') payload.gender = res.userInfo.gender;
-        if (Object.keys(payload).length === 0) return;
-
-        setSubmitting(true);
-        authorizeProfile(payload)
-          .then(() => {
-            Taro.showToast({ title: '微信资料已同步', icon: 'success' });
-            loadData();
-          })
-          .catch((err: any) => {
-            Taro.showToast({ title: err?.msg || '同步失败', icon: 'none' });
-          })
-          .finally(() => setSubmitting(false));
-      })
-      .catch(() => {});
+    // chooseAvatar 返回临时文件，上传完成后才保存可长期访问的头像地址。
+    submittingRef.current = true;
+    setSubmitting(true);
+    try {
+      const url = await uploadImage(avatarUrl);
+      await updateProfile({ avatarUrl: url });
+      Taro.showToast({ title: '头像已更新', icon: 'success' });
+      loadData();
+    } catch (err: any) {
+      Taro.showToast({ title: err?.msg || '头像更新失败', icon: 'none' });
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
   }, [loadData]);
 
   const handleGetPhoneNumber = useCallback((e: any) => {
-    if (!isMiniProgram()) return;
+    if (!isMiniProgram() || submittingRef.current) return;
 
     const detail = e?.detail || {};
     const code = detail.code || '';
@@ -135,6 +127,7 @@ export default function PersonInfo() {
       return;
     }
 
+    submittingRef.current = true;
     setSubmitting(true);
     Taro.showLoading({ title: '绑定中...', mask: true });
     bindPhoneNumber(code)
@@ -147,6 +140,7 @@ export default function PersonInfo() {
       })
       .finally(() => {
         Taro.hideLoading();
+        submittingRef.current = false;
         setSubmitting(false);
       });
   }, [loadData]);
@@ -175,17 +169,23 @@ export default function PersonInfo() {
       {isMiniProgram() && (
         <View className="person-info__auth-card">
           <View className="person-info__auth-title-row">
-            <Text className="person-info__auth-title">微信授权</Text>
-            <Text className="person-info__auth-sub">一键同步微信头像、昵称和手机号</Text>
+            <Text className="person-info__auth-title">完善微信资料</Text>
+            <Text className="person-info__auth-sub">选择头像，点击昵称填写，也可授权绑定手机号</Text>
           </View>
           <View className="person-info__auth-actions">
-            <View className={`person-info__auth-btn ${submitting ? 'person-info__auth-btn--disabled' : ''}`} onClick={handleUseWechatProfile}>
-              <Text className="person-info__auth-btn-text">微信头像昵称授权</Text>
-            </View>
+            <Button
+              className={`person-info__auth-btn ${submitting ? 'person-info__auth-btn--disabled' : ''}`}
+              openType="chooseAvatar"
+              onChooseAvatar={handleChooseAvatar}
+              disabled={submitting}
+            >
+              <Text className="person-info__auth-btn-text">选择微信头像</Text>
+            </Button>
             <Button
               className={`person-info__auth-btn person-info__auth-btn--outline ${submitting ? 'person-info__auth-btn--disabled' : ''}`}
               openType="getPhoneNumber"
               onGetPhoneNumber={handleGetPhoneNumber}
+              disabled={submitting}
             >
               <Text className="person-info__auth-btn-text person-info__auth-btn-text--outline">手机号授权绑定</Text>
             </Button>
@@ -193,7 +193,16 @@ export default function PersonInfo() {
         </View>
       )}
 
-      <View className="person-info__avatar-section" onClick={handleChangeAvatar}>
+      <View className="person-info__avatar-section" onClick={isMiniProgram() ? undefined : handleChangeAvatar}>
+        {isMiniProgram() ? (
+          <Button
+            className="person-info__avatar-chooser"
+            openType="chooseAvatar"
+            onChooseAvatar={handleChooseAvatar}
+            disabled={submitting}
+            ariaLabel="选择头像"
+          />
+        ) : null}
         <View className="person-info__avatar-row">
           <Text className="person-info__label">头像</Text>
           <View className="person-info__avatar-wrap">

@@ -22,7 +22,10 @@ use Hyperf\DbConnection\Annotation\Transactional;
 
 final class AppOrderCommandService
 {
-    public function __construct(private readonly DomainOrderService $orderService) {}
+    public function __construct(
+        private readonly DomainOrderService $orderService,
+        private readonly \App\Application\Api\Order\AppOrderCancellationService $cancellation,
+    ) {}
 
     /**
      * @return array<string, mixed>
@@ -54,22 +57,10 @@ final class AppOrderCommandService
     /**
      * @return array<string, mixed>
      */
-    #[Transactional]
     public function cancel(OrderCancelInput $input): array
     {
-        $orderEntity = $this->orderService->getEntity($input->getOrderId());
-
-        $orderEntity->cancel();
-
-        $this->orderService->cancel($orderEntity);
-
-        event(new OrderCancelledEvent(
-            $orderEntity,
-            $input->getReason(),
-            $input->getOperatorId(),
-            $input->getOperatorName(),
-        ));
-
-        return $this->orderService->findDetail($orderEntity->getId()) ?? [];
+        $order = $this->orderService->getEntity($input->getOrderId());
+        $this->cancellation->cancel($order->getOrderNo(), reason: $input->getReason(), operatorId: $input->getOperatorId(), operatorName: $input->getOperatorName());
+        return $this->orderService->findDetail($order->getId()) ?? [];
     }
 }

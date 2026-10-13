@@ -1,30 +1,18 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace App\Infrastructure\Traits;
 
+use App\Domain\Member\Entity\MemberEntity;
+use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Domain\Trade\Payment\ValueObject\PaymentPolicy;
+
+/** @deprecated 使用 PaymentPolicy，保留带显式入参的兼容适配。 */
 trait PaymentTrait
 {
-    protected static function build(): array
+    protected static function build(OrderEntity $order, MemberEntity $member): array
     {
-        return [
-            'out_trade_no' => time() . '',
-            'description' => 'subject-测试',
-            'amount' => [
-                'total' => 1,
-            ],
-            'payer' => [
-                'openid' => 'onkVf1FjWS5SBxxxxxxxx',
-            ],
-        ];
+        return (new PaymentPolicy())->wechatPayload($order, $member);
     }
 }

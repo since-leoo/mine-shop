@@ -1,190 +1,129 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace App\Domain\Trade\Payment;
 
-use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\PaymentSetting;
 use App\Domain\Member\Entity\MemberEntity;
-use App\Domain\Member\Enum\MemberWalletTransactionType;
-use App\Domain\Member\Event\MemberBalanceAdjusted;
-use App\Domain\Member\Event\OrderPaidForMember;
+use App\Domain\Member\Repository\MemberWalletTransactionRepository;
 use App\Domain\Member\Service\DomainMemberWalletService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Order\Service\DomainOrderPaymentService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
-use App\Domain\Trade\Payment\Enum\PayType;
-use App\Infrastructure\Exception\System\BusinessException;
-use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
-use App\Infrastructure\Service\Pay\YsdPayService;
-use App\Infrastructure\Traits\PaymentTrait;
-use App\Interface\Common\ResultCode;
-use Hyperf\DbConnection\Annotation\Transactional;
-use Yansongda\Artful\Exception\ContainerException;
+use App\Domain\Trade\Payment\ValueObject\PaymentPolicy;
 
+/** 无请求级可变成员；所有命令由应用层包在事务中，统一先锁订单再锁钱包。 */
 class DomainPayService
 {
-    use PaymentTrait;
-
-    private OrderEntity $orderEntity;
-
-    private MemberEntity $memberEntity;
-
     public function __construct(
-        private readonly DomainOrderService $orderService,
-        private readonly YsdPayService $payService,
-        private readonly DomainMemberWalletService $walletService,
-        private readonly DomainOrderPaymentService $paymentService,
-        private readonly DomainMallSettingService $mallSettingService,
-        private readonly WechatPayConfigResolver $wechatPayConfigResolver,
+        private readonly DomainOrderService $orders,
+        private readonly DomainOrderPaymentService $payments,
+        private readonly OrderPaymentRepository $paymentRepository,
+        private readonly DomainMemberWalletService $wallets,
+        private readonly MemberWalletTransactionRepository $ledger,
+        private readonly PaymentPolicy $policy,
+        private readonly \App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository $refunds,
     ) {}
 
-    /**
-     * 初始化.
-     * @return $this
-     */
-    public function init(OrderEntity $orderEntity, MemberEntity $memberEntity): self
+    public function prepareWechat(string $orderNo, MemberEntity $member, PaymentSetting $setting): array
     {
-        $this->orderEntity = $orderEntity;
-        $this->memberEntity = $memberEntity;
-        return $this;
+        if (! $setting->wechatEnabled()) {
+            throw new \DomainException('微信支付未启用');
+        }
+        $order = $this->orders->getLockedEntity($orderNo);
+        $payload = $this->policy->wechatPayload($order, $member);
+        $payment = $this->paymentRepository->findForOrder($order->getId(), 'wechat');
+        if ($payment === null) {
+            $this->payments->create($order->getId(), $orderNo, $member->getId(), 'wechat', $order->getPayAmount());
+        }
+        $order->setPayMethod('wechat');
+        $this->orders->update($order);
+        return $payload;
     }
 
-    /**
-     * 支付.
-     * @throws ContainerException
-     */
-    public function payByWechat(array $config = []): array
+    public function payByBalance(string $orderNo, int $memberId, PaymentSetting $setting): ?OrderEntity
     {
-        $paymentSetting = $this->mallSettingService->payment();
-        if (! $paymentSetting->wechatEnabled()) {
-            throw new BusinessException(ResultCode::METHOD_NOT_ALLOWED, '微信支付未启用');
+        $order = $this->orders->getLockedEntity($orderNo);
+        $this->policy->assertOwner($order, $memberId);
+        if ($order->getPayStatus() === 'paid') {
+            return null;
         }
-
-        $config = array_merge($this->wechatPayConfigResolver->resolve($paymentSetting->wechatConfig()), $config);
-
-        // 创建支付记录
-        $this->paymentService->create(
-            $this->orderEntity->getId(),
-            $this->orderEntity->getOrderNo(),
-            $this->memberEntity->getId(),
-            $this->orderEntity->getPayMethod(),
-            $this->orderEntity->getTotalAmount()
-        );
-
-        $payInfo = $this->payService->pay(self::build(), $config);
-
-        if (empty($payInfo)) {
-            throw new BusinessException(ResultCode::FAIL, '支付失败,获取支付信息失败');
+        $this->policy->assertPayable($order);
+        if ($order->getPayMethod() === 'wechat') {
+            throw new \DomainException('已发起微信支付，请完成或取消原支付订单');
         }
-
-        return $payInfo;
+        // 读取、余额计算、日限额查询和落账均发生在钱包行锁内。
+        $wallet = $this->wallets->getEntityForUpdate($memberId, 'balance');
+        $this->policy->assertBalance($setting, $order->getPayAmount(), $this->paymentRepository->sumBalancePaidToday($memberId));
+        if ($wallet->getStatus() !== 'active' || $wallet->getBalance() - $wallet->getFrozenBalance() < $order->getPayAmount()) {
+            throw new \DomainException('钱包被冻结或可用余额不足');
+        }
+        $wallet->setChangeBalance(-$order->getPayAmount());
+        $wallet->changeBalance();
+        $payment = $this->payments->create($order->getId(), $orderNo, $memberId, 'balance', $order->getPayAmount());
+        $order->setPayMethod('balance');
+        $order->setPayNo($payment->payment_no);
+        $order->markPaid();
+        $this->wallets->saveEntity($wallet);
+        $this->orders->update($order);
+        $this->payments->markPaid($payment->payment_no, $order->getPayAmount(), $payment->payment_no);
+        $this->ledger->create([
+            'transaction_no' => 'OP' . substr(hash('sha256', $order->getOrderNo()), 0, 30), 'wallet_id' => $wallet->getId(),
+            'member_id' => $memberId, 'wallet_type' => 'balance', 'type' => 'adjust_out',
+            'amount' => $order->getPayAmount(), 'balance_before' => $wallet->getBeforeBalance(),
+            'balance_after' => $wallet->getAfterBalance(), 'source' => 'consume',
+            'related_type' => 'order', 'related_id' => $order->getId(),
+            'description' => '订单余额支付', 'remark' => $orderNo,
+            'operator_type' => 'member', 'operator_id' => $memberId,
+        ]);
+        return $order;
     }
 
-    /**
-     * 余额支付.
-     */
-    #[Transactional]
-    public function payByBalance(): array
+    public function notify(array $payload, array $config): ?OrderEntity
     {
-        // 创建支付记录
-        $payment = $this->paymentService->create(
-            $this->orderEntity->getId(),
-            $this->orderEntity->getOrderNo(),
-            $this->memberEntity->getId(),
-            PayType::BALANCE->value,
-            $this->orderEntity->getTotalAmount()
-        );
-
-        // 通过 WalletService 加载钱包实体（而非依赖 MemberEntity 上未加载的 wallet）
-        $walletEntity = $this->walletService->getEntity(
-            $this->memberEntity->getId(),
-            'balance'
-        );
-
-        // 先设置变动金额（负数表示消费扣款），再执行变更
-        $walletEntity->setChangeBalance(-$this->orderEntity->getPayAmount());
-        $walletEntity->setSource(MemberWalletTransactionType::Consume->value);
-        $walletEntity->setRemark('余额支付:' . $this->orderEntity->getOrderNo() . '订单支付成功');
-        $walletEntity->changeBalance();
-
-        // 更新订单支付信息
-        $this->orderEntity->setPayMethod(PayType::BALANCE->value);
-        $this->orderEntity->setPayNo($payment->payment_no);
-        $this->orderEntity->markPaid();
-        $this->orderService->update($this->orderEntity);
-
-        // 标记支付记录为已支付
-        $this->paymentService->markPaid($payment->payment_no, $this->orderEntity->getTotalAmount(), $payment->payment_no);
-
-        // 持久化钱包变更
-        $this->walletService->saveEntity($walletEntity);
-
-        // 发送钱包余额变动记录事件
-        event(new MemberBalanceAdjusted(
-            $this->memberEntity->getId(),
-            $walletEntity->getId(),
-            $walletEntity->getType(),
-            -$this->orderEntity->getPayAmount(),
-            $walletEntity->getBeforeBalance(),
-            $walletEntity->getAfterBalance(),
-            'order',
-            '订单支付:' . $this->orderEntity->getOrderNo(),
-            ['type' => 'member', 'id' => $this->memberEntity->getId(), 'name' => $this->memberEntity->getNickname()]
-        ));
-
-        // 派发订单支付事件，用于会员成长值和消费返积分
-        event(new OrderPaidForMember(
-            $this->memberEntity->getId(),
-            $this->orderEntity->getOrderNo(),
-            $this->orderEntity->getPayAmount(),
-            $this->orderEntity->getId(),
-        ));
-
-        return ['is_paid' => true];
-    }
-
-    /**
-     * 支付回调通知.
-     */
-    public function notify(OrderEntity $orderEntity, array $callback = []): void
-    {
-        if ($orderEntity->getPayStatus() === OrderStatus::PAID->value) {
-            return;
+        $orderNo = (string) ($payload['out_trade_no'] ?? '');
+        if ($orderNo === '') {
+            throw new \InvalidArgumentException('支付通知缺少订单号');
         }
-
-        if (! empty($callback['trade_state']) && $callback['trade_state'] === 'SUCCESS') {
-            // 更新订单支付信息
-            $orderEntity->setPayMethod(PayType::WECHAT->value);
-            $orderEntity->setPayNo($callback['transaction_id']);
-            $orderEntity->setPayAmount($callback['amount']);
-            $orderEntity->markPaid();
-            $this->orderService->update($orderEntity);
-
-            // 更新支付记录
-            $this->paymentService->markPaidByOrderNo(
-                $orderEntity->getOrderNo(),
-                $callback['amount'],
-                $callback['transaction_id'],
-                $callback
-            );
-
-            // 派发订单支付事件，用于会员成长值和消费返积分
-            event(new OrderPaidForMember(
-                $orderEntity->getMemberId(),
-                $orderEntity->getOrderNo(),
-                $orderEntity->getPayAmount(),
-                $orderEntity->getId(),
-            ));
+        if (($payload['trade_state'] ?? '') !== 'SUCCESS') {
+            return null;
         }
+        $order = $this->orders->getLockedEntity($orderNo);
+        $amount = $this->policy->validateWechatSuccess($order, $payload, $config);
+        if ($order->getPayStatus() === 'paid' || $order->getPayStatus() === 'refunded') {
+            if ($order->getPayNo() !== $payload['transaction_id']) {
+                throw new \DomainException('订单已由另一笔支付完成，需对账');
+            }
+            return null;
+        }
+        // 已过期但未取消的订单仍须接收实际成功的支付；关单会与这里竞争同一行锁。
+        $order->setPayMethod('wechat');
+        $order->setPayNo($payload['transaction_id']);
+        $cancelled = $order->getStatus() === 'cancelled';
+        if ($cancelled) {
+            // 兼容旧关单或极晚渠道通知：保留取消状态，持久化原路退款，不重新占库存。
+            $order->setPayStatus('paid');
+        } else {
+            $order->markPaid();
+        }
+        $payment = $this->paymentRepository->findForOrder($order->getId(), 'wechat');
+        if ($payment === null || (int) $payment->payment_amount !== $amount) {
+            throw new \DomainException('支付记录不存在或金额不匹配');
+        }
+        $this->payments->markPaid($payment->payment_no, $amount, $payload['transaction_id'], $payload);
+        $this->orders->update($order);
+        if ($cancelled) {
+            $this->refunds->create([
+                'refund_no' => 'LATE' . substr(hash('sha256', $orderNo), 0, 32),
+                'payment_id' => $payment->id, 'payment_no' => $payment->payment_no,
+                'order_id' => $order->getId(), 'order_no' => $orderNo, 'member_id' => $order->getMemberId(),
+                'refund_amount' => $amount, 'refund_reason' => '取消订单收到支付，自动原路退款', 'status' => 'requested',
+                'extra_data' => ['after_sale_id' => 0, 'payment_method' => 'wechat', 'paid_amount' => $amount, 'late_payment' => true],
+            ]);
+            return null;
+        }
+        return $order;
     }
 }

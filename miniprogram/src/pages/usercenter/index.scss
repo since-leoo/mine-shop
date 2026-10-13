@@ -478,3 +478,22 @@
 .usercenter--h5 .usercenter__version {
   padding: 40rpx 0 32rpx;
 }
+
+// 小程序会员卡保持四列；长昵称和大额资产不能将右侧内容挤出屏幕。
+.usercenter--default {
+  .usercenter__info { min-width: 0; }
+  .usercenter__nickname, .usercenter__phone {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .usercenter__qrcode { flex-shrink: 0; }
+  .usercenter__wallet-item { flex: 1; min-width: 0; }
+  .usercenter__wallet-num {
+    max-width: 100%;
+    text-align: center;
+    word-break: break-all;
+  }
+}

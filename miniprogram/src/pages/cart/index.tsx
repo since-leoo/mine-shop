@@ -3,7 +3,7 @@ import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
-import { isH5 } from '../../common/platform';
+import { isH5, isMiniProgram } from '../../common/platform';
 import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
 import { deleteCartItem, fetchCartGroupData, updateCartItem } from '../../services/cart/cart';
 import { fetchRecommendGoods } from '../../services/good/fetchGoods';
@@ -267,7 +267,7 @@ export default function Cart() {
 
   if (items.length === 0 && (loading || loadError)) {
     return (
-      <View className={`cart-page ${isH5() ? 'cart-page--h5' : ''}`}>
+      <View className={`cart-page ${isH5() ? 'cart-page--h5' : isMiniProgram() ? 'cart-page--weapp' : ''}`}>
         <PageNav title="购物车" showBack={false} />
         <View className="cart-empty cart-empty--status">
           <Image className="cart-empty__icon" src={cartIcon} mode="aspectFit" />
@@ -281,7 +281,7 @@ export default function Cart() {
 
   if (!loading && items.length === 0 && diyPage?.page && diyPage.components.length > 0) {
     return (
-      <View className={`cart-page cart-page--diy ${isH5() ? 'cart-page--h5' : ''}`}>
+      <View className={`cart-page cart-page--diy ${isH5() ? 'cart-page--h5' : isMiniProgram() ? 'cart-page--weapp' : ''}`}>
         <PageNav title={diyPage.page.title || '购物车'} showBack={false} />
         <View className="cart-page__diy-body" style={pageStyle}>
           <DiyRenderer page={diyPage} transparent />
@@ -293,7 +293,7 @@ export default function Cart() {
 
   if (!loading && items.length === 0) {
     return (
-      <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : ''}`}>
+      <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : isMiniProgram() ? 'cart-page--weapp' : ''}`}>
         <PageNav title="购物车" showBack={false} />
         <View className="cart-empty">
           <Image className="cart-empty__icon" src={cartIcon} mode="aspectFit" />
@@ -308,7 +308,7 @@ export default function Cart() {
   }
 
   return (
-    <View className={`cart-page cart-page--filled ${isH5() ? 'cart-page--h5' : ''}`}>
+    <View className={`cart-page cart-page--filled ${isH5() ? 'cart-page--h5' : isMiniProgram() ? 'cart-page--weapp' : ''}`}>
       <PageNav title="购物车" showBack={false} />
       <View className="cart-list">
         {stores.map((store) => {
@@ -363,7 +363,7 @@ export default function Cart() {
         })}
       </View>
 
-      {isH5() && recommendList.length > 0 ? (
+      {(isH5() || isMiniProgram()) && recommendList.length > 0 ? (
         <View className="cart-recommend">
           <Text className="cart-recommend__title">{'\u731c\u4f60\u559c\u6b22'}</Text>
           <View className="cart-recommend__grid">

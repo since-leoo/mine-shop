@@ -16,6 +16,7 @@ use App\Application\Api\Auth\AppApiAuthCommandService;
 use App\Application\Api\Member\AppApiMemberAuthCommandService;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\H5PasswordLoginRequest;
+use App\Interface\Api\Request\V1\H5SmsLoginRequest;
 use App\Interface\Api\Request\V1\LoginRequest;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
@@ -57,5 +58,10 @@ final class LoginController extends AbstractController
         $result = $this->authService->loginByPassword($request->toDto(ip()));
 
         return $this->success($result, '登录成功');
+    }
+    /** H5 短信登录只认证已有会员，注册仍走独立注册流程。 */
+    public function h5Sms(H5SmsLoginRequest $request): Result
+    {
+        return $this->success($this->authService->loginBySms($request->toDto(ip())), '登录成功');
     }
 }

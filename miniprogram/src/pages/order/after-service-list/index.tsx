@@ -2,6 +2,7 @@ import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import {
   cancelAfterSale,
   confirmAfterSaleExchangeReceived,
@@ -123,7 +124,7 @@ export default function AfterServiceList() {
   };
 
   return (
-    <View className="after-service-list">
+    <View className={`after-service-list ${isH5() ? '' : 'after-service-list--weapp'}`}>
       <PageNav title="售后记录" />
       <View className="after-service-list__hero">
         <Text className="after-service-list__hero-title">售后记录</Text>

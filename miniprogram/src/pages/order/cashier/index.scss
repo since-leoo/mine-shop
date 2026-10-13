@@ -272,3 +272,13 @@
 .cashier__radio { flex-shrink: 0; }
 .cashier__channel-hint { width: 100%; color: $warm-text-hint; font-size: $warm-font-xs; }
 .cashier__retry { display: block; color: $warm-primary; padding: 20rpx 0; font-size: $warm-font-md; }
+
+.cashier:not(.cashier--h5) {
+  padding-top: 0;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+
+  > .page-nav {
+    width: calc(100% + #{$warm-spacing-lg * 2});
+    margin: 0 (-$warm-spacing-lg) 24rpx;
+  }
+}

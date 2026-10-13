@@ -3,6 +3,7 @@ import Taro, { useRouter, useDidHide, useDidShow } from '@tarojs/taro';
 import { useState, useCallback, useRef } from 'react';
 import { updateProfile } from '../../../services/usercenter/fetchPerson';
 import PageNav from '../../../components/page-nav';
+import { isMiniProgram } from '../../../common/platform';
 import './index.scss';
 
 export default function NameEdit() {
@@ -51,11 +52,12 @@ export default function NameEdit() {
         <Text className="name-edit__label">昵称</Text>
         <Input
           className="name-edit__input"
-          type="text"
+          type={isMiniProgram() ? 'nickname' : 'text'}
           placeholder="请输入昵称"
           maxlength={20}
           value={nickname}
           onInput={(e) => setNickname(e.detail.value)}
+          onBlur={isMiniProgram() ? (e) => setNickname(e.detail.value) : undefined}
           focus
         />
         <Text className="name-edit__count">{nickname.length}/20</Text>
