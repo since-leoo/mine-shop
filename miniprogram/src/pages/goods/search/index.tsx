@@ -1,5 +1,5 @@
 import { View, Text } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useEffect, useCallback } from 'react';
 import { SearchBar } from '@nutui/nutui-react-taro';
 import {
@@ -8,6 +8,8 @@ import {
   addSearchHistory,
   clearSearchHistory,
 } from '../../../services/good/fetchSearchHistory';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
 import './index.scss';
 
 export default function SearchPage() {
@@ -38,11 +40,14 @@ export default function SearchPage() {
     queryPopular();
   }, [queryHistory, queryPopular]);
 
+  useDidShow(queryHistory);
+
   const doSearch = useCallback((keyword: string) => {
     if (!keyword.trim()) return;
-    addSearchHistory(keyword);
+    const word = keyword.trim();
+    addSearchHistory(word);
     Taro.navigateTo({
-      url: `/pages/goods/result/index?searchValue=${encodeURIComponent(keyword)}`,
+      url: `/pages/goods/result/index?searchValue=${encodeURIComponent(word)}`,
     });
   }, []);
 
@@ -72,7 +77,8 @@ export default function SearchPage() {
   }, []);
 
   return (
-    <View className="search-page">
+    <View className={`search-page ${isH5() ? 'search-page--h5' : ''}`}>
+      <PageNav title="搜索商品" />
       {/* Search Bar */}
       <View className="search-page__bar">
         <SearchBar
@@ -80,6 +86,7 @@ export default function SearchPage() {
           value={searchValue}
           onChange={(val) => setSearchValue(val)}
           onSearch={handleSubmit}
+          right={<Text className="search-page__submit" onClick={handleSubmit}>搜索</Text>}
           autoFocus
           className="search-page__search-bar"
         />

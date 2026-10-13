@@ -132,7 +132,7 @@ export function userDiyPage(
           ...(component.props || {}),
           avatar: userInfo.avatarUrl || component.props?.avatar || '',
           nickname: userInfo.nickName || component.props?.nickname || '温馨用户',
-          inviteCode: userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode || component.props?.inviteCode || 'WARM2026',
+          inviteCode: userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode || component.props?.inviteCode || '',
           qrcodeIcon: component.props?.qrcodeIcon || 'assets/usercenter/profile-qrcode.svg',
         },
       };

@@ -1,0 +1,25 @@
+@use '../../../styles/variables' as *;
+
+.order-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  padding: 80rpx 24rpx;
+  color: $warm-text-secondary;
+  font-size: 28rpx;
+  text-align: center;
+  line-height: 1.6;
+  box-sizing: border-box;
+  &__action {
+    margin: 16rpx auto;
+    padding: 20rpx 32rpx;
+    border-radius: 999rpx;
+    background: $warm-bg-white;
+    border: 1rpx solid $warm-border;
+    color: $warm-primary;
+    font-size: 26rpx;
+    text-align: center;
+  }
+}

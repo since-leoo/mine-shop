@@ -1,9 +1,10 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { getCurrentInstance, usePullDownRefresh, useRouter } from '@tarojs/taro';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { fetchCouponList } from '../../../services/coupon';
 import CouponNav from '../../../components/coupon-nav';
 import { isH5 } from '../../../common/platform';
+import { formatCouponAmount, isDiscountCoupon } from '../presentation';
 import './index.scss';
 
 const TAB_LIST = [
@@ -108,20 +109,23 @@ export default function CouponList() {
       return [];
     }
   }, [rawAvailableCouponIds]);
+  const requestRef = useRef(0);
   const [activeTab, setActiveTab] = useState(0);
   const [couponList, setCouponList] = useState<CouponItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchList = useCallback((status: number) => {
+    const requestId = ++requestRef.current;
     setLoading(true);
     const statusInFetch = STATUS_MAP[status] || 'default';
-    fetchCouponList(statusInFetch)
+    return fetchCouponList(statusInFetch)
       .then((list: any) => {
+        if (requestId !== requestRef.current) return;
         let mapped = (list || []).map((item: any, idx: number) => ({
           couponId: resolveCouponId(item),
           key: String(item?.key || resolveCouponId(item) || `idx_${idx}`),
           title: resolveCouponName(item),
-          type: item.type === 'discount' ? 2 : 1,
+          type: isDiscountCoupon(item.type) ? 2 : 1,
           value: item.discountValue || item.value || 0,
           desc: item.label || item.desc || '',
           timeLimit: item.timeLimit || '',
@@ -135,8 +139,8 @@ export default function CouponList() {
         }
         setCouponList(mapped);
       })
-      .catch(() => setCouponList([]))
-      .finally(() => setLoading(false));
+      .catch(() => { if (requestId === requestRef.current) setCouponList([]); })
+      .finally(() => { if (requestId === requestRef.current) setLoading(false); });
   }, [availableCouponIds, isSelectMode]);
 
   useEffect(() => {
@@ -144,8 +148,7 @@ export default function CouponList() {
   }, [fetchList]);
 
   usePullDownRefresh(() => {
-    fetchList(activeTab);
-    Taro.stopPullDownRefresh();
+    fetchList(activeTab).finally(() => Taro.stopPullDownRefresh());
   });
 
   const handleTabChange = useCallback((tabIndex: number) => {
@@ -175,20 +178,20 @@ export default function CouponList() {
       return;
     }
 
-    Taro.navigateTo({ url: `/pages/coupon/coupon-detail/index?id=${coupon.key}` });
+    Taro.navigateTo({ url: `/pages/coupon/coupon-detail/index?id=${encodeURIComponent(coupon.couponId || coupon.key)}` });
   }, [isSelectMode]);
 
   const formatValue = (coupon: CouponItem) => {
     if (coupon.type === 2) {
-      return `${(coupon.value / 10).toFixed(1)}折`;
+      return `${formatCouponAmount(coupon.value)}折`;
     }
-    const yuan = coupon.value >= 100 ? (coupon.value / 100).toFixed(0) : (coupon.value / 100).toFixed(2);
+    const yuan = formatCouponAmount(coupon.value);
     return yuan;
   };
 
   const formatCondition = (coupon: CouponItem) => {
     if (coupon.base && coupon.base > 0) {
-      return `满${(coupon.base / 100).toFixed(0)}元可用`;
+      return `满${formatCouponAmount(coupon.base)}元可用`;
     }
     return '无门槛';
   };

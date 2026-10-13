@@ -1,11 +1,14 @@
 import { View, Text, Textarea, Image, Input } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import PageNav from '../../../components/page-nav';
 import { createAfterSale, fetchAfterSaleEligibility, type AfterSaleEligibility, type AfterSaleType } from '../../../services/order/afterSale';
 import { uploadImage } from '../../../services/upload';
 import { AFTER_SALE_TYPE_TEXT_MAP, formatAmount, getAfterSaleTypeHint } from '../after-service/shared';
 import { buildAmountInput, clampAmountByInput, clampQuantity, centsToYuanInput, computeMaxAmountByQuantity, normalizeAmountInput, resolveAmountInput } from './helpers';
 import './index.scss';
+
+const decodeParam = (value = '') => { try { return decodeURIComponent(value); } catch { return value; } };
 
 const DEFAULT_REASONS = [
   '商品质量问题',
@@ -21,11 +24,12 @@ export default function ApplyService() {
   const orderId = Number(router.params.orderId || 0);
   const orderItemId = Number(router.params.orderItemId || 0);
   const orderNo = router.params.orderNo || '';
-  const productName = decodeURIComponent(router.params.productName || '');
-  const skuName = decodeURIComponent(router.params.skuName || '');
+  const productName = decodeParam(router.params.productName || '');
+  const skuName = decodeParam(router.params.skuName || '');
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [eligibility, setEligibility] = useState<AfterSaleEligibility | null>(null);
   const [serviceType, setServiceType] = useState<AfterSaleType>('refund_only');
@@ -34,16 +38,21 @@ export default function ApplyService() {
   const [images, setImages] = useState<string[]>([]);
   const [quantity, setQuantity] = useState(1);
   const [amountInput, setAmountInput] = useState('0.00');
+  const submitLock = useRef(false);
+  const uploadLock = useRef(false);
 
   useEffect(() => {
-    if (!orderId || !orderItemId) {
+    if (!Number.isSafeInteger(orderId) || orderId <= 0 || !Number.isSafeInteger(orderItemId) || orderItemId <= 0) {
       setLoading(false);
       return;
     }
 
+    let disposed = false;
     setLoading(true);
+    setEligibility(null);
     fetchAfterSaleEligibility({ orderId, orderItemId })
       .then((data: AfterSaleEligibility) => {
+        if (disposed) return;
         setEligibility(data);
         setQuantity(clampQuantity(data.maxQuantity || 1, data.maxQuantity || 1));
         setAmountInput(buildAmountInput(data.maxAmount || 0));
@@ -52,9 +61,11 @@ export default function ApplyService() {
         }
       })
       .catch((error) => {
+        if (disposed) return;
         Taro.showToast({ title: error?.msg || '获取售后资格失败', icon: 'none' });
       })
-      .finally(() => setLoading(false));
+      .finally(() => { if (!disposed) setLoading(false); });
+    return () => { disposed = true; };
   }, [orderId, orderItemId]);
 
   const maxAmountByQuantity = useMemo(() => {
@@ -88,12 +99,14 @@ export default function ApplyService() {
   const typeHint = useMemo(() => getAfterSaleTypeHint(serviceType), [serviceType]);
 
   const handleChooseImage = async () => {
+    if (uploadLock.current || submitLock.current) return;
     const remain = 9 - images.length;
     if (remain <= 0) {
       Taro.showToast({ title: '最多上传9张图片', icon: 'none' });
       return;
     }
 
+    uploadLock.current = true;
     try {
       const chooseResult = await Taro.chooseImage({
         count: remain,
@@ -112,6 +125,7 @@ export default function ApplyService() {
       Taro.showToast({ title: error?.msg || '上传图片失败', icon: 'none' });
     }
     finally {
+      uploadLock.current = false;
       Taro.hideLoading();
       setUploading(false);
     }
@@ -164,6 +178,7 @@ export default function ApplyService() {
   };
 
   const handleSubmit = async () => {
+    if (submitLock.current || uploadLock.current) return;
     if (!reason.trim()) {
       Taro.showToast({ title: '请选择售后原因', icon: 'none' });
       return;
@@ -177,6 +192,7 @@ export default function ApplyService() {
       return;
     }
 
+    submitLock.current = true;
     try {
       setSubmitting(true);
       const result = await createAfterSale({
@@ -190,38 +206,31 @@ export default function ApplyService() {
         images,
       });
       const detail = result?.id ? result : result?.data;
+      setSubmitted(true);
+      setSubmitting(false);
       Taro.showToast({ title: '售后申请已提交', icon: 'success' });
-      setTimeout(() => {
-        if (detail?.id) {
-          Taro.redirectTo({ url: `/pages/order/after-service-detail/index?id=${detail.id}` });
-          return;
-        }
-        Taro.redirectTo({ url: '/pages/order/after-service-list/index' });
-      }, 500);
+      // 申请已创建，导航异常也保持提交锁，避免重复创建售后单。
+      await Taro.redirectTo({ url: detail?.id ? `/pages/order/after-service-detail/index?id=${detail.id}` : '/pages/order/after-service-list/index' }).catch(() => {
+        Taro.showToast({ title: '申请已提交，请从售后记录查看', icon: 'none' });
+      });
     }
     catch (error: any) {
-      Taro.showToast({ title: error?.msg || '提交失败', icon: 'none' });
-    }
-    finally {
+      Taro.showToast({ title: error?.msg || error?.message || '提交失败', icon: 'none' });
+      submitLock.current = false;
       setSubmitting(false);
     }
   };
 
-  if (loading) {
-    return <View className="apply-service apply-service--loading"><Text>加载中...</Text></View>;
-  }
-
-  if (!eligibility?.canApply) {
-    return (
-      <View className="apply-service apply-service--empty">
-        <Text className="apply-service__empty-title">暂不支持申请售后</Text>
-        <Text className="apply-service__empty-desc">请更换商品或联系商家客服处理</Text>
-      </View>
-    );
+  if (loading || !eligibility?.canApply) {
+    return <View className="apply-service"><PageNav title="申请售后" /><View className="order-state">
+      <Text>{loading ? '加载中...' : '暂不支持申请售后'}</Text>
+      {!loading && <View className="order-state__action" onClick={() => Taro.navigateTo({ url: '/pages/customer-service/index' })}>联系客服</View>}
+    </View></View>;
   }
 
   return (
     <View className="apply-service">
+      <PageNav title="申请售后" />
       <View className="apply-service__card">
         <Text className="apply-service__title">申请售后</Text>
         <Text className="apply-service__subtitle">订单号：{orderNo || '--'}</Text>
@@ -336,7 +345,7 @@ export default function ApplyService() {
       </View>
 
       <View className={`apply-service__submit ${canSubmit ? '' : 'apply-service__submit--disabled'}`} onClick={handleSubmit}>
-        <Text>{submitting ? '提交中...' : '提交售后申请'}</Text>
+        <Text>{submitted ? '已提交' : submitting ? '提交中...' : '提交售后申请'}</Text>
       </View>
     </View>
   );

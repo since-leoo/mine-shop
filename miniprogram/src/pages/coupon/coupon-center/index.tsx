@@ -1,6 +1,6 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { usePullDownRefresh } from '@tarojs/taro';
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { fetchAvailableCoupons, receiveCoupon } from '../../../services/coupon';
 import { currentDiyPageType, fetchDiyPage } from '../../../services/diy/page';
 import CouponNav from '../../../components/coupon-nav';
@@ -8,6 +8,7 @@ import { isH5 } from '../../../common/platform';
 import DiyRenderer from '../../../components/diy-renderer';
 import { DiyPagePayload } from '../../../components/diy-renderer/types';
 import { diyStyle } from '../../../components/diy-renderer/style';
+import { formatCouponAmount, isDiscountCoupon } from '../presentation';
 import './index.scss';
 
 interface CouponItem {
@@ -31,12 +32,14 @@ function buildTimeLimit(startTime?: string, endTime?: string): string {
 
 export default function CouponCenter() {
   const [couponList, setCouponList] = useState<CouponItem[]>([]);
+  const receivingRef = useRef(new Set<string>());
+  const [receiving, setReceiving] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
 
   const loadList = useCallback(() => {
     setLoading(true);
-    fetchDiyPage('coupon-center', currentDiyPageType())
+    return fetchDiyPage('coupon-center', currentDiyPageType())
       .then((publishedDiyPage) => {
         if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
           setDiyPage(publishedDiyPage);
@@ -52,14 +55,14 @@ export default function CouponCenter() {
         const mapped = (list || []).map((item: any) => ({
           id: item.couponId || item.id || '',
           title: item.name || item.title || '',
-          type: item.type === 'discount' ? 2 : 1,
+          type: isDiscountCoupon(item.type) ? 2 : 1,
           value: item.discountValue || item.value || 0,
           tag: item.tag || '',
           desc: item.label || item.desc || '',
           timeLimit: buildTimeLimit(item.startTime, item.endTime),
           isReceivable: item.is_receivable !== false && item.isReceivable !== false,
           availableQuantity: item.available_quantity || item.availableQuantity || 0,
-          base: item.threshold_amount || item.base || 0,
+          base: item.thresholdAmount ?? item.threshold_amount ?? item.base ?? 0,
         }));
         setCouponList(mapped);
       })
@@ -75,36 +78,37 @@ export default function CouponCenter() {
   }, [loadList]);
 
   usePullDownRefresh(() => {
-    loadList();
-    Taro.stopPullDownRefresh();
+    loadList().finally(() => Taro.stopPullDownRefresh());
   });
 
-  const handleReceive = useCallback((coupon: CouponItem, index: number) => {
-    if (!coupon.isReceivable) return;
-    receiveCoupon(coupon.id)
+  const handleReceive = useCallback((coupon: CouponItem) => {
+    const id = String(coupon.id);
+    if (!coupon.isReceivable || receivingRef.current.has(id)) return;
+    // 在请求发出前上锁，连续点击不会重复领取。
+    receivingRef.current.add(id);
+    setReceiving([...receivingRef.current]);
+    receiveCoupon(id)
       .then(() => {
         Taro.showToast({ title: '领取成功', icon: 'success' });
-        setCouponList((prev) => {
-          const next = [...prev];
-          next[index] = { ...next[index], isReceivable: false };
-          return next;
-        });
+        setCouponList((prev) => prev.map((item) => String(item.id) === id ? { ...item, isReceivable: false } : item));
       })
-      .catch((err: any) => {
-        Taro.showToast({ title: err?.msg || '领取失败', icon: 'none' });
+      .catch((err: any) => Taro.showToast({ title: err?.msg || '领取失败', icon: 'none' }))
+      .finally(() => {
+        receivingRef.current.delete(id);
+        setReceiving([...receivingRef.current]);
       });
   }, []);
 
   const formatValue = (coupon: CouponItem) => {
     if (coupon.type === 2) {
-      return `${(coupon.value / 10).toFixed(1)}折`;
+      return `${formatCouponAmount(coupon.value)}折`;
     }
-    return coupon.value >= 100 ? (coupon.value / 100).toFixed(0) : (coupon.value / 100).toFixed(2);
+    return formatCouponAmount(coupon.value);
   };
 
   const formatCondition = (coupon: CouponItem) => {
     if (coupon.base && coupon.base > 0) {
-      return `满${(coupon.base / 100).toFixed(0)}元可用`;
+      return `满${formatCouponAmount(coupon.base)}元可用`;
     }
     return '无门槛';
   };
@@ -148,7 +152,8 @@ export default function CouponCenter() {
       {!loading && couponList.length > 0 && (
         <View className="coupon-center-page__list">
           {couponList.map((coupon, index) => {
-            const disabled = !coupon.isReceivable;
+            const busy = receiving.includes(String(coupon.id));
+            const disabled = !coupon.isReceivable || busy;
             return (
               <View key={coupon.id || index} className={`coupon-ticket ${disabled ? 'coupon-ticket--disabled' : ''}`}>
                 <View className="coupon-ticket__left">
@@ -167,7 +172,7 @@ export default function CouponCenter() {
                 <View className="coupon-ticket__right">
                   <View className="coupon-ticket__top">
                     <Text className="coupon-ticket__title">{coupon.title}</Text>
-                    <Text className={`coupon-ticket__status ${disabled ? 'coupon-ticket__status--disabled' : ''}`}>{disabled ? '已领取' : '可领取'}</Text>
+                    <Text className={`coupon-ticket__status ${disabled ? 'coupon-ticket__status--disabled' : ''}`}>{!coupon.isReceivable ? (coupon.availableQuantity === 0 ? '已领完' : '已领取') : '可领取'}</Text>
                   </View>
                   <View className="coupon-ticket__meta">
                     {coupon.tag ? <Text className="coupon-ticket__tag">{coupon.tag}</Text> : null}
@@ -175,8 +180,8 @@ export default function CouponCenter() {
                   </View>
                   <View className="coupon-ticket__bottom-row">
                     <Text className="coupon-ticket__stock">剩余 {coupon.availableQuantity || 0} 张</Text>
-                    <View className={`coupon-ticket__receive-btn ${disabled ? 'coupon-ticket__receive-btn--disabled' : ''}`} onClick={() => handleReceive(coupon, index)}>
-                      <Text className={`coupon-ticket__receive-text ${disabled ? 'coupon-ticket__receive-text--disabled' : ''}`}>{disabled ? '已领取' : '立即领取'}</Text>
+                    <View className={`coupon-ticket__receive-btn ${disabled ? 'coupon-ticket__receive-btn--disabled' : ''}`} onClick={() => handleReceive(coupon)}>
+                      <Text className={`coupon-ticket__receive-text ${disabled ? 'coupon-ticket__receive-text--disabled' : ''}`}>{busy ? '领取中…' : !coupon.isReceivable ? (coupon.availableQuantity === 0 ? '已领完' : '已领取') : '立即领取'}</Text>
                     </View>
                   </View>
                 </View>

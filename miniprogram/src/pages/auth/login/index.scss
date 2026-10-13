@@ -280,10 +280,17 @@
 }
 
 .auth-page--h5 .auth-code-row__button {
+  // Taro H5 的 Button 默认 width: 100%；按设计稿固定宽度，避免挤占验证码输入框。
+  width: 216rpx;
   flex-shrink: 0;
   min-width: 184rpx;
   padding: 0 24rpx;
   border-radius: 30rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .auth-code-row__button::after,
@@ -514,7 +521,7 @@
   color: #7b5d52;
 }
 
-.auth-register-form .auth-field__input input {
+.auth-register-form .auth-field__input .weui-input {
   height: 100%;
   line-height: 100rpx;
   padding: 0;
@@ -525,15 +532,15 @@
   box-sizing: border-box;
 }
 
-.auth-register-form .auth-field__input input::placeholder {
+.auth-register-form .auth-field__input .weui-input::placeholder {
   color: #b7a093;
 }
 
-.auth-register-form .auth-field__input input::-webkit-input-placeholder {
+.auth-register-form .auth-field__input .weui-input::-webkit-input-placeholder {
   color: #b7a093;
 }
 
-.auth-register-form .auth-field__input input::-moz-placeholder {
+.auth-register-form .auth-field__input .weui-input::-moz-placeholder {
   color: #b7a093;
   opacity: 1;
 }
@@ -904,7 +911,7 @@
   color: #4a3228;
 }
 
-.auth-page--login .auth-field__input input {
+.auth-page--login .auth-field__input .weui-input {
   height: 100%;
   line-height: 96rpx;
   padding: 0;
@@ -915,15 +922,15 @@
   box-sizing: border-box;
 }
 
-.auth-page--login .auth-field__input input::placeholder {
+.auth-page--login .auth-field__input .weui-input::placeholder {
   color: #b7a093;
 }
 
-.auth-page--login .auth-field__input input::-webkit-input-placeholder {
+.auth-page--login .auth-field__input .weui-input::-webkit-input-placeholder {
   color: #b7a093;
 }
 
-.auth-page--login .auth-field__input input::-moz-placeholder {
+.auth-page--login .auth-field__input .weui-input::-moz-placeholder {
   color: #b7a093;
   opacity: 1;
 }
@@ -967,7 +974,7 @@
 
 .auth-page--login .auth-code-row__button {
   min-width: 184rpx;
-  height: 96rpx;
+  height: 100rpx;
   padding: 0 18rpx;
   border-radius: 28rpx;
   border: 1rpx solid #f0ddd4;
@@ -1299,7 +1306,7 @@
   color: #4a3228;
 }
 
-.auth-page--forgot .auth-field__input input {
+.auth-page--forgot .auth-field__input .weui-input {
   height: 100%;
   line-height: 96rpx;
   padding: 0;
@@ -1310,15 +1317,15 @@
   box-sizing: border-box;
 }
 
-.auth-page--forgot .auth-field__input input::placeholder {
+.auth-page--forgot .auth-field__input .weui-input::placeholder {
   color: #b7a093;
 }
 
-.auth-page--forgot .auth-field__input input::-webkit-input-placeholder {
+.auth-page--forgot .auth-field__input .weui-input::-webkit-input-placeholder {
   color: #b7a093;
 }
 
-.auth-page--forgot .auth-field__input input::-moz-placeholder {
+.auth-page--forgot .auth-field__input .weui-input::-moz-placeholder {
   color: #b7a093;
   opacity: 1;
 }
@@ -1392,3 +1399,11 @@
   color: #e8836b;
   font-weight: 700;
 }
+
+// H5 输入由 Taro 组件内部原生节点渲染；使用实际 class，避免标签选择器被编译成组件标签。
+.auth-page--h5 .auth-field__input .weui-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+.auth-page--h5 .auth-field__input .weui-input::-webkit-inner-spin-button,
+.auth-page--h5 .auth-field__input .weui-input::-webkit-outer-spin-button { appearance: none; margin: 0; }

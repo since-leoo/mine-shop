@@ -1,4 +1,3 @@
-import Taro from '@tarojs/taro';
 import { config } from '../../config';
 import { request } from '../request';
 
@@ -57,36 +56,5 @@ export function updateProfile(data: any) {
   });
 }
 
-/** 上传图片 */
-export function uploadImage(filePath: string) {
-  const baseUrl = config.apiBaseUrl || '';
-  const normalizedBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const storageKey = config.tokenStorageKey || 'accessToken';
-  const token = Taro.getStorageSync(storageKey);
-
-  return new Promise<string>((resolve, reject) => {
-    Taro.uploadFile({
-      url: `${normalizedBase}/api/v1/upload/image`,
-      filePath,
-      name: 'file',
-      header: {
-        Authorization: token ? `Bearer ${token}` : '',
-      },
-      success(res) {
-        try {
-          const body = JSON.parse(res.data);
-          if (body.code === 200 && body.data) {
-            resolve(body.data.url);
-          } else {
-            reject({ msg: body.message || '上传失败' });
-          }
-        } catch (e) {
-          reject({ msg: '上传响应解析失败' });
-        }
-      },
-      fail(err) {
-        reject({ msg: err.errMsg || '上传失败' });
-      },
-    });
-  });
-}
+/** 头像与售后、客服共用带 API 签名的上传入口。 */
+export { uploadImage } from '../upload';

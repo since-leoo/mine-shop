@@ -1,3 +1,4 @@
+@use '../after-service/page';
 @use '../../../styles/variables' as *;
 
 .invoice {
@@ -94,4 +95,16 @@
     font-size: $warm-font-lg;
     font-weight: bold;
   }
+}
+
+.invoice {
+  box-sizing: border-box;
+  padding-top: 0;
+  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
+  > .page-nav { margin: 0 (-$warm-spacing-lg) 24rpx; }
+  &__notice { margin: 0 0 24rpx; color: $warm-text-secondary; font-size: 26rpx; line-height: 1.7; }
+  &__label { width: 144rpx; }
+  &__input { min-width: 0; }
+  .weui-input { font: inherit; color: inherit; width: 100%; min-width: 0; }
+  &__contact { margin-top: 24rpx; padding: 16rpx; text-align: center; color: $warm-primary; font-size: 28rpx; }
 }

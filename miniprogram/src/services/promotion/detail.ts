@@ -75,26 +75,18 @@ function toDurationMs(input: any): number {
   if (input === null || input === undefined || input === '') return 0;
   const num = Number(input);
   if (!Number.isFinite(num) || num <= 0) return 0;
-  if (num >= 1e12) return Math.max(0, num - Date.now());
-  if (num >= 1e9) return Math.max(0, num * 1000 - Date.now());
-  return num >= 1e6 ? num : num * 1000;
+  // 本项目秒杀 API 的 time / remainingTime 均为毫秒，不能按大小猜单位。
+  return num;
 }
 
 function normalizeSessionStatus(raw: any, startAt: number, endAt: number): SessionStatus {
   const text = String(raw || '').toLowerCase();
-  if (text.includes('ing') || text.includes('run') || text.includes('start') || text.includes('进行') || text.includes('抢购中')) {
-    return 'ongoing';
-  }
-  if (text.includes('end') || text.includes('finish') || text.includes('close') || text.includes('结束')) {
-    return 'ended';
-  }
-  if (text.includes('up') || text.includes('wait') || text.includes('soon') || text.includes('即将')) {
-    return 'upcoming';
-  }
-
   const now = Date.now();
-  if (startAt && now < startAt) return 'upcoming';
   if (endAt && now >= endAt) return 'ended';
+  if (startAt && now < startAt) return 'upcoming';
+  if (/end|finish|close|结束/.test(text)) return 'ended';
+  if (/upcoming|wait|soon|not.?start|即将/.test(text)) return 'upcoming';
+  if (/ongoing|running|started|进行|抢购中/.test(text)) return 'ongoing';
   if (startAt && endAt && now >= startAt && now < endAt) return 'ongoing';
   return 'upcoming';
 }
@@ -299,13 +291,14 @@ export function fetchPromotion(ID: number | string = 0, options: FetchPromotionO
 
     const list = rawList.map((item: any, index: number) => {
       const normalizedActivityId =
-        item.activityId || item.promotionId || item.seckillActivityId || item.activity || activityId || '';
+        item.activityId || item.promotionId || item.seckillActivityId || item.activity || res?.activityId || activityId || '';
       const normalizedSessionId =
         item.sessionId ||
         item.timeSlotId ||
         item.slotId ||
         item.seckillSessionId ||
         item.session ||
+        res?.sessionId ||
         sessionId ||
         '';
       const normalizedSpuId = item.spuId || item.id || item.goodsId || item.productId || '';

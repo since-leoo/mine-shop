@@ -18,3 +18,8 @@ export function fetchGood(ID: number | string = 0) {
     method: 'GET',
   });
 }
+
+/** 秒杀详情包含活动 SKU、限购、库存及有效时间，不能用普通售价替代。 */
+export function fetchSeckillGood(sessionId: string, productId: string) {
+  return request({ url: `/api/v1/seckill/products/${sessionId}/${productId}`, method: 'GET' });
+}

@@ -1,9 +1,10 @@
 @use '../../../../styles/variables' as *;
 
 .address-list {
+  box-sizing: border-box;
   min-height: 100vh;
   background-color: $warm-bg-page;
-  padding-bottom: 180rpx;
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
 
   &__state {
     display: flex;
@@ -38,46 +39,79 @@
 
   &__card {
     background: $warm-bg-white;
-    border-radius: $warm-radius-lg;
+    border: 1rpx solid $warm-border-light;
+    border-radius: 32rpx;
     padding: $warm-spacing-md $warm-spacing-lg;
     box-shadow: $warm-shadow-sm;
   }
 
   &__card-header {
     display: flex;
-    align-items: center;
-    margin-bottom: $warm-spacing-xs;
+    align-items: flex-start;
+    gap: 16rpx;
+    margin-bottom: 12rpx;
+  }
+
+  &__recipient {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4rpx 16rpx;
   }
 
   &__name {
     font-size: $warm-font-md;
     font-weight: bold;
     color: $warm-text-primary;
-    margin-right: $warm-spacing-md;
+    min-width: 0;
+    max-width: 100%;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    word-break: break-all;
   }
 
   &__phone {
     font-size: $warm-font-md;
     color: $warm-text-secondary;
+    flex: 0 0 auto;
+    line-height: 1.5;
+    white-space: nowrap;
   }
 
   &__default-badge {
-    margin-left: $warm-spacing-sm;
-    padding: 2rpx 12rpx;
+    // 标签不继承页面的大行高，也不参与姓名/手机一行的压缩。
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 40rpx;
+    padding: 0 14rpx;
+    font-size: $warm-font-xs;
+    line-height: 1;
+    white-space: nowrap;
     background: rgba(232, 131, 107, 0.12);
     border-radius: $warm-radius-round;
   }
 
   &__default-badge-text {
     font-size: $warm-font-xs;
-    color: $warm-primary;
+    color: $warm-primary-dark;
     font-weight: bold;
+    display: block;
+    line-height: 1;
+    white-space: nowrap;
   }
 
   &__address {
+    display: block;
     font-size: $warm-font-sm;
     color: $warm-text-secondary;
-    line-height: 1.5;
+    line-height: 1.65;
+    overflow-wrap: anywhere;
+    word-break: break-word;
   }
 
   // ===== Card actions =====
@@ -86,23 +120,35 @@
     justify-content: flex-end;
     gap: $warm-spacing-sm;
     margin-top: $warm-spacing-md;
+    padding-top: 16rpx;
+    border-top: 1rpx solid $warm-divider;
   }
 
   &__action-btn {
-    display: flex;
+    box-sizing: border-box;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     min-width: 120rpx;
-    height: 56rpx;
+    width: auto;
+    flex: 0 0 auto;
+    height: 72rpx;
+    margin: 0;
+    border: 1rpx solid $warm-border;
     border-radius: 28rpx;
     padding: 0 20rpx;
+    font-size: $warm-font-sm;
+    line-height: 1;
+    white-space: nowrap;
+
+    &::after { border: 0; }
 
     &--edit {
-      background: rgba(255, 189, 108, 0.18);
+      background: $warm-bg-cream;
     }
 
     &--delete {
-      background: rgba(232, 131, 107, 0.16);
+      background: $warm-bg-white;
     }
   }
 
@@ -112,32 +158,42 @@
   }
 
   &__action-btn--edit &__action-btn-text {
-    color: #bd6a20;
+    color: $warm-text-body;
   }
 
   &__action-btn--delete &__action-btn-text {
-    color: $warm-primary;
+    color: $warm-primary-dark;
   }
 
   // ===== Add button =====
   &__add-wrap {
     position: fixed;
-    bottom: 12rpx;
-    bottom: calc(env(safe-area-inset-bottom) + 12rpx);
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 30;
-    padding: 20rpx 32rpx;
-    background: transparent;
+    box-sizing: border-box;
+    padding: 20rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(250, 243, 237, 0), $warm-bg-page 20%);
   }
 
   &__add-btn {
+    box-sizing: border-box;
+    width: 100%;
     height: 88rpx;
+    margin: 0;
+    padding: 0 24rpx;
+    border: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     background: $warm-gradient-primary;
     border-radius: $warm-radius-round;
+    font-size: $warm-font-md;
+    line-height: 1;
+    box-shadow: 0 8rpx 24rpx rgba(232, 131, 107, 0.22);
+
+    &::after { border: 0; }
   }
 
   &__add-btn-text {
@@ -145,4 +201,48 @@
     font-weight: bold;
     color: $warm-text-white;
   }
+}
+
+// H5 保持设计稿的可读字号和触控尺寸，覆盖 Taro Button 的整行宽度及默认行高。
+.address-list--h5 {
+  padding-bottom: calc(112PX + env(safe-area-inset-bottom));
+
+  .address-list__items, .address-list__state {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 640PX;
+    margin: 0 auto;
+    padding: 12PX 16PX;
+  }
+  .address-list__state { padding-top: 64PX; }
+  .address-list__card-wrap { margin-bottom: 12PX; }
+  .address-list__card { padding: 16PX; border-radius: 16PX; cursor: pointer; }
+  .address-list__card-header { gap: 10PX; margin-bottom: 8PX; }
+  .address-list__recipient { gap: 4PX 10PX; }
+  .address-list__name { font-size: 15PX; }
+  .address-list__phone { font-size: 14PX; }
+  .address-list__default-badge { min-height: 22PX; padding: 0 8PX; font-size: 11PX; }
+  .address-list__default-badge-text { font-size: 11PX; }
+  .address-list__address { font-size: 13PX; }
+  .address-list__actions { gap: 8PX; padding-top: 10PX; margin-top: 12PX; }
+  .address-list__action-btn {
+    min-width: 72PX;
+    height: 44PX;
+    padding: 0 16PX;
+    border-radius: 22PX;
+    cursor: pointer;
+  }
+  .address-list__action-btn-text { font-size: 13PX; line-height: 1; }
+  .address-list__add-wrap {
+    max-width: 640PX;
+    margin: 0 auto;
+    padding: 16PX 16PX calc(16PX + env(safe-area-inset-bottom));
+  }
+  .address-list__add-btn { height: 48PX; border-radius: 24PX; cursor: pointer; }
+  .address-list__add-btn-text { font-size: 15PX; line-height: 1; }
+  .address-list__action-btn:focus-visible, .address-list__add-btn:focus-visible {
+    outline: 2PX solid $warm-primary-dark;
+    outline-offset: 3PX;
+  }
+  .address-list__action-btn:active, .address-list__add-btn:active { opacity: 0.85; }
 }

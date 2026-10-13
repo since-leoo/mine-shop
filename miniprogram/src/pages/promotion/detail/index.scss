@@ -1,6 +1,12 @@
 @use '../../../styles/variables' as *;
 
 .promotion-detail {
+  &__featured-price-row, &__goods-price-row { flex-wrap: wrap; }
+  &__featured-price, &__goods-price { overflow-wrap: anywhere; }
+  &__featured-name, &__goods-name { word-break: break-word; }
+  &__featured-bottom { flex-wrap: wrap; }
+  &__featured-cta { flex-shrink: 0; white-space: nowrap; }
+  &__buy-btn { flex-shrink: 0; white-space: nowrap; }
   min-height: 100vh;
   font-family: 'Nunito Sans', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   background:
@@ -1008,3 +1014,5 @@
     font-size: 10PX;
   }
 }
+
+.promotion-detail .promotion-detail__featured-cta--muted { background: #b49b90; box-shadow: none; }

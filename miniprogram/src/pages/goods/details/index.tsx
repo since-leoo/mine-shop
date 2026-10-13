@@ -1,7 +1,7 @@
-﻿import { View, Text, Image, Swiper, SwiperItem, RootPortal } from '@tarojs/components';
+import { View, Text, Image, Swiper, SwiperItem, RootPortal } from '@tarojs/components';
 import Taro, { useShareAppMessage } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchGood } from '../../../services/good/fetchGood';
+import { fetchGood, fetchSeckillGood } from '../../../services/good/fetchGood';
 import { isLoggedIn } from '../../../common/auth';
 import { addCartItem, fetchCartGroupData } from '../../../services/cart/cart';
 import { fetchGroupBuyProductDetail, fetchOngoingGroups } from '../../../services/promotion/groupBuy';
@@ -11,6 +11,7 @@ import {
   getGoodsDetailsCommentList,
   getGoodsDetailsCommentsCount,
 } from '../../../services/good/fetchGoodsDetailsComments';
+import defaultAvatar from '../../../assets/usercenter/avatar-default.svg';
 import homeIcon from '../../../assets/detail-bottom/home-line.svg';
 import cartIcon from '../../../assets/detail-bottom/cart-line.svg';
 import PageNav from '../../../components/page-nav';
@@ -130,6 +131,10 @@ function formatPrice(price: number) {
 
 export default function GoodsDetails() {
   const useRootPortal = supportsRootPortal();
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [purchasePending, setPurchasePending] = useState(false);
+  const purchaseLock = useRef(false);
   const [details, setDetails] = useState<any>({});
   const [skuArray, setSkuArray] = useState<SkuItem[]>([]);
   const [primaryImage, setPrimaryImage] = useState('');
@@ -170,11 +175,15 @@ export default function GoodsDetails() {
   const seckillTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTrackViewRef = useRef(false);
 
-  const getDetail = useCallback(async (id: string, mode: string, groupActivityId: string) => {
+  const getDetail = useCallback(async (id: string, mode: string, groupActivityId: string, seckillSessionId = '') => {
+    setLoading(true);
+    setLoadError('');
     try {
+      if (!id) throw new Error('商品信息不完整');
+      if (mode === 'seckill' && !seckillSessionId) throw new Error('秒杀场次信息不完整，请从活动页重新进入');
       const data = mode === 'group_buy' && groupActivityId
         ? await fetchGroupBuyProductDetail(groupActivityId, id)
-        : await fetchGood(id);
+        : mode === 'seckill' ? await fetchSeckillGood(seckillSessionId, id) : await fetchGood(id);
 
       const skus: SkuItem[] = (data.skuList || []).map((item: any) => ({
         skuId: String(item.skuId || ''),
@@ -186,6 +195,13 @@ export default function GoodsDetails() {
 
       setDetails(data);
       setSkuArray(skus);
+      const singleSku = (data.specList || []).length === 0 && skus.length === 1 ? skus[0] : null;
+      selectItemRef.current = singleSku;
+      setIsAllSelectedSku(!!singleSku);
+      setSelectedSku({});
+      setSelectedAttrStr(singleSku ? '默认规格' : '');
+      setSelectSkuSellsPrice(singleSku?.price ?? 0);
+      setBuyNum(1);
       setPrimaryImage(data.primaryImage || '');
       setSoldNum(data.soldNum || 0);
       setMinSalePrice(data.minSalePrice ? parseInt(data.minSalePrice, 10) : 0);
@@ -193,15 +209,16 @@ export default function GoodsDetails() {
 
       if (mode === 'group_buy') {
         const resolvedActivityId = String(groupActivityId || data.activityInfo?.activityId || data.activityId || data.groupBuyId || '');
-        if (resolvedActivityId && resolvedActivityId !== groupBuyId) {
+        if (resolvedActivityId) {
           setGroupBuyId(resolvedActivityId);
         }
       }
-    } catch (err) {
-      console.error('getDetail error:', err);
-      Taro.showToast({ title: '商品加载失败', icon: 'none' });
+    } catch (err: any) {
+      setLoadError(err?.msg || err?.message || '商品加载失败，请重试');
+    } finally {
+      setLoading(false);
     }
-  }, [groupBuyId]);
+  }, []);
   const getCommentsList = useCallback(async (id: string) => {
     try {
       const data = await getGoodsDetailsCommentList(id);
@@ -277,9 +294,12 @@ export default function GoodsDetails() {
       ? { entry: 'join', buyOriginalPrice: false, groupNo: routeGroupNo }
       : null;
     if (id) {
-      getDetail(id, ot, gbId || actId);
+      getDetail(id, ot, gbId || actId, sId);
       getCommentsList(id);
       getCommentsStatistics(id);
+    } else {
+      setLoadError('商品信息不完整');
+      setLoading(false);
     }
   }, [getDetail, getCommentsList, getCommentsStatistics]);
 
@@ -314,17 +334,13 @@ export default function GoodsDetails() {
       return;
     }
     const endTs = parseSeckillEndTime(
-      details.seckillEndTime || details.endTime || details.activityEndTime || details.promotionEndTime,
+      details.activityInfo?.endTime || details.seckillEndTime || details.endTime || details.activityEndTime || details.promotionEndTime,
     );
 
     const update = () => {
       const now = Date.now();
       let diff = endTs - now;
-      if (!endTs) {
-        const end = new Date();
-        end.setHours(23, 59, 59, 0);
-        diff = end.getTime() - now;
-      }
+
       if (diff <= 0) {
         setSeckillCountdown('00:00:00');
         return;
@@ -376,10 +392,11 @@ export default function GoodsDetails() {
       const selectedValues = getSelectedSkuValues(currentSpecList, next);
       setSelectedAttrStr(selectedValues.map((v: any) => v.specValue).join(', '));
 
-      const matchedSku = skuArray.find((sku) => (sku.specInfo || []).every((si: any) => next[String(si.specId)] && String(next[String(si.specId)]) === String(si.specValueId)));
+      const matchedSku = allSelected ? skuArray.find((sku) => (sku.specInfo || []).every((si: any) => next[String(si.specId)] && String(next[String(si.specId)]) === String(si.specValueId))) : undefined;
       if (matchedSku) {
         selectItemRef.current = matchedSku;
         setSelectSkuSellsPrice(matchedSku.price || 0);
+        setBuyNum(previous => Math.max(1, Math.min(previous, matchedSku.quantity || 1)));
         setSpecImg(matchedSku.skuImage || primaryImage);
       } else {
         selectItemRef.current = null;
@@ -395,7 +412,19 @@ export default function GoodsDetails() {
     popupTimerRef.current = setTimeout(() => setShowSpecPopup(false), 220);
   }, []);
 
+  const activityBlockReason = (() => {
+    if (!orderType || orderType === 'normal') return '';
+    const start = parseSeckillEndTime(details.activityInfo?.startTime);
+    const end = parseSeckillEndTime(details.activityInfo?.endTime);
+    if ((start && start > Date.now()) || ['pending', 'upcoming', 'notStart'].includes(details.activityInfo?.status)) return '活动尚未开始';
+    if ((end && end <= Date.now()) || ['ended', 'expired', 'finished', 'disabled', 'cancelled'].includes(details.activityInfo?.status)) return '活动已结束';
+    return '';
+  })();
   const showSkuSelectPopup = useCallback((type: number) => {
+    if (activityBlockReason || details.available === 0 || details.available === false || !skuArray.some(sku => sku.quantity > 0)) {
+      Taro.showToast({ title: activityBlockReason || '商品暂时缺货', icon: 'none' });
+      return;
+    }
     if (orderType !== 'group_buy') {
       groupBuyIntentRef.current = null;
     }
@@ -407,22 +436,31 @@ export default function GoodsDetails() {
       return;
     }
     setSpecPopupVisible(true);
-  }, [showSpecPopup, spuId, orderType]);
+  }, [showSpecPopup, orderType, activityBlockReason, details.available, skuArray]);
 
   const handleBuyNumChange = useCallback((delta: number) => {
-    setBuyNum((prev) => Math.max(1, Math.min(99, prev + delta)));
-  }, []);
+    const stock = selectItemRef.current?.quantity ?? 99;
+    const limit = Number(details.activityInfo?.maxQuantityPerUser || 99);
+    setBuyNum((prev) => Math.max(1, Math.min(99, stock, limit, prev + delta)));
+  }, [details.activityInfo]);
+
+  const validatePurchase = useCallback(() => {
+    if (!isAllSelectedSku || !selectItemRef.current) {
+      Taro.showToast({ title: '请选择完整规格', icon: 'none' });
+      return false;
+    }
+    if (activityBlockReason || selectItemRef.current.quantity < buyNum) {
+      Taro.showToast({ title: activityBlockReason || '库存不足，请调整数量', icon: 'none' });
+      return false;
+    }
+    return !purchaseLock.current;
+  }, [isAllSelectedSku, activityBlockReason, buyNum]);
 
   const handleAddCart = useCallback(async () => {
-    if (!isAllSelectedSku) {
-      Taro.showToast({ title: '请选择规格', icon: 'none' });
-      return;
-    }
-    const skuId = selectItemRef.current?.skuId;
-    if (!skuId) {
-      Taro.showToast({ title: '请选择规格', icon: 'none' });
-      return;
-    }
+    if (!validatePurchase()) return;
+    const skuId = selectItemRef.current!.skuId;
+    purchaseLock.current = true;
+    setPurchasePending(true);
     try {
       await addCartItem({ skuId: Number(skuId), quantity: buyNum });
       await refreshCartBadge();
@@ -432,14 +470,14 @@ export default function GoodsDetails() {
     } catch (err: any) {
       trackEvent('goods_add_cart_fail', { spuId, skuId, quantity: buyNum, orderType: orderType || 'normal' });
       Taro.showToast({ title: err.msg || '加入购物车失败', icon: 'none' });
+    } finally {
+      purchaseLock.current = false;
+      setPurchasePending(false);
     }
-  }, [isAllSelectedSku, buyNum, closeSpecPopup, spuId, orderType]);
+  }, [validatePurchase, buyNum, closeSpecPopup, spuId, orderType, refreshCartBadge]);
 
   const handleBuyNow = useCallback(() => {
-    if (!isAllSelectedSku) {
-      Taro.showToast({ title: '请选择规格', icon: 'none' });
-      return;
-    }
+    if (!validatePurchase()) return;
     closeSpecPopup();
 
     const skuId = selectItemRef.current?.skuId || (details.skuList && details.skuList[0]?.skuId);
@@ -470,7 +508,7 @@ export default function GoodsDetails() {
       sessionId: sessionId || '',
     });
     Taro.navigateTo({ url: `/pages/order/order-confirm/index?${urlQueryStr}` });
-  }, [isAllSelectedSku, buyNum, details, selectSkuSellsPrice, closeSpecPopup, orderType, activityId, sessionId, groupBuyId]);
+  }, [validatePurchase, buyNum, details, selectSkuSellsPrice, closeSpecPopup, orderType, activityId, sessionId, groupBuyId]);
 
   const handleSpecConfirm = useCallback(() => {
     if (buyType === 1) handleBuyNow();
@@ -484,13 +522,17 @@ export default function GoodsDetails() {
 
   const handlePreviewImage = useCallback((index: number) => {
     trackEvent('goods_image_preview', { spuId, index, orderType: orderType || 'normal' });
-    const currentImages = details.images || [];
+    const currentImages = details.images?.length ? details.images : details.primaryImage ? [details.primaryImage] : [];
     if (currentImages.length > 0) {
       Taro.previewImage({ current: currentImages[index], urls: currentImages });
     }
   }, [details.images, spuId, orderType]);
 
   const handleShareClick = useCallback(() => {
+    if (isH5()) {
+      Taro.setClipboardData({ data: window.location.href }).catch(() => Taro.showToast({ title: '请复制浏览器地址分享商品', icon: 'none' }));
+      return;
+    }
     trackEvent('goods_share_click', { spuId, orderType: orderType || 'normal', activityId: activityId || groupBuyId || '' });
     Taro.showShareMenu({ withShareTicket: true })
       .catch(() => {})
@@ -513,7 +555,7 @@ export default function GoodsDetails() {
 
   const formatGroupRemain = useCallback((expireTime: string) => {
     const end = new Date(expireTime).getTime();
-    if (!end) return '剩余 2 小时';
+    if (!end) return '以活动时间为准';
     const diff = end - Date.now();
     if (diff <= 0) return '即将结束';
     const totalMins = Math.floor(diff / 60000);
@@ -528,7 +570,7 @@ export default function GoodsDetails() {
     </Text>
   ));
 
-  const images = details.images || [];
+  const images = details.images?.length ? details.images : primaryImage ? [primaryImage] : [];
   const specList = details.specList || [];
   const descImages = details.desc || [];
   const isGroupBuyMode = orderType === 'group_buy';
@@ -538,16 +580,26 @@ export default function GoodsDetails() {
   const groupPriceCent = selectSkuSellsPrice || minSalePrice || 0;
   const originPriceCent = maxLinePrice || minSalePrice || 0;
   const seckillCountdownSegments = parseCountdownSegments(seckillCountdown || '00:00:00');
-  const seckillLimitCount = Number(details.limitQuantity || details.buyLimit || details.seckillLimit || details.limitBuyNum || 2) || 2;
+  const seckillLimitCount = Number(details.activityInfo?.maxQuantityPerUser || details.limitQuantity || details.buyLimit || details.seckillLimit || details.limitBuyNum || 0) || 0;
 
   useShareAppMessage(() => ({
     title: mainTitle || '商品详情',
     path: `/pages/goods/details/index?spuId=${spuId}`,
     imageUrl: primaryImage || images[0] || '',
   }));
+  if (loading || loadError) {
+    return <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : ''}`}>
+      <PageNav title="商品详情" />
+      <View className="goods-detail-state">
+        <Text>{loading ? '正在加载商品…' : loadError}</Text>
+        {!loading && <View className="goods-detail-state__retry" onClick={() => getDetail(spuId, orderType, groupBuyId || activityId, sessionId)}>重新加载</View>}
+      </View>
+    </View>;
+  }
   return (
     <View className={`goods-detail-page ${isH5() ? 'goods-detail-page--h5' : ''} ${isGroupBuyMode ? 'goods-detail-page--group' : ''} ${isSeckillMode ? 'goods-detail-page--seckill' : ''}`}>
-      {!isH5() ? <PageNav title="商品详情" /> : null}
+      <PageNav title="商品详情" />
+      {images.length === 0 && <View className="goods-swiper goods-swiper--empty"><Text>暂无商品图片</Text></View>}
       {images.length > 0 && (
         <View className={`goods-swiper ${isGroupBuyMode ? 'goods-swiper--group' : ''}`}>
           <Swiper className="goods-swiper__inner" indicatorDots={!isGroupBuyMode} autoplay circular indicatorActiveColor="#E8836B" current={swiperCurrent} onChange={(e) => setSwiperCurrent(e.detail.current)}>
@@ -586,12 +638,8 @@ export default function GoodsDetails() {
               </View>
               <Text className="goods-info__sold">已售{soldNum}</Text>
             </View>
-            {!isGroupBuyMode && (
-              <View className="goods-info__tags-row">
-                <Text className="goods-info__tag">满100减20</Text>
-                <Text className="goods-info__tag goods-info__tag--accent">新人专享</Text>
-                <Text className="goods-info__tag">领券中</Text>
-              </View>
+            {!isGroupBuyMode && Array.isArray(details.spuTagList) && details.spuTagList.length > 0 && (
+              <View className="goods-info__tags-row">{details.spuTagList.map((tag: any, index: number) => <Text key={index} className="goods-info__tag">{tag.title || tag}</Text>)}</View>
             )}
             <View className="goods-info__title-row">
               <Text className="goods-info__title">{mainTitle}</Text>
@@ -629,7 +677,7 @@ export default function GoodsDetails() {
                 ))}
               </View>
             </View>
-            <Text className="goods-mode-card__seckill-limit">每人限购 {seckillLimitCount} 件</Text>
+            {seckillLimitCount > 0 && <Text className="goods-mode-card__seckill-limit">每人限购 {seckillLimitCount} 件</Text>}
           </View>
         </View>
       )}
@@ -643,7 +691,7 @@ export default function GoodsDetails() {
                 <Text className="goods-mode-card__price goods-mode-card__price--group">¥{formatPrice(groupPriceCent)}</Text>
                 {originPriceCent > 0 && <Text className="goods-mode-card__origin">¥{formatPrice(originPriceCent)}</Text>}
               </View>
-              <Text className="goods-mode-card__team goods-mode-card__team--group">3人团</Text>
+              <Text className="goods-mode-card__team goods-mode-card__team--group">{details.activityInfo?.minPeople || 2}人团</Text>
             </View>
             <View className="goods-mode-card__steps">
               <Text className="goods-mode-card__step">开团参团</Text>
@@ -685,7 +733,7 @@ export default function GoodsDetails() {
         </>
       )}
       {!isGroupBuyMode && (
-        <View className={`goods-spec-select ${isSeckillMode ? 'goods-spec-select--seckill' : ''}`} onClick={() => showSkuSelectPopup(0)}>
+        <View className={`goods-spec-select ${isSeckillMode ? 'goods-spec-select--seckill' : ''}`} onClick={() => showSkuSelectPopup(isSeckillMode ? 1 : 0)}>
           <Text className="goods-spec-select__label">已选</Text>
           <View className="goods-spec-select__content">
             <Text className={`goods-spec-select__value ${!selectedAttrStr ? 'goods-spec-select__value--hint' : ''}`}>
@@ -704,11 +752,11 @@ export default function GoodsDetails() {
           </View>
           <Text className="goods-seckill-rules__text">1. 秒杀商品库存有限，先到先得。</Text>
           <Text className="goods-seckill-rules__text">2. 活动结束后恢复原价，不支持补差价。</Text>
-          <Text className="goods-seckill-rules__text">3. 下单后请在 30 分钟内完成支付。</Text>
+          <Text className="goods-seckill-rules__text">3. 请在订单显示的有效时间内完成支付。</Text>
         </View>
       )}
 
-      {!isGroupBuyMode && !isSeckillMode && commentsStatistics.commentCount > 0 && (
+      {(
         <View className="goods-comments">
           <View className="goods-comments__header" onClick={navToComments}>
             <View className="goods-comments__title-wrap">
@@ -716,14 +764,14 @@ export default function GoodsDetails() {
               <Text className="goods-comments__count">({commentsStatistics.commentCount})</Text>
             </View>
             <View className="goods-comments__rate-wrap">
-              <Text className="goods-comments__good-rate">{commentsStatistics.goodRate}% 好评</Text>
+              <Text className="goods-comments__good-rate">{commentsStatistics.commentCount > 0 ? `${commentsStatistics.goodRate}% 好评` : '暂无评价'}</Text>
               <Text className="goods-comments__arrow">›</Text>
             </View>
           </View>
           {commentsList.map((item, idx) => (
             <View key={idx} className="goods-comments__item">
               <View className="goods-comments__item-header">
-                <Image className="goods-comments__avatar" src={item.userHeadUrl} />
+                <Image className="goods-comments__avatar" src={item.userHeadUrl || defaultAvatar} />
                 <View className="goods-comments__item-right">
                   <Text className="goods-comments__username">{item.userName}</Text>
                   <View className="goods-comments__stars">{renderStars(item.commentScore)}</View>
@@ -742,7 +790,7 @@ export default function GoodsDetails() {
         </View>
       )}
 
-      {!isGroupBuyMode && descImages.length > 0 && (
+      {descImages.length > 0 && (
         <View className="goods-desc">
           <View className="goods-desc__title-row">
             <View className="goods-desc__line" />
@@ -755,11 +803,6 @@ export default function GoodsDetails() {
         </View>
       )}
 
-      {isGroupBuyMode && (
-        <View className="goods-group-placeholder">
-          <Text className="goods-group-placeholder__text">商品评价 / 详情介绍</Text>
-        </View>
-      )}
 
       <View className="goods-bottom-placeholder" />
 
@@ -788,7 +831,7 @@ export default function GoodsDetails() {
                 </View>
               )}
               <View className="goods-bottom-bar__btn goods-bottom-bar__btn--buy" onClick={() => showSkuSelectPopup(1)}>
-                <Text className="goods-bottom-bar__btn-text">{isSeckillMode ? '立即抢购' : '立即购买'}</Text>
+                <Text className="goods-bottom-bar__btn-text">{activityBlockReason || (isSeckillMode ? '立即抢购' : '立即购买')}</Text>
               </View>
             </View>
           </View>
@@ -817,7 +860,7 @@ export default function GoodsDetails() {
               </View>
             )}
             <View className="goods-bottom-bar__btn goods-bottom-bar__btn--buy" onClick={() => showSkuSelectPopup(1)}>
-              <Text className="goods-bottom-bar__btn-text">{isSeckillMode ? '立即抢购' : '立即购买'}</Text>
+              <Text className="goods-bottom-bar__btn-text">{activityBlockReason || (isSeckillMode ? '立即抢购' : '立即购买')}</Text>
             </View>
           </View>
         </View>
@@ -860,7 +903,7 @@ export default function GoodsDetails() {
               <View className="spec-popup__header">
                 <Image className="spec-popup__img" src={specImg || primaryImage} mode="aspectFill" />
                 <View className="spec-popup__header-info">
-                  <Text className="spec-popup__price">¥{formatPrice(selectSkuSellsPrice || minSalePrice)}</Text>
+                  <Text className="spec-popup__price">¥{formatPrice(groupBuyIntentRef.current?.buyOriginalPrice ? originPriceCent : selectSkuSellsPrice || minSalePrice)}</Text>
                   {selectedAttrStr ? <Text className="spec-popup__selected-specs">{selectedAttrStr}</Text> : <Text className="spec-popup__hint">请选择规格</Text>}
                 </View>
               </View>
@@ -887,8 +930,8 @@ export default function GoodsDetails() {
                 </View>
               </View>
               <View className="spec-popup__footer">
-                <View className="spec-popup__confirm-btn" onClick={handleSpecConfirm}>
-                  <Text className="spec-popup__confirm-text">{buyType === 1 ? (isSeckillMode ? '立即抢购' : '立即购买') : '加入购物车'}</Text>
+                <View className={`spec-popup__confirm-btn ${purchasePending ? 'spec-popup__confirm-btn--disabled' : ''}`} onClick={handleSpecConfirm}>
+                  <Text className="spec-popup__confirm-text">{purchasePending ? '处理中…' : buyType === 1 ? (isSeckillMode ? '立即抢购' : '立即购买') : '加入购物车'}</Text>
                 </View>
               </View>
             </View>

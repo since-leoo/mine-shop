@@ -21,7 +21,7 @@
 }
 
 /* === Search Sections === */
-.search-section {
+.search-page .search-section {
   margin-bottom: 48rpx;
 
   &__header {
@@ -51,7 +51,7 @@
 }
 
 /* === Search Tags === */
-.search-tag {
+.search-page .search-tag {
   background: $warm-bg-white;
   border-radius: $warm-radius-round;
   padding: 14rpx 28rpx;
@@ -70,4 +70,20 @@
       color: $warm-primary-dark;
     }
   }
+}
+
+.search-page .search-tag { max-width: 100%; box-sizing: border-box; }
+.search-page .search-tag__text { overflow-wrap: anywhere; word-break: break-all; }
+.search-page__submit { padding: 16rpx; color: #D4654D; font-size: 28rpx; }
+.search-page--h5 {
+  .search-page__bar { padding: 8PX 16PX; }
+  .search-page__body { padding: 20PX 16PX; }
+  .search-page__submit { padding: 12PX 8PX; font-size: 14PX; }
+  .search-section { margin-bottom: 24PX; }
+  .search-section__header { min-height: 44PX; margin-bottom: 8PX; }
+  .search-section__title { font-size: 15PX; line-height: 22PX; }
+  .search-section__clear { min-height: 44PX; display: flex; align-items: center; font-size: 12PX; padding: 0 8PX; }
+  .search-section__tags { gap: 8PX; }
+  .search-tag { border-radius: 22PX; padding: 10PX 14PX; }
+  .search-tag__text { font-size: 12PX; line-height: 18PX; }
 }

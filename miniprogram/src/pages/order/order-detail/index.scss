@@ -1,4 +1,5 @@
-﻿@use '../../../styles/variables' as *;
+@use '../after-service/page';
+@use '../../../styles/variables' as *;
 
 .order-detail {
   min-height: 100vh;
@@ -740,3 +741,22 @@
   padding-bottom: 0;
 }
 
+
+.order-detail {
+  box-sizing: border-box;
+  &__address-user { flex-wrap: wrap; gap: 8rpx; }
+  &__address-name, &__address-detail { overflow-wrap: anywhere; }
+  &__info-row { gap: 24rpx; align-items: flex-start; }
+  &__info-value-row { min-width: 0; justify-content: flex-end; }
+  &__info-value { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+  &__info-copy { flex-shrink: 0; white-space: nowrap; }
+  &__bottom-bar { flex-wrap: wrap; }
+  &__btn { white-space: nowrap; box-sizing: border-box; }
+}
+.order-detail .order-detail__goods { display: grid; grid-template-columns: 144rpx minmax(0, 1fr); column-gap: 20rpx; row-gap: 12rpx; }
+.order-detail .order-detail__goods-img { grid-row: 1 / 3; width: 144rpx; height: 144rpx; }
+.order-detail .order-detail__goods-info { margin: 0; min-width: 0; }
+.order-detail .order-detail__goods-right { grid-column: 2; min-width: 0; flex-direction: row; justify-content: space-between; gap: 8rpx; }
+.order-detail .order-detail__goods-actions { justify-content: flex-start; }
+.order-detail .order-detail__goods-action { min-width: 0; padding: 0 20rpx; box-sizing: border-box; }
+.order-detail .order-detail__bottom-spacer { height: 0; }

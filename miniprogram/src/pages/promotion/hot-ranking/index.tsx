@@ -20,7 +20,7 @@ const RANK_LABELS = ['TOP 1', 'TOP 2', 'TOP 3', 'TOP 4', 'TOP 5']
 function toPrice(value: any): number {
   const amount = Number(value ?? 0)
   if (!Number.isFinite(amount)) return 0
-  return amount > 999 ? amount / 100 : amount
+  return amount / 100
 }
 
 function toSoldCount(value: any): number {
@@ -36,7 +36,7 @@ function toRankItem(item: any): RankItem {
     title: item?.title || item?.name || '商品',
     price: toPrice(item?.price ?? item?.salePrice ?? item?.minSalePrice ?? item?.min_price),
     originPrice: toPrice(item?.originPrice ?? item?.linePrice ?? item?.maxLinePrice ?? item?.max_price),
-    soldCount: toSoldCount(item?.soldCount ?? item?.sold_count ?? item?.sales ?? item?.sale_count ?? 0),
+    soldCount: toSoldCount(item?.soldNum ?? item?.soldCount ?? item?.sold_count ?? item?.sales ?? item?.sale_count ?? 0),
   }
 }
 
@@ -47,7 +47,7 @@ export default function HotRankingPage() {
 
   const loadData = useCallback(() => {
     setLoading(true)
-    Promise.all([fetchHotGoods(20), fetchRecommendGoods(20)])
+    return Promise.all([fetchHotGoods(20).catch(() => []), fetchRecommendGoods(20).catch(() => [])])
       .then(([hotList, recommendList]) => {
         const source = Array.isArray(hotList) && hotList.length > 0 ? hotList : recommendList
         const mapped = (source || []).map(toRankItem).filter((item) => !!item.spuId)
@@ -62,12 +62,11 @@ export default function HotRankingPage() {
   }, [loadData])
 
   usePullDownRefresh(() => {
-    loadData()
-    Taro.stopPullDownRefresh()
+    loadData().finally(() => Taro.stopPullDownRefresh())
   })
 
   const topItem = rankList[0]
-  const listItems = rankList.slice(1, 8)
+  const listItems = rankList.slice(1)
   const totalSold = useMemo(() => rankList.reduce((sum, item) => sum + item.soldCount, 0), [rankList])
 
   const openGoods = useCallback((item: RankItem) => {
@@ -99,15 +98,9 @@ export default function HotRankingPage() {
           <View className="hot-ranking__topbar-title-wrap">
             <Text className="hot-ranking__eyebrow">HOT SALE RANKING</Text>
             <Text className="hot-ranking__headline">热卖榜单</Text>
-            <Text className="hot-ranking__subline">大家都在买的口碑好物，按实时销量更新</Text>
+            <Text className="hot-ranking__subline">大家都在买的精选好物</Text>
           </View>
-          {h5 ? (
-            <View className="hot-ranking__topbar-btn">
-              <Text className="hot-ranking__topbar-icon">↗</Text>
-            </View>
-          ) : (
-            <View className="hot-ranking__topbar-btn hot-ranking__topbar-btn--placeholder" />
-          )}
+          <View className="hot-ranking__topbar-btn hot-ranking__topbar-btn--placeholder" />
         </View>
         <View className="hot-ranking__hero-metrics">
           <View className="hot-ranking__metric">
@@ -130,7 +123,7 @@ export default function HotRankingPage() {
             </View>
             <View className="hot-ranking__top-info">
               <Text className="hot-ranking__top-title">{topItem.title}</Text>
-              <Text className="hot-ranking__top-sell">近 24h 销量 {topItem.soldCount}</Text>
+              <Text className="hot-ranking__top-sell">累计销量 {topItem.soldCount}</Text>
               <View className="hot-ranking__price-row">
                 <Text className="hot-ranking__price">¥{topItem.price.toFixed(2)}</Text>
                 {topItem.originPrice > 0 ? <Text className="hot-ranking__origin">¥{topItem.originPrice.toFixed(2)}</Text> : null}

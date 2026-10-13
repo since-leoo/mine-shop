@@ -63,6 +63,7 @@
 
 .coupon-ticket {
   &__bottom-row {
+    flex-wrap: wrap;
     margin-top: 22rpx;
     display: flex;
     align-items: center;
@@ -77,7 +78,9 @@
   }
 
   &__receive-btn {
-    min-width: 162rpx;
+    min-width: 0;
+    box-sizing: border-box;
+    flex-shrink: 0;
     height: 66rpx;
     padding: 0 24rpx;
     border-radius: 999rpx;
@@ -94,6 +97,7 @@
   }
 
   &__receive-text {
+    white-space: nowrap;
     font-size: 24rpx;
     line-height: 1;
     font-weight: 700;

@@ -4,11 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { fetchCouponDetail } from '../../../services/coupon';
 import CouponNav from '../../../components/coupon-nav';
 import { isH5 } from '../../../common/platform';
+import { formatCouponRule } from '../presentation';
 import './index.scss';
 
 interface CouponDetailData {
   title: string;
-  type: number;
+  type: number | string;
   value: number;
   base: number;
   desc: string;
@@ -31,7 +32,7 @@ export default function CouponDetail() {
     }
     setLoading(true);
     fetchCouponDetail(parseInt(couponId))
-      .then(({ detail: d }: any) => setDetail(d))
+      .then(({ detail: d }: any) => setDetail(d?.title ? d : null))
       .catch(() => Taro.showToast({ title: '加载失败', icon: 'none' }))
       .finally(() => setLoading(false));
   }, [couponId]);
@@ -40,20 +41,8 @@ export default function CouponDetail() {
     Taro.navigateTo({ url: `/pages/coupon/coupon-activity-goods/index?id=${couponId}` });
   }, [couponId]);
 
-  const handleUse = useCallback(() => {
-    Taro.switchTab({ url: '/pages/home/index' });
-  }, []);
-
-  const formatAmount = () => {
-    if (!detail) return '';
-    if (detail.type === 2) {
-      return detail.base > 0
-        ? `满${(detail.base / 100).toFixed(0)}元${(detail.value / 10).toFixed(1)}折`
-        : `${(detail.value / 10).toFixed(1)}折`;
-    }
-    const val = (detail.value / 100).toFixed(detail.value % 100 === 0 ? 0 : 2);
-    return detail.base > 0 ? `满${(detail.base / 100).toFixed(0)}元减${val}元` : `减${val}元`;
-  };
+  const formatAmount = () => detail ? formatCouponRule(detail) : '';
+  const usable = !detail?.status || detail.status === 'default';
 
   if (loading) {
     return <View className="coupon-detail-page__state"><Text className="coupon-detail-page__state-text">加载中...</Text></View>;
@@ -86,7 +75,7 @@ export default function CouponDetail() {
         <View className="coupon-detail-page__ticket-right">
           <Text className="coupon-detail-page__ticket-title">{detail.title}</Text>
           <Text className="coupon-detail-page__ticket-desc">下单结算时自动匹配可用商品和优惠规则</Text>
-          <Text className="coupon-detail-page__ticket-status">{detail.status || '可使用'}</Text>
+          <Text className="coupon-detail-page__ticket-status">{usable ? '可使用' : '已失效'}</Text>
         </View>
       </View>
 
@@ -116,8 +105,8 @@ export default function CouponDetail() {
           <View className="coupon-detail-page__btn coupon-detail-page__btn--plain" onClick={handleViewGoods}>
             <Text className="coupon-detail-page__btn-text coupon-detail-page__btn-text--plain">查看可用商品</Text>
           </View>
-          <View className="coupon-detail-page__btn coupon-detail-page__btn--primary" onClick={handleUse}>
-            <Text className="coupon-detail-page__btn-text coupon-detail-page__btn-text--primary">立即使用</Text>
+          <View className={`coupon-detail-page__btn coupon-detail-page__btn--primary ${!usable ? 'coupon-detail-page__btn--disabled' : ''}`} onClick={usable ? handleViewGoods : undefined}>
+            <Text className="coupon-detail-page__btn-text coupon-detail-page__btn-text--primary">{usable ? '立即使用' : '已失效'}</Text>
           </View>
         </View>
       </View>

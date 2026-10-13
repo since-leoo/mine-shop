@@ -1,7 +1,6 @@
 import { View, Text, Image } from '@tarojs/components';
-import Taro, { useRouter, usePullDownRefresh } from '@tarojs/taro';
-import { useState, useEffect, useCallback } from 'react';
-import dayjs from 'dayjs';
+import Taro, { useRouter, usePullDownRefresh, useDidShow } from '@tarojs/taro';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchAfterSaleList, type AfterSaleItem } from '../../../services/order/afterSale';
 import { fetchOrderDetail } from '../../../services/order/orderDetail';
 import { cancelOrder, confirmReceipt } from '../../../services/order/orderList';
@@ -55,6 +54,7 @@ const STATUS_DESC_MAP: Record<string, string> = {
   pending: '待付款',
   paid: '待发货',
   shipped: '待收货',
+  partial_shipped: '部分发货',
   completed: '已完成',
   cancelled: '已取消',
   refunded: '已退款',
@@ -95,9 +95,13 @@ export default function OrderDetail() {
   const [order, setOrder] = useState<OrderData | null>(null);
   const [goodsList, setGoodsList] = useState<OrderGoods[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const requestRef = useRef(0);
+  const actionRef = useRef(false);
+  const shownRef = useRef(false);
   const [itemAfterSaleMap, setItemAfterSaleMap] = useState<Record<string, AfterSaleItem>>({});
 
-  const loadItemAfterSales = useCallback((items: Array<{ id?: string | number }>) => {
+  const loadItemAfterSales = useCallback((items: Array<{ id?: string | number }>, requestId: number) => {
     const orderItemIds = new Set(
       items
         .map((item) => String(item?.id || ''))
@@ -111,6 +115,7 @@ export default function OrderDetail() {
 
     fetchAfterSaleList({ status: 'all', page: 1, pageSize: 100 })
       .then((result) => {
+        if (requestId !== requestRef.current) return;
         const nextMap: Record<string, AfterSaleItem> = {};
         (result.list || []).forEach((item) => {
           const key = String(item.orderItemId || '');
@@ -121,16 +126,27 @@ export default function OrderDetail() {
         setItemAfterSaleMap(nextMap);
       })
       .catch(() => {
+        if (requestId !== requestRef.current) return;
         setItemAfterSaleMap({});
       });
   }, []);
 
   const loadDetail = useCallback((orderNo: string) => {
+    const requestId = ++requestRef.current;
     setLoading(true);
-    fetchOrderDetail({ orderNo })
+    setOrder(null);
+    setError('');
+    if (!orderNo) {
+      setError('缺少订单编号，请从订单列表进入');
+      setLoading(false);
+      return Promise.resolve();
+    }
+    return fetchOrderDetail({ orderNo })
       .then((res: any) => {
+        if (requestId !== requestRef.current) return;
         const data = res?.data || res;
         if (!data || !data.orderNo) {
+          setError("订单不存在或已不可访问");
           setLoading(false);
           return;
         }
@@ -147,28 +163,28 @@ export default function OrderDetail() {
           num: item.quantity,
         }));
         setGoodsList(list);
-        loadItemAfterSales(data.items || []);
+        loadItemAfterSales(data.items || [], requestId);
         setLoading(false);
       })
       .catch(() => {
+        if (requestId !== requestRef.current) return;
+        setError('订单加载失败，请重试');
         setLoading(false);
-        Taro.showToast({ title: '加载失败', icon: 'none' });
       });
   }, [loadItemAfterSales]);
 
   useEffect(() => {
-    const orderNo = router.params.orderNo || '';
-    if (orderNo) {
-      loadDetail(orderNo);
-    }
-  }, [router.params, loadDetail]);
+    void loadDetail(router.params.orderNo || '');
+    return () => { requestRef.current += 1; };
+  }, [router.params.orderNo, loadDetail]);
+
+  useDidShow(() => {
+    if (shownRef.current) void loadDetail(router.params.orderNo || '');
+    shownRef.current = true;
+  });
 
   usePullDownRefresh(() => {
-    const orderNo = router.params.orderNo || '';
-    if (orderNo) {
-      loadDetail(orderNo);
-    }
-    Taro.stopPullDownRefresh();
+    loadDetail(router.params.orderNo || '').finally(() => Taro.stopPullDownRefresh());
   });
 
   const handleCopyOrderNo = useCallback(() => {
@@ -185,35 +201,21 @@ export default function OrderDetail() {
     });
   }, [order]);
 
-  const handleCancelOrder = useCallback(() => {
-    if (!order) return;
-
-    Taro.showModal({ title: '提示', content: '确认取消该订单吗？' }).then((res) => {
-      if (!res.confirm) {
-        return;
-      }
-
-      cancelOrder(order.orderNo).then(() => {
-        Taro.showToast({ title: '订单已取消', icon: 'none' });
-        loadDetail(order.orderNo);
-      });
-    });
+  const runOrderAction = useCallback(async (action: 'cancel' | 'confirm') => {
+    if (!order || actionRef.current) return;
+    actionRef.current = true;
+    try {
+      const result = await Taro.showModal({ title: '提示', content: action === 'cancel' ? '确认取消该订单吗？' : '确认已收到商品吗？' });
+      if (!result.confirm) return;
+      await (action === 'cancel' ? cancelOrder(order.orderNo) : confirmReceipt(order.orderNo));
+      Taro.showToast({ title: action === 'cancel' ? '订单已取消' : '已确认收货', icon: 'none' });
+      await loadDetail(order.orderNo);
+    } catch (error: any) {
+      Taro.showToast({ title: error?.msg || error?.message || '操作失败，请重试', icon: 'none' });
+    } finally { actionRef.current = false; }
   }, [order, loadDetail]);
-
-  const handleConfirmReceipt = useCallback(() => {
-    if (!order) return;
-
-    Taro.showModal({ title: '提示', content: '确认收货吗？' }).then((res) => {
-      if (!res.confirm) {
-        return;
-      }
-
-      confirmReceipt(order.orderNo).then(() => {
-        Taro.showToast({ title: '已确认收货', icon: 'none' });
-        loadDetail(order.orderNo);
-      });
-    });
-  }, [order, loadDetail]);
+  const handleCancelOrder = useCallback(() => { void runOrderAction('cancel'); }, [runOrderAction]);
+  const handleConfirmReceipt = useCallback(() => { void runOrderAction('confirm'); }, [runOrderAction]);
 
   const handleGoodsTap = useCallback((goods: OrderGoods) => {
     Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${goods.spuId}` });
@@ -272,27 +274,25 @@ export default function OrderDetail() {
     });
   }, [goodsList, order?.id]);
 
-  if (loading) {
-    return (
-      <View className={`order-detail order-detail--loading ${isH5() ? 'order-detail--h5' : ''}`}>
-        <Text className="order-detail__loading-text">加载中...</Text>
+  if (loading || !order) {
+    return <View className="order-detail">
+      <PageNav title="订单详情" />
+      <View className="order-state">
+        <Text>{loading ? '加载中...' : error || '暂无订单详情'}</Text>
+        {!loading && <View className="order-state__action" onClick={() => router.params.orderNo ? loadDetail(router.params.orderNo) : Taro.redirectTo({ url: '/pages/order/order-list/index' })}>{router.params.orderNo ? '重新加载' : '查看订单'}</View>}
       </View>
-    );
-  }
-
-  if (!order) {
-    return null;
+    </View>;
   }
 
   const addr = (order.address || {}) as any;
   const receiverAddress = addr.fullAddress || [addr.province, addr.city, addr.district, addr.detail].filter(Boolean).join('');
   const statusDesc = pickDisplayText(order.statusDesc, STATUS_DESC_MAP[order.status] || order.status);
-  const payTypeText = order.payTypeDesc || order.payTypeName || order.payType || '微信支付';
+  const payTypeText = order.payTypeDesc || order.payTypeName || order.payType || (order.paidAt ? '以支付记录为准' : '待支付');
   const isPaid = !!order.paidAt;
-  const statusSubText = order.status === 'shipped'
-    ? `预计${dayjs(order.createdAt || Date.now()).add(3, 'day').format('M月D日')}送达`
-    : (order.status === 'pending' ? '请在倒计时结束前完成支付' : '');
-  const logisticsTime = order.paidAt || order.createdAt || '';
+  const statusSubText = ['shipped', 'partial_shipped'].includes(order.status)
+    ? '配送进度以物流更新为准'
+    : (order.status === 'pending' ? '请尽快完成支付' : '');
+  const showLogistics = ['partial_shipped', 'shipped', 'completed'].includes(order.status);
   const canApplyServiceForOrder = SERVICE_ELIGIBLE_ORDER_STATUSES.includes(order.status);
   const buttonList = Array.isArray(order.buttonVOs)
     ? order.buttonVOs
@@ -321,10 +321,10 @@ export default function OrderDetail() {
         return { key: 'comment', text: button?.name || '去评价', className: 'order-detail__btn--outline-primary', onClick: handleComment };
       }
       if (type === OrderButtonTypes.APPLY_REFUND) {
-        return { key: 'refund', text: button?.name || '申请售后', className: 'order-detail__btn--outline-primary', onClick: handleApplyService };
+        return { key: 'refund', text: button?.name || '申请售后', className: 'order-detail__btn--outline-primary', onClick: () => handleApplyService() };
       }
       if (type === OrderButtonTypes.VIEW_REFUND) {
-        return { key: 'view-refund', text: button?.name || '查看售后', className: 'order-detail__btn--outline-primary', onClick: handleViewRefund };
+        return { key: 'view-refund', text: button?.name || '查看售后', className: 'order-detail__btn--outline-primary', onClick: () => handleViewRefund() };
       }
       return null;
     })
@@ -339,14 +339,13 @@ export default function OrderDetail() {
         {!!statusSubText && <Text className="order-detail__status-sub">{statusSubText}</Text>}
       </View>
 
-      {!!logisticsTime && (
+      {showLogistics && (
         <View className="order-detail__logistics" onClick={handleViewDelivery}>
           <View className="order-detail__logistics-icon">
             <Text className="order-detail__icon-text">运</Text>
           </View>
           <View className="order-detail__logistics-main">
-            <Text className="order-detail__logistics-text">您的快递正在派送中</Text>
-            <Text className="order-detail__logistics-time">{logisticsTime}</Text>
+            <Text className="order-detail__logistics-text">查看订单物流进度</Text>
           </View>
           <Text className="order-detail__logistics-arrow">{'>'}</Text>
         </View>
@@ -462,7 +461,7 @@ export default function OrderDetail() {
           <Text className="order-detail__info-label">备注</Text>
           <Text className="order-detail__info-value">{order.remark || '-'}</Text>
         </View>
-        <View className="order-detail__service-row">
+        <View className="order-detail__service-row" onClick={() => Taro.navigateTo({ url: '/pages/customer-service/index' })}>
           <View className="order-detail__service-icon">客</View>
           <Text className="order-detail__service-text">联系客服</Text>
         </View>
@@ -472,7 +471,7 @@ export default function OrderDetail() {
 
       {bottomActions.length > 0 && (
         <View className="order-detail__bottom-bar">
-          {bottomActions.slice(0, 2).map((action) => (
+          {bottomActions.map((action) => (
             <View key={action.key} className={`order-detail__btn ${action.className}`} onClick={action.onClick}>
               <Text
                 className={`order-detail__btn-text ${

@@ -1,4 +1,4 @@
-﻿@use '../../../styles/variables' as *;
+@use '../../../styles/variables' as *;
 
 .cashier {
   min-height: 100vh;
@@ -266,3 +266,9 @@
 .cashier--h5 .cashier__cancel-btn {
   padding: 8PX;
 }
+
+.cashier { box-sizing: border-box; }
+.cashier__method-left { min-width: 0; flex-wrap: wrap; gap: 6rpx; }
+.cashier__radio { flex-shrink: 0; }
+.cashier__channel-hint { width: 100%; color: $warm-text-hint; font-size: $warm-font-xs; }
+.cashier__retry { display: block; color: $warm-primary; padding: 20rpx 0; font-size: $warm-font-md; }

@@ -15,7 +15,7 @@ export interface GroupBuyItemInput {
   soldQuantity?: number;
   soldText?: string;
   groupTimeLimit?: number;
-  tags?: GroupBuyTag[];
+  tags?: (GroupBuyTag | string)[];
 }
 
 export interface OngoingGroupInput {
@@ -77,7 +77,7 @@ export interface GroupBuyViewModel {
 
 export function buildGroupBuyDetailUrl(spuId: string, activityId: string, groupNo?: string): string {
   const suffix = groupNo ? `&groupNo=${encodeURIComponent(groupNo)}` : '';
-  return `/pages/goods/details/index?spuId=${spuId}&orderType=group_buy&groupBuyId=${activityId}${suffix}`;
+  return `/pages/goods/details/index?spuId=${encodeURIComponent(spuId)}&orderType=group_buy&groupBuyId=${encodeURIComponent(activityId)}${suffix}`;
 }
 
 function toNumber(value: unknown): number {
@@ -93,7 +93,7 @@ function formatYuanFromCent(cents: number): string {
 
 function buildFallbackTabs(list: GroupBuyItemInput[]): NavTabInput[] {
   if (list.length === 0) {
-    return [{ key: 'direct_join', label: '可直接参团', count: 0 }];
+    return [{ key: 'direct_join', label: '全部团购', count: 0 }];
   }
 
   const bucket = new Map<number, number>();
@@ -112,7 +112,7 @@ function buildFallbackTabs(list: GroupBuyItemInput[]): NavTabInput[] {
       count,
     }));
 
-  return [{ key: 'direct_join', label: '可直接参团', count: list.length }, ...tabs];
+  return [{ key: 'direct_join', label: '全部团购', count: list.length }, ...tabs];
 }
 
 function getActiveTab(displayTabs: NavTabInput[], activeNavKey: string): NavTabInput | null {
@@ -151,25 +151,18 @@ function buildFallbackTags(item: GroupBuyItemInput, progressPercent: number): st
   return ['正在招募', `${minPeople || 2}人成团`];
 }
 
-function normalizeTitle(title: string | undefined, maxLength = 20): string {
-  const value = String(title || '').trim();
-  if (value.length <= maxLength) {
-    return value;
-  }
-  return `${value.slice(0, maxLength)}...`;
-}
-
 function buildCardModel(item: GroupBuyItemInput): GroupBuyCardModel {
   const price = Math.max(0, toNumber(item.price));
   const originPrice = Math.max(0, toNumber(item.originPrice));
   const groupCount = Math.max(0, toNumber(item.groupCount));
   const successGroupCount = Math.max(0, toNumber(item.successGroupCount));
   const soldCount = Math.max(0, toNumber(item.soldQuantity));
-  const denominator = groupCount + successGroupCount;
+  // groupCount 为累计开团数，成功团已包含在其中。
+  const denominator = groupCount;
   const progressPercent = denominator > 0 ? Math.min(100, Math.round((successGroupCount / denominator) * 100)) : 0;
   const normalizedTags = Array.isArray(item.tags)
     ? item.tags
-      .map((tag) => String(tag?.title || '').trim())
+      .map((tag) => String(typeof tag === 'string' ? tag : tag?.title || '').trim())
       .filter(Boolean)
       .slice(0, 2)
     : [];
@@ -178,7 +171,7 @@ function buildCardModel(item: GroupBuyItemInput): GroupBuyCardModel {
     spuId: String(item.spuId || ''),
     activityId: String(item.activityId || ''),
     thumb: String(item.thumb || ''),
-    title: normalizeTitle(item.title),
+    title: String(item.title || '').trim(),
     priceYuan: formatYuanFromCent(price),
     originPriceYuan: originPrice > 0 ? formatYuanFromCent(originPrice) : '',
     minPeople: Math.max(0, toNumber(item.minPeople)),
@@ -196,12 +189,12 @@ function buildCardModel(item: GroupBuyItemInput): GroupBuyCardModel {
 export function buildGroupBuyViewModel(input: GroupBuyViewModelInput): GroupBuyViewModel {
   const list = Array.isArray(input.list) ? input.list : [];
   const remoteTabs = Array.isArray(input.remoteTabs) ? input.remoteTabs : [];
-  const displayTabs = remoteTabs.length > 0 ? remoteTabs : buildFallbackTabs(list);
+  const displayTabs = remoteTabs.length > 0 ? remoteTabs.map((tab) => tab.key === 'direct_join' ? { ...tab, label: '全部团购' } : tab) : buildFallbackTabs(list);
   const activeTab = getActiveTab(displayTabs, input.activeNavKey);
   const activeNavKey = activeTab?.key || 'direct_join';
   const filteredList = filterListByTab(list, activeNavKey).map(buildCardModel);
   const featured = filteredList[0] || null;
-  const listItems = featured ? filteredList.slice(0, 3) : [];
+  const listItems = featured ? filteredList : [];
   const totalSuccessGroups = filteredList.reduce((sum, item) => sum + item.successGroupCount, 0);
   const savings = filteredList
     .map((item) => {
@@ -230,9 +223,9 @@ export function buildGroupBuyViewModel(input: GroupBuyViewModelInput): GroupBuyV
         ? `还有 ${ongoingCount} 个团正在冲刺成团`
         : '当前暂无可直接参团，去发起一团',
       joinDescription: ongoingCount > 0
-        ? '优先展示可直接参团的进行中团，减少用户等待时间'
+        ? '加入进行中的团，一起享受拼团价'
         : '当前活动仍可开团购买，分享好友后即可快速成团',
-      joinNote: `已成功开团 ${totalSuccessGroups} 个`,
+      joinNote: `已成功成团 ${totalSuccessGroups} 个`,
     },
   };
 }

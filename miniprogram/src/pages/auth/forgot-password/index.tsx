@@ -1,3 +1,4 @@
+import { showVerificationHelp, showVerificationSent, contactSupport } from '../shared/auth-help';
 import { Button, Input, Text, View } from '@tarojs/components';
 import { Lock, Message, Phone, Service, Shield } from '@nutui/icons-react-taro';
 import Taro from '@tarojs/taro';
@@ -29,6 +30,7 @@ export default function ForgotPasswordPage() {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -41,21 +43,24 @@ export default function ForgotPasswordPage() {
   }
 
   const handleSendCode = async () => {
+    if (sending || countdown > 0) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
     }
 
+    setSending(true);
     try {
       const result: any = await sendVerificationCode(phone, 'forgot_password');
-      Taro.showModal({ title: '开发验证码', content: `当前验证码：${result?.code || '已发送'}`, showCancel: false });
+      showVerificationSent(result);
       setCountdown(60);
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '验证码发送失败', icon: 'none' });
-    }
+    } finally { setSending(false); }
   };
 
   const handleSubmit = async () => {
+    if (submitting) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
@@ -96,7 +101,7 @@ export default function ForgotPasswordPage() {
               <Text className="auth-hero__mark-text">R</Text>
             </View>
             <Text className="auth-hero__title">先校验手机{`\n`}再重置登录密码</Text>
-            <Text className="auth-hero__desc">把“手机验证 + 重设密码”的路径做成更清晰、更可信赖的 H5 表单流程。</Text>
+            <Text className="auth-hero__desc">验证账号绑定的手机号，重新设置登录密码。</Text>
           </View>
         </View>
 
@@ -107,7 +112,7 @@ export default function ForgotPasswordPage() {
               <Text className="auth-card__eyebrow-text">密码重置</Text>
             </View>
             <Text className="auth-card__title">重设你的登录密码</Text>
-            <Text className="auth-card__desc">先完成手机验证，再设置新的登录密码。开发环境会直接弹出验证码，方便联调，也保持和设计稿一致的节奏感。</Text>
+            <Text className="auth-card__desc">验证手机号后即可设置新密码，请妥善保管验证码。</Text>
           </View>
 
           <View className="auth-field">
@@ -124,14 +129,14 @@ export default function ForgotPasswordPage() {
           <View className="auth-field">
             <View className="auth-field__label-row">
               <Text className="auth-field__label">短信验证码</Text>
-              <Text className="auth-field__hint">开发环境会直接回显验证码</Text>
+              <Text className="auth-field__hint">验证码有效期内可用</Text>
             </View>
             <View className="auth-code-row">
               <View className="auth-field__box auth-field__box--grow auth-field__box--code">
                 <View className="auth-field__icon"><Message size={18} /></View>
                 <Input className="auth-field__input" type="number" maxlength={6} value={code} onInput={(e) => setCode(e.detail.value)} placeholder="请输入 6 位验证码" />
               </View>
-              <Button className="auth-code-row__button auth-code-row__button--ghost" disabled={countdown > 0} onClick={handleSendCode}>
+              <Button className="auth-code-row__button auth-code-row__button--ghost" disabled={sending || countdown > 0} onClick={handleSendCode}>
                 {getCodeButtonText(countdown)}
               </Button>
             </View>
@@ -159,7 +164,7 @@ export default function ForgotPasswordPage() {
             </View>
           </View>
 
-          <Button className="auth-button auth-button--primary" loading={submitting} onClick={handleSubmit}>
+          <Button className="auth-button auth-button--primary" loading={submitting} disabled={submitting} onClick={handleSubmit}>
             重置密码
           </Button>
 
@@ -173,11 +178,11 @@ export default function ForgotPasswordPage() {
           </View>
 
           <View className="auth-alt-actions">
-            <View className="auth-alt-action">
+            <View className="auth-alt-action" onClick={showVerificationHelp}>
               <View className="auth-alt-action__icon"><Message size={18} /></View>
               <Text className="auth-alt-action__text">验证码说明</Text>
             </View>
-            <View className="auth-alt-action">
+            <View className="auth-alt-action" onClick={contactSupport}>
               <View className="auth-alt-action__icon"><Service size={18} /></View>
               <Text className="auth-alt-action__text">联系客服</Text>
             </View>

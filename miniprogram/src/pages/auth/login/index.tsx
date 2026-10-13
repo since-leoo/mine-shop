@@ -1,12 +1,13 @@
+import { showVerificationHelp, showVerificationSent, contactSupport } from '../shared/auth-help';
 import { Button, Input, Text, View } from '@tarojs/components';
 import { Eye, Lock, Message, Phone, Service, Shield } from '@nutui/icons-react-taro';
 import Taro, { useRouter } from '@tarojs/taro';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { persistAuth } from '../../../common/auth';
 import { navigateAfterLogin } from '../../../common/auth-guard';
 import { isH5 } from '../../../common/platform';
-import { fetchRegisterProtocols, passwordLogin } from '../../../services/auth/h5Auth';
-import { isValidCode, isValidPassword, isValidPhone } from '../shared/auth-form';
+import { fetchRegisterProtocols, passwordLogin, sendVerificationCode, smsLogin } from '../../../services/auth/h5Auth';
+import { getCodeButtonText, isValidCode, isValidPassword, isValidPhone } from '../shared/auth-form';
 import './index.scss';
 import './page.scss';
 
@@ -28,14 +29,22 @@ function UnsupportedAuthEntry() {
 
 export default function LoginPage() {
   const router = useRouter();
-  const redirect = useMemo(() => router.params?.redirect || '/pages/home/index', [router.params]);
   const [activeTab, setActiveTab] = useState<LoginTab>('password');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordVisible, setPasswordVisible] = useState(false);
   const [smsCode, setSmsCode] = useState('');
   const [userAgreement, setUserAgreement] = useState('');
   const [privacyPolicy, setPrivacyPolicy] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+
+  useEffect(() => {
+    if (!countdown) return;
+    const timer = setTimeout(() => setCountdown(value => value - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
 
   useEffect(() => {
     setSmsCode('');
@@ -68,6 +77,7 @@ export default function LoginPage() {
   };
 
   const handlePasswordSubmit = async () => {
+    if (submitting) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
@@ -81,16 +91,32 @@ export default function LoginPage() {
     try {
       const response = await passwordLogin(phone, password);
       persistAuth(response);
+      // 不在页面内填默认目标，由导航入口统一处理显式回跳、缓存回跳及个人中心。
+      await navigateAfterLogin(router.params?.redirect).catch(() => {
+        throw new Error('登录成功，页面跳转失败，请重试');
+      });
       Taro.showToast({ title: '登录成功', icon: 'success' });
-      setTimeout(() => navigateAfterLogin(redirect), 200);
     } catch (error: any) {
-      Taro.showToast({ title: error?.msg || '登录失败', icon: 'none' });
+      Taro.showToast({ title: error?.msg || error?.message || '登录失败', icon: 'none' });
     } finally {
       setSubmitting(false);
     }
   };
 
+  const handleSendCode = async () => {
+    if (sending || countdown > 0) return;
+    if (!isValidPhone(phone)) { Taro.showToast({ title: '请输入正确手机号', icon: 'none' }); return; }
+    setSending(true);
+    try {
+      const response: any = await sendVerificationCode(phone, 'login');
+      showVerificationSent(response);
+      setCountdown(60);
+    } catch (error: any) { Taro.showToast({ title: error?.msg || '验证码发送失败', icon: 'none' }); }
+    finally { setSending(false); }
+  };
+
   const handleSmsSubmit = async () => {
+    if (submitting) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
@@ -100,7 +126,14 @@ export default function LoginPage() {
       return;
     }
 
-    Taro.showToast({ title: '短信登录接口待接入', icon: 'none' });
+    setSubmitting(true);
+    try {
+      const response = await smsLogin(phone, smsCode);
+      persistAuth(response);
+      await navigateAfterLogin(router.params?.redirect);
+      Taro.showToast({ title: '登录成功', icon: 'success' });
+    } catch (error: any) { Taro.showToast({ title: error?.msg || error?.message || '登录失败', icon: 'none' }); }
+    finally { setSubmitting(false); }
   };
 
   return (
@@ -112,7 +145,7 @@ export default function LoginPage() {
               <Text className="auth-hero__mark-text">M</Text>
             </View>
             <Text className="auth-hero__title">欢迎来到{`\n`}MineMall 会员中心</Text>
-            <Text className="auth-hero__desc">延续 design.html 里的暖杏色与奶油卡片风格，让 H5 登录入口保持轻盈、亲切和可信赖的体验。</Text>
+            <Text className="auth-hero__desc">发现喜欢的好物，随时查看订单与会员权益。</Text>
           </View>
         </View>
 
@@ -123,7 +156,7 @@ export default function LoginPage() {
               <Text className="auth-card__eyebrow-text">双方式登录</Text>
             </View>
             <Text className="auth-card__title">登录你的商城账号</Text>
-            <Text className="auth-card__desc">支持账号密码登录和短信验证码登录，H5 首次进入不再走小程序静默授权，登录体验严格按设计稿落地。</Text>
+            <Text className="auth-card__desc">使用手机号登录，查看订单、优惠券与专属会员权益。</Text>
           </View>
 
           <View className="auth-tabs">
@@ -135,29 +168,31 @@ export default function LoginPage() {
             </View>
           </View>
 
-          <View className="auth-field">
-            <View className="auth-field__label-row">
-              <Text className="auth-field__label">登录账号</Text>
-              <Text className="auth-field__hint">当前支持手机号登录</Text>
-            </View>
-            <View className="auth-field__box">
-              <View className="auth-field__icon"><Phone size={18} /></View>
-              <Input className="auth-field__input" type="number" maxlength={11} value={phone} onInput={(e) => setPhone(e.detail.value)} placeholder="请输入手机号" />
-            </View>
-          </View>
-
           {activeTab === 'password' ? (
-            <View className="auth-field">
-              <View className="auth-field__label-row">
-                <Text className="auth-field__label">登录密码</Text>
-                <Text className="auth-field__link" onClick={() => Taro.navigateTo({ url: '/pages/auth/forgot-password/index' })}>忘记密码</Text>
+            <>
+              <View className="auth-field">
+                <View className="auth-field__label-row">
+                  <Text className="auth-field__label">登录账号</Text>
+                  <Text className="auth-field__hint">当前支持手机号登录</Text>
+                </View>
+                <View className="auth-field__box">
+                  <View className="auth-field__icon"><Phone size={18} /></View>
+                  <Input className="auth-field__input" type="number" maxlength={11} value={phone} onInput={(e) => setPhone(e.detail.value)} placeholder="请输入手机号" />
+                </View>
               </View>
-              <View className="auth-field__box">
-                <View className="auth-field__icon"><Lock size={18} /></View>
-                <Input className="auth-field__input" password value={password} onInput={(e) => setPassword(e.detail.value)} placeholder="请输入 6-20 位密码" />
-                <View className="auth-field__trail"><Eye size={16} /></View>
+
+              <View className="auth-field">
+                <View className="auth-field__label-row">
+                  <Text className="auth-field__label">登录密码</Text>
+                  <Text className="auth-field__link" onClick={() => Taro.navigateTo({ url: '/pages/auth/forgot-password/index' })}>忘记密码</Text>
+                </View>
+                <View className="auth-field__box">
+                  <View className="auth-field__icon"><Lock size={18} /></View>
+                  <Input className="auth-field__input" password={!passwordVisible} value={password} onInput={(e) => setPassword(e.detail.value)} placeholder="请输入 6-20 位密码" />
+                  <View className="auth-field__trail" onClick={() => setPasswordVisible(value => !value)}><Eye size={16} /></View>
+                </View>
               </View>
-            </View>
+            </>
           ) : (
             <View className="auth-mini-switch">
               <View className="auth-mini-switch__head">
@@ -184,8 +219,8 @@ export default function LoginPage() {
                     <View className="auth-field__icon"><Message size={18} /></View>
                     <Input className="auth-field__input" type="number" maxlength={6} value={smsCode} onInput={(e) => setSmsCode(e.detail.value)} placeholder="请输入短信验证码" />
                   </View>
-                  <Button className="auth-code-row__button auth-code-row__button--ghost" onClick={() => Taro.showToast({ title: '短信登录验证码待接入', icon: 'none' })}>
-                    获取验证码
+                  <Button className="auth-code-row__button auth-code-row__button--ghost" disabled={sending || countdown > 0} onClick={handleSendCode}>
+                    {getCodeButtonText(countdown)}
                   </Button>
                 </View>
               </View>
@@ -201,7 +236,7 @@ export default function LoginPage() {
             </Text>
           </View>
 
-          <Button className="auth-button auth-button--primary" loading={submitting} onClick={activeTab === 'password' ? handlePasswordSubmit : handleSmsSubmit}>
+          <Button className="auth-button auth-button--primary" loading={submitting} disabled={submitting} onClick={activeTab === 'password' ? handlePasswordSubmit : handleSmsSubmit}>
             立即登录
           </Button>
 
@@ -217,11 +252,11 @@ export default function LoginPage() {
           </View>
 
           <View className="auth-alt-actions">
-            <View className="auth-alt-action">
+            <View className="auth-alt-action" onClick={showVerificationHelp}>
               <View className="auth-alt-action__icon"><Message size={18} /></View>
               <Text className="auth-alt-action__text">短信验证说明</Text>
             </View>
-            <View className="auth-alt-action">
+            <View className="auth-alt-action" onClick={contactSupport}>
               <View className="auth-alt-action__icon"><Service size={18} /></View>
               <Text className="auth-alt-action__text">联系客服</Text>
             </View>

@@ -1,6 +1,8 @@
+@use '../../../styles/variables' as *;
+@use '../after-service/page';
 .apply-service {
   padding: 24px;
-  background: #f5f6fa;
+  background: $warm-bg-page;
   min-height: 100vh;
 
   &--loading,
@@ -25,14 +27,14 @@
     display: block;
     font-size: 34px;
     font-weight: 600;
-    color: #1f2937;
+    color: $warm-text-primary;
   }
 
   &__subtitle,
   &__product {
     display: block;
     margin-top: 10px;
-    color: #6b7280;
+    color: $warm-text-secondary;
     font-size: 24px;
   }
 
@@ -54,14 +56,14 @@
   &__reason-item {
     padding: 14px 20px;
     border-radius: 999px;
-    background: #f3f4f6;
-    color: #374151;
+    background: $warm-bg-page;
+    color: $warm-text-secondary;
     font-size: 24px;
   }
 
   &__type-item--active,
   &__reason-item--active {
-    background: #111827;
+    background: $warm-text-primary;
     color: #fff;
   }
 
@@ -69,7 +71,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 26px;
-    color: #374151;
+    color: $warm-text-secondary;
     margin-bottom: 12px;
   }
 
@@ -89,13 +91,13 @@
 
   &__field-label {
     font-size: 26px;
-    color: #1f2937;
+    color: $warm-text-primary;
     font-weight: 600;
   }
 
   &__field-tip {
     font-size: 22px;
-    color: #9ca3af;
+    color: $warm-text-muted;
     text-align: right;
   }
 
@@ -104,7 +106,7 @@
     align-items: center;
     width: fit-content;
     border-radius: 999px;
-    background: #f9fafb;
+    background: $warm-bg-page;
     padding: 8px;
     gap: 10px;
   }
@@ -113,7 +115,7 @@
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #111827;
+    background: $warm-text-primary;
     color: #fff;
     display: flex;
     align-items: center;
@@ -130,7 +132,7 @@
     min-width: 64px;
     text-align: center;
     font-size: 28px;
-    color: #111827;
+    color: $warm-text-primary;
     font-weight: 600;
   }
 
@@ -139,8 +141,8 @@
     align-items: center;
     height: 88px;
     border-radius: 18px;
-    background: #f9fafb;
-    border: 1px solid #e5e7eb;
+    background: $warm-bg-page;
+    border: 1px solid $warm-border;
     padding: 0 20px;
 
     &--disabled {
@@ -150,7 +152,7 @@
 
   &__amount-symbol {
     font-size: 34px;
-    color: #111827;
+    color: $warm-text-primary;
     font-weight: 700;
     margin-right: 12px;
   }
@@ -159,13 +161,13 @@
     flex: 1;
     height: 100%;
     font-size: 30px;
-    color: #111827;
+    color: $warm-text-primary;
   }
 
   &__textarea {
     width: 100%;
     min-height: 180px;
-    background: #f9fafb;
+    background: $warm-bg-page;
     border-radius: 16px;
     padding: 20px;
     box-sizing: border-box;
@@ -173,7 +175,7 @@
   }
 
   &__submit {
-    background: #111827;
+    background: $warm-text-primary;
     color: #fff;
     text-align: center;
     padding: 24px 0;
@@ -188,12 +190,12 @@
   &__empty-title {
     font-size: 32px;
     font-weight: 600;
-    color: #111827;
+    color: $warm-text-primary;
   }
 
   &__empty-desc {
     font-size: 24px;
-    color: #6b7280;
+    color: $warm-text-secondary;
   }
 
   &__tip-card {
@@ -232,7 +234,7 @@
     height: 160px;
     border-radius: 18px;
     overflow: hidden;
-    background: #f3f4f6;
+    background: $warm-bg-page;
   }
 
   &__upload-image {
@@ -264,8 +266,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
-    border: 1px dashed #d1d5db;
+    color: $warm-text-secondary;
+    border: 1px dashed $warm-border;
   }
 
   &__upload-add-icon {
@@ -278,4 +280,19 @@
     font-size: 22px;
   }
 
+}
+
+.apply-service {
+  box-sizing: border-box;
+  padding: 0 24rpx calc(32rpx + env(safe-area-inset-bottom));
+  color: $warm-text-primary;
+  > .page-nav { margin: 0 -24rpx 24rpx; }
+  &__subtitle, &__product { overflow-wrap: anywhere; line-height: 1.6; }
+  &__card { border-radius: 28rpx; box-shadow: $warm-shadow-sm; }
+  &__type-item--active, &__reason-item--active, &__submit { background: $warm-gradient-primary; }
+  &__submit { min-height: 88rpx; display: flex; align-items: center; justify-content: center; box-sizing: border-box; }
+  &__field-head, &__row { gap: 16rpx; flex-wrap: wrap; }
+  &__amount-input { min-width: 0; display: flex; align-items: center; }
+  .weui-input, .taro-textarea { font: inherit; color: inherit; background: transparent; width: 100%; box-sizing: border-box; resize: none; }
+  &__textarea { color: $warm-text-primary; }
 }

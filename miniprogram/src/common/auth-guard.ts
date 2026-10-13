@@ -3,7 +3,7 @@ import { isH5 } from './platform';
 
 export const LOGIN_PAGE = '/pages/auth/login/index';
 const LOGIN_REDIRECT_STORAGE_KEY = 'h5LoginRedirect';
-const DEFAULT_AFTER_LOGIN_PAGE = '/pages/home/index';
+const DEFAULT_AFTER_LOGIN_PAGE = '/pages/usercenter/index';
 const TAB_PAGES = new Set([
   '/pages/home/index',
   '/pages/category/index',
@@ -63,20 +63,23 @@ export function redirectToLogin(redirect?: string) {
   });
 }
 
-export function navigateAfterLogin(target?: string) {
+export async function navigateAfterLogin(target?: string): Promise<void> {
   const cachedTarget = Taro.getStorageSync(LOGIN_REDIRECT_STORAGE_KEY) || '';
   const cleanUrl = normalizeRedirectTarget(target || cachedTarget || DEFAULT_AFTER_LOGIN_PAGE);
-  Taro.removeStorageSync(LOGIN_REDIRECT_STORAGE_KEY);
   const path = cleanUrl.split('?')[0];
+  const isTabPage = TAB_PAGES.has(path);
+  const url = isTabPage ? path : cleanUrl;
 
-  if (TAB_PAGES.has(path)) {
-    Taro.switchTab({ url: path }).catch(() => {
-      Taro.reLaunch({ url: path });
-    });
-    return;
+  try {
+    if (isTabPage) {
+      await Taro.switchTab({ url });
+    } else {
+      await Taro.redirectTo({ url });
+    }
+  } catch {
+    await Taro.reLaunch({ url });
   }
 
-  Taro.redirectTo({ url: cleanUrl }).catch(() => {
-    Taro.reLaunch({ url: cleanUrl });
-  });
+  // 导航失败时保留目标，用户重试仍可回到原页面；调用方等待真正跳转完成。
+  Taro.removeStorageSync(LOGIN_REDIRECT_STORAGE_KEY);
 }

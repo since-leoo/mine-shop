@@ -1,3 +1,4 @@
+@use '../after-service/page';
 @use '../../../styles/variables' as *;
 
 .pay-result {
@@ -364,3 +365,7 @@
   font-size: 18PX;
   box-shadow: 0 2PX 8PX rgba(232, 131, 107, 0.3);
 }
+
+.pay-result__reason { display: block; margin: 24rpx 32rpx 0; color: $warm-text-secondary; font-size: 26rpx; line-height: 1.6; text-align: center; }
+.pay-result__buttons { box-sizing: border-box; }
+.pay-result__btn { min-width: 0; white-space: nowrap; box-sizing: border-box; }

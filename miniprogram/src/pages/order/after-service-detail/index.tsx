@@ -1,6 +1,7 @@
 import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow, useRouter } from '@tarojs/taro';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import PageNav from '../../../components/page-nav';
 import {
   cancelAfterSale,
   confirmAfterSaleExchangeReceived,
@@ -38,25 +39,32 @@ export default function AfterServiceDetail() {
   const router = useRouter();
   const id = Number(router.params.id || 0);
   const [loading, setLoading] = useState(true);
+  const requestRef = useRef(0);
+  const actionRef = useRef(false);
+  useEffect(() => () => { requestRef.current += 1; }, []);
   const [detail, setDetail] = useState<AfterSaleItem | null>(null);
 
   const loadData = useCallback(() => {
-    if (!id) {
+    const requestId = ++requestRef.current;
+    if (!Number.isSafeInteger(id) || id <= 0) {
       setLoading(false);
       setDetail(null);
       return;
     }
 
     setLoading(true);
-    fetchAfterSaleDetail(id)
+    return fetchAfterSaleDetail(id)
       .then((data: AfterSaleItem) => {
+        if (requestId !== requestRef.current) return;
         setDetail(data || null);
       })
       .catch((error) => {
+        if (requestId !== requestRef.current) return;
         setDetail(null);
         Taro.showToast({ title: error?.msg || '加载售后详情失败', icon: 'none' });
       })
       .finally(() => {
+        if (requestId !== requestRef.current) return;
         setLoading(false);
       });
   }, [id]);
@@ -79,59 +87,22 @@ export default function AfterServiceDetail() {
     });
   };
 
-  const handleCancel = () => {
-    if (!detail) {
-      return;
-    }
-
-    Taro.showModal({
-      title: '撤销售后',
-      content: '确认撤销当前售后申请吗？',
-      success: (result) => {
-        if (!result.confirm) {
-          return;
-        }
-
-        cancelAfterSale(detail.id)
-          .then(() => {
-            Taro.showToast({ title: '售后已撤销', icon: 'none' });
-            loadData();
-          })
-          .catch((error) => {
-            Taro.showToast({ title: error?.msg || '撤销售后失败', icon: 'none' });
-          });
-      },
-    });
+  const runAction = async (action: 'cancel' | 'confirm') => {
+    if (!detail || actionRef.current) return;
+    actionRef.current = true;
+    try {
+      const result = await Taro.showModal({ title: action === 'cancel' ? '撤销售后' : '确认收货', content: action === 'cancel' ? '确认撤销当前售后申请吗？' : '确认已收到商家补发的商品吗？' });
+      if (!result.confirm) return;
+      await (action === 'cancel' ? cancelAfterSale(detail.id) : confirmAfterSaleExchangeReceived(detail.id));
+      Taro.showToast({ title: action === 'cancel' ? '售后已撤销' : '已确认收货', icon: 'none' });
+      await loadData();
+    } catch (error: any) {
+      Taro.showToast({ title: error?.msg || error?.message || '操作失败，请重试', icon: 'none' });
+    } finally { actionRef.current = false; }
   };
-
-  const handleConfirmExchangeReceived = () => {
-    if (!detail) {
-      return;
-    }
-
-    Taro.showModal({
-      title: '确认收货',
-      content: '确认已收到商家补发的商品吗？',
-      success: (result) => {
-        if (!result.confirm) {
-          return;
-        }
-
-        confirmAfterSaleExchangeReceived(detail.id)
-          .then(() => {
-            Taro.showToast({ title: '已确认收货', icon: 'none' });
-            loadData();
-          })
-          .catch((error) => {
-            Taro.showToast({ title: error?.msg || '确认收货失败', icon: 'none' });
-          });
-      },
-    });
-  };
-
-  const handleContact = () => {
-    Taro.showToast({ title: '请联系在线客服处理', icon: 'none' });
-  };
+  const handleCancel = () => { void runAction('cancel'); };
+  const handleConfirmExchangeReceived = () => { void runAction('confirm'); };
+  const handleContact = () => Taro.navigateTo({ url: '/pages/customer-service/index' });
 
   const handlePrimaryAction = () => {
     if (!detail) {
@@ -160,12 +131,8 @@ export default function AfterServiceDetail() {
     }
   };
 
-  if (loading) {
-    return <View className="after-service-detail after-service-detail--state"><Text>加载中...</Text></View>;
-  }
-
-  if (!detail) {
-    return <View className="after-service-detail after-service-detail--state"><Text>暂无售后详情</Text></View>;
+  if (loading || !detail) {
+    return <View className="after-service-detail"><PageNav title="售后详情" /><View className="order-state"><Text>{loading ? '加载中...' : '暂无售后详情，请确认售后编号'}</Text>{!loading && <View className="order-state__action" onClick={() => Taro.redirectTo({ url: '/pages/order/after-service-list/index' })}>查看售后记录</View>}</View></View>;
   }
 
   const timeline = buildAfterSaleTimeline(detail);
@@ -174,6 +141,7 @@ export default function AfterServiceDetail() {
 
   return (
     <View className="after-service-detail">
+      <PageNav title="售后详情" />
       <View className="after-service-detail__hero">
         <Text className="after-service-detail__status">{getAfterSaleStatusText(detail)}</Text>
         <Text className="after-service-detail__type">{AFTER_SALE_TYPE_TEXT_MAP[detail.type]} · 售后单号：{detail.afterSaleNo || '--'}</Text>

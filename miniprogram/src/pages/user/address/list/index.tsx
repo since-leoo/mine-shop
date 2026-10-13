@@ -1,8 +1,9 @@
-import { View, Text } from '@tarojs/components';
+import { Button, View, Text } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useCallback } from 'react';
 import { fetchDeliveryAddressList, deleteAddress } from '../../../../services/address/fetchAddress';
 import PageNav from '../../../../components/page-nav';
+import { isH5 } from '../../../../common/platform';
 import './index.scss';
 
 const ORDER_CONFIRM_SELECTED_ADDRESS_KEY = 'order.confirm.selectedAddress';
@@ -21,6 +22,7 @@ interface AddressItem {
 export default function AddressList() {
   const [list, setList] = useState<AddressItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const routerParams = Taro.getCurrentInstance().router?.params || {};
   const isOrderSure = routerParams.isOrderSure === '1';
   const isSelectMode = routerParams.selectMode === '1' || isOrderSure;
@@ -37,6 +39,7 @@ export default function AddressList() {
 
   const loadData = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetchDeliveryAddressList()
       .then((res: any) => {
         const rawList = normalizeList(res);
@@ -52,7 +55,7 @@ export default function AddressList() {
         }));
         setList(addresses);
       })
-      .catch(() => setList([]))
+      .catch((error: any) => setLoadError(error?.msg || '地址加载失败'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -110,7 +113,7 @@ export default function AddressList() {
   };
 
   return (
-    <View className="address-list">
+    <View className={`address-list${isH5() ? ' address-list--h5' : ''}`}>
       <PageNav title={isSelectMode ? '选择地址' : '收货地址'} />
       {/* Loading */}
       {loading && (
@@ -122,20 +125,25 @@ export default function AddressList() {
       )}
 
       {/* Empty */}
-      {!loading && list.length === 0 && (
+      {!loading && !loadError && list.length === 0 && (
         <View className="address-list__state">
           <Text className="address-list__state-text">暂无收货地址</Text>
         </View>
       )}
 
+      {!!loadError && !loading && <View className="address-list__state" onClick={loadData}>
+        <Text className="address-list__state-text">{loadError}，点击重试</Text>
+      </View>}
       {/* List */}
       <View className="address-list__items">
         {list.map((addr) => (
           <View key={addr.id} className="address-list__card-wrap">
             <View className="address-list__card" onClick={() => (isSelectMode ? handleSelectAddress(addr) : handleEdit(addr))}>
               <View className="address-list__card-header">
-                <Text className="address-list__name">{addr.name}</Text>
-                <Text className="address-list__phone">{addr.phone}</Text>
+                <View className="address-list__recipient">
+                  <Text className="address-list__name">{addr.name}</Text>
+                  <Text className="address-list__phone">{addr.phone}</Text>
+                </View>
                 {addr.isDefault && (
                   <View className="address-list__default-badge">
                     <Text className="address-list__default-badge-text">默认</Text>
@@ -144,7 +152,7 @@ export default function AddressList() {
               </View>
               <Text className="address-list__address">{buildFullAddress(addr)}</Text>
               <View className="address-list__actions">
-                <View
+                <Button
                   className="address-list__action-btn address-list__action-btn--edit"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -152,8 +160,8 @@ export default function AddressList() {
                   }}
                 >
                   <Text className="address-list__action-btn-text">编辑</Text>
-                </View>
-                <View
+                </Button>
+                <Button
                   className="address-list__action-btn address-list__action-btn--delete"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -161,7 +169,7 @@ export default function AddressList() {
                   }}
                 >
                   <Text className="address-list__action-btn-text">删除</Text>
-                </View>
+                </Button>
               </View>
             </View>
           </View>
@@ -170,9 +178,9 @@ export default function AddressList() {
 
       {/* Add button */}
       <View className="address-list__add-wrap">
-        <View className="address-list__add-btn" onClick={handleAdd}>
+        <Button className="address-list__add-btn" onClick={handleAdd}>
           <Text className="address-list__add-btn-text">+ 新增地址</Text>
-        </View>
+        </Button>
       </View>
     </View>
   );

@@ -1,4 +1,5 @@
-﻿import { Button, Input, Text, View } from '@tarojs/components';
+import { showVerificationHelp, showVerificationSent, contactSupport } from '../shared/auth-help';
+import { Button, Input, Text, View } from '@tarojs/components';
 import { Lock, Message, Phone, Shield } from '@nutui/icons-react-taro';
 import Taro from '@tarojs/taro';
 import { useEffect, useState } from 'react';
@@ -68,6 +69,7 @@ export default function RegisterPage() {
   };
 
   const handleSendCode = async () => {
+    if (sending || countdown > 0) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
@@ -76,7 +78,7 @@ export default function RegisterPage() {
     setSending(true);
     try {
       const result: any = await sendVerificationCode(phone, 'register');
-      Taro.showModal({ title: '开发验证码', content: `当前验证码：${result?.code || '已发送'}`, showCancel: false });
+      showVerificationSent(result);
       setCountdown(60);
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '验证码发送失败', icon: 'none' });
@@ -86,6 +88,7 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async () => {
+    if (submitting) return;
     if (!isValidPhone(phone)) {
       Taro.showToast({ title: '请输入正确手机号', icon: 'none' });
       return;
@@ -107,10 +110,12 @@ export default function RegisterPage() {
     try {
       const response = await registerByPhone({ phone, code, password, passwordConfirmation });
       persistAuth(response);
+      await navigateAfterLogin('/pages/usercenter/index').catch(() => {
+        throw new Error('注册成功，页面跳转失败，请重试');
+      });
       Taro.showToast({ title: '注册成功', icon: 'success' });
-      setTimeout(() => navigateAfterLogin('/pages/usercenter/index'), 200);
     } catch (error: any) {
-      Taro.showToast({ title: error?.msg || '注册失败', icon: 'none' });
+      Taro.showToast({ title: error?.msg || error?.message || '注册失败', icon: 'none' });
     } finally {
       setSubmitting(false);
     }
@@ -122,14 +127,14 @@ export default function RegisterPage() {
         <View className="auth-hero auth-hero--register">
           <View className="auth-hero__badge">H5 新会员注册</View>
           <Text className="auth-hero__title">创建你的{`\n`}MineMall 新账号</Text>
-          <Text className="auth-hero__desc">沿用设计稿里的暖色主题，但把“手机号验证 + 设置密码”的路径做得更直接，方便 H5 新用户快速入会。</Text>
+          <Text className="auth-hero__desc">验证手机号并设置密码，开启你的商城之旅。</Text>
         </View>
 
         <View className="auth-card auth-card--h5 auth-register-form">
           <View className="auth-card__head">
             <Text className="auth-card__eyebrow">手机号注册</Text>
             <Text className="auth-card__title">手机号快速创建账号</Text>
-            <Text className="auth-card__desc">注册完成后，可用账号密码登录，也可在后端补齐后接入短信验证码登录。</Text>
+            <Text className="auth-card__desc">注册完成后，可用账号密码登录，也可在可使用密码或短信验证码登录。</Text>
           </View>
 
           <View className="auth-steps">
@@ -152,7 +157,7 @@ export default function RegisterPage() {
           <View className="auth-field">
             <View className="auth-field__label-row">
               <Text className="auth-field__label">短信验证码</Text>
-              <Text className="auth-field__hint">开发环境会直接回显验证码</Text>
+              <Text className="auth-field__hint">验证码有效期内可用</Text>
             </View>
             <View className="auth-code-row">
               <View className="auth-field__box auth-field__box--grow">

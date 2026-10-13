@@ -31,6 +31,7 @@ interface CountdownSegment {
 
 function buildDisplaySessions(list: any[], sessions: SessionItem[], activeSessionId: string, statusTag: string): SessionItem[] {
   if (sessions.length > 0) return sessions;
+  if (list.length === 0) return [];
 
   const fallbackTime = String(
     list.find((item) => String(item?.sessionId || '') === String(activeSessionId || ''))?.sessionTime ||
@@ -40,7 +41,7 @@ function buildDisplaySessions(list: any[], sessions: SessionItem[], activeSessio
   );
 
   const fallbackId = String(activeSessionId || list[0]?.sessionId || 'current');
-  const fallbackStatus: SessionItem['status'] = statusTag === 'finish' ? 'ended' : 'ongoing';
+  const fallbackStatus: SessionItem['status'] = statusTag === 'finish' ? 'ended' : statusTag === 'upcoming' ? 'upcoming' : 'ongoing';
 
   return [{ id: fallbackId, time: fallbackTime, status: fallbackStatus }];
 }
@@ -133,7 +134,7 @@ function parseTargetTimestamp(input: any): number {
   if (typeof input === 'string') {
     const text = input.trim();
     if (!text) return 0;
-    const normalized = text.includes('T') ? text : text.replace(' ', 'T').replace(/-/g, '/');
+    const normalized = text.includes('T') ? text : text.replace(' ', 'T');
     const value = new Date(normalized).getTime();
     if (Number.isFinite(value) && value > 0) return value;
   }
@@ -226,6 +227,8 @@ export default function PromotionDetail() {
   const h5 = isH5();
 
   const endTimeRef = useRef(0);
+  const requestRef = useRef(0);
+  const expiryRef = useRef<() => void>(() => {});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const clearTimer = useCallback(() => {
@@ -242,102 +245,83 @@ export default function PromotionDetail() {
       if (remaining <= 0) {
         setCountdown(null);
         clearTimer();
+        expiryRef.current();
         return;
       }
       setCountdown(calcCountdown(remaining));
     };
-    tick();
     timerRef.current = setInterval(tick, 1000);
+    tick();
   }, [clearTimer]);
 
-  const loadData = useCallback((sessionId?: string) => {
-    const parsedPromotionId = parseInt(router.params.promotion_id || router.params.activityId || '0');
-    const routeActivityId = Number.isFinite(parsedPromotionId) ? parsedPromotionId : 0;
-    const routeSessionId = String(router.params.sessionId || router.params.seckillSessionId || '');
+  const loadData = useCallback(async (sessionId?: string) => {
+    const requestId = ++requestRef.current;
+    const routeActivityId = String(router.params.promotion_id || router.params.activityId || '');
+    const requestedSessionId = String(sessionId || router.params.sessionId || router.params.seckillSessionId || '');
     setLoading(true);
-    Promise.resolve()
-      .then(async () => {
-        const globalSessions = await fetchSeckillSessions();
-
-        const initialSession =
-          (sessionId
-            ? globalSessions.find((item) => String(item.id) === String(sessionId))
-            : null) ||
-          (routeSessionId
-            ? globalSessions.find((item) => String(item.id) === String(routeSessionId))
-            : null) ||
-          pickDefaultStartedSession(globalSessions);
-
-        const resolvedActivityId = String(initialSession?.activityId || routeActivityId || '');
-        const initialSessionId = String(initialSession?.id || sessionId || routeSessionId || '');
-
-        const scopedSessions = resolvedActivityId
-          ? await fetchSeckillSessions({ activityId: resolvedActivityId })
-          : [];
-
-        const sessionList: SessionItem[] = scopedSessions.length > 0 ? scopedSessions : globalSessions;
-        const nextSessionId =
-          initialSessionId ||
-          pickDefaultStartedSession(sessionList)?.id ||
-          sessionList.find((item) => item.status === 'ongoing')?.id ||
-          sessionList[0]?.id ||
-          '';
-
-        const promotion = await fetchPromotion(resolvedActivityId || 0, { sessionId: nextSessionId || undefined });
-        const goods = (promotion.list || []).map((item: any) => ({
-          ...item,
-          tags: (item.tags || []).map((v: any) => v.title || v),
-        }));
-
-        setBanner(String(promotion.banner || DEFAULT_SECKILL_TOPIC_BANNER));
-        setActivityId(String(resolvedActivityId || promotion.activityId || ''));
-        setSessions(sessionList);
-        setActiveSessionId(nextSessionId);
-
-        const hasSessionInGoods = goods.some((item: any) => !!item.sessionId);
-        const visibleGoods =
-          nextSessionId && hasSessionInGoods
-            ? goods.filter((item: any) => String(item.sessionId || '') === String(nextSessionId))
-            : goods;
-        setList(visibleGoods);
-
-        const activeSession = sessionList.find((item) => String(item.id) === String(nextSessionId));
-        const sessionRemain = Number(activeSession?.remainingTime || 0);
-        const promotionRemain = Number(promotion.time || 0);
-
-        if (promotion.statusTag) {
-          setStatusTag(promotion.statusTag);
-        } else {
-          setStatusTag(activeSession?.status === 'ended' || (sessionRemain <= 0 && promotionRemain <= 0) ? 'finish' : 'ongoing');
-        }
-
-        const totalRemain = sessionRemain > 0 ? sessionRemain : promotionRemain;
-        if (totalRemain > 0) {
-          endTimeRef.current = Date.now() + totalRemain;
-          startTimer();
-        } else {
-          setCountdown(null);
-          clearTimer();
-        }
-      })
-      .catch(() => {
-        setList([]);
-        setSessions([]);
-        setActiveSessionId('');
-        setCountdown(null);
-        setActivityId('');
-      })
-      .finally(() => setLoading(false));
+    setList([]);
+    clearTimer();
+    try {
+      // 显式活动链接优先限定场次，不能被其他活动的当前场覆盖。
+      const globalSessions = await fetchSeckillSessions(routeActivityId ? { activityId: routeActivityId } : undefined);
+      const sessionList = routeActivityId
+        ? globalSessions.filter((item) => !item.activityId || String(item.activityId) === routeActivityId)
+        : globalSessions;
+      const activeSession = sessionList.find((item) => String(item.id) === requestedSessionId)
+        || pickDefaultStartedSession(sessionList)
+        || sessionList.find((item) => item.status === 'ongoing')
+        || sessionList.find((item) => item.status === 'upcoming')
+        || sessionList[0];
+      const resolvedActivityId = routeActivityId || String(activeSession?.activityId || '');
+      const nextSessionId = String(activeSession?.id || requestedSessionId || '');
+      const promotion = await fetchPromotion(resolvedActivityId || 0, { sessionId: nextSessionId || undefined });
+      if (requestId !== requestRef.current) return;
+      const goods = (promotion.list || []).map((item: any) => ({ ...item, tags: (item.tags || []).map((v: any) => v.title || v) }));
+      setBanner(String(promotion.banner || DEFAULT_SECKILL_TOPIC_BANNER));
+      setActivityId(String(resolvedActivityId || promotion.activityId || ''));
+      setSessions(sessionList);
+      setActiveSessionId(nextSessionId);
+      const hasSessionInGoods = goods.some((item: any) => !!item.sessionId);
+      const visibleGoods = nextSessionId && hasSessionInGoods
+        ? goods.filter((item: any) => String(item.sessionId || '') === nextSessionId) : goods;
+      setList(visibleGoods);
+      const state = activeSession?.status || (/finish|expired|ended/.test(promotion.statusTag) ? 'ended'
+        : /upcoming|notStart|pending/.test(promotion.statusTag) ? 'upcoming' : 'ongoing');
+      setStatusTag(state === 'ended' ? 'finish' : state);
+      const target = state === 'upcoming'
+        ? activeSession?.startTime || parseTargetTimestamp(visibleGoods[0]?.startTime)
+        : activeSession?.endTime || parseTargetTimestamp(visibleGoods[0]?.endTime);
+      const remaining = target ? Math.max(0, target - Date.now())
+        : Number(activeSession?.remainingTime || promotion.time || computeRemainingMs(visibleGoods[0]) || 0);
+      expiryRef.current = () => {
+        if (state === 'upcoming') { void loadData(nextSessionId); return; }
+        setStatusTag('finish');
+        setSessions((prev) => prev.map((item) => item.id === nextSessionId ? { ...item, status: 'ended' } : item));
+      };
+      if (state !== 'ended' && remaining > 0) {
+        endTimeRef.current = Date.now() + remaining;
+        startTimer();
+      } else { setCountdown(null); }
+    } catch {
+      if (requestId !== requestRef.current) return;
+      setList([]);
+      setSessions([]);
+      setActiveSessionId('');
+      setCountdown(null);
+      setActivityId('');
+      Taro.showToast({ title: '活动加载失败，请重试', icon: 'none' });
+    } finally {
+      if (requestId === requestRef.current) setLoading(false);
+    }
   }, [router.params.promotion_id, router.params.activityId, router.params.sessionId, router.params.seckillSessionId, startTimer, clearTimer]);
 
   useEffect(() => {
     loadData();
-    return () => clearTimer();
+    return () => { ++requestRef.current; clearTimer(); };
   }, [loadData, clearTimer]);
 
   usePullDownRefresh(() => {
-    loadData(activeSessionId);
-    Taro.stopPullDownRefresh();
+    loadData(activeSessionId).finally(() => Taro.stopPullDownRefresh());
   });
 
   const handleGoodsClick = useCallback((goods: any) => {
@@ -377,16 +361,9 @@ export default function PromotionDetail() {
   ]), [sessionCount, list]);
 
   const featuredProgress = featuredItem ? computeProgress(featuredItem) : 0;
-  const featuredCountdownSegments = useMemo(
-    () => {
-      if (countdown) {
-        return buildCountdownSegmentsFromState(countdown);
-      }
-
-      return buildCountdownSegments(featuredItem ? computeRemainingMs(featuredItem) : 0);
-    },
-    [featuredItem, countdown],
-  );
+  const featuredCountdownSegments = buildCountdownSegmentsFromState(countdown);
+  const purchaseLabel = (item: any) => statusTag === 'upcoming' ? '即将开抢'
+    : statusTag === 'finish' ? '已结束' : computeProgress(item) >= 100 ? '已售罄' : '立即抢购';
 
   return (
     <View className={`promotion-detail ${h5 ? 'promotion-detail--h5' : ''}`}>
@@ -420,7 +397,7 @@ export default function PromotionDetail() {
                 <View className="promotion-detail__section-bar" />
                 <View>
                   <Text className="promotion-detail__section-title">头号爆款</Text>
-                  <Text className="promotion-detail__section-desc">把最值得抢的商品前置成焦点卡</Text>
+                  <Text className="promotion-detail__section-desc">本场精选好价，限量先到先得</Text>
                 </View>
               </View>
               <Text className="promotion-detail__section-link">{featuredProgress >= 100 ? '已售罄' : '限量抢购'}</Text>
@@ -442,7 +419,7 @@ export default function PromotionDetail() {
             </View>
             <View className="promotion-detail__featured-progress-meta">
               <Text>已抢 {featuredProgress}%</Text>
-              <Text>{statusTag === 'finish' ? '本场已结束' : '库存实时更新'}</Text>
+              <Text>{statusTag === 'finish' ? '本场已结束' : statusTag === 'upcoming' ? '距开抢时间' : '距本场结束'}</Text>
             </View>
             <View className="promotion-detail__featured-progress-track">
               <View className="promotion-detail__featured-progress-fill" style={{ width: `${featuredProgress}%` }} />
@@ -456,7 +433,7 @@ export default function PromotionDetail() {
                   </View>
                 ))}
               </View>
-              <View className="promotion-detail__featured-cta">立即抢购</View>
+              <View className={`promotion-detail__featured-cta ${purchaseLabel(featuredItem) !== '立即抢购' ? 'promotion-detail__featured-cta--muted' : ''}`}>{purchaseLabel(featuredItem)}</View>
             </View>
           </View>
         ) : null}
@@ -476,13 +453,13 @@ export default function PromotionDetail() {
           <ScrollView className="promotion-detail__filter-scroll" scrollX enhanced showScrollbar={false}>
             <View className="promotion-detail__filter-list">
               {displaySessions.map((session) => {
-                const disabled = session.status !== 'ongoing';
-                const active = !disabled && session.id === activeSessionId;
+                const disabled = session.status === 'ended';
+                const active = session.id === activeSessionId;
                 return (
                 <View
                   key={session.id}
                   className={`promotion-detail__filter-chip ${active ? 'promotion-detail__filter-chip--active' : ''} ${disabled ? 'promotion-detail__filter-chip--disabled' : ''}`}
-                  onClick={!disabled ? () => handleSessionChange(session) : undefined}
+                  onClick={() => handleSessionChange(session)}
                 >
                   <Text className={`promotion-detail__filter-chip-title ${active ? 'promotion-detail__filter-chip-title--active' : ''}`}>{session.time}</Text>
                   <Text className={`promotion-detail__filter-chip-desc ${active ? 'promotion-detail__filter-chip-desc--active' : ''}`}>{getSessionText(session.status)}</Text>
@@ -497,7 +474,7 @@ export default function PromotionDetail() {
           <View className="promotion-detail__state"><Text className="promotion-detail__state-text">加载中...</Text></View>
         ) : null}
 
-        {!loading && visibleGoods.length === 0 ? (
+        {!loading && list.length === 0 ? (
           <View className="promotion-detail__state"><Text className="promotion-detail__state-text">暂无活动商品</Text></View>
         ) : null}
 
@@ -540,7 +517,7 @@ export default function PromotionDetail() {
                           <View className="promotion-detail__goods-progress-fill" style={{ width: `${progress}%` }} />
                         </View>
                       </View>
-                      <View className="promotion-detail__buy-btn">{soldOut ? '已售罄' : '去抢'}</View>
+                      <View className="promotion-detail__buy-btn">{purchaseLabel(item)}</View>
                     </View>
                   </View>
                 </View>

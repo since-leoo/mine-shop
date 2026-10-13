@@ -1,5 +1,5 @@
 import { View, Text, Image } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useDidHide, useDidShow, useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchHotGoods } from '../../../services/good/fetchGoods';
 import { fetchOrderDetail } from '../../../services/order/orderDetail';
@@ -16,20 +16,21 @@ export default function PayResult() {
   const router = useRouter();
   const h5 = isH5();
   const [totalPaid, setTotalPaid] = useState(0);
-  const [orderNo, setOrderNo] = useState('');
+  const [visible, setVisible] = useState(true);
+  useDidShow(() => setVisible(true));
+  useDidHide(() => setVisible(false));
+  const orderNo = router.params.orderNo || '';
   const [recommendList, setRecommendList] = useState<any[]>([]);
   const [resultStatus, setResultStatus] = useState<'processing' | 'success' | 'failed'>('processing');
   const [resultReason, setResultReason] = useState('');
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const { totalPaid: paid = '0', orderNo: no = '' } = router.params;
-    setTotalPaid(Number(paid) || 0);
-    setOrderNo(no);
+    setTotalPaid(0);
     fetchHotGoods(4)
       .then((list: any[] = []) => setRecommendList(list.slice(0, 4)))
       .catch(() => {});
-  }, [router.params]);
+  }, [orderNo]);
 
   useEffect(() => {
     if (pollTimerRef.current) {
@@ -37,16 +38,23 @@ export default function PayResult() {
       pollTimerRef.current = null;
     }
 
+    if (!visible) return undefined;
     if (!orderNo) {
-      setResultStatus('success');
-      setResultReason('');
+      setResultStatus('failed');
+      setResultReason('缺少订单编号，请到订单列表核实支付结果');
       return undefined;
     }
 
+    let disposed = false;
+    setResultStatus('processing');
+    setResultReason('');
+    // 离开页面或切换订单后，旧请求不能继续更新结果或启动下一轮轮询。
     const pollOrderResult = (retryCount = 0) => {
       fetchOrderDetail({ orderNo })
         .then((res: any) => {
+          if (disposed) return;
           const data = res?.data || res || {};
+          setTotalPaid(Number(data.payAmount) || 0);
           const next = resolvePaymentResultState(data);
 
           if (next.status === 'processing') {
@@ -66,6 +74,7 @@ export default function PayResult() {
           setResultReason(next.reason);
         })
         .catch(() => {
+          if (disposed) return;
           if (retryCount >= RESULT_POLL_MAX_RETRY) {
             setResultStatus('processing');
             setResultReason('支付结果确认中，请稍后到订单列表查看');
@@ -81,12 +90,13 @@ export default function PayResult() {
     pollOrderResult();
 
     return () => {
+      disposed = true;
       if (pollTimerRef.current) {
         clearTimeout(pollTimerRef.current);
         pollTimerRef.current = null;
       }
     };
-  }, [orderNo]);
+  }, [orderNo, visible]);
 
   const handleViewOrder = useCallback(() => {
     if (orderNo) {
@@ -132,7 +142,7 @@ export default function PayResult() {
           <Text className="pay-result__amount-label">{amountLabel}</Text>
           <Price price={totalPaid} className="pay-result__price" fill />
         </View>
-        {!!resultReason && <Text className="pay-result__title">{resultReason}</Text>}
+        {!!resultReason && <Text className="pay-result__reason">{resultReason}</Text>}
       </View>
 
       <View className="pay-result__buttons">

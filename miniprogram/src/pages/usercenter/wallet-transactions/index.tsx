@@ -73,6 +73,11 @@ export default function WalletTransactions() {
   const [list, setList] = useState<TransactionItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState('');
+  const requestRef = useRef(0);
+  const busyRef = useRef(false);
+  const walletTypeRef = useRef(walletType);
+  walletTypeRef.current = walletType;
 
   const pageRef = useRef(1);
   const PAGE_SIZE = 20;
@@ -146,58 +151,51 @@ export default function WalletTransactions() {
     Taro.setNavigationBarTitle({ title });
   }, [walletType]);
 
-  const fetchList = useCallback(
-    (reset = false) => {
-      if (loading) return;
-      setLoading(true);
-
-      const page = reset ? 1 : pageRef.current;
-
-      fetchWalletTransactions({ walletType, page, pageSize: PAGE_SIZE })
-        .then((res: any) => {
-          const records = (res.list || []).map((item: any) => ({
-            flowType: resolveFlowType(String(item.type || ''), Number(item.amount || 0)),
-            id: item.id,
-            typeLabel: TYPE_LABELS[item.type] || item.type || '其他',
-            amount: item.amount,
-            amountText: formatAmount(resolveFlowType(String(item.type || ''), Number(item.amount || 0)) === 'expense' ? -Math.abs(Number(item.amount || 0)) : Math.abs(Number(item.amount || 0)), walletType),
-            source: item.description || item.source || '',
-            createdAt: formatTime(item.createdAt),
-          }));
-
-          const newList = reset ? records : [...list, ...records];
-          const total = res.total || 0;
-
-          setList(newList);
-          setHasMore(newList.length < total);
-          pageRef.current = (reset ? 1 : pageRef.current) + 1;
-        })
-        .catch(() => {})
-        .finally(() => setLoading(false));
-    },
-    [walletType, loading, list],
-  );
+  const fetchList = useCallback(async (reset = false) => {
+    if (busyRef.current && !reset) return;
+    const sequence = ++requestRef.current;
+    const type = walletTypeRef.current;
+    const page = reset ? 1 : pageRef.current;
+    busyRef.current = true;
+    setLoading(true);
+    setError('');
+    try {
+      const res: any = await fetchWalletTransactions({ walletType: type, page, pageSize: PAGE_SIZE });
+      // 快速切换余额/积分时，旧请求不能覆盖新标签的数据和分页状态。
+      if (sequence !== requestRef.current || type !== walletTypeRef.current) return;
+      const records = (res.list || []).map((item: any) => {
+        const amount = Number(item.amount) || 0;
+        const flowType = resolveFlowType(String(item.type || ''), amount);
+        return {
+          id: item.id, flowType, amount,
+          typeLabel: TYPE_LABELS[item.type] || item.type || '其他',
+          amountText: formatAmount(flowType === 'expense' ? -Math.abs(amount) : Math.abs(amount), type),
+          source: item.description || item.source || '', createdAt: formatTime(item.createdAt),
+        };
+      });
+      setList(previous => reset ? records : [...previous, ...records]);
+      setHasMore(page * PAGE_SIZE < Number(res.total || 0));
+      pageRef.current = page + 1;
+    } catch (err: any) {
+      if (sequence === requestRef.current) setError(err?.msg || '明细加载失败，请重试');
+    } finally {
+      if (sequence === requestRef.current) { busyRef.current = false; setLoading(false); }
+    }
+  }, []);
 
   useEffect(() => {
-    fetchList(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [walletType]);
+    void fetchList(true);
+    return () => { ++requestRef.current; busyRef.current = false; };
+  }, [walletType, fetchList]);
 
   usePullDownRefresh(() => {
-    setList([]);
-    setHasMore(true);
-    pageRef.current = 1;
-    fetchList(true);
-    Taro.stopPullDownRefresh();
+    void fetchList(true).finally(() => Taro.stopPullDownRefresh());
   });
-
-  useReachBottom(() => {
-    if (hasMore && !loading) {
-      fetchList();
-    }
-  });
+  useReachBottom(() => { if (hasMore) void fetchList(); });
 
   const handleTabChange = useCallback((type: 'balance' | 'points') => {
+    if (walletTypeRef.current === type) return;
+    walletTypeRef.current = type;
     setWalletType(type);
     setList([]);
     setHasMore(true);
@@ -228,19 +226,19 @@ export default function WalletTransactions() {
       <View className="wallet-page__summary">
         <View className="wallet-page__summary-head">
           <Text className="wallet-page__summary-title">
-            {walletType === 'balance' ? '余额总览' : '积分总览'}
+            {walletType === 'balance' ? '余额明细' : '积分明细'}
           </Text>
           <Text className="wallet-page__summary-count">共{summary.countText}笔</Text>
         </View>
         <View className="wallet-page__summary-grid">
           <View className="wallet-page__summary-cell">
-            <Text className="wallet-page__summary-label">总收入</Text>
+            <Text className="wallet-page__summary-label">已加载收入</Text>
             <Text className="wallet-page__summary-value wallet-page__summary-value--income">
               {walletType === 'balance' ? `¥${summary.incomeText}` : summary.incomeText}
             </Text>
           </View>
           <View className="wallet-page__summary-cell">
-            <Text className="wallet-page__summary-label">总支出</Text>
+            <Text className="wallet-page__summary-label">已加载支出</Text>
             <Text className="wallet-page__summary-value wallet-page__summary-value--expense">
               {walletType === 'balance' ? `¥${summary.expenseText}` : summary.expenseText}
             </Text>
@@ -283,13 +281,17 @@ export default function WalletTransactions() {
       )}
 
       {/* Empty */}
-      {!loading && list.length === 0 && (
+      {!loading && !error && list.length === 0 && (
         <View className="wallet-page__state">
           <Text className="wallet-page__state-icon">📄</Text>
           <Text className="wallet-page__state-text">暂无记录</Text>
         </View>
       )}
 
+      {!!error && !loading && <View className="wallet-page__state" onClick={() => void fetchList(list.length === 0)}>
+        <Text className="wallet-page__state-text">{error}</Text>
+        <Text className="wallet-page__retry">点击重新加载</Text>
+      </View>}
       {/* Loading */}
       {loading && (
         <View className="wallet-page__state">

@@ -41,6 +41,8 @@
     'pages/customer-service/index'
   ],
   tabBar: {
+    // H5 已由 H5TabBar 渲染；避免框架底栏叠在登录页和自定义底栏之上。
+    custom: process.env.TARO_ENV === 'h5',
     color: '#A89088',
     selectedColor: '#E8836B',
     backgroundColor: '#ffffff',

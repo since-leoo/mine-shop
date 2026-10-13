@@ -7,6 +7,8 @@ import Price from '../../../components/Price';
 import PageNav from '../../../components/page-nav';
 import { normalizeErrorMessage, showErrorToast } from '../../../common/error-feedback';
 import { isH5 } from '../../../common/platform';
+import addressIcon from '../../../assets/usercenter/menu-address.svg';
+import storeIcon from '../../../assets/order-confirm/store.svg';
 import './index.scss';
 
 interface SettleData {
@@ -65,7 +67,12 @@ export default function OrderConfirm() {
   const [orderCardList, setOrderCardList] = useState<OrderCardItem[]>([]);
   const [userAddress, setUserAddress] = useState<any>(null);
   const [remark, setRemark] = useState('');
-  const [selectedCouponName, setSelectedCouponName] = useState('');
+  const [selectedCouponName, setSelectedCouponNameState] = useState('');
+  const selectedCouponNameRef = useRef('');
+  const setSelectedCouponName = useCallback((name: string) => {
+    selectedCouponNameRef.current = name;
+    setSelectedCouponNameState(name);
+  }, []);
   const availableCouponIdsRef = useRef<string[]>([]);
   const couponNameMapRef = useRef<Record<string, string>>({});
   const couponBaseMapRef = useRef<Record<string, number>>({});
@@ -183,7 +190,7 @@ export default function OrderConfirm() {
   const restoreCouponSelection = useCallback((selection?: CouponSelectionSnapshot | null) => {
     selectedCouponIdRef.current = selection?.id || null;
     setSelectedCouponName(selection?.name || '');
-  }, []);
+  }, [setSelectedCouponName]);
 
   const handleSettleData = useCallback((resData: any) => {
     const price = resData.price || {};
@@ -242,8 +249,9 @@ export default function OrderConfirm() {
       address: addr,
       availableCouponIds,
     };
-  }, [collectAvailableCoupons, resolveCouponName]);
+  }, [collectAvailableCoupons, setSelectedCouponName]);
 
+  // 展示券名称的变化不能重建预览回调，否则初始化 effect 会清空券并反复请求。
   const loadSettleDetail = useCallback((
     goodsRequestList: any[],
     addressReq?: any,
@@ -277,7 +285,7 @@ export default function OrderConfirm() {
             const autoCouponId = result.availableCouponIds[0];
             const previousCouponSelection = {
               id: selectedCouponIdRef.current,
-              name: selectedCouponName,
+              name: selectedCouponNameRef.current,
             };
             autoCouponTriedRef.current = true;
             selectedCouponIdRef.current = autoCouponId;
@@ -305,7 +313,7 @@ export default function OrderConfirm() {
                 couponBaseMapRef.current[firstValid.couponId] = firstValid.base || 0;
                 const previousCouponSelection = {
                   id: selectedCouponIdRef.current,
-                  name: selectedCouponName,
+                  name: selectedCouponNameRef.current,
                 };
                 selectedCouponIdRef.current = firstValid.couponId;
                 loadSettleDetail(goodsRequestList, result?.address || addressReq, previousCouponSelection);
@@ -322,7 +330,7 @@ export default function OrderConfirm() {
 
         let msg = normalizeErrorMessage(err, '订单预览失败，请重试');
         if (selectedCouponIdRef.current && /优惠券\s*\d+\s*不可用或已使用/.test(msg)) {
-          const couponName = selectedCouponName || couponNameMapRef.current[selectedCouponIdRef.current] || '当前优惠券';
+          const couponName = selectedCouponNameRef.current || couponNameMapRef.current[selectedCouponIdRef.current] || '当前优惠券';
           msg = `${couponName}不可用或已使用`;
         }
         showErrorToast(msg, 4500);
@@ -332,7 +340,7 @@ export default function OrderConfirm() {
           }, 4500);
         }
       });
-  }, [handleSettleData, normalizeErrorMessage, resolveCouponName, resolveSelectedCouponId, restoreCouponSelection, selectedCouponName]);
+  }, [handleSettleData, resolveCouponName, resolveSelectedCouponId, restoreCouponSelection]);
 
   useDidShow(() => {
     const selectedAddress = Taro.getStorageSync(ORDER_CONFIRM_SELECTED_ADDRESS_KEY);
@@ -398,7 +406,7 @@ export default function OrderConfirm() {
     selectedCouponIdRef.current = null;
     setSelectedCouponName('');
     loadSettleDetail(goodsRequestList);
-  }, [router.params, loadSettleDetail]);
+  }, [router.params.type, router.params.goodsRequestList, loadSettleDetail, setSelectedCouponName]);
 
   const handleGotoAddress = useCallback(() => {
     Taro.navigateTo({
@@ -541,7 +549,7 @@ export default function OrderConfirm() {
         <View className="address-card" onClick={handleGotoAddress}>
           {userAddress ? (
             <View className="address-card__content">
-              <View className="address-card__icon">📍</View>
+              <Image className="address-card__icon" src={addressIcon} mode="aspectFit" />
               <View className="address-card__info">
                 <View className="address-card__user">
                   <Text className="address-card__name">{userAddress.name}</Text>
@@ -563,7 +571,7 @@ export default function OrderConfirm() {
       {/* Goods list */}
       <View className="goods-section">
         <View className="goods-section__header">
-          <View className="goods-section__store-icon">🏪</View>
+          <Image className="goods-section__store-icon" src={storeIcon} mode="aspectFit" />
           <Text className="goods-section__store-name">商城</Text>
         </View>
         {orderCardList.map((goods) => (
@@ -572,10 +580,10 @@ export default function OrderConfirm() {
             <View className="goods-item__info">
               <Text className="goods-item__title">{goods.title}</Text>
               {goods.specs && <Text className="goods-item__specs">{goods.specs}</Text>}
-            </View>
-            <View className="goods-item__right">
-              <Price price={goods.price} className="goods-item__price" />
-              <Text className="goods-item__num">x{goods.num}</Text>
+              <View className="goods-item__right">
+                <Price price={goods.price} className="goods-item__price" fill />
+                <Text className="goods-item__num">×{goods.num}</Text>
+              </View>
             </View>
           </View>
         ))}
@@ -605,20 +613,23 @@ export default function OrderConfirm() {
             <Price price={activityDiscountAmount} className="price-detail__value price-detail__value--discount" fill />
           </View>
         </View>
-        <View className="price-detail__item" onClick={handleChooseCoupon}>
+        <View className="price-detail__item price-detail__item--action" onClick={handleChooseCoupon}>
           <Text className="price-detail__label">优惠券</Text>
           {selectedCouponIdRef.current ? (
             <View className="price-detail__value-row">
-              <Text className="price-detail__value price-detail__value--discount">
+              <Text className="price-detail__value price-detail__value--discount price-detail__coupon">
                 {selectedCouponName || '已选择优惠券'}
               </Text>
               <Text className="price-detail__arrow">›</Text>
             </View>
           ) : (
-            <Text className="price-detail__value price-detail__value--hint">选择优惠券 ›</Text>
+            <View className="price-detail__value-row">
+              <Text className="price-detail__value price-detail__value--hint">选择优惠券</Text>
+              <Text className="price-detail__arrow">›</Text>
+            </View>
           )}
         </View>
-        <View className="price-detail__item" onClick={handleOpenNotes}>
+        <View className="price-detail__item price-detail__item--action" onClick={handleOpenNotes}>
           <Text className="price-detail__label">订单备注</Text>
           <View className="price-detail__value-row">
             <Text className="price-detail__remark">
@@ -627,41 +638,30 @@ export default function OrderConfirm() {
             <Text className="price-detail__arrow">›</Text>
           </View>
         </View>
+        <View className="order-summary">
+          <Text className="order-summary__count">共{settleData.totalGoodsCount}件</Text>
+          <Text className="order-summary__label">小计</Text>
+          <Price price={settleData.totalPayAmount} className="order-summary__price" fill decimalSmaller />
+        </View>
       </View>
-
-      {/* Summary */}
-      <View className="order-summary">
-        <Text className="order-summary__count">共{settleData.totalGoodsCount}件</Text>
-        <Text className="order-summary__label">小计</Text>
-        <Price price={settleData.totalPayAmount} className="order-summary__price" />
-      </View>
-
-      {/* Bottom bar spacer */}
-      <View className="bottom-spacer" />
 
       {/* Bottom bar */}
       <View className="bottom-bar">
-        <View className={`bottom-bar__inner ${isH5() ? 'bottom-bar__inner--h5' : ''}`}>
-          {isH5() ? (
-            <View className="bottom-bar__price bottom-bar__price--h5">
-              <View className="bottom-bar__discount bottom-bar__discount--h5">
-                <Text>{'\u5171\u4f18\u60e0'}</Text>
-                <Price price={totalDiscountAmount} className="bottom-bar__discount-price" fill />
-              </View>
-              <View className="bottom-bar__total-row">
-                <Text className="bottom-bar__label">{'\u5408\u8ba1\uff1a'}</Text>
-                <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
-              </View>
+        <View className="bottom-bar__inner">
+          <View className="bottom-bar__price">
+            <View className="bottom-bar__total-row">
+              <Text className="bottom-bar__label">合计</Text>
+              <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill decimalSmaller />
             </View>
-          ) : (
-            <View className="bottom-bar__price">
+            {totalDiscountAmount > 0 ? (
               <View className="bottom-bar__discount">
-                <Text>{'\u5171\u4f18\u60e0'}</Text>
+                <Text>已优惠</Text>
                 <Price price={totalDiscountAmount} className="bottom-bar__discount-price" fill />
               </View>
-              <Price price={settleData.totalPayAmount || 0} className="bottom-bar__total" fill />
-            </View>
-          )}
+            ) : (
+              <Text className="bottom-bar__discount">共{settleData.totalGoodsCount}件商品</Text>
+            )}
+          </View>
           <View
             className={`bottom-bar__submit ${!settleData.settleType || submitting ? 'bottom-bar__submit--disabled' : ''}`}
             onClick={handleSubmitOrder}

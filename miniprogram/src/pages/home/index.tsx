@@ -1,6 +1,6 @@
 import { View, Text, Image, Swiper, SwiperItem, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { isH5 } from '../../common/platform';
 import { addCartItem } from '../../services/cart/cart';
 import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
@@ -17,6 +17,7 @@ import H5TabBar from '../../components/h5-tab-bar';
 import DiyRenderer from '../../components/diy-renderer';
 import { DiyPagePayload } from '../../components/diy-renderer/types';
 import { diyStyle } from '../../components/diy-renderer/style';
+import { navigateDiyLink } from '../../plugins/diy/components/diy-renderer/link';
 import { resolveHomeSeckillTarget } from './seckill-timing';
 import './index.scss';
 
@@ -53,10 +54,11 @@ interface CountdownParts {
   overDay: boolean;
 }
 
-function toPrice(value: any): number {
+export function toPrice(value: any): number {
   const amount = Number(value ?? 0);
   if (!Number.isFinite(amount)) return 0;
-  return amount > 999 ? amount / 100 : amount;
+  // 首页 API 金额统一为分，不能按金额大小猜测单位。
+  return amount / 100;
 }
 
 function toBannerItem(item: any, index: number): BannerItem {
@@ -71,9 +73,9 @@ function toBannerItem(item: any, index: number): BannerItem {
   };
 }
 
-function toProductCard(item: any, index: number, tag?: string): ProductCard {
-  const spuId = item?.spuId || item?.spu_id || item?.id || item?.productId || index;
-  const skuId = item?.skuId || item?.sku_id || item?.defaultSkuId || item?.id || spuId;
+export function toProductCard(item: any, index: number, tag?: string): ProductCard {
+  const spuId = item?.spuId || item?.spu_id || item?.id || item?.productId || '';
+  const skuId = item?.skuId || item?.sku_id || item?.defaultSkuId || undefined;
 
   return {
     id: `${spuId}-${skuId}-${index}`,
@@ -119,10 +121,10 @@ function formatCountdown(targetTime: unknown, now = Date.now()): CountdownParts 
 }
 
 const quickEntries: QuickEntry[] = [
-  { key: 'coupon', name: '限时特惠', icon: tagIcon, bg: '#FFF1E8', url: '/pages/coupon/coupon-center/index' },
+  { key: 'coupon', name: '限时特惠', icon: tagIcon, bg: '#FFF1E8', url: '/pages/promotion/detail/index' },
   { key: 'group', name: '拼团活动', icon: groupIcon, bg: '#E8F5E9', url: '/pages/promotion/group-buy/index' },
   { key: 'gift', name: '优惠券', icon: giftIcon, bg: '#FFF3E0', url: '/pages/coupon/coupon-center/index' },
-  { key: 'hot', name: '热卖榜单', icon: fireIcon, bg: '#FCE4EC', url: '/pages/goods/result/index' },
+  { key: 'hot', name: '热卖榜单', icon: fireIcon, bg: '#FCE4EC', url: '/pages/promotion/hot-ranking/index' },
   { key: 'all', name: '全部分类', icon: gridIcon, bg: '#F3E5F5', url: '/pages/category/index' },
 ];
 
@@ -185,7 +187,7 @@ function HomeH5View(props: {
             </View>
           </View>
         ) : (
-          <View className="home-banner-fallback">
+          <View className="home-banner-fallback" onClick={() => openLink('/pages/goods/result/index')}>
             <Text className="home-banner-fallback__title">春日上新</Text>
             <Text className="home-banner-fallback__desc">精选好物，温暖每一天</Text>
             <Text className="home-banner-fallback__btn">立即查看</Text>
@@ -198,7 +200,7 @@ function HomeH5View(props: {
           <View
             key={item.key}
             className="home-quick-entries__item"
-            onClick={() => openLink(item.key === 'hot' ? '/pages/promotion/hot-ranking/index' : item.url)}
+            onClick={() => openLink(item.url)}
           >
             <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
               <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
@@ -241,7 +243,7 @@ function HomeH5View(props: {
             <Text className="home-promo-hub__ad-title">拼团会场</Text>
             <Text className="home-promo-hub__ad-sub">精选拼团，每天上新</Text>
             <View className="home-promo-hub__ad-chip">
-              <Text className="home-promo-hub__ad-chip-text">3人团最低5折起</Text>
+              <Text className="home-promo-hub__ad-chip-text">查看拼团好物</Text>
             </View>
           </View>
         </View>
@@ -250,8 +252,8 @@ function HomeH5View(props: {
       <View className="home-mid-banner">
         <View className="home-mid-banner__content">
           <View>
-            <Text className="home-mid-banner__title">满199减40</Text>
-            <Text className="home-mid-banner__desc">全场跨店可用 · 今日有效</Text>
+            <Text className="home-mid-banner__title">精选优惠券</Text>
+            <Text className="home-mid-banner__desc">优惠以领券中心为准</Text>
           </View>
           <View className="home-mid-banner__btn">
             <Text className="home-mid-banner__btn-text">立即领券</Text>
@@ -278,8 +280,8 @@ function HomeH5View(props: {
                   <View className="home-h5-card__foot">
                     <View className="home-h5-card__price-row">
                       <Text className="home-h5-card__currency">¥</Text>
-                      <Text className="home-h5-card__price">{item.price.toFixed(0)}</Text>
-                      {item.originPrice ? <Text className="home-h5-card__origin">¥{item.originPrice.toFixed(0)}</Text> : null}
+                      <Text className="home-h5-card__price">{item.price.toFixed(2)}</Text>
+                      {item.originPrice ? <Text className="home-h5-card__origin">¥{item.originPrice.toFixed(2)}</Text> : null}
                     </View>
                     <View className="home-h5-card__cart" onClick={(e) => { e.stopPropagation(); handleAddCart(item); }}>
                       <Text className="home-h5-card__cart-text">+</Text>
@@ -346,7 +348,7 @@ function HomeDefaultView(props: {
             </Swiper>
           </View>
         ) : (
-          <View className="home-banner-fallback">
+          <View className="home-banner-fallback" onClick={() => openLink('/pages/goods/result/index')}>
             <Text className="home-banner-fallback__title">春日上新</Text>
             <Text className="home-banner-fallback__desc">精选好物，温暖每一天</Text>
             <Text className="home-banner-fallback__btn">立即查看</Text>
@@ -358,7 +360,7 @@ function HomeDefaultView(props: {
             <View
               key={item.key}
               className="home-quick-entries__item"
-              onClick={() => openLink(item.key === 'hot' ? '/pages/promotion/hot-ranking/index' : item.url)}
+              onClick={() => openLink(item.url)}
             >
               <View className="home-quick-entries__icon-wrap" style={{ background: item.bg }}>
                 <Image className="home-quick-entries__icon-img" src={item.icon} mode="aspectFit" />
@@ -477,8 +479,8 @@ function HomeDefaultView(props: {
                 <View className="home-default-card__foot">
                   <View className="home-default-card__price-row">
                     <Text className="home-default-card__currency">¥</Text>
-                    <Text className="home-default-card__price">{item.price.toFixed(0)}</Text>
-                    {item.originPrice ? <Text className="home-default-card__origin">¥{item.originPrice.toFixed(0)}</Text> : null}
+                    <Text className="home-default-card__price">{item.price.toFixed(2)}</Text>
+                    {item.originPrice ? <Text className="home-default-card__origin">¥{item.originPrice.toFixed(2)}</Text> : null}
                   </View>
                   <View className="home-default-card__cart" onClick={(e) => { e.stopPropagation(); handleAddCart(item); }}>
                     <Text className="home-default-card__cart-text">+</Text>
@@ -506,17 +508,20 @@ export default function Home() {
   const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
   const [nowMs, setNowMs] = useState(Date.now());
 
+  const refreshingRef = useRef(false);
   const refresh = useCallback(async () => {
+    if (refreshingRef.current) return;
+    refreshingRef.current = true;
     setLoading(true);
     try {
-      const publishedDiyPage = await fetchDiyPage('home', currentDiyPageType());
-      if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+      const publishedDiyPage = await fetchDiyPage('home', currentDiyPageType()).catch(() => null);
+      if (publishedDiyPage?.page && publishedDiyPage.components.length > 0) {
         setDiyPage(publishedDiyPage);
         return;
       }
 
       setDiyPage(null);
-      const [data, sessions] = await Promise.all([fetchHome(), fetchSeckillSessions()]);
+      const [data, sessions] = await Promise.all([fetchHome(), fetchSeckillSessions().catch(() => [])]);
       const bannerList = Array.isArray(data?.swiper) ? data.swiper.map(toBannerItem) : [];
       const seckill = Array.isArray(data?.seckillList) ? data.seckillList.map((item: any, index: number) => toProductCard(item, index, '秒杀')) : [];
       const groupBuy = Array.isArray(data?.groupBuyList) ? data.groupBuyList.map((item: any, index: number) => toProductCard(item, index, '拼团')) : [];
@@ -524,7 +529,7 @@ export default function Home() {
         ? data.recommendList
         : Array.isArray(data?.hotList) && data.hotList.length > 0
           ? data.hotList
-          : [...seckill, ...groupBuy];
+          : [...(data?.seckillList || []), ...(data?.groupBuyList || [])];
 
       const seckillTarget = resolveHomeSeckillTarget(data, sessions);
 
@@ -538,6 +543,7 @@ export default function Home() {
     } catch (error: any) {
       Taro.showToast({ title: error?.msg || '首页加载失败', icon: 'none' });
     } finally {
+      refreshingRef.current = false;
       setLoading(false);
       Taro.stopPullDownRefresh();
     }
@@ -573,7 +579,7 @@ export default function Home() {
 
   const openLink = (url?: string) => {
     if (!url) return;
-    Taro.navigateTo({ url });
+    navigateDiyLink({ type: /^https?:\/\//.test(url) ? 'url' : 'page', path: url });
   };
 
   const openSeckillTopic = useCallback(() => {
@@ -609,7 +615,7 @@ export default function Home() {
     const diyPageStyle = diyStyle(diyPage.page.style || {});
 
     return (
-      <View className="home home--diy" style={diyPageStyle}>
+      <View className={`home home--diy ${isH5() ? 'home--diy-h5' : ''}`} style={{ background: diyPageStyle.background }}>
         <View className="home-top-bg home-top-bg--diy">
           {!isH5() ? <PageNav showBack={false} showTitle={false} light background="transparent" /> : null}
           <DiyRenderer page={diyPage} transparent />

@@ -1,4 +1,5 @@
-﻿import { View, Text, Image } from '@tarojs/components';
+﻿import { View, Text, Image, Button } from '@tarojs/components';
+import defaultAvatar from '../../assets/usercenter/avatar-default.svg';
 import orderPayIcon from '../../assets/usercenter/order-pay.svg';
 import orderDeliverIcon from '../../assets/usercenter/order-deliver.svg';
 import orderReceiveIcon from '../../assets/usercenter/order-receive.svg';
@@ -12,7 +13,7 @@ import menuSettingsIcon from '../../assets/usercenter/menu-settings.svg';
 import profileQrcodeIcon from '../../assets/usercenter/profile-qrcode.svg';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useRef, useState } from 'react';
-import { isLoggedIn } from '../../common/auth';
+import { getStoredMemberProfile, getStoredToken, isLoggedIn, persistAuth } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../common/platform';
 import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
@@ -78,7 +79,39 @@ const defaultMenuGroups: MenuItem[][] = [
   ],
 ];
 
-function H5UserCenterView(props: {
+// 注册/登录返回的会员资料与个人中心接口使用不同字段名，在展示边界统一处理。
+function toUserInfo(info: Record<string, any> | null = {}): UserInfo {
+  return {
+    avatarUrl: info?.avatarUrl || info?.avatar || '',
+    nickName: info?.nickName || info?.nickname || '温馨用户',
+    phoneNumber: info?.phoneNumber || info?.phone || '',
+    inviteCode: info?.inviteCode || '',
+    balance: Number(info?.balance || 0),
+  };
+}
+
+function UserAvatar({ url }: { url: string }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
+  return (
+    <Image
+      className="usercenter__avatar"
+      src={url && url !== failedUrl ? url : defaultAvatar}
+      mode="aspectFill"
+      onError={() => setFailedUrl(url)}
+    />
+  );
+}
+
+function UserCenterLoadError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <View className="usercenter__load-error">
+      <Text>个人中心数据加载失败，请重试</Text>
+      <Button className="usercenter__retry" onClick={onRetry}>重新加载</Button>
+    </View>
+  );
+}
+
+interface UserCenterViewProps {
   userInfo: UserInfo;
   walletItems: WalletItem[];
   orderTags: OrderTagInfo[];
@@ -87,8 +120,12 @@ function H5UserCenterView(props: {
   onAvatarClick: () => void;
   onOrderTagClick: (tag: OrderTagInfo) => void;
   onMenuClick: (type: string) => void;
-}) {
-  const { userInfo, walletItems, orderTags, menuGroups, versionNo, onAvatarClick, onOrderTagClick, onMenuClick } = props;
+  loadFailed: boolean;
+  onRetry: () => void;
+}
+
+function H5UserCenterView(props: UserCenterViewProps) {
+  const { userInfo, walletItems, orderTags, menuGroups, versionNo, onAvatarClick, onOrderTagClick, onMenuClick, loadFailed, onRetry } = props;
 
   return (
     <View className="usercenter usercenter--h5">
@@ -98,16 +135,12 @@ function H5UserCenterView(props: {
           <View className="usercenter__header-circle" />
           <View className="usercenter__header-content" onClick={onAvatarClick}>
             <View className="usercenter__avatar-wrap">
-              {userInfo.avatarUrl ? (
-                <Image className="usercenter__avatar" src={userInfo.avatarUrl} mode="aspectFill" />
-              ) : (
-                <Text className="usercenter__avatar-emoji">{'\u6211'}</Text>
-              )}
+              <UserAvatar url={userInfo.avatarUrl} />
             </View>
             <View className="usercenter__info">
               <Text className="usercenter__nickname">{userInfo.nickName}</Text>
               <Text className="usercenter__phone">
-                {userInfo.phoneNumber ? `\u624b\u673a\u53f7\uff1a${userInfo.phoneNumber}` : `\u9080\u8bf7\u7801\uff1a${userInfo.inviteCode || 'WARM2026'}`}
+                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode ? `邀请码：${userInfo.inviteCode}` : '点击完善个人资料'}
               </Text>
             </View>
             <View className="usercenter__qrcode">
@@ -125,6 +158,8 @@ function H5UserCenterView(props: {
           </View>
         ))}
       </View>
+
+      {loadFailed ? <UserCenterLoadError onRetry={onRetry} /> : null}
 
       <View className="usercenter__orders-card">
         <View className="usercenter__orders-header" onClick={() => Taro.navigateTo({ url: '/pages/order/order-list/index' })}>
@@ -192,17 +227,8 @@ const menuIconMap: Record<string, string> = {
   settings: menuSettingsIcon,
 };
 
-function MiniProgramUserCenterView(props: {
-  userInfo: UserInfo;
-  walletItems: WalletItem[];
-  orderTags: OrderTagInfo[];
-  menuGroups: MenuItem[][];
-  versionNo: string;
-  onAvatarClick: () => void;
-  onOrderTagClick: (tag: OrderTagInfo) => void;
-  onMenuClick: (type: string) => void;
-}) {
-  const { userInfo, walletItems, orderTags, menuGroups, versionNo, onAvatarClick, onOrderTagClick, onMenuClick } = props;
+function MiniProgramUserCenterView(props: UserCenterViewProps) {
+  const { userInfo, walletItems, orderTags, menuGroups, versionNo, onAvatarClick, onOrderTagClick, onMenuClick, loadFailed, onRetry } = props;
 
   return (
     <View className="usercenter usercenter--default">
@@ -212,16 +238,12 @@ function MiniProgramUserCenterView(props: {
           <View className="usercenter__header-circle" />
           <View className="usercenter__header-content" onClick={onAvatarClick}>
             <View className="usercenter__avatar-wrap">
-              {userInfo.avatarUrl ? (
-                <Image className="usercenter__avatar" src={userInfo.avatarUrl} mode="aspectFill" />
-              ) : (
-                <Text className="usercenter__avatar-emoji">我</Text>
-              )}
+              <UserAvatar url={userInfo.avatarUrl} />
             </View>
             <View className="usercenter__info">
               <Text className="usercenter__nickname">{userInfo.nickName}</Text>
               <Text className="usercenter__phone">
-                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : `邀请码：${userInfo.inviteCode || 'WARM2026'}`}
+                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode ? `邀请码：${userInfo.inviteCode}` : '点击完善个人资料'}
               </Text>
             </View>
             <View className="usercenter__qrcode">
@@ -239,6 +261,8 @@ function MiniProgramUserCenterView(props: {
           </View>
         ))}
       </View>
+
+      {loadFailed ? <UserCenterLoadError onRetry={onRetry} /> : null}
 
       <View className="usercenter__orders-card">
         <View className="usercenter__orders-header" onClick={() => Taro.navigateTo({ url: '/pages/order/order-list/index' })}>
@@ -289,11 +313,8 @@ function MiniProgramUserCenterView(props: {
 }
 
 export default function UserCenter() {
-  const [userInfo, setUserInfo] = useState<UserInfo>({
-    avatarUrl: '',
-    nickName: '加载中...',
-    phoneNumber: '',
-  });
+  const [userInfo, setUserInfo] = useState<UserInfo>(() => toUserInfo(getStoredMemberProfile()));
+  const [loadFailed, setLoadFailed] = useState(false);
   const [orderTags, setOrderTags] = useState<OrderTagInfo[]>(defaultOrderTags);
   const [menuGroups, setMenuGroups] = useState<MenuItem[][]>(defaultMenuGroups);
   const [walletItems, setWalletItems] = useState<WalletItem[]>([
@@ -305,10 +326,17 @@ export default function UserCenter() {
   const [versionNo, setVersionNo] = useState('');
   const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
   const profileNavigatingRef = useRef(false);
+  const fetchSequenceRef = useRef(0);
 
   const fetchData = () => {
+    const sequence = ++fetchSequenceRef.current;
+    const token = getStoredToken();
+    // 切换账号时，旧请求也不能写回新账号的资料缓存；小程序首次静默登录会取得新 token。
+    const isCurrentRequest = () => sequence === fetchSequenceRef.current && (!isH5() || token === getStoredToken());
+    setLoadFailed(false);
     fetchDiyPage('usercenter', currentDiyPageType())
       .then((publishedDiyPage) => {
+        if (!isCurrentRequest()) return;
         if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
           setDiyPage(publishedDiyPage);
           return;
@@ -316,21 +344,28 @@ export default function UserCenter() {
         setDiyPage(null);
       })
       .catch(() => {
+        if (!isCurrentRequest()) return;
         setDiyPage(null);
       });
 
     fetchUserCenter()
       .then((res: any) => {
+        if (!isCurrentRequest()) return;
         const info = res?.userInfo || {};
         const countsData: CountsData[] = Array.isArray(res?.countsData) ? res.countsData : [];
         const orderTagInfos = Array.isArray(res?.orderTagInfos) ? res.orderTagInfos : [];
 
-        setUserInfo({
-          avatarUrl: info?.avatarUrl || info?.avatar || '',
-          nickName: info?.nickName || info?.nickname || '温馨用户',
-          phoneNumber: info?.phoneNumber || info?.phone || '',
-          inviteCode: info?.inviteCode || '',
-          balance: Number(info?.balance || 0),
+        const profile = toUserInfo(info);
+        setUserInfo(profile);
+        // 返回或刷新页面时先展示缓存，并保留登录响应中的 id、openid 等字段。
+        persistAuth({
+          member: {
+            ...getStoredMemberProfile(),
+            ...profile,
+            avatar: profile.avatarUrl,
+            nickname: profile.nickName,
+            phone: profile.phoneNumber,
+          },
         });
 
         const balanceText = `¥${(Number(info?.balance || 0) / 100).toFixed(2)}`;
@@ -353,20 +388,26 @@ export default function UserCenter() {
           }
           return item;
         })));
-
-        Taro.stopPullDownRefresh();
       })
       .catch(() => {
+        if (!isCurrentRequest()) return;
+        setLoadFailed(true);
+      })
+      .finally(() => {
         Taro.stopPullDownRefresh();
       });
   };
 
   useDidShow(() => {
     if (isH5() && !isLoggedIn()) {
+      // 登录页返回前取消旧请求的展示结果，避免覆盖新登录会员的资料。
+      fetchSequenceRef.current += 1;
       redirectToLogin('/pages/usercenter/index');
       return;
     }
 
+    // switchTab 会复用页面；每次显示都同步最新登录资料，再刷新实时数据。
+    setUserInfo(toUserInfo(getStoredMemberProfile()));
     fetchData();
 
     if (!isMiniProgram()) {
@@ -460,6 +501,7 @@ export default function UserCenter() {
           background={navConfig.background ?? (topTransparent ? 'transparent' : 'default')}
         />
         <View className="usercenter__diy-body" style={diyStyle(page.page?.style || {})}>
+          {loadFailed ? <UserCenterLoadError onRetry={fetchData} /> : null}
           <DiyRenderer page={page} transparent />
         </View>
         {isH5() ? <H5TabBar current="/pages/usercenter/index" /> : null}
@@ -478,6 +520,8 @@ export default function UserCenter() {
         onAvatarClick={handleAvatarClick}
         onOrderTagClick={handleOrderTagClick}
         onMenuClick={handleMenuClick}
+        loadFailed={loadFailed}
+        onRetry={fetchData}
       />
     );
   }
@@ -492,6 +536,8 @@ export default function UserCenter() {
       onAvatarClick={handleAvatarClick}
       onOrderTagClick={handleOrderTagClick}
       onMenuClick={handleMenuClick}
+      loadFailed={loadFailed}
+      onRetry={fetchData}
     />
   );
 }

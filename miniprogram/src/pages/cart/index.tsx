@@ -1,6 +1,6 @@
-﻿import { View, Text, Image } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { isLoggedIn } from '../../common/auth';
 import { redirectToLogin } from '../../common/auth-guard';
 import { isH5 } from '../../common/platform';
@@ -13,6 +13,7 @@ import DiyRenderer from '../../components/diy-renderer';
 import { DiyPagePayload } from '../../components/diy-renderer/types';
 import { diyStyle } from '../../components/diy-renderer/style';
 
+import cartIcon from '../../assets/detail-bottom/cart-line.svg';
 import './index.scss';
 
 interface CartGoods {
@@ -47,7 +48,8 @@ interface RecommendGoods {
 function normalizePrice(value: any): number {
   const price = Number(value ?? 0);
   if (!Number.isFinite(price)) return 0;
-  return price > 999 ? price / 100 : price;
+  // 接口金额统一为分，不能根据数值大小猜测单位。
+  return price / 100;
 }
 
 function formatSpecInfo(specInfo: any): string {
@@ -79,7 +81,7 @@ function normalizeGoods(raw: any, store: any): CartGoods {
     storeName: String(store?.storeName || store?.name || '官方店铺'),
     spuId: String(raw?.spuId || raw?.spu_id || raw?.id || ''),
     skuId: String(raw?.skuId || raw?.sku_id || raw?.id || ''),
-    title: raw?.title || raw?.goodsName || raw?.name || '鍟嗗搧',
+    title: raw?.title || raw?.goodsName || raw?.name || '商品',
     thumb: raw?.thumb || raw?.primaryImage || raw?.image || '',
     price: normalizePrice(raw?.price ?? raw?.salePrice ?? raw?.minSalePrice),
     quantity: Number(raw?.quantity || 1),
@@ -95,12 +97,16 @@ function formatAmountValue(value: number): string {
 
 export default function Cart() {
   const [stores, setStores] = useState<CartStore[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const [updatingSkuIds, setUpdatingSkuIds] = useState<string[]>([]);
+  const updatingRef = useRef(new Set<string>());
   const [recommendList, setRecommendList] = useState<RecommendGoods[]>([]);
   const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
+    setLoadError('');
     try {
       const [publishedDiyPage, cartRes, recommendRes] = await Promise.all([
         fetchDiyPage('cart', currentDiyPageType()).catch(() => null),
@@ -130,7 +136,12 @@ export default function Cart() {
         })
         .filter((store: CartStore) => store.items.length > 0);
 
-      setStores(nextStores);
+      setStores(previous => {
+        const selected = new Map(previous.flatMap(store => store.items).map(item => [item.skuId, item.selected]));
+        return nextStores.map(store => ({ ...store, items: store.items.map(item => ({
+          ...item, selected: item.stockQuantity > 0 && (selected.get(item.skuId) ?? item.selected),
+        })) }));
+      });
       setRecommendList(
         (Array.isArray(recommendRes) ? recommendRes : []).slice(0, 4).map((item: any) => ({
           id: item?.spuId || item?.id,
@@ -144,7 +155,7 @@ export default function Cart() {
       );
     }
     catch (error: any) {
-      Taro.showToast({ title: error?.msg || '\u8d2d\u7269\u8f66\u52a0\u8f7d\u5931\u8d25', icon: 'none' });
+      setLoadError(error?.msg || '购物车加载失败，请重试');
     }
     finally {
       setLoading(false);
@@ -165,10 +176,10 @@ export default function Cart() {
   });
 
   const items = useMemo(() => stores.flatMap(store => store.items), [stores]);
-  const selectedItems = useMemo(() => items.filter(item => item.selected), [items]);
+  const selectedItems = useMemo(() => items.filter(item => item.selected && item.stockQuantity > 0), [items]);
   const totalAmount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.price * item.quantity, 0), [selectedItems]);
   const totalCount = useMemo(() => selectedItems.reduce((sum, item) => sum + item.quantity, 0), [selectedItems]);
-  const isAllSelected = useMemo(() => items.length > 0 && selectedItems.length === items.length, [items, selectedItems]);
+  const isAllSelected = useMemo(() => items.some(item => item.stockQuantity > 0) && items.every(item => item.stockQuantity <= 0 || item.selected), [items, selectedItems]);
   const pageStyle = useMemo(() => diyPage?.page ? diyStyle(diyPage.page.style || {}) : {}, [diyPage]);
 
   const updateLocalQuantity = useCallback((skuId: string, quantity: number) => {
@@ -181,17 +192,17 @@ export default function Cart() {
   const toggleItemSelected = useCallback((skuId: string) => {
     setStores(prev => prev.map(store => ({
       ...store,
-      items: store.items.map(item => (item.skuId === skuId ? { ...item, selected: !item.selected } : item)),
+      items: store.items.map(item => (item.skuId === skuId && item.stockQuantity > 0 ? { ...item, selected: !item.selected } : item)),
     })));
   }, []);
 
   const toggleStoreSelected = useCallback((storeId: string) => {
     setStores((prev) => prev.map((store) => {
       if (store.id !== storeId) return store;
-      const nextSelected = !store.items.every(item => item.selected);
+      const nextSelected = !store.items.every(item => item.stockQuantity <= 0 || item.selected);
       return {
         ...store,
-        items: store.items.map(item => ({ ...item, selected: nextSelected })),
+        items: store.items.map(item => ({ ...item, selected: item.stockQuantity > 0 && nextSelected })),
       };
     }));
   }, []);
@@ -200,11 +211,12 @@ export default function Cart() {
     const nextSelected = !isAllSelected;
     setStores(prev => prev.map(store => ({
       ...store,
-      items: store.items.map(item => ({ ...item, selected: nextSelected })),
+      items: store.items.map(item => ({ ...item, selected: item.stockQuantity > 0 && nextSelected })),
     })));
   }, [isAllSelected]);
 
   const changeQuantity = async (item: CartGoods, delta: number) => {
+    if (updatingRef.current.has(item.skuId)) return;
     const next = item.quantity + delta;
     if (next < 1) return;
     if (next > item.stockQuantity) {
@@ -212,14 +224,19 @@ export default function Cart() {
       return;
     }
 
+    updatingRef.current.add(item.skuId);
+    setUpdatingSkuIds([...updatingRef.current]);
     updateLocalQuantity(item.skuId, next);
     try {
       await updateCartItem(item.skuId, { quantity: next });
-      refreshData();
+      await refreshData();
     }
     catch (error: any) {
       updateLocalQuantity(item.skuId, item.quantity);
       Taro.showToast({ title: error?.msg || '更新数量失败', icon: 'none' });
+    } finally {
+      updatingRef.current.delete(item.skuId);
+      setUpdatingSkuIds([...updatingRef.current]);
     }
   };
 
@@ -248,6 +265,20 @@ export default function Cart() {
     Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${spuId}` });
   }, []);
 
+  if (items.length === 0 && (loading || loadError)) {
+    return (
+      <View className={`cart-page ${isH5() ? 'cart-page--h5' : ''}`}>
+        <PageNav title="购物车" showBack={false} />
+        <View className="cart-empty cart-empty--status">
+          <Image className="cart-empty__icon" src={cartIcon} mode="aspectFit" />
+          <Text className="cart-empty__desc">{loading ? '正在加载购物车…' : loadError}</Text>
+          {!loading && <View className="cart-empty__btn" onClick={refreshData}><Text className="cart-empty__btn-text">重新加载</Text></View>}
+        </View>
+        {isH5() ? <H5TabBar current="/pages/cart/index" /> : null}
+      </View>
+    );
+  }
+
   if (!loading && items.length === 0 && diyPage?.page && diyPage.components.length > 0) {
     return (
       <View className={`cart-page cart-page--diy ${isH5() ? 'cart-page--h5' : ''}`}>
@@ -265,7 +296,7 @@ export default function Cart() {
       <View className={`cart-page cart-page--empty ${isH5() ? 'cart-page--h5' : ''}`}>
         <PageNav title="购物车" showBack={false} />
         <View className="cart-empty">
-          <Text className="cart-empty__icon">🛒</Text>
+          <Image className="cart-empty__icon" src={cartIcon} mode="aspectFit" />
           <Text className="cart-empty__desc">购物车还是空的，先去挑点喜欢的商品吧</Text>
           <View className="cart-empty__btn" onClick={() => Taro.switchTab({ url: '/pages/home/index' })}>
             <Text className="cart-empty__btn-text">去逛逛</Text>
@@ -281,7 +312,7 @@ export default function Cart() {
       <PageNav title="购物车" showBack={false} />
       <View className="cart-list">
         {stores.map((store) => {
-          const storeSelected = store.items.every(item => item.selected);
+          const storeSelected = store.items.some(item => item.stockQuantity > 0) && store.items.every(item => item.stockQuantity <= 0 || item.selected);
           return (
             <View key={store.id} className="cart-store">
               <View className="cart-store__header" onClick={() => toggleStoreSelected(store.id)}>
@@ -302,7 +333,7 @@ export default function Cart() {
                     <Image className="cart-goods-item__img" src={item.thumb} mode="aspectFill" />
                   </View>
                   <View className="cart-goods-item__info">
-                    <Text className="cart-goods-item__title">{item.title}</Text>
+                    <Text className="cart-goods-item__title" onClick={() => Taro.navigateTo({ url: `/pages/goods/details/index?spuId=${item.spuId}` })}>{item.title}</Text>
                     {item.specInfo ? <Text className="cart-goods-item__spec">{item.specInfo}</Text> : null}
                     <View className="cart-goods-item__bottom">
                       <View>
@@ -310,7 +341,7 @@ export default function Cart() {
                           <Text className="cart-goods-item__price-symbol">{'\u00A5'}</Text>{formatAmountValue(item.price)}
                         </Text>
                       </View>
-                      <View className="qty-stepper">
+                      <View className={`qty-stepper ${updatingSkuIds.includes(item.skuId) ? 'qty-stepper--pending' : ''}`}>
                         <View className="qty-stepper__btn" onClick={() => changeQuantity(item, -1)}>
                           <Text className="qty-stepper__btn-text">-</Text>
                         </View>
@@ -319,6 +350,10 @@ export default function Cart() {
                           <Text className="qty-stepper__btn-text">+</Text>
                         </View>
                       </View>
+                    </View>
+                    <View className="cart-goods-item__actions">
+                      {item.stockQuantity <= 0 && <Text className="cart-goods-item__stock">暂时缺货</Text>}
+                      <Text className="cart-goods-item__delete" onClick={() => handleDelete(item)}>删除</Text>
                     </View>
                   </View>
                 </View>
@@ -342,7 +377,7 @@ export default function Cart() {
                   {item.thumb ? (
                     <Image className="cart-recommend__img" src={item.thumb} mode="aspectFill" />
                   ) : (
-                    <Text className="cart-recommend__placeholder">\u597d\u7269</Text>
+                    <Text className="cart-recommend__placeholder">好物</Text>
                   )}
                 </View>
                 <View className="cart-recommend__body">
@@ -384,9 +419,9 @@ export default function Cart() {
             </Text>
           </View>
           <View
-            className={`cart-bar__settle ${totalCount === 0 ? 'cart-bar__settle--disabled' : ''}`}
+            className={`cart-bar__settle ${(totalCount === 0 || updatingSkuIds.length > 0) ? 'cart-bar__settle--disabled' : ''}`}
             onClick={() => {
-              if (totalCount === 0) return;
+              if (totalCount === 0 || updatingRef.current.size > 0) return;
               const goodsRequestList = stores
                 .flatMap((store) => store.items)
                 .filter((item) => item.selected)

@@ -23,7 +23,7 @@ export function getSearchResult(params: any) {
   if (config.useMock) {
     return mockSearchResult(params);
   }
-  const { keyword, pageNum = 1, pageSize = 20, sort } = params || {};
+  const { keyword, pageNum = 1, pageSize = 20, sort, sortType } = params || {};
   return request({
     url: '/api/v1/products',
     method: 'GET',
@@ -31,7 +31,7 @@ export function getSearchResult(params: any) {
       keyword: keyword || undefined,
       page: pageNum,
       page_size: pageSize,
-      sort: sort || undefined,
+      sort: sort === 1 ? (sortType === 1 ? 'price_desc' : 'price_asc') : undefined,
       status: 'active',
     },
   }).then((res: any = {}) => {

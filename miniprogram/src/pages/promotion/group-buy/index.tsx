@@ -52,14 +52,14 @@ function normalizeNavTabs(navTabs: any[]): NavTabInput[] {
     .filter((item) => item.key && item.label);
 }
 
-function formatRemain(expireTime: string) {
-  const ts = new Date(expireTime).getTime();
+function formatRemain(expireTime: string, now: number) {
+  const ts = new Date(expireTime.replace(' ', 'T')).getTime();
   if (!ts) {
     return '进行中';
   }
-  const diff = ts - Date.now();
+  const diff = ts - now;
   if (diff <= 0) {
-    return '即将结束';
+    return '已结束';
   }
   const totalMinutes = Math.floor(diff / 60000);
   if (totalMinutes < 60) {
@@ -77,14 +77,30 @@ export default function GroupBuy() {
   const h5 = isH5();
   const [list, setList] = useState<GroupBuyItemInput[]>([]);
   const [navTabs, setNavTabs] = useState<NavTabInput[]>([]);
-  const [ongoingGroups, setOngoingGroups] = useState<OngoingGroup[]>([]);
+  const [groupSnapshot, setGroupSnapshot] = useState<{ activityId: string; groups: OngoingGroup[] }>({ activityId: '', groups: [] });
+  const [now, setNow] = useState(Date.now());
   const [activeNavKey, setActiveNavKey] = useState('direct_join');
   const [loading, setLoading] = useState(true);
 
+  const baseModel = useMemo(
+    () => buildGroupBuyViewModel({ list, ongoingGroups: [], activeNavKey, remoteTabs: navTabs }),
+    [list, activeNavKey, navTabs],
+  );
+  // 参团编号只属于对应活动，切换筛选时不能将旧团附到新商品。
+  const ongoingGroups = useMemo(() => groupSnapshot.activityId === baseModel.featured?.activityId
+    ? groupSnapshot.groups.filter((group) => {
+      const deadline = new Date(group.expireTime.replace(' ', 'T')).getTime();
+      return group.needCount > group.joinedCount && (!deadline || deadline > now);
+    }) : [], [groupSnapshot, baseModel.featured?.activityId, now]);
   const viewModel = useMemo(
     () => buildGroupBuyViewModel({ list, ongoingGroups, activeNavKey, remoteTabs: navTabs }),
     [list, ongoingGroups, activeNavKey, navTabs],
   );
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -104,7 +120,7 @@ export default function GroupBuy() {
       .catch(() => {
         setList([]);
         setNavTabs([]);
-        setOngoingGroups([]);
+        setGroupSnapshot({ activityId: '', groups: [] });
         setActiveNavKey('direct_join');
       })
       .finally(() => setLoading(false));
@@ -119,16 +135,15 @@ export default function GroupBuy() {
   });
 
   useEffect(() => {
-    const activityId = viewModel.featured?.activityId;
-    if (!activityId) {
-      setOngoingGroups([]);
-      return;
+    const activityId = baseModel.featured?.activityId;
+    let current = true;
+    if (activityId) {
+      fetchOngoingGroups(activityId, 6)
+        .then((groups) => { if (current) setGroupSnapshot({ activityId, groups: Array.isArray(groups) ? groups : [] }); })
+        .catch(() => { if (current) setGroupSnapshot({ activityId, groups: [] }); });
     }
-
-    fetchOngoingGroups(activityId, 6)
-      .then((groups) => setOngoingGroups(Array.isArray(groups) ? groups : []))
-      .catch(() => setOngoingGroups([]));
-  }, [viewModel.featured?.activityId]);
+    return () => { current = false; };
+  }, [baseModel.featured?.activityId]);
 
   const handleBack = useCallback(() => {
     const pages = Taro.getCurrentPages();
@@ -151,7 +166,6 @@ export default function GroupBuy() {
   const heroPresentation = useMemo(() => getGroupBuyHeroPresentation(h5), [h5]);
   const navMetrics = useMemo(() => (h5 ? null : getMiniProgramNavMetrics()), [h5]);
   const heroStyle = navMetrics ? { paddingTop: `${navMetrics.statusBarHeight + 18}px` } : undefined;
-  const capsuleStyle = navMetrics ? { width: `${Math.max(176, navMetrics.capsuleWidth)}px` } : undefined;
 
   return (
     <View className={`group-buy ${h5 ? 'group-buy--h5' : 'group-buy--weapp'}`}>
@@ -168,24 +182,14 @@ export default function GroupBuy() {
               <Text className="group-buy__headline">{heroPresentation.headline}</Text>
               <Text className="group-buy__subline">{heroPresentation.subline}</Text>
             </View>
-            {h5 ? (
-              <View className="group-buy__topbar-action">
-                <Text className="group-buy__icon-text">⋯</Text>
-              </View>
-            ) : heroPresentation.showCapsuleActions ? (
-              <View className="group-buy__topbar-actions" style={capsuleStyle}>
-                <Text className="group-buy__capsule-dots">•••</Text>
-                <Text className="group-buy__capsule-ring">◉</Text>
-              </View>
-            ) : null
-            }
+
           </View>
 
           <View className="group-buy__chip-row">
-            {heroPresentation.chips.map((chip) => (
-              <View key={chip.title} className="group-buy__chip">
-                <Text className="group-buy__chip-top">{chip.title}</Text>
-                <Text className="group-buy__chip-bottom">{chip.subtitle}</Text>
+            {viewModel.displayTabs.map((chip) => (
+              <View key={chip.key} className="group-buy__chip" onClick={() => setActiveNavKey(chip.key)}>
+                <Text className="group-buy__chip-top">{chip.label}</Text>
+                <Text className="group-buy__chip-bottom">{chip.count} 款好物</Text>
               </View>
             ))}
           </View>
@@ -198,11 +202,11 @@ export default function GroupBuy() {
             <View className="group-buy__section-left">
               <View className="group-buy__section-bar" />
               <View>
-                <Text className="group-buy__section-title">拼团氛围卡</Text>
-                <Text className="group-buy__section-desc">基于当前筛选结果展示真实拼团热度和省钱力度。</Text>
+                <Text className="group-buy__section-title">拼团好价</Text>
+                <Text className="group-buy__section-desc">邀好友一起买，成团更划算。</Text>
               </View>
             </View>
-            <Text className="group-buy__section-link">动态更新</Text>
+            <Text className="group-buy__section-link">精选活动</Text>
           </View>
           <View className="group-buy__metrics">
             <View className="group-buy__metric-item">
@@ -213,10 +217,10 @@ export default function GroupBuy() {
             <View className="group-buy__metric-item">
               <Text className="group-buy__metric-label">平均省下</Text>
               <Text className="group-buy__metric-value">¥{viewModel.summary.averageSavingsYuan} / 单</Text>
-              <Text className="group-buy__metric-hint">按拼团价与原价差额计算</Text>
+              <Text className="group-buy__metric-hint">拼团价更实惠</Text>
             </View>
           </View>
-          <View className="group-buy__join-card" onClick={() => featured && handleOpenDetail(featured.spuId, featured.activityId, ongoingGroups[0]?.groupNo)}>
+          {featured ? <View className="group-buy__join-card" onClick={() => featured && handleOpenDetail(featured.spuId, featured.activityId, ongoingGroups[0]?.groupNo)}>
             <View className="group-buy__join-main">
               <View className="group-buy__join-left">
                 <Text className="group-buy__join-title">{viewModel.summary.joinTitle}</Text>
@@ -227,7 +231,7 @@ export default function GroupBuy() {
                 <Text className="group-buy__join-btn-text">{viewModel.summary.ongoingCount > 0 ? '去参团' : '去开团'}</Text>
               </View>
             </View>
-          </View>
+          </View> : null}
         </View>
 
         {featured ? (
@@ -237,7 +241,7 @@ export default function GroupBuy() {
                 <View className="group-buy__section-bar" />
                 <View>
                   <Text className="group-buy__section-title">主推团长款</Text>
-                  <Text className="group-buy__section-desc">展示当前筛选主推商品，并同步显示可参团状态。</Text>
+                  <Text className="group-buy__section-desc">心动好物，邀好友一起拼。</Text>
                 </View>
               </View>
               <Text className="group-buy__section-link">{featured.badge}</Text>
@@ -288,7 +292,7 @@ export default function GroupBuy() {
               <View className="group-buy__section-bar" />
               <View>
                 <Text className="group-buy__section-title">团购导航</Text>
-                <Text className="group-buy__section-desc">按成团人数快速筛选，切换后主推位和列表实时更新。</Text>
+                <Text className="group-buy__section-desc">选择成团人数，找到适合你的好物。</Text>
               </View>
             </View>
             <Text className="group-buy__section-link">
@@ -334,7 +338,7 @@ export default function GroupBuy() {
                     <Text className="group-buy__list-name">{group.leaderNickname || '拼团用户'}的团</Text>
                     <View className="group-buy__list-tags">
                       <Text className="group-buy__mini-tag">还差 {needCount} 人成团</Text>
-                      <Text className="group-buy__mini-tag group-buy__mini-tag--warn">{formatRemain(group.expireTime)}</Text>
+                      <Text className="group-buy__mini-tag group-buy__mini-tag--warn">{formatRemain(group.expireTime, now)}</Text>
                     </View>
                     <View className="group-buy__list-price-row">
                       <Text className="group-buy__list-price">

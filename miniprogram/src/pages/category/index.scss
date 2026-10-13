@@ -1,4 +1,4 @@
-﻿@use '../../styles/variables' as *;
+@use '../../styles/variables' as *;
 
 // 涓ユ牸鎸夌収 design-mockup.html 鍒嗙被椤?CSS 涓€姣斾竴杩樺師
 // 璁捐绋?375px 瀹斤紝1px = 2rpx
@@ -35,10 +35,13 @@
     min-height: 100%;
     padding-bottom: 0;
     box-sizing: border-box;
-    overflow: hidden;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
   }
 
-  .diy-renderer__item {
+  .diy-renderer__item--category-panel {
+    flex: 1;
     height: 100%;
     min-height: 0;
   }
@@ -195,6 +198,8 @@
 }
 
 .category-page--h5 {
+  height: 100vh;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -302,3 +307,6 @@
   font-size: 11PX;
   line-height: 1.3;
 }
+
+.category-content__empty { flex-direction: column; align-items: center; gap: 24rpx; }
+.category-content__retry { padding: 20rpx 32rpx; color: $warm-primary; }

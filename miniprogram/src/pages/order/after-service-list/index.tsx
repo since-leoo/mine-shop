@@ -1,6 +1,7 @@
 import { View, Text, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import PageNav from '../../../components/page-nav';
 import {
   cancelAfterSale,
   confirmAfterSaleExchangeReceived,
@@ -24,6 +25,8 @@ type StatusFilter =
   | 'pending_review'
   | 'waiting_buyer_return'
   | 'waiting_seller_receive'
+  | 'waiting_refund'
+  | 'refunding'
   | 'waiting_reship'
   | 'reshipped'
   | 'completed'
@@ -34,6 +37,8 @@ const STATUS_OPTIONS: Array<{ label: string; value: StatusFilter }> = [
   { label: '待审核', value: 'pending_review' },
   { label: '待买家退货', value: 'waiting_buyer_return' },
   { label: '待商家收货', value: 'waiting_seller_receive' },
+  { label: '待退款', value: 'waiting_refund' },
+  { label: '退款中', value: 'refunding' },
   { label: '待补发', value: 'waiting_reship' },
   { label: '已补发', value: 'reshipped' },
   { label: '已完成', value: 'completed' },
@@ -45,27 +50,46 @@ export default function AfterServiceList() {
   const [refreshing, setRefreshing] = useState(false);
   const [status, setStatus] = useState<StatusFilter>('all');
   const [list, setList] = useState<AfterSaleItem[]>([]);
+  const [more, setMore] = useState(false);
+  const [error, setError] = useState(false);
+  const requestRef = useRef(0);
+  const pageRef = useRef(1);
+  const loadingRef = useRef(false);
+  const actionRef = useRef(false);
+  const statusRef = useRef<StatusFilter>('all');
+  useEffect(() => () => { requestRef.current += 1; }, []);
 
   const activeLabel = useMemo(() => STATUS_OPTIONS.find((item) => item.value === status)?.label || '全部', [status]);
 
-  const loadData = useCallback((nextStatus: StatusFilter = status, isRefresh = false) => {
-    if (isRefresh) {
-      setRefreshing(true);
-    } else {
-      setLoading(true);
-    }
-
-    fetchAfterSaleList({ status: nextStatus })
-      .then((result) => setList(result.list || []))
+  const loadData = useCallback((nextStatus: StatusFilter, isRefresh = false, append = false) => {
+    if (append && loadingRef.current) return Promise.resolve();
+    const requestId = ++requestRef.current;
+    const page = append ? pageRef.current : 1;
+    loadingRef.current = true;
+    statusRef.current = nextStatus;
+    setError(false);
+    if (isRefresh) setRefreshing(true);
+    else if (!append) { setLoading(true); setList([]); }
+    return fetchAfterSaleList({ status: nextStatus, page, pageSize: 10 })
+      .then((result) => {
+        if (requestId !== requestRef.current) return;
+        const incoming = result.list || [];
+        setList((previous) => append ? [...previous, ...incoming.filter((item) => !previous.some((old) => old.id === item.id))] : incoming);
+        pageRef.current = page + 1;
+        setMore(page * 10 < (result.total || 0));
+      })
       .catch((error) => {
-        setList([]);
+        if (requestId !== requestRef.current) return;
+        setError(true);
         Taro.showToast({ title: error?.msg || '加载售后列表失败', icon: 'none' });
       })
       .finally(() => {
+        if (requestId !== requestRef.current) return;
+        loadingRef.current = false;
         setLoading(false);
         setRefreshing(false);
       });
-  }, [status]);
+  }, []);
 
   useDidShow(() => {
     loadData(status);
@@ -80,68 +104,27 @@ export default function AfterServiceList() {
     Taro.navigateTo({ url: `/pages/order/after-service-detail/index?id=${id}` });
   };
 
-  const handlePrimaryAction = (item: AfterSaleItem) => {
+  const handlePrimaryAction = async (item: AfterSaleItem) => {
     const action = getAfterSalePrimaryAction(item);
-
-    if (action.key === 'fill_return') {
-      Taro.navigateTo({ url: `/pages/order/fill-return-shipping/index?id=${item.id}` });
-      return;
-    }
-
-    if (action.key === 'cancel') {
-      Taro.showModal({
-        title: '撤销售后',
-        content: '确认撤销当前售后申请吗？',
-        success: (result) => {
-          if (!result.confirm) {
-            return;
-          }
-
-          cancelAfterSale(item.id)
-            .then(() => {
-              Taro.showToast({ title: '售后已撤销', icon: 'none' });
-              loadData(status, true);
-            })
-            .catch((error) => {
-              Taro.showToast({ title: error?.msg || '撤销售后失败', icon: 'none' });
-            });
-        },
-      });
-      return;
-    }
-
-    if (action.key === 'reapply') {
-      Taro.navigateTo({ url: buildAfterSaleApplyUrl(item) });
-      return;
-    }
-
-    if (action.key === 'confirm_exchange') {
-      Taro.showModal({
-        title: '确认收货',
-        content: '确认已收到商家补发的商品吗？',
-        success: (result) => {
-          if (!result.confirm) {
-            return;
-          }
-
-          confirmAfterSaleExchangeReceived(item.id)
-            .then(() => {
-              Taro.showToast({ title: '已确认收货', icon: 'none' });
-              loadData(status, true);
-            })
-            .catch((error) => {
-              Taro.showToast({ title: error?.msg || '确认收货失败', icon: 'none' });
-            });
-        },
-      });
-      return;
-    }
-
-    handleOpenDetail(item.id);
+    if (action.key === 'fill_return') return Taro.navigateTo({ url: `/pages/order/fill-return-shipping/index?id=${item.id}` });
+    if (action.key === 'reapply') return Taro.navigateTo({ url: buildAfterSaleApplyUrl(item) });
+    if (action.key !== 'cancel' && action.key !== 'confirm_exchange') return handleOpenDetail(item.id);
+    if (actionRef.current) return;
+    actionRef.current = true;
+    try {
+      const result = await Taro.showModal({ title: action.text, content: action.key === 'cancel' ? '确认撤销当前售后申请吗？' : '确认已收到商家补发的商品吗？' });
+      if (!result.confirm) return;
+      await (action.key === 'cancel' ? cancelAfterSale(item.id) : confirmAfterSaleExchangeReceived(item.id));
+      Taro.showToast({ title: action.key === 'cancel' ? '售后已撤销' : '已确认收货', icon: 'none' });
+      await loadData(statusRef.current, true);
+    } catch (error: any) {
+      Taro.showToast({ title: error?.msg || error?.message || '操作失败，请重试', icon: 'none' });
+    } finally { actionRef.current = false; }
   };
 
   return (
     <View className="after-service-list">
+      <PageNav title="售后记录" />
       <View className="after-service-list__hero">
         <Text className="after-service-list__hero-title">售后记录</Text>
         <Text className="after-service-list__hero-desc">当前筛选：{activeLabel}</Text>
@@ -152,6 +135,7 @@ export default function AfterServiceList() {
         scrollY
         refresherEnabled
         refresherTriggered={refreshing}
+        onScrollToLower={() => { if (more) void loadData(status, false, true); }}
         onRefresherRefresh={() => loadData(status, true)}
       >
         <View className="after-service-list__tabs">
@@ -166,6 +150,7 @@ export default function AfterServiceList() {
           ))}
         </View>
 
+        {error && <View className="order-state__action" onClick={() => loadData(status, true)}>加载失败，点击重试</View>}
         {loading ? (
           <View className="after-service-list after-service-list--state"><Text>加载中...</Text></View>
         ) : list.length === 0 ? (
@@ -215,6 +200,7 @@ export default function AfterServiceList() {
             })}
           </View>
         )}
+        {!loading && more && <View className="order-state__action" onClick={() => loadData(status, false, true)}>加载更多</View>}
       </ScrollView>
     </View>
   );

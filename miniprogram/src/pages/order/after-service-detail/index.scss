@@ -1,6 +1,8 @@
+@use '../../../styles/variables' as *;
+@use '../after-service/page';
 .after-service-detail {
   min-height: 100vh;
-  background: linear-gradient(180deg, #efe6d9 0%, #f5f6fa 220px);
+  background: linear-gradient(180deg, #efe6d9 0%, $warm-bg-page 220px);
   padding: 24px 24px 160px;
 
   &--state {
@@ -8,7 +10,7 @@
     min-height: 100vh;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    color: $warm-text-secondary;
   }
 
   &__hero,
@@ -26,7 +28,7 @@
     display: block;
     font-size: 36px;
     font-weight: 700;
-    color: #2c1f16;
+    color: $warm-text-primary;
   }
 
   &__type {
@@ -54,7 +56,7 @@
     display: block;
     font-size: 30px;
     font-weight: 700;
-    color: #2c1f16;
+    color: $warm-text-primary;
   }
 
   &__progress-desc,
@@ -63,7 +65,7 @@
     display: block;
     margin-top: 12px;
     font-size: 24px;
-    color: #6b7280;
+    color: $warm-text-secondary;
     line-height: 1.7;
   }
 
@@ -77,7 +79,7 @@
     margin-bottom: 16px;
     font-size: 28px;
     font-weight: 600;
-    color: #2c1f16;
+    color: $warm-text-primary;
   }
 
   &__row {
@@ -86,7 +88,7 @@
     gap: 24px;
     margin-bottom: 14px;
     font-size: 24px;
-    color: #4b5563;
+    color: $warm-text-secondary;
   }
 
   &__row text:last-child {
@@ -106,7 +108,7 @@
     height: 160px;
     border-radius: 18px;
     overflow: hidden;
-    background: #f3f4f6;
+    background: $warm-bg-page;
   }
 
   &__timeline-item {
@@ -132,7 +134,7 @@
     height: 16px;
     margin-top: 10px;
     border-radius: 50%;
-    background: #2c1f16;
+    background: $warm-text-primary;
     flex-shrink: 0;
   }
 
@@ -152,7 +154,7 @@
 
   &__timeline-title {
     font-size: 26px;
-    color: #2c1f16;
+    color: $warm-text-primary;
     font-weight: 600;
   }
 
@@ -171,12 +173,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    color: #2c1f16;
+    color: $warm-text-primary;
     font-size: 26px;
   }
 
   &__helper-arrow {
-    color: #9ca3af;
+    color: $warm-text-muted;
   }
 
   &__actions {
@@ -190,7 +192,7 @@
 
   &__btn {
     flex: 1;
-    background: #2c1f16;
+    background: $warm-text-primary;
     color: #fff8f0;
     text-align: center;
     padding: 22px 0;
@@ -200,12 +202,29 @@
 
   &__btn--ghost {
     background: #fff;
-    color: #2c1f16;
-    border: 1px solid #d1d5db;
+    color: $warm-text-primary;
+    border: 1px solid $warm-border;
   }
 
   &__copy {
     color: #8b5e34;
     text-decoration: underline;
   }
+}
+
+.after-service-detail {
+  box-sizing: border-box;
+  background: $warm-bg-page;
+  padding: 0 24rpx calc(180rpx + env(safe-area-inset-bottom));
+  > .page-nav { margin: 0 -24rpx 24rpx; }
+  &__hero { background: $warm-gradient-primary; }
+  &__status, &__type { color: white; }
+  &__type, &__timeline-content { min-width: 0; overflow-wrap: anywhere; line-height: 1.6; }
+  &__row { line-height: 1.6; align-items: flex-start; }
+  &__row > :first-child { flex-shrink: 0; }
+  &__row > :last-child { min-width: 0; max-width: 70%; text-align: right; overflow-wrap: anywhere; }
+  &__actions { bottom: 0; left: 0; right: 0; padding: 20rpx 24rpx calc(20rpx + env(safe-area-inset-bottom)); background: $warm-bg-white; z-index: 100; flex-wrap: wrap; box-shadow: $warm-shadow-sm; }
+  &__actions:empty { display: none; }
+  &__btn { background: $warm-gradient-primary; min-width: 0; min-height: 88rpx; box-sizing: border-box; display: flex; justify-content: center; align-items: center; white-space: nowrap; }
+  &__btn--ghost { background: $warm-bg-white; color: $warm-text-primary; }
 }

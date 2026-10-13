@@ -1,6 +1,7 @@
 import { View, Text } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
+import PageNav from '../../../components/page-nav';
 import './index.scss';
 import { fetchOrderLogistics } from '../../../services/order/logistics';
 
@@ -17,9 +18,17 @@ export default function DeliveryDetail() {
   const [logisticsNo, setLogisticsNo] = useState('');
   const [nodes, setNodes] = useState<TrackingNode[]>([]);
   const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const [retry, setRetry] = useState(0);
 
   useEffect(() => {
     const params = router.params;
+    let disposed = false;
+    setLoading(true);
+    setFailed(false);
+    setNodes([]);
+    setCompanyName('');
+    setLogisticsNo('');
 
     // Try to parse data from params (passed from order-detail)
     if (params.data) {
@@ -47,6 +56,7 @@ export default function DeliveryDetail() {
     }
     fetchOrderLogistics(orderNo)
       .then((res: any) => {
+        if (disposed) return;
         const data = res?.data || res || {};
         const traces = Array.isArray(data.traces) ? data.traces : [];
         setCompanyName(data.companyName || data.company || data.companyCode || '');
@@ -58,9 +68,10 @@ export default function DeliveryDetail() {
           active: index === 0,
         })));
       })
-      .catch(() => setNodes([]))
-      .finally(() => setLoading(false));
-  }, [router.params]);
+      .catch(() => { if (!disposed) setFailed(true); })
+      .finally(() => { if (!disposed) setLoading(false); });
+    return () => { disposed = true; };
+  }, [router.params.orderNo, router.params.data, retry]);
 
   const handleCopyNo = () => {
     if (logisticsNo) {
@@ -70,14 +81,15 @@ export default function DeliveryDetail() {
 
   if (loading) {
     return (
-      <View className="delivery-detail delivery-detail--loading">
-        <Text className="delivery-detail__loading-text">加载中...</Text>
+      <View className="delivery-detail"><PageNav title="物流详情" />
+        <View className="order-state"><Text>加载中...</Text></View>
       </View>
     );
   }
 
   return (
     <View className="delivery-detail">
+      <PageNav title="物流详情" />
       {/* Express info */}
       <View className="delivery-detail__info-card">
         <View className="delivery-detail__info-row">
@@ -97,6 +109,7 @@ export default function DeliveryDetail() {
       <View className="delivery-detail__timeline-card">
         <Text className="delivery-detail__card-title">物流跟踪</Text>
         <View className="delivery-detail__timeline">
+          {nodes.length === 0 && <View className="order-state"><Text>{failed ? '物流加载失败' : '暂无物流轨迹，请稍后再查看'}</Text>{failed && <View className="order-state__action" onClick={() => setRetry((value) => value + 1)}>重新加载</View>}</View>}
           {nodes.map((node, index) => (
             <View
               className={`delivery-node ${node.active ? 'delivery-node--active' : ''}`}
@@ -107,7 +120,7 @@ export default function DeliveryDetail() {
                 {index < nodes.length - 1 && <View className="delivery-node__line" />}
               </View>
               <View className="delivery-node__content">
-                <Text className="delivery-node__desc">{node.desc}</Text>
+                <Text className="delivery-node__desc">{node.desc || node.title}</Text>
                 <Text className="delivery-node__time">{node.time}</Text>
               </View>
             </View>

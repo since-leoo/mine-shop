@@ -4,6 +4,9 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchComments } from '../../../services/comments/fetchComments';
 import { fetchCommentsCount } from '../../../services/comments/fetchCommentsCount';
 import LoadMore from '../../../components/LoadMore';
+import PageNav from '../../../components/page-nav';
+import { isH5 } from '../../../common/platform';
+import defaultAvatar from '../../../assets/usercenter/avatar-default.svg';
 import './index.scss';
 
 interface CommentItem {
@@ -51,13 +54,17 @@ export default function CommentsPage() {
   });
 
   const spuIdRef = useRef('');
-  const pageNumRef = useRef(1);
+  const pageNumRef = useRef(0);
+  const requestRef = useRef(0);
+  const busyRef = useRef(false);
   const totalCountRef = useRef(0);
 
   // Format time
   const formatTime = (ts: string | number) => {
     try {
-      const d = new Date(Number(ts));
+      const numeric = Number(ts);
+      const d = new Date(Number.isFinite(numeric) ? numeric : ts);
+      if (!Number.isFinite(d.getTime())) return '';
       const pad = (n: number) => String(n).padStart(2, '0');
       return `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
     } catch {
@@ -67,7 +74,10 @@ export default function CommentsPage() {
 
   const loadComments = useCallback(async (reset = true, tabKey?: TabKey) => {
     const currentTab = tabKey ?? activeTab;
-    if (loadMoreStatus === 1 && !reset) return;
+    if (busyRef.current && !reset) return;
+    const requestId = ++requestRef.current;
+    busyRef.current = true;
+    if (reset) pageNumRef.current = 0;
     setLoadMoreStatus(1);
 
     const params: any = {
@@ -87,6 +97,7 @@ export default function CommentsPage() {
 
     try {
       const data = await fetchComments(params);
+      if (requestId !== requestRef.current) return;
       const { pageList = [], totalCount = 0 } = data || {};
       const totalNum = Number(totalCount || 0);
 
@@ -108,11 +119,14 @@ export default function CommentsPage() {
       setCommentList(newList);
       setLoadMoreStatus(newList.length >= totalNum ? 2 : 0);
     } catch {
+      if (requestId !== requestRef.current) return;
       if (reset) {
         setCommentList([]);
         totalCountRef.current = 0;
       }
       setLoadMoreStatus(3);
+    } finally {
+      if (requestId === requestRef.current) busyRef.current = false;
     }
   }, [activeTab, commentList, loadMoreStatus]);
 
@@ -160,12 +174,9 @@ export default function CommentsPage() {
     if (tabKey === activeTab) return;
     setActiveTab(tabKey);
     setCommentList([]);
-    pageNumRef.current = 1;
+    pageNumRef.current = 0;
     setLoadMoreStatus(0);
-    // Need to pass the new tabKey since state hasn't updated yet
-    setTimeout(() => {
-      loadComments(true, tabKey);
-    }, 0);
+    loadComments(true, tabKey);
   }, [activeTab, loadComments]);
 
   // Render stars
@@ -174,11 +185,7 @@ export default function CommentsPage() {
       <Text
         key={i}
         className={`comment-star ${i < score ? 'comment-star--active' : ''}`}
-        style={{
-          color: i < score ? '#f3b63f' : '#d8c6b6',
-          fontSize: '30rpx',
-          textShadow: i < score ? '0 4rpx 10rpx rgba(243, 182, 63, 0.22)' : '0 2rpx 6rpx rgba(120, 80, 28, 0.08)',
-        }}>
+        >
         {i < score ? '★' : '☆'}
       </Text>
     ));
@@ -189,7 +196,8 @@ export default function CommentsPage() {
   }, [loadComments]);
 
   return (
-    <View className="comments-page">
+    <View className={`comments-page ${isH5() ? 'comments-page--h5' : ''}`}>
+      <PageNav title="商品评价" />
       {/* Tab Bar */}
       <View className="comments-tabs">
         {TABS.map((tab) => (
@@ -212,17 +220,17 @@ export default function CommentsPage() {
             <View className="comment-card__header">
               <Image
                 className="comment-card__avatar"
-                src={item.userHeadUrl || ''}
+                src={item.userHeadUrl || defaultAvatar}
               />
               <View className="comment-card__header-right">
                 <Text className="comment-card__name">
                   {item.isAnonymity ? '匿名用户' : (item.userName || '用户')}
                 </Text>
+                <Text className="comment-card__time">{item.commentTime}</Text>
                 <View className="comment-card__stars">
                   {renderStars(item.commentScore)}
                 </View>
               </View>
-              <Text className="comment-card__time">{item.commentTime}</Text>
             </View>
 
             <Text className="comment-card__content">
@@ -263,9 +271,9 @@ export default function CommentsPage() {
       </View>
 
       {/* Empty */}
-      {commentList.length === 0 && loadMoreStatus !== 1 && (
+      {commentList.length === 0 && loadMoreStatus === 2 && (
         <View className="empty-state">
-          <Text className="empty-state__icon">{'💬'}</Text>
+
           <Text className="empty-state__text">暂无评价</Text>
         </View>
       )}

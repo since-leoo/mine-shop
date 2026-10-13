@@ -1,18 +1,11 @@
 import { request } from '../request';
 
-/** 获取订单详情mock数据 */
-function mockFetchOrderDetail(params: any) {
-  const { delay } = require('../_utils/delay');
-  const { genOrderDetail } = require('../../model/order/orderDetail');
-  return delay().then(() => genOrderDetail(params));
-}
-
 /** 获取订单详情数据 */
 export function fetchOrderDetail(params: any) {
-  const orderNo = params?.orderNo || params;
-  if (!orderNo) return mockFetchOrderDetail(params);
+  const orderNo = (typeof params === 'string' ? params : params?.orderNo)?.trim();
+  if (!orderNo) return Promise.reject(new Error('缺少订单编号'));
   return request({
-    url: `/api/v1/order/detail/${orderNo}`,
+    url: `/api/v1/order/detail/${encodeURIComponent(orderNo)}`,
     method: 'GET',
     needAuth: true,
   });

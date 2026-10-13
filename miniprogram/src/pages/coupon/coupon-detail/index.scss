@@ -104,6 +104,8 @@
   }
 
   &__ticket-left {
+    flex: 0 0 224rpx;
+    box-sizing: border-box;
     width: 224rpx;
     padding: 36rpx 24rpx;
     background: linear-gradient(160deg, #f6c8b2 0%, #e68e75 100%);
@@ -125,6 +127,7 @@
   }
 
   &__ticket-divider {
+    flex-shrink: 0;
     width: 28rpx;
     background:
       radial-gradient(circle at left center, #FAF3ED 14rpx, transparent 14.5rpx) left top / 28rpx 52rpx repeat-y,
@@ -132,6 +135,7 @@
   }
 
   &__ticket-right {
+    min-width: 0;
     flex: 1;
     padding: 32rpx 32rpx 28rpx 8rpx;
     display: flex;
@@ -190,6 +194,7 @@
   }
 
   &__footer {
+    z-index: 5;
     position: fixed;
     left: 0;
     right: 0;
@@ -208,6 +213,7 @@
   }
 
   &__btn {
+    min-width: 0;
     flex: 1;
     height: 84rpx;
     border-radius: 999rpx;
@@ -227,6 +233,7 @@
   }
 
   &__btn-text {
+    white-space: nowrap;
     font-size: 26rpx;
     font-weight: 700;
 
@@ -249,3 +256,7 @@
 .coupon-detail-page--h5 .coupon-detail-page__footer {
   padding-bottom: calc(env(safe-area-inset-bottom) + 24rpx);
 }
+
+.coupon-detail-page { padding-bottom: calc(220rpx + env(safe-area-inset-bottom)); }
+.coupon-detail-page__btn--disabled { background: #d1beb5; box-shadow: none; }
+.coupon-detail-page__ticket-title, .coupon-detail-page__ticket-value, .coupon-detail-page__panel-value { overflow-wrap: anywhere; }

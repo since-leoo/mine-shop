@@ -134,6 +134,7 @@
   }
 
   &__name {
+    word-break: break-word;
     display: block;
     margin-top: 20rpx;
     font-size: 24rpx;
@@ -151,6 +152,7 @@
   }
 
   &__price-row {
+    flex-wrap: wrap;
     display: flex;
     align-items: baseline;
     gap: 8rpx;
@@ -181,3 +183,7 @@
   margin: 0 -32rpx;
   padding: 0 32rpx 28rpx;
 }
+
+.coupon-goods-page__card { min-width: 0; }
+.coupon-goods-page__name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.coupon-goods-page__price { overflow-wrap: anywhere; }

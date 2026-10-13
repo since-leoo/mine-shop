@@ -15,7 +15,7 @@ export function passwordLogin(phone: string, password: string) {
   });
 }
 
-export function sendVerificationCode(phone: string, scene: 'register' | 'forgot_password') {
+export function sendVerificationCode(phone: string, scene: 'register' | 'forgot_password' | 'login') {
   return request({
     url: '/api/v1/auth/captcha',
     method: 'POST',
@@ -47,4 +47,9 @@ export function resetPasswordByPhone(data: {
     method: 'POST',
     data,
   });
+}
+
+/** 验证码登录与密码登录共用会员和登录后的导航流程。 */
+export function smsLogin(phone: string, code: string) {
+  return request({ url: '/api/v1/login/h5Sms', method: 'POST', data: { phone, code } });
 }

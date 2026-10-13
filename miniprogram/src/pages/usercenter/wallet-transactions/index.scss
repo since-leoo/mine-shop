@@ -224,3 +224,10 @@
     font-weight: 700;
   }
 }
+
+// 长来源说明和金额各保留自己的空间，避免小屏上互相挤出卡片。
+.wallet-page__item-info, .wallet-page__item-header { min-width: 0; }
+.wallet-page__type-label { flex-shrink: 0; }
+.wallet-page__summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.wallet-page__summary-value { overflow-wrap: anywhere; }
+.wallet-page__retry { margin-top: 16rpx; padding: 20rpx; color: $warm-primary; font-size: $warm-font-md; }

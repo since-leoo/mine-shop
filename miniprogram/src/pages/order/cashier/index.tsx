@@ -1,5 +1,5 @@
-﻿import { View, Text } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import { View, Text } from '@tarojs/components';
+import Taro, { useDidHide, useDidShow, useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { requestOrderPayment, fetchOrderPayInfo, fetchSubmitResult } from '../../../services/order/orderConfirm';
 import Price from '../../../components/Price';
@@ -55,24 +55,54 @@ function normalizePayMethods(input: any): PayMethod[] {
 export default function Cashier() {
   const router = useRouter();
   const [tradeNo, setTradeNo] = useState('');
+  const [visible, setVisible] = useState(true);
+  const visibleRef = useRef(true);
+  const generationRef = useRef(0);
+  const paymentLockRef = useRef(false);
   const [payAmount, setPayAmount] = useState(0);
   const [payMethods, setPayMethods] = useState<PayMethod[]>([]);
   const [payMethod, setPayMethod] = useState('');
   const [creating, setCreating] = useState(true);
   const [paying, setPaying] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   const [failReason, setFailReason] = useState('');
   const payInfoPollingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const stopPolling = useCallback(() => {
+    if (payInfoPollingTimerRef.current) clearTimeout(payInfoPollingTimerRef.current);
+    payInfoPollingTimerRef.current = null;
+  }, []);
+
+  useDidShow(() => { visibleRef.current = true; setVisible(true); });
+  useDidHide(() => {
+    // Taro 保留被覆盖页面；隐藏也必须作废旧请求，不能仅依赖卸载清理。
+    visibleRef.current = false;
+    ++generationRef.current;
+    stopPolling();
+    setVisible(false);
+    Taro.hideLoading();
+  });
+
   useEffect(() => {
+    let cancelled = false;
+    const generation = ++generationRef.current;
+    const isCurrent = () => !cancelled && visibleRef.current && generation === generationRef.current;
     const params = router.params;
     const no = params.tradeNo || '';
     setTradeNo(no);
+    setPayAmount(0);
+    setPayMethods([]);
+    setPayMethod('');
+    setPaying(false);
+    paymentLockRef.current = false;
 
     if (payInfoPollingTimerRef.current) {
       clearTimeout(payInfoPollingTimerRef.current);
       payInfoPollingTimerRef.current = null;
     }
+
+    if (!visible) return undefined;
 
     if (!no) {
       setCreating(false);
@@ -89,21 +119,23 @@ export default function Cashier() {
     const loadPayInfo = () => {
       fetchOrderPayInfo(no)
         .then((res: any) => {
+          if (!isCurrent()) return;
           const data = res?.data || res || {};
-          setPayAmount(Number(data.payAmount || data.totalAmount || params.payAmount || 0));
+          setPayAmount(Number(data.payAmount ?? data.totalAmount ?? 0));
           const methods = normalizePayMethods(data.payMethods);
-          const finalMethods = methods.length > 0
-            ? methods
-            : [{ channel: 'wechat', channelName: '\u5fae\u4fe1\u652f\u4ed8', name: '\u5fae\u4fe1\u652f\u4ed8', enabled: true }];
+          // 当前后端微信渠道只提供小程序支付参数，H5 不伪装成可用渠道。
+          const finalMethods = methods.map(method => ({ ...method,
+            enabled: method.enabled !== false && !(isH5() && method.channel === 'wechat'),
+          }));
           setPayMethods(finalMethods);
-          const firstEnabled = finalMethods.find((m: PayMethod) => m.enabled !== false);
-          setPayMethod(firstEnabled?.channel || finalMethods[0]?.channel || 'wechat');
+          setPayMethod(finalMethods.find(method => method.enabled !== false)?.channel || '');
           setCreating(false);
           setFailed(false);
           setFailReason('');
           Taro.hideLoading();
         })
         .catch((err: any) => {
+          if (!isCurrent()) return;
           setCreating(false);
           setFailed(true);
           setFailReason(err?.msg || '\u83b7\u53d6\u652f\u4ed8\u4fe1\u606f\u5931\u8d25');
@@ -114,6 +146,7 @@ export default function Cashier() {
     const pollSubmitResult = (retryCount = 0) => {
       fetchSubmitResult(no)
         .then((res: any) => {
+          if (!isCurrent()) return;
           const data = res?.data || res || {};
           const submitState = resolveSubmitResultState(data);
 
@@ -143,6 +176,7 @@ export default function Cashier() {
           loadPayInfo();
         })
         .catch((err: any) => {
+          if (!isCurrent()) return;
           if (retryCount >= CASHIER_POLL_MAX_RETRY) {
             setCreating(false);
             setFailed(true);
@@ -160,55 +194,57 @@ export default function Cashier() {
     pollSubmitResult();
 
     return () => {
+      cancelled = true;
+      if (generation === generationRef.current) ++generationRef.current;
       if (payInfoPollingTimerRef.current) {
         clearTimeout(payInfoPollingTimerRef.current);
         payInfoPollingTimerRef.current = null;
       }
       Taro.hideLoading();
     };
-  }, [router.params]);
+  }, [router.params.tradeNo, retryKey, visible]);
 
-  const handlePay = useCallback(() => {
-    if (paying || !tradeNo) return;
-    if (!payMethod) {
-      Taro.showToast({ title: '\u8bf7\u9009\u62e9\u652f\u4ed8\u65b9\u5f0f', icon: 'none' });
-      return;
-    }
+  const handlePay = useCallback(async () => {
+    if (paymentLockRef.current || !visibleRef.current || paying || creating || failed || !tradeNo) return;
+    if (!payMethod || !payMethods.some(method => method.channel === payMethod && method.enabled !== false)) return;
+    paymentLockRef.current = true;
+    const generation = generationRef.current;
+    const isCurrent = () => visibleRef.current && generation === generationRef.current;
     setPaying(true);
-
-    requestOrderPayment({ orderNo: tradeNo, payMethod })
-      .then((res: any) => {
-        const data = res?.data || res;
-        const payInfo = data?.payParams || data?.payInfo;
-        if (payMethod === 'wechat' && payInfo) {
-          const parsedPayInfo = typeof payInfo === 'string' ? JSON.parse(payInfo) : payInfo;
-          Taro.requestPayment({
-            ...parsedPayInfo,
-            success: () => {
-              Taro.redirectTo({
-                url: `/pages/order/pay-result/index?totalPaid=${payAmount}&orderNo=${tradeNo}`,
-              });
-            },
-            fail: (err) => {
-              Taro.showToast({ title: err?.errMsg?.includes('cancel') ? '\u652f\u4ed8\u53d6\u6d88' : '\u652f\u4ed8\u5931\u8d25', icon: 'none' });
-              setPaying(false);
-            },
-          });
-        } else {
-          Taro.redirectTo({
-            url: `/pages/order/pay-result/index?totalPaid=${payAmount}&orderNo=${tradeNo}`,
-          });
+    try {
+      const res: any = await requestOrderPayment({ orderNo: tradeNo, payMethod });
+      if (!isCurrent()) return;
+      const data = res?.data || res;
+      if (!data?.isPaid) {
+        const raw = data?.payParams || data?.payInfo || data;
+        const payInfo = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (payMethod !== 'wechat' || isH5() || !payInfo?.timeStamp || !payInfo?.paySign) {
+          throw new Error('暂未获取到可用支付参数，请重试');
         }
-      })
-      .catch((err: any) => {
-        setPaying(false);
-        Taro.showToast({ title: err?.msg || '\u652f\u4ed8\u5931\u8d25', icon: 'none' });
-      });
-  }, [paying, tradeNo, payMethod, payAmount]);
+        await Taro.requestPayment(payInfo);
+      }
+      if (!isCurrent()) return;
+      // 支付页继续向订单服务确认实际结果，不把渠道请求成功当成到账。
+      await Taro.redirectTo({ url: `/pages/order/pay-result/index?totalPaid=${payAmount}&orderNo=${encodeURIComponent(tradeNo)}` });
+    } catch (err: any) {
+      if (!isCurrent()) return;
+      Taro.showToast({ title: err?.errMsg?.includes('cancel') ? '支付取消' : err?.msg || err?.message || '支付失败', icon: 'none' });
+    } finally {
+      if (isCurrent()) { paymentLockRef.current = false; setPaying(false); }
+    }
+  }, [paying, creating, failed, tradeNo, payMethod, payMethods, payAmount]);
 
   const handleBack = useCallback(() => {
-    Taro.redirectTo({ url: '/pages/order/order-list/index' });
-  }, []);
+    // 离页只停止前端续操作，渠道/服务端已受理的支付仍由订单结果确认。
+    visibleRef.current = false;
+    ++generationRef.current;
+    stopPolling();
+    Taro.redirectTo({ url: '/pages/order/order-list/index' }).catch(() => {
+      visibleRef.current = true;
+      setRetryKey(value => value + 1);
+      Taro.showToast({ title: '返回失败，请重试', icon: 'none' });
+    });
+  }, [stopPolling]);
 
   return (
     <View className={`cashier ${isH5() ? 'cashier--h5' : ''} warm-page-enter`}>
@@ -223,7 +259,8 @@ export default function Cashier() {
       <View className="cashier__methods">
         <Text className="cashier__methods-title">{'\u652f\u4ed8\u65b9\u5f0f'}</Text>
         {creating && <Text className="cashier__loading-text">{'\u652f\u4ed8\u4fe1\u606f\u52a0\u8f7d\u4e2d...'}</Text>}
-        {!creating && failed && <Text className="cashier__loading-text">{failReason || '\u52a0\u8f7d\u5931\u8d25'}</Text>}
+        {!creating && failed && <View onClick={() => setRetryKey(value => value + 1)}><Text className="cashier__loading-text">{failReason || '加载失败'}</Text>{!!tradeNo && <Text className="cashier__retry">重新加载</Text>}</View>}
+        {!creating && !failed && !payMethod && <Text className="cashier__loading-text">暂无可用支付方式，请联系商家或稍后重试</Text>}
         {!creating && !failed && payMethods.map((method) => {
           const active = payMethod === method.channel;
           const disabled = method.enabled === false;
@@ -239,6 +276,7 @@ export default function Cashier() {
                 <Text className="cashier__method-name">
                   {method.name || method.channelName || (method.channel === 'wechat' ? '\u5fae\u4fe1\u652f\u4ed8' : method.channel)}
                 </Text>
+                {isH5() && method.channel === 'wechat' && <Text className="cashier__channel-hint">请在小程序使用</Text>}
               </View>
               <View className={`cashier__radio ${active ? 'cashier__radio--checked' : ''}`} />
             </View>
@@ -248,7 +286,7 @@ export default function Cashier() {
 
       <View className="cashier__footer">
         <View
-          className={`cashier__pay-btn ${paying || creating || failed ? 'cashier__pay-btn--disabled' : ''}`}
+          className={`cashier__pay-btn ${paying || creating || failed || !payMethod ? 'cashier__pay-btn--disabled' : ''}`}
           onClick={handlePay}
         >
           <Text className="cashier__pay-btn-text">

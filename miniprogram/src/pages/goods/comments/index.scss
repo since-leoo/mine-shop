@@ -6,7 +6,7 @@
 }
 
 /* === Tabs === */
-.comments-tabs {
+.comments-page .comments-tabs {
   display: flex;
   flex-wrap: wrap;
   padding: 24rpx 24rpx 16rpx;
@@ -44,12 +44,12 @@
 }
 
 /* === Comment List === */
-.comments-list {
+.comments-page .comments-list {
   padding: 16rpx 24rpx;
 }
 
 /* === Comment Card === */
-.comment-card {
+.comments-page .comment-card {
   background: $warm-bg-white;
   border-radius: $warm-radius-md;
   padding: 28rpx 24rpx;
@@ -58,7 +58,7 @@
 
   &__header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
   }
 
   &__avatar {
@@ -75,6 +75,10 @@
   }
 
   &__name {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     font-size: $warm-font-sm;
     color: $warm-text-primary;
     font-weight: 500;
@@ -87,6 +91,8 @@
   }
 
   &__time {
+    display: block;
+    margin-top: 4rpx;
     font-size: 22rpx;
     color: $warm-text-hint;
     flex-shrink: 0;
@@ -139,7 +145,7 @@
 }
 
 /* === Stars === */
-.comment-star {
+.comments-page .comment-star {
   font-size: 30rpx;
   color: #d8c6b6;
   margin-right: 4rpx;
@@ -152,7 +158,7 @@
 }
 
 /* === Empty State === */
-.empty-state {
+.comments-page .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -168,4 +174,28 @@
     font-size: $warm-font-md;
     color: $warm-text-hint;
   }
+}
+
+.comments-page {
+  .comment-card__header { gap: 0; }
+  .comment-card__header-right { min-width: 0; }
+  .comment-card__content, .comment-card__reply { overflow-wrap: anywhere; word-break: break-all; }
+  .comment-card__content, .comment-card__spec { display: block; }
+}
+.comments-page--h5 {
+  .comments-tabs { gap: 8PX; padding: 12PX 16PX; }
+  .comments-tabs__item { min-height: 36PX; height: auto; padding: 0 12PX; border-radius: 20PX; }
+  .comments-tabs__text { font-size: 12PX; }
+  .comments-list { padding: 12PX 16PX; }
+  .comment-card { padding: 16PX; margin-bottom: 10PX; border-radius: 16PX; }
+  .comment-card__avatar { width: 32PX; height: 32PX; }
+  .comment-card__name, .comment-card__content { font-size: 13PX; line-height: 1.6; }
+  .comment-card__header-right { margin-left: 8PX; }
+  .comment-card__time { font-size: 10PX; line-height: 1.4; margin-top: 2PX; }
+  .comment-card__content { margin-top: 10PX; }
+  .comment-card__spec, .comment-card__reply-label, .comment-card__reply-text { font-size: 11PX; line-height: 1.5; }
+  .comment-card__image { width: 72PX; height: 72PX; border-radius: 8PX; }
+  .comment-star { font-size: 14PX; text-shadow: none; }
+  .empty-state { padding: 80PX 16PX; }
+  .empty-state__text { font-size: 14PX; }
 }

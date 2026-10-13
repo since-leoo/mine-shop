@@ -1,5 +1,5 @@
 import { View, Text, Image } from '@tarojs/components';
-import Taro, { useRouter, useReachBottom, usePullDownRefresh } from '@tarojs/taro';
+import Taro, { useRouter, useReachBottom, usePullDownRefresh, useDidShow } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchAfterSaleList, type AfterSaleItem } from '../../../services/order/afterSale';
 import { fetchOrders, fetchOrdersCount, cancelOrder, confirmReceipt } from '../../../services/order/orderList';
@@ -15,6 +15,7 @@ const OrderStatus = {
   PENDING_RECEIPT: 40,
   COMPLETE: 50,
   REFUNDED: 80,
+  CANCELLED: 90,
 };
 
 const TABS = [
@@ -31,6 +32,7 @@ const STATUS_DESC_MAP: Record<number, string> = {
   [OrderStatus.PENDING_RECEIPT]: '待收货',
   [OrderStatus.COMPLETE]: '已完成',
   [OrderStatus.REFUNDED]: '已退款',
+  [OrderStatus.CANCELLED]: '已取消',
 };
 
 const OrderButtonTypes = {
@@ -81,8 +83,16 @@ export default function OrderList() {
   const [tabCounts, setTabCounts] = useState<Record<number, number>>({});
   const [itemAfterSaleMap, setItemAfterSaleMap] = useState<Record<string, AfterSaleItem>>({});
   const pageRef = useRef(1);
+  const requestRef = useRef(0);
+  const fetchingRef = useRef(false);
+  const actionRef = useRef(false);
+  const tabRef = useRef(-1);
+  const shownRef = useRef(false);
 
   const loadOrders = useCallback((status: number, page: number, reset = false) => {
+    if (!reset && fetchingRef.current) return Promise.resolve();
+    const requestId = ++requestRef.current;
+    fetchingRef.current = true;
     const params: any = {
       parameter: {
         pageSize: PAGE_SIZE,
@@ -94,18 +104,21 @@ export default function OrderList() {
 
     return fetchOrders(params)
       .then((res: any) => {
+        if (requestId !== requestRef.current) return;
         const orders: Order[] = res?.data?.orders || [];
         pageRef.current = page + 1;
 
         if (reset) {
           setOrderList(orders);
         } else {
-          setOrderList((prev) => [...prev, ...orders]);
+          setOrderList((prev) => [...prev, ...orders.filter((item) => !prev.some((existing) => existing.orderNo === item.orderNo))]);
         }
         setListLoading(orders.length >= PAGE_SIZE ? 0 : 2);
       })
       .catch(() => {
-        setListLoading(3);
+        if (requestId === requestRef.current) setListLoading(3);
+      }).finally(() => {
+        if (requestId === requestRef.current) fetchingRef.current = false;
       });
   }, []);
 
@@ -140,11 +153,12 @@ export default function OrderList() {
   }, []);
 
   const refreshList = useCallback((status: number) => {
+    tabRef.current = status;
     pageRef.current = 1;
     setOrderList([]);
-    loadOrders(status, 1, true);
     loadCounts();
     loadAfterSales();
+    return loadOrders(status, 1, true);
   }, [loadAfterSales, loadCounts, loadOrders]);
 
   useEffect(() => {
@@ -152,7 +166,14 @@ export default function OrderList() {
     if (!TABS.some((t) => t.key === status)) status = -1;
     setCurTab(status);
     refreshList(status);
-  }, [router.params, refreshList]);
+    return () => { requestRef.current += 1; };
+  }, [router.params.status, refreshList]);
+
+  // 从详情操作后返回列表时重新读取状态，保留当前筛选。
+  useDidShow(() => {
+    if (shownRef.current) void refreshList(tabRef.current);
+    shownRef.current = true;
+  });
 
   useReachBottom(() => {
     if (listLoading === 0) {
@@ -161,8 +182,7 @@ export default function OrderList() {
   });
 
   usePullDownRefresh(() => {
-    refreshList(curTab);
-    Taro.stopPullDownRefresh();
+    refreshList(curTab).finally(() => Taro.stopPullDownRefresh());
   });
 
   const handleTabChange = useCallback((tabKey: number) => {
@@ -182,33 +202,21 @@ export default function OrderList() {
     });
   }, []);
 
-  const handleCancelOrder = useCallback((order: Order) => {
-    Taro.showModal({
-      title: '提示',
-      content: '确认取消该订单吗？',
-    }).then((res) => {
-      if (res.confirm) {
-        cancelOrder(order.orderNo).then(() => {
-          Taro.showToast({ title: '订单已取消', icon: 'none' });
-          refreshList(curTab);
-        });
-      }
-    });
-  }, [curTab, refreshList]);
-
-  const handleConfirmReceipt = useCallback((order: Order) => {
-    Taro.showModal({
-      title: '提示',
-      content: '确认收货？',
-    }).then((res) => {
-      if (res.confirm) {
-        confirmReceipt(order.orderNo).then(() => {
-          Taro.showToast({ title: '已确认收货', icon: 'none' });
-          refreshList(curTab);
-        });
-      }
-    });
-  }, [curTab, refreshList]);
+  const runOrderAction = useCallback(async (order: Order, action: 'cancel' | 'confirm') => {
+    if (actionRef.current) return;
+    actionRef.current = true;
+    try {
+      const result = await Taro.showModal({ title: '提示', content: action === 'cancel' ? '确认取消该订单吗？' : '确认已收到商品吗？' });
+      if (!result.confirm) return;
+      await (action === 'cancel' ? cancelOrder(order.orderNo) : confirmReceipt(order.orderNo));
+      Taro.showToast({ title: action === 'cancel' ? '订单已取消' : '已确认收货', icon: 'none' });
+      await refreshList(tabRef.current);
+    } catch (error: any) {
+      Taro.showToast({ title: error?.msg || error?.message || '操作失败，请重试', icon: 'none' });
+    } finally { actionRef.current = false; }
+  }, [refreshList]);
+  const handleCancelOrder = useCallback((order: Order) => { void runOrderAction(order, 'cancel'); }, [runOrderAction]);
+  const handleConfirmReceipt = useCallback((order: Order) => { void runOrderAction(order, 'confirm'); }, [runOrderAction]);
 
   const handleViewDelivery = useCallback((order: Order) => {
     Taro.navigateTo({
@@ -295,7 +303,7 @@ export default function OrderList() {
     const serviceEntry = resolveServiceEntry(order);
     const mergeServiceAction = (items: Array<{ key: string; text: string; className: string; onClick: () => void }>) => {
       if (!serviceEntry) {
-        return items.slice(0, 2);
+        return items;
       }
 
       return [
@@ -306,7 +314,7 @@ export default function OrderList() {
           onClick: serviceEntry.onClick,
         },
         ...items,
-      ].slice(0, 2);
+      ];
     };
 
     buttonList.forEach((button: any) => {
@@ -345,7 +353,6 @@ export default function OrderList() {
     if (order.status === OrderStatus.COMPLETE) {
       return mergeServiceAction([
         { key: 'rebuy', text: '再次购买', className: 'order-card__action-btn--outline', onClick: () => handleRepurchase(order) },
-        { key: 'comment', text: '去评价', className: 'order-card__action-btn--outline-primary', onClick: () => handleReview(order) },
       ]);
     }
     if (order.status === OrderStatus.REFUNDED) {
@@ -409,7 +416,7 @@ export default function OrderList() {
             <View className="order-card__footer">
               <View className="order-card__footer-left">
                 <View className="order-card__total">
-                  <Text className="order-card__total-label">实付</Text>
+                  <Text className="order-card__total-label">{order.status === OrderStatus.PENDING_PAYMENT ? '应付' : '订单金额'}</Text>
                   <Price price={order.amount} className="order-card__total-price" fill />
                 </View>
               </View>

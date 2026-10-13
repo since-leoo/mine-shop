@@ -38,7 +38,7 @@ export const AFTER_SALE_STATUS_TEXT_MAP: Record<AfterSaleStatus, string> = {
 };
 
 export function formatAmount(amount?: number) {
-  return `?${((amount || 0) / 100).toFixed(2)}`;
+  return `¥${((amount || 0) / 100).toFixed(2)}`;
 }
 
 export function getAfterSaleStatusText(item: AfterSaleItem) {
@@ -225,7 +225,7 @@ export function buildAfterSaleTimeline(item: AfterSaleItem): AfterSaleTimelineIt
     });
   }
 
-  if (item.status === 'waiting_refund' || item.status === 'refunding' || item.status === 'completed') {
+  if (item.type !== 'exchange' && (item.status === 'waiting_refund' || item.status === 'refunding' || item.status === 'completed')) {
     timeline.push({
       title: item.status === 'completed' ? '退款已完成' : '退款处理中',
       description: item.refundRecord?.remark ? `退款说明：${item.refundRecord.remark}` : `退款金额：${formatAmount(item.refundAmount)}`,

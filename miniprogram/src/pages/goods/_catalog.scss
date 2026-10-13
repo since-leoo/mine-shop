@@ -1,0 +1,28 @@
+@use '../../styles/variables' as *;
+
+@mixin catalog($unit) {
+  min-height: 100vh;
+  background: $warm-bg-page;
+  padding-bottom: calc(#{24 * $unit} + env(safe-area-inset-bottom));
+  .sort-bar {
+    display: flex; background: #fff; border-bottom: 1 * $unit solid $warm-border-light;
+    &__item { flex: 1; min-width: 0; min-height: 46 * $unit; display: flex; align-items: center; justify-content: center; gap: 3 * $unit; }
+    &__text, &__arrow { color: $warm-text-body; font-size: 13 * $unit; }
+    &__item--active { .sort-bar__text, .sort-bar__arrow { color: $warm-primary-dark; font-weight: 600; } }
+  }
+  .empty-state { padding: 90 * $unit 24 * $unit; display: flex; flex-direction: column; align-items: center; gap: 18 * $unit; text-align: center; }
+  .empty-state__text { color: $warm-text-muted; font-size: 14 * $unit; }
+  .empty-state__search-icon { width: 36 * $unit; height: 36 * $unit; border: 3 * $unit solid $warm-border; border-radius: 50%; position: relative; }
+  .empty-state__search-icon::after { content: ''; position: absolute; width: 18 * $unit; height: 3 * $unit; background: $warm-border; transform: rotate(45deg); right: -13 * $unit; bottom: -7 * $unit; border-radius: 3 * $unit; }
+  .goods-list { padding: 12 * $unit 16 * $unit; gap: 10 * $unit; }
+  .goods-list__item { width: calc(50% - #{5 * $unit}); min-width: 0; }
+  .goods-card { border-radius: 16 * $unit; }
+  .goods-card__body { padding: 10 * $unit 12 * $unit 12 * $unit; }
+  .goods-card__title { font-size: 13 * $unit; height: 36 * $unit; overflow-wrap: anywhere; }
+  .goods-card__down { flex-wrap: wrap; gap: 3 * $unit 4 * $unit; padding-right: 32 * $unit; min-height: 28 * $unit; margin-top: 8 * $unit; }
+  .goods-card__price { font-size: 18 * $unit; }
+  .goods-card__origin-price { font-size: 11 * $unit; margin-left: 0; }
+  .goods-card__add-cart { width: 28 * $unit; height: 28 * $unit; }
+  .goods-card__add-cart-icon { font-size: 18 * $unit; }
+  .goods-card__tag { max-width: 100%; box-sizing: border-box; font-size: 10 * $unit; padding: 2 * $unit 8 * $unit; border-radius: 8 * $unit; }
+}

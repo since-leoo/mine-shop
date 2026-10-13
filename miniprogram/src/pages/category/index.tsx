@@ -1,6 +1,6 @@
 import { View, Text, ScrollView, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { isH5 } from '../../common/platform';
 import { currentDiyPageType, fetchDiyPage } from '../../services/diy/page';
 import { getCategoryList } from '../../services/good/fetchCategoryList';
@@ -9,6 +9,7 @@ import H5TabBar from '../../components/h5-tab-bar';
 import DiyRenderer from '../../components/diy-renderer';
 import { DiyPagePayload } from '../../components/diy-renderer/types';
 import { diyStyle } from '../../components/diy-renderer/style';
+import { categoryLeaves, normalizeCategories } from '../../plugins/diy/components/diy/CategoryPanel/categories';
 import './index.scss';
 
 interface CategoryChild {
@@ -24,39 +25,13 @@ interface CategoryGroup {
   children?: CategoryGroup[] | CategoryChild[];
 }
 
-/** Flatten nested children into a flat list of leaf items */
-function getLeafItems(category: CategoryGroup): CategoryChild[] {
-  if (!category.children || category.children.length === 0) {
-    return [];
-  }
-
-  const leaves: CategoryChild[] = [];
-
-  function walk(items: any[]) {
-    for (const item of items) {
-      if (item.children && item.children.length > 0) {
-        walk(item.children);
-      } else {
-        leaves.push({
-          groupId: item.groupId || item.categoryId || '',
-          name: item.name || item.title || '',
-          thumbnail: item.thumbnail || '',
-        });
-      }
-    }
-  }
-
-  walk(category.children);
-  return leaves;
-}
-
 function renderLoading() {
   return (
     <View className={`category-page ${isH5() ? 'category-page--h5' : ''}`}>
       <PageNav title="商品分类" showBack={false} />
       <View className="category-page__body">
         <View className="category-loading">
-          <Text className="category-loading__text">Loading...</Text>
+          <Text className="category-loading__text">加载中…</Text>
         </View>
       </View>
       {isH5() ? <H5TabBar current="/pages/category/index" /> : null}
@@ -70,38 +45,33 @@ export default function Category() {
   const [loading, setLoading] = useState(true);
   const [diyPage, setDiyPage] = useState<DiyPagePayload | null>(null);
 
+  const [error, setError] = useState(false);
+  const fetchingRef = useRef(false);
   const fetchCategories = useCallback(async () => {
+    if (fetchingRef.current) return;
+    fetchingRef.current = true;
     try {
       setLoading(true);
-      const publishedDiyPage = await fetchDiyPage('category', currentDiyPageType());
-      if (publishedDiyPage.page && publishedDiyPage.components.length > 0) {
+      setError(false);
+      const publishedDiyPage = await fetchDiyPage('category', currentDiyPageType()).catch(() => null);
+      if (publishedDiyPage?.page && publishedDiyPage.components.length > 0) {
         setDiyPage(publishedDiyPage);
         return;
       }
 
       setDiyPage(null);
       const result = await getCategoryList();
-      const normalizeTree = (nodes: any[] = []): CategoryGroup[] => {
-        return nodes.map((node: any) => ({
-          ...node,
-          groupId: node.groupId || node.categoryId || '',
-          name: node.name || node.title || '',
-          thumbnail: node.thumbnail || node.image || '',
-          children: Array.isArray(node.children) ? normalizeTree(node.children) : [],
-        }));
-      };
-      const list: CategoryGroup[] = normalizeTree(Array.isArray(result) ? result : []);
+      const list: CategoryGroup[] = normalizeCategories(Array.isArray(result) ? result : []);
+      setActiveIndex((current) => Math.min(current, Math.max(0, list.length - 1)));
       setCategories(list);
     } catch (error) {
-      console.error('Failed to load categories:', error);
+      setError(true);
     } finally {
+      fetchingRef.current = false;
       setLoading(false);
+      Taro.stopPullDownRefresh();
     }
   }, []);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
 
   useDidShow(() => {
     fetchCategories();
@@ -117,14 +87,15 @@ export default function Category() {
 
   const handleItemTap = (item: CategoryChild) => {
     const categoryId = item.groupId;
+    if (!categoryId) return;
     const categoryName = encodeURIComponent(item.name || '');
     Taro.navigateTo({
-      url: `/pages/goods/list/index?categoryId=${categoryId}&categoryName=${categoryName}`,
+      url: `/pages/goods/list/index?categoryId=${encodeURIComponent(categoryId)}&categoryName=${categoryName}`,
     });
   };
 
   const activeCategory = categories[activeIndex];
-  const items = activeCategory ? getLeafItems(activeCategory) : [];
+  const items = activeCategory ? categoryLeaves(activeCategory) : [];
   const pageStyle = useMemo(() => diyPage?.page ? diyStyle(diyPage.page.style || {}) : {}, [diyPage]);
 
   if (loading && !diyPage) {
@@ -201,7 +172,8 @@ export default function Category() {
 
           {items.length === 0 && !loading && (
             <View className="category-content__empty">
-              <Text className="category-content__empty-text">暂无商品</Text>
+              <Text className="category-content__empty-text">{error ? '分类加载失败' : '暂无分类'}</Text>
+              {error ? <View className="category-content__retry" onClick={fetchCategories}>点击重试</View> : null}
             </View>
           )}
         </ScrollView>

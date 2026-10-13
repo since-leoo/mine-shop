@@ -1,16 +1,22 @@
 import { View, Text, Input } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
-import { useState, useCallback } from 'react';
+import Taro, { useRouter, useDidHide, useDidShow } from '@tarojs/taro';
+import { useState, useCallback, useRef } from 'react';
 import { updateProfile } from '../../../services/usercenter/fetchPerson';
 import PageNav from '../../../components/page-nav';
 import './index.scss';
 
 export default function NameEdit() {
   const router = useRouter();
-  const initialName = decodeURIComponent(router.params.name || '');
+  // H5 路由保留编码后的 query；外部直达链接中的裸百分号也不能使页面崩溃。
+  let initialName = router.params.name || '';
+  try { initialName = decodeURIComponent(initialName); } catch { /* 保留不能解码的原始昵称。 */ }
 
   const [nickname, setNickname] = useState(initialName);
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const activeRef = useRef(true);
+  useDidShow(() => { activeRef.current = true; });
+  useDidHide(() => { activeRef.current = false; });
 
   const handleSave = useCallback(() => {
     const trimmed = nickname.trim();
@@ -22,18 +28,20 @@ export default function NameEdit() {
       Taro.showToast({ title: '昵称不能超过20个字符', icon: 'none' });
       return;
     }
-    if (saving) return;
+    if (savingRef.current) return;
 
+    savingRef.current = true;
     setSaving(true);
     updateProfile({ nickName: trimmed })
-      .then(() => {
+      .then(async () => {
+        if (!activeRef.current) return;
         Taro.showToast({ title: '修改成功', icon: 'success' });
-        setTimeout(() => Taro.navigateBack(), 800);
+        await Taro.navigateBack().catch(() => Taro.redirectTo({ url: '/pages/user/person-info/index' }));
       })
       .catch(() => {
         Taro.showToast({ title: '修改失败', icon: 'none' });
       })
-      .finally(() => setSaving(false));
+      .finally(() => { savingRef.current = false; setSaving(false); });
   }, [nickname, saving]);
 
   return (

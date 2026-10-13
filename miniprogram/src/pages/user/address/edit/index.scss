@@ -1,9 +1,10 @@
 @use '../../../../styles/variables' as *;
 
 .address-edit {
+  box-sizing: border-box;
   min-height: 100vh;
   background-color: $warm-bg-page;
-  padding-bottom: 180rpx;
+  padding-bottom: calc(180rpx + env(safe-area-inset-bottom));
 
   &__state {
     display: flex;
@@ -21,12 +22,14 @@
   &__form {
     margin: 20rpx 32rpx;
     background: $warm-bg-white;
+    border: 1rpx solid $warm-border-light;
     border-radius: 32rpx;
     overflow: hidden;
     box-shadow: $warm-shadow-sm;
   }
 
   &__field {
+    min-width: 0;
     display: flex;
     flex-direction: column;
     padding: $warm-spacing-md $warm-spacing-lg;
@@ -40,10 +43,12 @@
       flex-direction: row;
       align-items: center;
       justify-content: space-between;
+      gap: 24rpx;
     }
   }
 
   &__label {
+    display: block;
     font-size: $warm-font-sm;
     color: $warm-text-secondary;
     margin-bottom: $warm-spacing-xs;
@@ -55,33 +60,55 @@
     }
   }
 
-  &__input {
+  &__input, &__textarea {
+    box-sizing: border-box;
+    display: block;
+    min-width: 0;
     font-size: $warm-font-md;
     color: $warm-text-primary;
     width: 100%;
     padding: $warm-spacing-xs 0;
-
-    &--region {
-      flex: 1;
-    }
+    line-height: 1.5;
   }
 
-  &__region-row {
-    display: flex;
-    gap: $warm-spacing-sm;
+  &__input {
+    min-height: 72rpx;
+  }
+
+  &__textarea {
+    height: 144rpx;
   }
 
   &__region-picker {
-    height: 72rpx;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    min-height: 72rpx;
+    margin: 0;
+    padding: 8rpx 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 1rpx solid $warm-border-light;
+    gap: 16rpx;
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+    background: transparent;
+    font-size: $warm-font-md;
+    line-height: 1.5;
+    white-space: normal;
+
+    &::after { border: 0; }
+    &[disabled] { background: transparent; }
   }
 
   &__region-text {
+    flex: 1;
+    min-width: 0;
     font-size: $warm-font-md;
     color: $warm-text-primary;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
   }
 
   &__region-text--placeholder {
@@ -89,11 +116,13 @@
   }
 
   &__region-arrow {
+    flex: 0 0 auto;
     font-size: 30rpx;
     color: $warm-text-light;
   }
 
   &__switch {
+    flex: 0 0 auto;
     transform: scale(0.92);
     transform-origin: right center;
   }
@@ -101,25 +130,36 @@
   // ===== Save button =====
   &__btn-wrap {
     position: fixed;
-    bottom: 12rpx;
-    bottom: calc(env(safe-area-inset-bottom) + 12rpx);
+    bottom: 0;
     left: 0;
     right: 0;
     z-index: 30;
-    padding: 20rpx 32rpx;
-    background: transparent;
+    box-sizing: border-box;
+    padding: 20rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(250, 243, 237, 0), $warm-bg-page 20%);
   }
 
   &__save-btn {
+    box-sizing: border-box;
+    width: 100%;
     height: 88rpx;
+    margin: 0;
+    padding: 0 24rpx;
+    border: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     background: $warm-gradient-primary;
     border-radius: $warm-radius-round;
+    font-size: $warm-font-md;
+    line-height: 1;
+    box-shadow: 0 8rpx 24rpx rgba(232, 131, 107, 0.22);
 
-    &--disabled {
+    &::after { border: 0; }
+
+    &--disabled, &[disabled] {
       opacity: 0.6;
+      background: $warm-gradient-primary;
     }
   }
 
@@ -142,6 +182,7 @@
   }
 
   &__region-sheet {
+    box-sizing: border-box;
     width: 100%;
     background: #fff;
     border-radius: 32rpx 32rpx 0 0;
@@ -153,19 +194,38 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 28rpx 32rpx 20rpx;
+    gap: 16rpx;
+    padding: 12rpx 24rpx;
     border-bottom: 1rpx solid $warm-divider;
   }
 
   &__region-title {
+    min-width: 0;
     font-size: $warm-font-md;
     font-weight: 700;
     color: $warm-text-primary;
   }
 
   &__region-action {
+    box-sizing: border-box;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 88rpx;
+    height: 88rpx;
+    margin: 0;
+    padding: 0 12rpx;
+    border: 0;
+    background: transparent;
     font-size: $warm-font-md;
+    line-height: 1;
     color: $warm-text-secondary;
+    white-space: nowrap;
+
+    &::after { border: 0; }
+    &[disabled] { opacity: 0.5; background: transparent; }
 
     &--confirm {
       color: $warm-primary;
@@ -178,10 +238,87 @@
   }
 
   &__region-option {
+    box-sizing: border-box;
+    padding: 0 8rpx;
     height: 88rpx;
     line-height: 88rpx;
     text-align: center;
     font-size: $warm-font-md;
     color: $warm-text-primary;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
+}
+
+.address-edit--h5 {
+  padding-bottom: calc(112PX + env(safe-area-inset-bottom));
+
+  .address-edit__form {
+    box-sizing: border-box;
+    width: calc(100% - 32PX);
+    max-width: 608PX;
+    margin: 12PX auto;
+    border-radius: 16PX;
+  }
+  .address-edit__field { padding: 14PX 16PX; }
+  .address-edit__label { margin-bottom: 6PX; font-size: 13PX; line-height: 1.5; }
+  .address-edit__field--switch .address-edit__label { margin-bottom: 0; font-size: 15PX; }
+  .address-edit__input { min-height: 44PX; padding: 10PX 0; font-size: 16PX; }
+  .address-edit__textarea {
+    height: 96PX;
+    padding: 8PX 0;
+    font-family: inherit;
+    font-size: 16PX;
+    line-height: 1.5;
+    color: $warm-text-primary;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    resize: none;
+  }
+  // Taro 会重写 input/textarea 标签选择器，使用原生节点 class 才能覆盖内部控件。
+  .address-edit__input .weui-input, .address-edit__textarea .taro-textarea {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    font: inherit;
+    line-height: 1.5;
+    color: $warm-text-primary;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+  }
+  .address-edit__textarea .taro-textarea { height: 100%; resize: none; }
+  .address-edit__input .weui-input::placeholder, .address-edit__textarea::placeholder, .address-edit__textarea .taro-textarea::placeholder { color: $warm-text-muted; }
+  .address-edit__region-picker { min-height: 48PX; padding: 10PX 0; cursor: pointer; }
+  .address-edit__region-text { font-size: 15PX; }
+  .address-edit__region-arrow { font-size: 24PX; }
+  .address-edit__btn-wrap {
+    max-width: 640PX;
+    margin: 0 auto;
+    padding: 16PX 16PX calc(16PX + env(safe-area-inset-bottom));
+  }
+  .address-edit__save-btn { height: 48PX; border-radius: 24PX; cursor: pointer; }
+  .address-edit__save-btn-text { font-size: 15PX; line-height: 1; }
+  .address-edit__region-mask { padding-top: env(safe-area-inset-top); }
+  .address-edit__region-sheet {
+    max-width: 640PX;
+    max-height: calc(100% - 56PX);
+    margin: 0 auto;
+    overflow-y: auto;
+    border-radius: 20PX 20PX 0 0;
+  }
+  .address-edit__region-toolbar { padding: 8PX 12PX; gap: 8PX; }
+  .address-edit__region-title { font-size: 16PX; }
+  .address-edit__region-action { min-width: 48PX; height: 44PX; padding: 0 8PX; font-size: 15PX; cursor: pointer; }
+  .address-edit__region-view { height: 260PX; max-height: 45vh; }
+  .address-edit__region-option { height: 44PX; line-height: 44PX; font-size: 14PX; }
+  .address-edit__region-picker:focus-visible, .address-edit__save-btn:focus-visible, .address-edit__region-action:focus-visible {
+    outline: 2PX solid $warm-primary-dark;
+    outline-offset: -2PX;
+  }
+  .address-edit__save-btn:active { opacity: 0.85; }
 }

@@ -1,3 +1,4 @@
+@use '../after-service/page';
 @use '../../../styles/variables' as *;
 
 .delivery-detail {
@@ -136,3 +137,14 @@
     font-weight: 500;
   }
 }
+
+.delivery-detail {
+  box-sizing: border-box;
+  padding-top: 0;
+  > .page-nav { margin: 0 (-$warm-spacing-lg) 24rpx; }
+  &__info-row { align-items: flex-start; gap: 24rpx; }
+  &__info-label, &__copy-btn { flex-shrink: 0; white-space: nowrap; }
+  &__info-value-row { min-width: 0; }
+  &__info-value { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+}
+.delivery-node__content { min-width: 0; overflow-wrap: anywhere; }

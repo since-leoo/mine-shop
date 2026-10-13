@@ -1,4 +1,8 @@
 .hot-ranking {
+  &__price-row { flex-wrap: wrap; }
+  &__price { overflow-wrap: anywhere; }
+  &__top-title, &__item-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; word-break: break-word; }
+  &__item-btn { flex-shrink: 0; }
   min-height: 100vh;
   background: linear-gradient(180deg, #ff9d7e 0%, #ff7a64 220rpx, #fff4ee 520rpx, #fff4ee 100%);
 }

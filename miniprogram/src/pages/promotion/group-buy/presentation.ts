@@ -29,7 +29,7 @@ export function getGroupBuyHeroPresentation(h5: boolean): GroupBuyHeroPresentati
     showCapsuleActions: h5,
     eyebrow: 'GROUP BUY MARKET',
     headline: '一起拼更省',
-    subline: '边逛边参团，把“社交氛围感”做出来',
+    subline: '好友一起拼，好物轻松享',
     chips: HERO_CHIPS,
   };
 }

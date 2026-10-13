@@ -1,0 +1,50 @@
+import { describe, expect, it, vi } from 'vitest';
+
+const { getEnvMock } = vi.hoisted(() => ({
+  getEnvMock: vi.fn(),
+}));
+
+vi.mock('@tarojs/taro', () => ({
+  default: {
+    getEnv: getEnvMock,
+    ENV_TYPE: {
+      WEB: 'WEB',
+      WEAPP: 'WEAPP',
+    },
+  },
+}));
+
+vi.mock('../../../services/request', () => ({
+  request: vi.fn(() => Promise.resolve({
+    page: { key: 'home', title: '首页' },
+    components: [],
+    publishedAt: null,
+  })),
+}));
+
+import { request } from '../../../services/request';
+import { fetchDiyPage } from './page';
+
+describe('DIY 页面请求', () => {
+  it('使用后端约定的 page_type 参数', async () => {
+    await fetchDiyPage('home', 'h5');
+
+    expect(request).toHaveBeenCalledWith({
+      url: '/api/v1/diy/pages/home',
+      method: 'GET',
+      data: { page_type: 'h5' },
+    });
+  });
+
+  it('未指定 page_type 时根据当前平台请求', async () => {
+    getEnvMock.mockReturnValue('WEB');
+
+    await fetchDiyPage('home');
+
+    expect(request).toHaveBeenLastCalledWith({
+      url: '/api/v1/diy/pages/home',
+      method: 'GET',
+      data: { page_type: 'h5' },
+    });
+  });
+});

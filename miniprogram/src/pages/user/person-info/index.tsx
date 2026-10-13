@@ -1,6 +1,6 @@
 import { View, Text, Button, Image } from '@tarojs/components';
-import Taro, { useDidShow } from '@tarojs/taro';
-import { useState, useCallback } from 'react';
+import Taro, { useDidShow, useDidHide } from '@tarojs/taro';
+import { useState, useCallback, useRef } from 'react';
 import { isLoggedIn } from '../../../common/auth';
 import { redirectToLogin } from '../../../common/auth-guard';
 import { isH5, isMiniProgram } from '../../../common/platform';
@@ -24,6 +24,9 @@ const GENDER_MAP: Record<number, string> = {
 
 export default function PersonInfo() {
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+  const requestRef = useRef(0);
+  useDidHide(() => { ++requestRef.current; });
   const [info, setInfo] = useState<PersonInfo>({
     avatarUrl: '',
     nickName: '',
@@ -33,9 +36,12 @@ export default function PersonInfo() {
   const [submitting, setSubmitting] = useState(false);
 
   const loadData = useCallback(() => {
+    const sequence = ++requestRef.current;
     setLoading(true);
+    setLoadError('');
     fetchPerson()
       .then((res: any) => {
+        if (sequence !== requestRef.current) return;
         setInfo({
           avatarUrl: res.avatarUrl || '',
           nickName: res.nickName || res.nickname || '',
@@ -43,8 +49,8 @@ export default function PersonInfo() {
           gender: res.gender ?? 0,
         });
       })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+      .catch((error: any) => { if (sequence === requestRef.current) setLoadError(error?.msg || '个人资料加载失败'); })
+      .finally(() => { if (sequence === requestRef.current) setLoading(false); });
   }, []);
 
   useDidShow(() => {
@@ -192,7 +198,7 @@ export default function PersonInfo() {
           <Text className="person-info__label">头像</Text>
           <View className="person-info__avatar-wrap">
             {info.avatarUrl ? (
-              <Image className="person-info__avatar" src={info.avatarUrl} mode="aspectFill" />
+              <Image className="person-info__avatar" src={info.avatarUrl} mode="aspectFill" onError={() => setInfo(current => ({ ...current, avatarUrl: '' }))} />
             ) : (
               <View className="person-info__avatar person-info__avatar--empty">
                 <Text className="person-info__avatar-placeholder">我</Text>
@@ -209,7 +215,8 @@ export default function PersonInfo() {
           <View className="person-info__loading-line warm-skeleton" />
         </View>
       )}
-      {!loading && (
+      {!!loadError && !loading && <View className="person-info__error" onClick={loadData}><Text>{loadError}，点击重试</Text></View>}
+      {!loading && !loadError && (
         <View className="person-info__cells">
           <View className="person-info__cell" onClick={handleEditNickname}>
             <Text className="person-info__cell-label">昵称</Text>

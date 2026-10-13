@@ -1,4 +1,4 @@
-import { View, Text, Input, PickerView, PickerViewColumn, Switch } from '@tarojs/components';
+import { Button, View, Text, Input, Textarea, PickerView, PickerViewColumn, Switch } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
@@ -8,6 +8,7 @@ import {
 } from '../../../../services/address/fetchAddress';
 import { fetchGeoRegionChildren } from '../../../../services/geo/regions';
 import PageNav from '../../../../components/page-nav';
+import { isH5 } from '../../../../common/platform';
 import './index.scss';
 
 interface AddressForm {
@@ -303,7 +304,7 @@ export default function AddressEdit() {
 
   if (loading) {
     return (
-      <View className="address-edit">
+      <View className={`address-edit${isH5() ? ' address-edit--h5' : ''}`}>
         <PageNav title={isEdit ? '编辑地址' : '新增地址'} />
         <View className="address-edit__state">
           <Text className="address-edit__state-text">加载中...</Text>
@@ -313,7 +314,7 @@ export default function AddressEdit() {
   }
 
   return (
-    <View className="address-edit">
+    <View className={`address-edit${isH5() ? ' address-edit--h5' : ''}`}>
       <PageNav title={isEdit ? '编辑地址' : '新增地址'} />
       <View className="address-edit__form">
         <View className="address-edit__field">
@@ -341,19 +342,18 @@ export default function AddressEdit() {
 
         <View className="address-edit__field">
           <Text className="address-edit__label">所在地区</Text>
-          <View className="address-edit__region-picker" onClick={openRegionPopup}>
+          <Button className="address-edit__region-picker" disabled={regionLoading} onClick={openRegionPopup}>
             <Text className={`address-edit__region-text ${regionValue.length === 0 && !form.provinceName ? 'address-edit__region-text--placeholder' : ''}`}>
               {currentRegionText}
             </Text>
             <Text className="address-edit__region-arrow">›</Text>
-          </View>
+          </Button>
         </View>
 
         <View className="address-edit__field">
           <Text className="address-edit__label">详细地址</Text>
-          <Input
-            className="address-edit__input"
-            type="text"
+          <Textarea
+            className="address-edit__textarea"
             placeholder="街道、楼牌号等"
             value={form.detailAddress}
             onInput={(e) => handleFieldChange('detailAddress', e.detail.value)}
@@ -372,21 +372,22 @@ export default function AddressEdit() {
       </View>
 
       <View className="address-edit__btn-wrap">
-        <View
+        <Button
           className={`address-edit__save-btn ${saving ? 'address-edit__save-btn--disabled' : ''}`}
+          disabled={saving}
           onClick={handleSave}
         >
           <Text className="address-edit__save-btn-text">{saving ? '保存中...' : '保存'}</Text>
-        </View>
+        </Button>
       </View>
 
       {regionPopupVisible ? (
         <View className="address-edit__region-mask" onClick={closeRegionPopup}>
           <View className="address-edit__region-sheet" onClick={(e) => e.stopPropagation()}>
             <View className="address-edit__region-toolbar">
-              <Text className="address-edit__region-action" onClick={closeRegionPopup}>取消</Text>
+              <Button className="address-edit__region-action" onClick={closeRegionPopup}>取消</Button>
               <Text className="address-edit__region-title">选择地区</Text>
-              <Text className="address-edit__region-action address-edit__region-action--confirm" onClick={handleConfirmRegion}>确定</Text>
+              <Button className="address-edit__region-action address-edit__region-action--confirm" disabled={regionLoading} onClick={handleConfirmRegion}>确定</Button>
             </View>
             {regionLoading ? (
               <View className="address-edit__state">

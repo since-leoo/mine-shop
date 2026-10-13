@@ -8,7 +8,7 @@ const STATUS_TO_TAB: Record<string, number> = {
   partial_shipped: 40,
   shipped: 40,
   completed: 50,
-  cancelled: 80,
+  cancelled: 90,
   refunded: 80,
 };
 

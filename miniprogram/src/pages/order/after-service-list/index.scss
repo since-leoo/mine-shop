@@ -1,6 +1,8 @@
+@use '../../../styles/variables' as *;
+@use '../after-service/page';
 .after-service-list {
   min-height: 100vh;
-  background: linear-gradient(180deg, #f7efe7 0%, #f5f6fa 200px);
+  background: linear-gradient(180deg, #f7efe7 0%, $warm-bg-page 200px);
   padding: 24px;
   box-sizing: border-box;
 
@@ -12,7 +14,7 @@
     display: block;
     font-size: 36px;
     font-weight: 700;
-    color: #2c1f16;
+    color: $warm-text-primary;
   }
 
   &__hero-desc {
@@ -47,9 +49,9 @@
   }
 
   &__tab--active {
-    background: #2c1f16;
+    background: $warm-text-primary;
     color: #fff8f0;
-    border-color: #2c1f16;
+    border-color: $warm-text-primary;
   }
 
   &--state {
@@ -58,13 +60,13 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    color: #6b7280;
+    color: $warm-text-secondary;
     gap: 12px;
   }
 
   &__empty-title {
     font-size: 32px;
-    color: #2c1f16;
+    color: $warm-text-primary;
     font-weight: 600;
   }
 
@@ -106,7 +108,7 @@
 
   &__no,
   &__name {
-    color: #2c1f16;
+    color: $warm-text-primary;
     font-size: 26px;
   }
 
@@ -126,7 +128,7 @@
   &__progress-title {
     display: block;
     margin-top: 14px;
-    color: #2c1f16;
+    color: $warm-text-primary;
     font-size: 24px;
     font-weight: 600;
   }
@@ -159,8 +161,8 @@
   }
 
   &__action--primary {
-    background: #2c1f16;
-    border-color: #2c1f16;
+    background: $warm-text-primary;
+    border-color: $warm-text-primary;
     color: #fff8f0;
   }
 
@@ -179,6 +181,26 @@
   }
 
   &__status--closed {
-    color: #6b7280;
+    color: $warm-text-secondary;
   }
+}
+
+.after-service-list {
+  background: $warm-bg-page;
+  padding: 0 24rpx;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  > .page-nav { margin: 0 -24rpx; flex-shrink: 0; }
+  &__hero { flex-shrink: 0; }
+  &__scroll { height: 0; flex: 1; min-height: 0; }
+  &--state { height: auto; min-height: 360rpx; }
+  &__tab { flex-shrink: 0; }
+  &__tab--active, &__action--primary { background: $warm-gradient-primary; border-color: transparent; }
+  &__header { align-items: flex-start; }
+  &__no { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  &__status { flex-shrink: 0; }
+  &__body { overflow-wrap: anywhere; line-height: 1.6; }
+  &__footer { flex-wrap: wrap; }
+  &__action { white-space: nowrap; box-sizing: border-box; }
 }

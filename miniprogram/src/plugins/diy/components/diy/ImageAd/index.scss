@@ -1,0 +1,51 @@
+.diy-image-ad {
+  margin-top: 0;
+  margin-bottom: 18rpx;
+  display: grid;
+  gap: 16rpx;
+  overflow: hidden;
+}
+
+.diy-image-ad__image {
+  width: 100%;
+  height: 100%;
+  border-radius: 24rpx;
+  background: #eef1f4;
+}
+
+.diy-image-ad--single,
+.diy-image-ad--vertical {
+  grid-template-columns: 1fr;
+}
+
+.diy-image-ad--two-column {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.diy-image-ad--horizontal {
+  display: flex;
+  overflow: hidden;
+}
+
+.diy-image-ad--horizontal .diy-image-ad__image {
+  width: 260rpx;
+  flex: 0 0 260rpx;
+}
+
+.diy-image-ad--coupon-hero {
+  margin: 24rpx 32rpx 20rpx;
+  border-radius: 48rpx;
+  box-shadow: 0 8rpx 24rpx rgba(200, 140, 110, 0.10);
+}
+
+.diy-image-ad--coupon-hero .diy-image-ad__image {
+  border-radius: 48rpx;
+}
+
+.diy-image-ad__fallback {
+  box-sizing: border-box; min-width: 0; padding: 24rpx 28rpx;
+  display: flex; align-items: center; justify-content: space-between; gap: 20rpx;
+  background: linear-gradient(135deg, #FDE7DB, #F9CDBA, #F3E5D9);
+}
+.diy-image-ad__fallback-title { min-width: 0; font-size: 32rpx; font-weight: 700; color: #7B3F2D; }
+.diy-image-ad__fallback-action { flex: 0 0 auto; padding: 14rpx 24rpx; border-radius: 40rpx; color: #C66B52; background: #fff; font-size: 24rpx; }

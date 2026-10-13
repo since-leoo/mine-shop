@@ -1,4 +1,4 @@
-﻿@use '../../../../styles/variables' as *;
+@use '../../../../styles/variables' as *;
 
 .create-comment-page {
   min-height: 100vh;
@@ -6,7 +6,7 @@
 }
 
 /* === Form Card === */
-.comment-form-card {
+.create-comment-page .comment-form-card {
   background: $warm-bg-white;
   padding: 28rpx 32rpx;
   margin-bottom: $warm-spacing-sm;
@@ -17,7 +17,7 @@
 }
 
 /* === Goods Info Row === */
-.goods-info-row {
+.create-comment-page .goods-info-row {
   display: flex;
   align-items: center;
   padding-bottom: 24rpx;
@@ -53,7 +53,7 @@
 }
 
 /* === Rate Row === */
-.rate-row {
+.create-comment-page .rate-row {
   display: flex;
   align-items: center;
   margin-top: 24rpx;
@@ -68,7 +68,7 @@
 }
 
 
-.comment-rate {
+.create-comment-page .comment-rate {
   display: flex;
   align-items: center;
   gap: 12rpx;
@@ -89,7 +89,7 @@
   }
 }
 
-.anonymous-check {
+.create-comment-page .anonymous-check {
   width: 32rpx;
   height: 32rpx;
   border-radius: 50%;
@@ -112,7 +112,7 @@
 }
 
 /* === Textarea === */
-.textarea-wrap {
+.create-comment-page .textarea-wrap {
   margin-top: 24rpx;
   position: relative;
   background: $warm-bg-warm-gray;
@@ -120,7 +120,7 @@
   padding: 20rpx;
 }
 
-.textarea-input {
+.create-comment-page .textarea-input {
   width: 100%;
   min-height: 240rpx;
   font-size: $warm-font-md;
@@ -129,7 +129,7 @@
   line-height: 40rpx;
 }
 
-.textarea-counter {
+.create-comment-page .textarea-counter {
   display: block;
   text-align: right;
   font-size: $warm-font-sm;
@@ -138,7 +138,7 @@
 }
 
 /* === Upload Area === */
-.upload-area {
+.create-comment-page .upload-area {
   margin-top: 24rpx;
 
   &__grid {
@@ -204,7 +204,7 @@
 }
 
 /* === Anonymous Row === */
-.anonymous-row {
+.create-comment-page .anonymous-row {
   display: flex;
   align-items: center;
   margin-top: 40rpx;
@@ -217,18 +217,18 @@
 }
 
 /* === Service Title === */
-.service-title {
+.create-comment-page .service-title {
   font-size: $warm-font-md;
   font-weight: 600;
   color: $warm-text-primary;
 }
 
 /* === Submit Bar === */
-.submit-placeholder {
+.create-comment-page .submit-placeholder {
   height: 120rpx;
 }
 
-.submit-bar {
+.create-comment-page .submit-bar {
   position: fixed;
   left: 0;
   right: 0;
@@ -240,7 +240,7 @@
   z-index: 99;
 }
 
-.submit-btn {
+.create-comment-page .submit-btn {
   width: 100%;
   height: 88rpx;
   background: $warm-gradient-primary;
@@ -264,3 +264,35 @@
   }
 }
 
+
+.create-comment-page {
+  .comment-form-card--service { padding-bottom: 32rpx; }
+  .goods-info-row__detail { display: block; overflow-wrap: anywhere; }
+  .rate-row { flex-wrap: wrap; gap: 12rpx; }
+  .textarea-input, .textarea-input textarea { font: inherit; color: inherit; line-height: 1.6; box-sizing: border-box; border: 0; outline: none; resize: none; background: transparent; }
+  .textarea-wrap { font-size: 28rpx; color: $warm-text-primary; }
+}
+.create-comment-page--h5 {
+  .comment-form-card { margin: 10PX 16PX; padding: 16PX; border-radius: 16PX; box-shadow: $warm-shadow-sm; }
+  .goods-info-row__img { width: 56PX; height: 56PX; border-radius: 8PX; }
+  .goods-info-row__title { font-size: 13PX; }
+  .goods-info-row__detail { font-size: 11PX; }
+  .rate-row { margin-top: 12PX; gap: 8PX; }
+  .rate-row__label, .service-title { font-size: 13PX; margin-right: 0; }
+  .comment-rate { gap: 4PX; }
+  .comment-rate__star { font-size: 24PX; min-height: 36PX; min-width: 26PX; display: flex; align-items: center; justify-content: center; text-shadow: none; transform: none; }
+  .textarea-wrap { margin-top: 16PX; padding: 12PX; font-size: 13PX; border-radius: 10PX; }
+  .textarea-input { min-height: 120PX; }
+  .textarea-counter { font-size: 11PX; }
+  .upload-area__grid { gap: 8PX; }
+  .upload-area__item, .upload-area__add { width: 72PX; height: 72PX; box-sizing: border-box; border-radius: 8PX; }
+  .upload-area__add-icon { font-size: 26PX; line-height: 30PX; }
+  .upload-area__add-text { font-size: 10PX; }
+  .upload-area__remove { width: 24PX; height: 24PX; }
+  .anonymous-row { min-height: 44PX; margin-top: 12PX; }
+  .anonymous-row__text { font-size: 13PX; }
+  .submit-placeholder { height: calc(80PX + env(safe-area-inset-bottom)); }
+  .submit-bar { padding: 10PX 16PX calc(10PX + env(safe-area-inset-bottom)); }
+  .submit-btn { height: 44PX; border-radius: 24PX; }
+  .submit-btn__text { font-size: 15PX; }
+}

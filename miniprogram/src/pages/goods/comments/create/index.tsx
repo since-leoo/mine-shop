@@ -1,6 +1,10 @@
 import { View, Text, Image, Textarea } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import PageNav from '../../../../components/page-nav';
+import { isH5 } from '../../../../common/platform';
+import { uploadImage } from '../../../../services/upload';
+import { request } from '../../../../services/request';
 import './index.scss';
 
 function decodeParam(value?: string) {
@@ -31,12 +35,6 @@ function CommentRate({ value, onChange }: CommentRateProps) {
           <Text
             key={nextValue}
             className={`comment-rate__star ${active ? 'comment-rate__star--active' : ''}`}
-            style={{
-              color: active ? '#f3b63f' : '#d8c6b6',
-              fontSize: '46rpx',
-              textShadow: active ? '0 4rpx 12rpx rgba(243, 182, 63, 0.26)' : '0 2rpx 6rpx rgba(120, 80, 28, 0.08)',
-              transform: active ? 'scale(1.06)' : 'scale(1)',
-            }}
             onClick={() => onChange(nextValue)}
           >
             {active ? '★' : '☆'}
@@ -60,6 +58,8 @@ export default function CreateCommentPage() {
   const [title, setTitle] = useState('');
   const [goodsDetail, setGoodsDetail] = useState('');
 
+  const submitLock = useRef(false);
+  const uploadedUrls = useRef(new Map<string, string>());
   const orderIdRef = useRef<number | null>(null);
   const orderItemIdRef = useRef<number | null>(null);
 
@@ -97,18 +97,31 @@ export default function CreateCommentPage() {
   const isAllowedSubmit = goodRateValue > 0 && commentText.trim().length > 0;
 
   const handleSubmit = useCallback(async () => {
-    if (!isAllowedSubmit || submitting) return;
+    if (!isAllowedSubmit || submitLock.current) return;
+    if (!orderIdRef.current || !orderItemIdRef.current) {
+      Taro.showToast({ title: '缺少订单信息，请从订单页面评价', icon: 'none' });
+      return;
+    }
+    submitLock.current = true;
 
     setSubmitting(true);
     try {
-      const { request } = require('../../../../services/request');
+      const images: string[] = [];
+      for (const file of uploadFiles) {
+        let url = uploadedUrls.current.get(file);
+        if (!url) {
+          url = await uploadImage(file);
+          uploadedUrls.current.set(file, url);
+        }
+        images.push(url);
+      }
       await request({
         url: '/api/v1/review',
         method: 'POST',
         data: {
           rating: goodRateValue,
-          content: commentText,
-          images: uploadFiles,
+          content: commentText.trim(),
+          images,
           isAnonymous,
           orderId: orderIdRef.current,
           orderItemId: orderItemIdRef.current,
@@ -124,12 +137,14 @@ export default function CreateCommentPage() {
     } catch (err: any) {
       Taro.showToast({ title: err.msg || '评价提交失败，请重试', icon: 'none' });
     } finally {
+      submitLock.current = false;
       setSubmitting(false);
     }
   }, [isAllowedSubmit, submitting, goodRateValue, commentText, uploadFiles, isAnonymous, conveyRateValue, serviceRateValue]);
 
   return (
-    <View className="create-comment-page">
+    <View className={`create-comment-page ${isH5() ? 'create-comment-page--h5' : ''}`}>
+      <PageNav title="发表评价" />
       <View className="comment-form-card">
         <View className="goods-info-row">
           {imgUrl && (
@@ -205,7 +220,7 @@ export default function CreateCommentPage() {
 
       <View className="submit-bar">
         <View
-          className={`submit-btn ${isAllowedSubmit ? '' : 'submit-btn--disabled'}`}
+          className={`submit-btn ${isAllowedSubmit && !submitting ? '' : 'submit-btn--disabled'}`}
           onClick={handleSubmit}
         >
           <Text className="submit-btn__text">

@@ -181,3 +181,9 @@
     color: $warm-text-hint;
   }
 }
+
+.person-info__cell { gap: 24rpx; }
+.person-info__cell-label, .person-info__cell-arrow { flex-shrink: 0; }
+.person-info__cell-value-wrap { min-width: 0; justify-content: flex-end; }
+.person-info__cell-value { min-width: 0; overflow-wrap: anywhere; text-align: right; }
+.person-info__error { margin: 24rpx 32rpx; padding: 28rpx; border-radius: 24rpx; background: #fff; color: $warm-primary; font-size: $warm-font-md; }

@@ -24,7 +24,7 @@ export function fetchGoodsList(params: any) {
   if (config.useMock) {
     return mockFetchGoodsList(params);
   }
-  const { pageNum = 1, pageSize = 20, keyword, categoryId, sort } = params || {};
+  const { pageNum = 1, pageSize = 20, keyword, categoryId, sort, sortType } = params || {};
   return request({
     url: '/api/v1/products',
     method: 'GET',
@@ -33,7 +33,7 @@ export function fetchGoodsList(params: any) {
       page_size: pageSize,
       keyword: keyword || undefined,
       category_id: categoryId || undefined,
-      sort: sort || undefined,
+      sort: sort === 1 ? (sortType === 1 ? 'price_desc' : 'price_asc') : undefined,
       status: 'active',
     },
   }).then((res: any = {}) => {
