@@ -98,6 +98,7 @@ class OrderMapper
             $entity->setShipEntity($shipEntity);
         }
 
+        $entity->clearDirty();
         return $entity;
     }
 

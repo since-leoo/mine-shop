@@ -24,6 +24,12 @@
         <el-descriptions-item :label="t('mall.order.payTimeLabel')">
           {{ order.pay_time ? formatTime(order.pay_time) : '-' }}
         </el-descriptions-item>
+        <el-descriptions-item :label="t('mall.order.payMethod')">
+          {{ order.pay_method ? t(`dashboard.payMethod.${order.pay_method}`, order.pay_method) : '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item :label="t('mall.order.payNo')">
+          {{ order.pay_no || '-' }}
+        </el-descriptions-item>
         <el-descriptions-item :label="t('mall.order.shipTimeLabel')">
           {{ order.shipped_at ? formatTime(order.shipped_at) : '-' }}
         </el-descriptions-item>

@@ -8,6 +8,7 @@ use App\Domain\Infrastructure\SystemSetting\ValueObject\PaymentSetting;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Repository\MemberWalletTransactionRepository;
 use App\Domain\Member\Service\DomainMemberWalletService;
+use App\Domain\Trade\Order\Contract\OrderManualPayInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Order\Service\DomainOrderPaymentService;
@@ -26,6 +27,43 @@ class DomainPayService
         private readonly PaymentPolicy $policy,
         private readonly \App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository $refunds,
     ) {}
+
+    /** 与线上支付、取消共用订单行锁，必须在应用事务中调用。 */
+    public function payManually(OrderManualPayInput $input): ?OrderEntity
+    {
+        $order = $this->orders->getLockedEntityById($input->getOrderId());
+        $records = $this->paymentRepository->findAllForOrderForUpdate($order->getId());
+        if ($order->getPayStatus() === 'paid' && $order->getPayMethod() === 'manual'
+            && in_array($order->getStatus(), ['paid', 'partial_shipped', 'shipped', 'completed'], true)) {
+            foreach ($records as $record) {
+                if ($record->payment_method === 'manual' && $record->status === 'paid'
+                    && $record->payment_no === $order->getPayNo()
+                    && (int) $record->paid_amount === $order->getPayAmount()) {
+                    return null;
+                }
+            }
+        }
+
+        $this->policy->assertManualPayable($order);
+        foreach ($records as $record) {
+            if (in_array($record->status, ['paid', 'refunded'], true) || (int) $record->paid_amount > 0) {
+                throw new \DomainException('订单已有收款记录，请先核实支付情况');
+            }
+            if ($record->status === 'pending') {
+                throw new \DomainException('订单存在待确认的支付流水，请先核实原支付渠道状态后再人工认款');
+            }
+        }
+
+        $payment = $this->payments->create(
+            $order->getId(), $order->getOrderNo(), $order->getMemberId(), 'manual', $order->getPayAmount(),
+        );
+        $log = $order->confirmManualPayment($input, $payment->payment_no);
+        $this->payments->markPaid($payment->payment_no, $order->getPayAmount());
+        $this->orders->update($order);
+        $this->orders->recordLog($order->getId(), $log);
+
+        return $order;
+    }
 
     public function prepareWechat(string $orderNo, MemberEntity $member, PaymentSetting $setting): array
     {

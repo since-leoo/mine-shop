@@ -229,6 +229,7 @@ dashboard:
     unitOrder: 單
     unitPerson: 人
   payMethod:
+    manual: 線下支付
     wechat: 微信支付
     alipay: 支付寶
     balance: 餘額支付
@@ -322,6 +323,18 @@ mall:
       attrSpec: 屬性與規格
       descDetail: 簡介與詳情
   order:
+    payMethod: 支付類型
+    markPaid: 人工認款
+    manualPayDialog: 人工認款
+    amountDue: 應付金額
+    manualPayWarning: 請核實已收到線下款項。確認後訂單將標記為已支付，並進入後續履約流程。
+    manualPayRemark: 認款備註
+    manualPayRemarkPlaceholder: 可選，填寫線下收款方式或憑證資訊
+    manualPayAcknowledgement: 我已確認收到該訂單的全部線下款項
+    confirmManualPay: 確認已收款
+    manualPaySuccess: 人工認款成功，訂單已支付
+    manualPayFailed: 人工認款失敗
+    manualPayUnavailable: 訂單已失效或狀態已變更，請重新整理後重試
     totalOrders: 總訂單數
     pendingPayment: 待付款
     paid: 已付款

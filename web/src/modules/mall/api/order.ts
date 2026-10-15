@@ -12,6 +12,12 @@ import useHttp from '@/hooks/auto-imports/useHttp.ts'
 const http = useHttp()
 const baseUrl = '/admin/order/order'
 
+export type OrderPayMethod = 'wechat' | 'balance' | 'manual'
+
+export interface OrderManualPayData {
+  remark?: string
+}
+
 export interface OrderItemVo {
   id: number
   product_id: number
@@ -58,7 +64,7 @@ export interface OrderVo {
   pay_status: string
   pay_time?: string
   pay_no?: string
-  pay_method?: string
+  pay_method?: OrderPayMethod | null
   buyer_remark?: string
   seller_remark?: string
   shipping_status: string
@@ -68,7 +74,7 @@ export interface OrderVo {
   updated_at: string
   shipped_at?: string
   completed_at?: string
-  member?: { id: number; nickname: string; phone: string }
+  member?: { id: number, nickname: string, phone: string }
   items?: OrderItemVo[]
   address?: OrderAddressVo
   packages?: OrderPackageVo[]
@@ -89,12 +95,12 @@ export interface OrderListParams {
 }
 
 export const orderApi = {
-  list: (params?: OrderListParams) => http.get<{ list: OrderVo[]; total: number }>(
+  list: (params?: OrderListParams) => http.get<{ list: OrderVo[], total: number }>(
     `${baseUrl}/list`,
     { params },
   ),
 
-  stats: (params?: { start_date?: string; end_date?: string }) => http.get<{
+  stats: (params?: { start_date?: string, end_date?: string }) => http.get<{
     total: number
     pending: number
     paid: number
@@ -104,12 +110,17 @@ export const orderApi = {
 
   detail: (id: number) => http.get<OrderVo>(`${baseUrl}/${id}`),
 
-  ship: (id: number, data: { shipping_company: string; shipping_no: string; remark?: string }) => http.put<OrderVo>(
+  ship: (id: number, data: { shipping_company: string, shipping_no: string, remark?: string }) => http.put<OrderVo>(
     `${baseUrl}/${id}/ship`,
     data,
   ),
 
   cancel: (id: number, reason?: string) => http.put<OrderVo>(`${baseUrl}/${id}/cancel`, { reason }),
+
+  manualPay: (id: number, data: OrderManualPayData = {}) => http.put<OrderVo>(
+    `${baseUrl}/${id}/manual-pay`,
+    data,
+  ),
 
   export: (params?: OrderListParams) => http.post<{ message: string }>(`${baseUrl}/export`, params),
 }

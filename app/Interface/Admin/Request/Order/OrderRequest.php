@@ -15,6 +15,7 @@ namespace App\Interface\Admin\Request\Order;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Enum\PaymentStatus;
 use App\Interface\Admin\Dto\Order\OrderCancelDto;
+use App\Interface\Admin\Dto\Order\OrderManualPayDto;
 use App\Interface\Admin\Dto\Order\OrderShipDto;
 use App\Interface\Common\Request\BaseRequest;
 use Hyperf\Validation\Rule;
@@ -55,6 +56,24 @@ final class OrderRequest extends BaseRequest
     public function exportRules(): array
     {
         return $this->filters();
+    }
+
+    public function manualPayRules(): array
+    {
+        return [
+            'remark' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    public function toManualPayDto(int $orderId, int $operatorId, string $operatorName): OrderManualPayDto
+    {
+        $params = $this->validated();
+        $dto = new OrderManualPayDto();
+        $dto->order_id = $orderId;
+        $dto->remark = trim((string) ($params['remark'] ?? ''));
+        $dto->operator_id = $operatorId;
+        $dto->operator_name = $operatorName;
+        return $dto;
     }
 
     public function toShipDto(int $orderId, int $operatorId, string $operatorName): OrderShipDto

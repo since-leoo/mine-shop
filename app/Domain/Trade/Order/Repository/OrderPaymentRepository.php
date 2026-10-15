@@ -104,6 +104,12 @@ class OrderPaymentRepository extends IRepository
             ->orderByDesc('id')->lockForUpdate()->first();
     }
 
+    /** @return Collection<int, OrderPayment> */
+    public function findAllForOrderForUpdate(int $orderId): Collection
+    {
+        return $this->model::where('order_id', $orderId)->orderBy('id')->lockForUpdate()->get();
+    }
+
     public function unreconciledWechat(int $limit = 100): array
     {
         return $this->model::where('payment_method', 'wechat')->where('status', 'pending')

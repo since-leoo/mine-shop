@@ -54,6 +54,14 @@ final class PaymentPolicy
         }
     }
 
+    public function assertManualPayable(OrderEntity $order): void
+    {
+        $this->assertPayable($order);
+        if ($order->getPayAmount() <= 0) {
+            throw new \DomainException('人工认款金额必须大于零');
+        }
+    }
+
     public function wechatPayload(OrderEntity $order, MemberEntity $member): array
     {
         $this->assertOwner($order, $member->getId());

@@ -200,22 +200,22 @@ final class OrderPaymentEntity
             'extra_data' => $this->extraData,
         ];
 
-        // 如果没有 dirty 标记，返回所有非空字段
-        if ($this->dirty === []) {
-            return array_filter($data, static fn ($value) => $value !== null);
-        }
-
         // 只返回 dirty 标记的字段
         return array_filter(
             $data,
             function ($value, string $field) {
-                return isset($this->dirty[$field]) && $value !== null;
+                return isset($this->dirty[$field]);
             },
             \ARRAY_FILTER_USE_BOTH
         );
     }
 
     // Setters with dirty tracking
+
+    public function clearDirty(): void
+    {
+        $this->dirty = [];
+    }
 
     public function setId(int $id): self
     {

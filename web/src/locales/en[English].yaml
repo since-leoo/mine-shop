@@ -213,6 +213,7 @@ dashboard:
     unitOrder: orders
     unitPerson: members
   payMethod:
+    manual: Offline Payment
     wechat: WeChat
     alipay: Alipay
     balance: Balance
@@ -388,6 +389,18 @@ mall:
     priceRange: Price
     isHotColumn: Hot
   order:
+    payMethod: Payment Type
+    markPaid: Confirm Payment
+    manualPayDialog: Confirm Offline Payment
+    amountDue: Amount Due
+    manualPayWarning: Verify that the offline payment has been received. Confirmation marks this order as paid and starts fulfillment.
+    manualPayRemark: Payment Note
+    manualPayRemarkPlaceholder: Optional offline payment method or receipt reference
+    manualPayAcknowledgement: I confirm receipt of the full offline payment for this order
+    confirmManualPay: Confirm Receipt
+    manualPaySuccess: Offline payment confirmed; order marked as paid
+    manualPayFailed: Payment confirmation failed
+    manualPayUnavailable: This order expired or its status changed. Refresh and try again.
     totalOrders: Total
     pendingPayment: Pending
     paid: Paid

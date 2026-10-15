@@ -331,6 +331,14 @@ class MenuSeeder20240926 extends Seeder
                                     'i18n' => 'mallMenu.mall.orderUpdate',
                                 ]),
                             ],
+                            [
+                                'name' => 'order:order:manual-pay',
+                                'meta' => new Meta([
+                                    'title' => '人工认款',
+                                    'type' => 'B',
+                                    'i18n' => 'mallMenu.mall.orderManualPay',
+                                ]),
+                            ],
                         ],
                     ],
                     [

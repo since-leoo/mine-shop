@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Entity;
 
+use App\Domain\Trade\Order\Contract\OrderManualPayInput;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Enum\PaymentStatus;
 use App\Domain\Trade\Order\Enum\ShippingStatus;
 use App\Domain\Trade\Order\Trait\OrderSettingsTrait;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
+use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
 use Carbon\Carbon;
 
@@ -82,6 +84,9 @@ final class OrderEntity
 
     /** @var array<string, mixed> 运行时元数据（不持久化），供策略读取上下文 */
     private array $extras = [];
+
+    /** @var null|array<string, mixed> Mapper 恢复后的原始字段，用于仅持久化变更。 */
+    private ?array $originalData = null;
 
     public function getId(): int
     {
@@ -458,6 +463,31 @@ final class OrderEntity
         $this->setPayTime(Carbon::now());
     }
 
+    public function confirmManualPayment(OrderManualPayInput $input, string $paymentNo): OrderLogValue
+    {
+        if ($this->getStatus() !== OrderStatus::PENDING->value || $this->getPayStatus() !== PaymentStatus::PENDING->value) {
+            throw new \DomainException('只有未支付且未取消的订单可以人工认款');
+        }
+        $oldStatus = $this->getStatus();
+        $this->markPaid();
+        $this->setPayMethod('manual');
+        $this->setPayNo($paymentNo);
+
+        $log = new OrderLogValue();
+        $log->setAction('manual_pay');
+        $log->setDescription('人工认款：已确认收到线下支付款项');
+        $log->setOperatorType('admin');
+        $log->setOperatorId($input->getOperatorId());
+        $log->setOperatorName($input->getOperatorName());
+        $log->setOldStatus($oldStatus);
+        $log->setNewStatus($this->getStatus());
+        $log->setExtraData([
+            'payment_no' => $paymentNo, 'payment_method' => 'manual',
+            'paid_amount' => $this->getPayAmount(), 'remark' => $input->getRemark(),
+        ]);
+        return $log;
+    }
+
     /**
      * 从预览输入契约初始化订单实体.
      */
@@ -506,6 +536,20 @@ final class OrderEntity
 
     public function toArray(): array
     {
+        $data = $this->attributes();
+        if ($this->originalData === null) {
+            return $data;
+        }
+        return array_filter($data, fn ($value, string $key): bool => $value !== $this->originalData[$key], \ARRAY_FILTER_USE_BOTH);
+    }
+
+    public function clearDirty(): void
+    {
+        $this->originalData = $this->attributes();
+    }
+
+    private function attributes(): array
+    {
         return [
             'order_no' => $this->getOrderNo(),
             'member_id' => $this->getMemberId(),
@@ -522,7 +566,7 @@ final class OrderEntity
             'pay_method' => $this->getPayMethod(),
             'buyer_remark' => $this->getBuyerRemark(),
             'seller_remark' => $this->getSellerRemark(),
-            'expire_time' => $this->getExpireTime(),
+            'expire_time' => $this->getExpireTime()?->toDateTimeString(),
             'shipping_status' => $this->getShippingStatus(),
             'package_count' => $this->getPackageCount(),
         ];

@@ -43,6 +43,7 @@ class OrderPaymentMapper
         $entity->setRemark($model->remark);
         $entity->setExtraData($model->extra_data);
 
+        $entity->clearDirty();
         return $entity;
     }
 

@@ -219,6 +219,11 @@
             </el-tag>
           </template>
         </el-table-column>
+        <el-table-column :label="t('mall.order.payMethod')" width="120">
+          <template #default="{ row }">
+            {{ formatPayMethod(row.pay_method) }}
+          </template>
+        </el-table-column>
         <el-table-column :label="t('mall.order.shippingStatus')" width="120">
           <template #default="{ row }">
             <el-tag :type="shippingStatusTypeMap[row.shipping_status || 'pending']" size="small">
@@ -231,12 +236,24 @@
             {{ formatDate(row.created_at) }} {{ formatTime(row.created_at) }}
           </template>
         </el-table-column>
-        <el-table-column :label="t('mall.order.operation')" fixed="right" width="200">
+        <el-table-column :label="t('mall.order.operation')" fixed="right" width="260">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
               <el-button type="primary" link size="small" @click="showDetail(row)">
                 <el-icon><View /></el-icon>
                 {{ t('mall.detail') }}
+              </el-button>
+              <el-button
+                v-if="canManualPay(row as OrderVo)"
+                v-auth="['order:order:manual-pay']"
+                type="success"
+                link
+                size="small"
+                :disabled="manualPayLoading"
+                @click="openManualPayDialog(row as OrderVo)"
+              >
+                <el-icon><Wallet /></el-icon>
+                {{ t('mall.order.markPaid') }}
               </el-button>
               <el-button
                 v-if="row.status === 'paid'"
@@ -279,6 +296,64 @@
     </el-card>
 
     <OrderDetail v-model:visible="detailVisible" :order="currentOrder" />
+
+    <el-dialog
+      v-model="manualPayDialogVisible"
+      :title="t('mall.order.manualPayDialog')"
+      width="480px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="!manualPayLoading"
+      :show-close="!manualPayLoading"
+    >
+      <template v-if="manualPayOrder">
+        <el-alert
+          :title="t('mall.order.manualPayWarning')"
+          type="warning"
+          :closable="false"
+          show-icon
+          class="mb-4"
+        />
+        <el-descriptions :column="1" border class="mb-4">
+          <el-descriptions-item :label="t('mall.order.orderNo')">
+            {{ manualPayOrder.order_no }}
+          </el-descriptions-item>
+          <el-descriptions-item :label="t('mall.order.amountDue')">
+            <span class="text-red-500 font-semibold">¥{{ formatYuan(manualPayOrder.pay_amount) }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item :label="t('mall.order.payMethod')">
+            {{ t('dashboard.payMethod.manual') }}
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-form :model="manualPayForm" label-position="top" :disabled="manualPayLoading">
+          <el-form-item :label="t('mall.order.manualPayRemark')">
+            <el-input
+              v-model="manualPayForm.remark"
+              type="textarea"
+              :rows="3"
+              :maxlength="500"
+              show-word-limit
+              :placeholder="t('mall.order.manualPayRemarkPlaceholder')"
+            />
+          </el-form-item>
+          <el-checkbox v-model="manualPayForm.confirmed" class="manual-pay-acknowledgement">
+            {{ t('mall.order.manualPayAcknowledgement') }}
+          </el-checkbox>
+        </el-form>
+      </template>
+      <template #footer>
+        <el-button :disabled="manualPayLoading" @click="manualPayDialogVisible = false">
+          {{ t('mall.cancel') }}
+        </el-button>
+        <el-button
+          type="primary"
+          :loading="manualPayLoading"
+          :disabled="manualPayLoading || !manualPayForm.confirmed"
+          @click="handleManualPay"
+        >
+          {{ t('mall.order.confirmManualPay') }}
+        </el-button>
+      </template>
+    </el-dialog>
 
     <el-dialog v-model="shipDialogVisible" :title="t('mall.order.shipDialog')" width="480px">
       <el-form ref="shipFormRef" :model="shipForm" :rules="shipRules" label-width="100px">
@@ -381,6 +456,11 @@ const statCards = [
 const detailVisible = ref(false)
 const currentOrder = ref<OrderVo | null>(null)
 
+const manualPayDialogVisible = ref(false)
+const manualPayLoading = ref(false)
+const manualPayOrder = ref<OrderVo | null>(null)
+const manualPayForm = reactive({ remark: '', confirmed: false })
+
 const shipDialogVisible = ref(false)
 const shipLoading = ref(false)
 const shipFormRef = ref<FormInstance>()
@@ -457,6 +537,14 @@ const shippingStatusTypeMap: Record<string, string> = {
 
 const formatDate = (time?: string) => (time ? dayjs(time).format('YYYY-MM-DD') : '-')
 const formatTime = (time?: string) => (time ? dayjs(time).format('HH:mm:ss') : '')
+const formatPayMethod = (method?: string | null) => method ? t(`dashboard.payMethod.${method}`, method) : '-'
+
+function canManualPay(order: OrderVo) {
+  if (order.status !== 'pending' || order.pay_status !== 'pending') {
+    return false
+  }
+  return !order.expire_time || !dayjs(order.expire_time).isValid() || dayjs(order.expire_time).isAfter(dayjs())
+}
 
 const getTotalQuantity = (items?: OrderVo['items']) => {
   if (!items || !items.length) {
@@ -561,6 +649,46 @@ const showDetail = (order: OrderVo) => {
   detailVisible.value = true
 }
 
+function openManualPayDialog(order: OrderVo) {
+  if (manualPayLoading.value || !canManualPay(order)) {
+    return
+  }
+  manualPayOrder.value = order
+  manualPayForm.remark = ''
+  manualPayForm.confirmed = false
+  manualPayDialogVisible.value = true
+}
+
+async function handleManualPay() {
+  const order = manualPayOrder.value
+  if (!order || manualPayLoading.value || !manualPayForm.confirmed) {
+    return
+  }
+  if (!canManualPay(order)) {
+    ElMessage.warning(t('mall.order.manualPayUnavailable'))
+    manualPayDialogVisible.value = false
+    await loadData()
+    return
+  }
+  manualPayLoading.value = true
+  try {
+    const res = await orderApi.manualPay(order.id, { remark: manualPayForm.remark.trim() || undefined })
+    orderList.value = orderList.value.map(item => item.id === order.id ? { ...item, ...res.data } : item)
+    if (currentOrder.value?.id === order.id) {
+      currentOrder.value = { ...currentOrder.value, ...res.data }
+    }
+    ElMessage.success(t('mall.order.manualPaySuccess'))
+    manualPayDialogVisible.value = false
+    await Promise.all([loadData(), loadStats()])
+  }
+  catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || error?.message || t('mall.order.manualPayFailed'))
+  }
+  finally {
+    manualPayLoading.value = false
+  }
+}
+
 const openShipDialog = (order: OrderVo) => {
   shipOrderId.value = order.id
   shipForm.shipping_company = ''
@@ -640,5 +768,13 @@ onMounted(() => {
 
 .el-table .cell {
   white-space: nowrap;
+}
+
+.manual-pay-acknowledgement {
+  height: auto;
+
+  :deep(.el-checkbox__label) {
+    white-space: normal;
+  }
 }
 </style>

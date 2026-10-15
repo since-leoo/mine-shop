@@ -14,9 +14,11 @@ namespace App\Domain\Trade\Order\Repository;
 
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
+use App\Infrastructure\Model\Order\OrderLog;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
@@ -26,6 +28,11 @@ use Hyperf\Database\Model\Builder;
 final class OrderRepository extends IRepository
 {
     public function __construct(protected readonly Order $model) {}
+
+    public function recordLog(int $orderId, OrderLogValue $log): void
+    {
+        OrderLog::create($log->toArray($orderId));
+    }
 
     /** 业务方法。 */
     public function handleItems(Collection $items): Collection

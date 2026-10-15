@@ -229,6 +229,7 @@ dashboard:
     unitOrder: 单
     unitPerson: 人
   payMethod:
+    manual: 线下支付
     wechat: 微信支付
     alipay: 支付宝
     balance: 余额支付
@@ -404,6 +405,18 @@ mall:
     priceRange: 价格区间
     isHotColumn: 是否热销
   order:
+    payMethod: 支付类型
+    markPaid: 人工认款
+    manualPayDialog: 人工认款
+    amountDue: 应付金额
+    manualPayWarning: 请核实已收到线下款项。确认后订单将标记为已支付，并进入后续履约流程。
+    manualPayRemark: 认款备注
+    manualPayRemarkPlaceholder: 可选，填写线下收款方式或凭证信息
+    manualPayAcknowledgement: 我已确认收到该订单的全部线下款项
+    confirmManualPay: 确认已收款
+    manualPaySuccess: 人工认款成功，订单已支付
+    manualPayFailed: 人工认款失败
+    manualPayUnavailable: 订单已失效或状态已变更，请刷新后重试
     totalOrders: 总订单数
     pendingPayment: 待付款
     paid: 已付款

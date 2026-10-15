@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller\Order;
 
 use App\Application\Admin\Trade\AppOrderCommandService;
+use App\Application\Admin\Trade\AppOrderManualPaymentService;
 use App\Application\Admin\Trade\AppOrderQueryService;
 use App\Application\Admin\Trade\Dto\OrderExportDto;
 use App\Interface\Admin\Controller\AbstractController;
@@ -39,6 +40,7 @@ final class OrderController extends AbstractController
     public function __construct(
         private readonly AppOrderQueryService $queryService,
         private readonly AppOrderCommandService $commandService,
+        private readonly AppOrderManualPaymentService $manualPaymentService,
         private readonly CurrentUser $currentUser
     ) {}
 
@@ -108,5 +110,17 @@ final class OrderController extends AbstractController
         );
 
         return $this->success(['task_id' => $task->id, 'status' => $task->status]);
+    }
+
+    #[PutMapping(path: '{id:\d+}/manual-pay')]
+    #[Permission(code: 'order:order:manual-pay')]
+    public function manualPay(int $id, OrderRequest $request): Result
+    {
+        $order = $this->manualPaymentService->pay($request->toManualPayDto(
+            $id,
+            $this->currentUser->id(),
+            $this->currentUser->user()?->username ?? '管理员',
+        ));
+        return $this->success($order, '人工认款成功');
     }
 }

@@ -16,6 +16,7 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
+use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Order\Order;
 
@@ -112,5 +113,19 @@ final class DomainOrderService extends IService
             throw new \RuntimeException('订单不存在');
         }
         return OrderMapper::fromModel($model);
+    }
+
+    public function getLockedEntityById(int $id): OrderEntity
+    {
+        $model = $this->repository->findByIdForLock($id);
+        if ($model === null) {
+            throw new \RuntimeException('订单不存在');
+        }
+        return OrderMapper::fromModel($model);
+    }
+
+    public function recordLog(int $orderId, OrderLogValue $log): void
+    {
+        $this->repository->recordLog($orderId, $log);
     }
 }

@@ -48,6 +48,9 @@ class DomainAfterSaleRefundService
         if ($existing !== null && $existing->status !== 'failed') {
             return $existing;
         }
+        if ($payment?->payment_method === 'manual') {
+            throw new \DomainException('线下支付订单不支持原路自动退款，请先联系财务处理线下退款');
+        }
         if ($payment === null || ! in_array($payment->payment_method, ['balance', 'wechat'], true)) {
             throw new \DomainException('没有可退款的支付记录');
         }

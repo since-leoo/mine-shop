@@ -74,7 +74,7 @@ class OrderExportDto
     #[ExportColumn(title: '实付金额(元)', type: 'float', order: 17, width: 14, format: '#,##0.00', field: 'pay_amount', divisor: 100)]
     public float $pay_amount;
 
-    #[ExportColumn(title: '支付方式', order: 18, width: 12, field: 'pay_method', enum: ['wechat' => '微信支付', 'balance' => '余额支付'], default: '-')]
+    #[ExportColumn(title: '支付方式', order: 18, width: 12, field: 'pay_method', enum: ['wechat' => '微信支付', 'balance' => '余额支付', 'manual' => '线下支付'], default: '-')]
     public string $pay_method;
 
     #[ExportColumn(title: '支付流水号', order: 19, width: 22, field: 'pay_no', default: '-')]
