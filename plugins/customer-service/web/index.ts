@@ -26,7 +26,6 @@ const pluginConfig: Plugin.PluginConfig = {
     description: '统一管理客服会话、坐席和常见问题',
     order: 20,
     page: () => import('./views/PluginPage.vue'),
-    settings: { page: () => import('./views/configuration/index.vue') },
   },
 }
 

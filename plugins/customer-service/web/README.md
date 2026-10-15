@@ -2,7 +2,9 @@
 
 后台实现唯一保存在 `plugins/customer-service/web`，`web/src/plugins/since/customer-service` 仅保留兼容转发。小程序实现保存在其 sourceRoot 内的 `miniprogram/src/plugins/customer-service`，原页面和 service 路径保留转发。
 
-插件中心的「接待配置」及设置入口都使用新配置版本接口。管理员可编辑接待开关、AI 优先接待、营业时间、排队时限、三级类目、关键词、技能组、坐席技能、模型连接及 AI Agent；修改先进入本地草稿，再保存或发布。服务器版本冲突不会覆盖本地草稿，刷新前会提示。坐席的优先级、权重、容量与排班独立保存并立即生效。
+客服配置统一从插件内部的「接待配置」进入，插件中心卡片不再单独显示设置入口。该页面使用新配置版本接口，管理员可编辑接待开关、AI 优先接待、营业时间、排队时限、三级类目、关键词、技能组、坐席技能、模型连接及 AI Agent；修改先进入本地草稿，再保存或发布。服务器版本冲突不会覆盖本地草稿，刷新前会提示。坐席的优先级、权重、容量与排班独立保存并立即生效。
+
+后台工作台的 WebSocket 地址优先读取 `web/.env.development` 或 `web/.env.production` 中的 `VITE_CUSTOMER_SERVICE_SOCKET_URL`，填写包含路径的完整地址。开发环境默认 `ws://127.0.0.1:9502/customer-service`，对应客服插件的 WebSocket 监听端口；连接远程后端时需改成浏览器可访问的网关地址。该连接不使用 `VITE_APP_API_BASEURL` 或 HTTP 开发代理。环境变量留空时依次使用接口返回的 `gateway_url` + `socket_path`、当前页面同域 + `socket_path`（默认 `/customer-service`）。HTTPS 页面使用 `wss://`；修改环境文件后重启 Vite，生产环境需重新构建。
 
 AI 密钥只配置 `CUSTOMER_SERVICE_AI_*_KEY` 环境变量名，域名需在服务端 `CUSTOMER_SERVICE_AI_ALLOWED_HOSTS` 内。试问按钮明确调用供应商并消耗额度，使用沙盒接口，不给客户发消息。FAQ 需显式发布并在有效期内才能被 AI 引用。
 
