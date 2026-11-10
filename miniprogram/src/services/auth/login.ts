@@ -1,6 +1,7 @@
 import { request } from '../request';
+import { notifyAuthResult, prepareAuthPayload } from '../../common/plugin-hooks';
 
-export function miniProgramLogin({
+export async function miniProgramLogin({
   code,
   encryptedData = '',
   iv = '',
@@ -14,14 +15,16 @@ export function miniProgramLogin({
   if (!code) {
     return Promise.reject(new Error('缺少登录凭证 code'));
   }
-  return request({
+  const result = await request({
     url: '/api/v1/login/miniApp',
     method: 'POST',
-    data: {
+    data: await prepareAuthPayload('mini_program', {
       code,
       encrypted_data: encryptedData,
       iv,
       openid,
-    },
+    }),
   });
+  notifyAuthResult(result);
+  return result;
 }

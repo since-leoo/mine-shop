@@ -1,0 +1,16 @@
+{
+  "name": "since/supply-chain",
+  "version": "1.0.0",
+  "description": "外部供应链选品、同步、采购履约与任务日志",
+  "author": "Since",
+  "namespace": "Plugin\\SupplyChain",
+  "priority": 20,
+  "enabled": true,
+  "dependencies": [],
+  "composer_require": {},
+  "rollback_on_uninstall": false,
+  "center": {"title": "供应链", "icon": "tabler:building-warehouse", "sort": 46},
+  "configProvider": "Plugin\\SupplyChain\\ConfigProvider",
+  "uninstall_retained_history_guards": ["supply_product_links", "supply_orders", "supply_after_sales"],
+  "uninstall_submission_guards": [{"table": "order_submissions", "payload_key": "fulfillment"}]
+}

@@ -27,7 +27,7 @@ final class OrderCheckoutTransformer
         $price = $order->getPriceDetail();
 
         $items = array_map(
-            static fn (OrderItemEntity $item): array => $item->toArray(),
+            static fn (OrderItemEntity $item): array => array_diff_key($item->toArray(), array_flip(['fulfillment_provider', 'fulfillment_snapshot'])),
             $order->getItems(),
         );
 

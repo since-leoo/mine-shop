@@ -119,6 +119,9 @@ class Order extends Model
     {
         $relation = $this->hasMany(OrderItem::class, 'order_id', 'id');
         $relation->select([
+            'fulfillment_provider',
+            'fulfillment_snapshot',
+            'spec_values',
             'id',
             'order_id',
             'product_id',

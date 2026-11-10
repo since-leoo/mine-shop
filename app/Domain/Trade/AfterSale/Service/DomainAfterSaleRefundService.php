@@ -27,6 +27,9 @@ class DomainAfterSaleRefundService
         $this->orders->getLockedEntity($order->getOrderNo());
         $afterSale = $this->afterSales->getLockedEntity($input->getId());
         if ($input->getApprovedRefundAmount() !== null) {
+            if ($input->getApprovedRefundAmount() < 0 || $input->getApprovedRefundAmount() > $afterSale->getApplyAmount()) {
+                throw new \DomainException('审核退款金额不能超过本次申请的可退金额');
+            }
             $afterSale->setRefundAmount($input->getApprovedRefundAmount());
         }
         $afterSale->approve();
@@ -55,6 +58,7 @@ class DomainAfterSaleRefundService
             throw new \DomainException('没有可退款的支付记录');
         }
         $amount = $afterSale->getRefundAmount();
+        if ($amount > $afterSale->getApplyAmount()) { throw new \DomainException('退款金额超过本次售后申请上限'); }
         $available = (int) $payment->paid_amount - (int) $payment->refund_amount - $this->refunds->outstandingAmount((int) $payment->id);
         if ($amount <= 0 || $amount > $available) {
             throw new \DomainException('退款金额超过可退余额');

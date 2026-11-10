@@ -39,6 +39,8 @@ class OrderItem extends Model
     protected ?string $table = 'order_items';
 
     protected array $fillable = [
+        'fulfillment_provider',
+        'fulfillment_snapshot',
         'order_id',
         'product_id',
         'sku_id',
@@ -52,6 +54,7 @@ class OrderItem extends Model
     ];
 
     protected array $casts = [
+        'fulfillment_snapshot' => 'array',
         'order_id' => 'integer',
         'product_id' => 'integer',
         'sku_id' => 'integer',

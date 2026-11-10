@@ -27,6 +27,7 @@ final class AppApiOrderCommandService
         private readonly AppOrderSubmissionService $submissions,
         private readonly AppOrderCancellationService $cancellation,
         private readonly \App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface $submissionStore,
+        private readonly \App\Domain\Trade\Shared\Contract\TradeOutboxInterface $outbox,
     ) {}
 
     /**
@@ -108,12 +109,16 @@ final class AppApiOrderCommandService
      */
     public function confirmReceipt(int $memberId, string $orderNo): void
     {
-        $entity = $this->orderCommandService->getEntity(orderNo: $orderNo);
-
-        if ($entity->getMemberId() !== $memberId) {
-            throw new \RuntimeException('订单不存在');
-        }
-
-        Db::transaction(fn () => $this->orderCommandService->confirmReceipt($entity));
+        Db::transaction(function () use ($memberId, $orderNo): void {
+            $entity = $this->orderCommandService->getLockedEntity($orderNo);
+            if ($entity->getMemberId() !== $memberId) {
+                throw new \RuntimeException('订单不存在');
+            }
+            $this->orderCommandService->confirmReceipt($entity);
+            $this->outbox->append('completed:' . $orderNo, 'order.completed', [
+                'order_id' => $entity->getId(), 'order_no' => $orderNo, 'member_id' => $memberId,
+                'completed_at' => date('Y-m-d H:i:s'),
+            ]);
+        });
     }
 }

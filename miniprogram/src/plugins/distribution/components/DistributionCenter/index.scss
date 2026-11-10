@@ -1,0 +1,8 @@
+.diy-distribution-center { padding: 28rpx; background: #fff; border-radius: 24rpx; color: #493b36; }
+.diy-distribution-center__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 28rpx; font-size: 30rpx; font-weight: 600; }
+.diy-distribution-center__more { color: #b99580; font-size: 24rpx; font-weight: 400; }
+.diy-distribution-center__grid { display: flex; justify-content: space-around; gap: 16rpx; flex-wrap: wrap; }
+.diy-distribution-center__stat { flex: 1; min-width: 120rpx; display: flex; flex-direction: column; gap: 10rpx; text-align: center; }
+.diy-distribution-center__value { font-size: 34rpx; font-weight: 600; color: var(--diy-primary-color, #e8836b); word-break: break-all; }
+.diy-distribution-center__label { font-size: 22rpx; color: #a08a7e; }
+.diy-distribution-center__invite { display: flex; justify-content: space-between; gap: 16rpx; margin-top: 28rpx; padding: 20rpx; border-radius: 16rpx; background: #fff4eb; font-size: 24rpx; color: #bd7f66; }

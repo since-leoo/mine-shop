@@ -14,6 +14,23 @@ namespace App\Domain\Trade\Order\Entity;
 
 final class OrderItemEntity
 {
+    private string $fulfillmentProvider = 'merchant';
+
+    private array $fulfillmentSnapshot = [];
+
+    public function getFulfillmentProvider(): string { return $this->fulfillmentProvider; }
+
+    public function getFulfillmentSnapshot(): array { return $this->fulfillmentSnapshot; }
+
+    public function freezeFulfillment(string $provider, array $snapshot): void
+    {
+        if ($provider === '' || ($provider !== 'merchant' && $snapshot === [])) {
+            throw new \DomainException('外部履约快照不完整');
+        }
+        $this->fulfillmentProvider = $provider;
+        $this->fulfillmentSnapshot = $snapshot;
+    }
+
     private int $productId = 0;
 
     private int $skuId = 0;
@@ -151,6 +168,8 @@ final class OrderItemEntity
     public static function fromPayload(array $payload): self
     {
         $item = new self();
+        $provider = (string) ($payload['fulfillment_provider'] ?? 'merchant');
+        $item->freezeFulfillment($provider, (array) ($payload['fulfillment_snapshot'] ?? []));
         $item->setSkuId((int) ($payload['sku_id'] ?? 0));
         $item->setProductId((int) ($payload['product_id'] ?? 0));
         $item->setProductName((string) ($payload['product_name'] ?? ''));
@@ -170,6 +189,8 @@ final class OrderItemEntity
      */
     public function attachSnapshot(array $snapshot): void
     {
+        $this->fulfillmentProvider = (string) ($snapshot['fulfillment_provider'] ?? 'merchant');
+        $this->fulfillmentSnapshot = [];
         $this->setProductId((int) ($snapshot['product_id'] ?? $this->productId));
         $this->setProductName((string) ($snapshot['product_name'] ?? $this->productName));
         $this->setSkuName((string) ($snapshot['sku_name'] ?? $this->skuName));
@@ -192,6 +213,8 @@ final class OrderItemEntity
     public function toArray(): array
     {
         return [
+            'fulfillment_provider' => $this->getFulfillmentProvider(),
+            'fulfillment_snapshot' => $this->getFulfillmentSnapshot(),
             'product_id' => $this->getProductId(),
             'sku_id' => $this->getSkuId(),
             'product_name' => $this->getProductName(),

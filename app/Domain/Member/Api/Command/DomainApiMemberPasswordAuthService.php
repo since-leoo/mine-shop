@@ -18,6 +18,7 @@ use App\Domain\Member\Contract\H5SmsLoginInput;
 use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Contract\VerificationCodeSendInput;
 use App\Domain\Member\Entity\MemberEntity;
+use App\Domain\Member\Event\MemberRegistered;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Infrastructure\Abstract\IService;
@@ -61,6 +62,7 @@ final class DomainApiMemberPasswordAuthService extends IService
         $saved = $this->memberRepository->save($member);
         $member->setId((int) $saved->id);
         $member->clearDirty();
+        event(new MemberRegistered(memberId: $member->getId(), source: 'h5', referrerId: $member->getReferrerId()));
 
         return $member;
     }

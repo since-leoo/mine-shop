@@ -1,3 +1,4 @@
+import { renderPluginSlot } from '../../common/plugin-hooks';
 ﻿import { View, Text, Image, Button } from '@tarojs/components';
 import defaultAvatar from '../../assets/usercenter/avatar-default.svg';
 import orderPayIcon from '../../assets/usercenter/order-pay.svg';
@@ -10,7 +11,6 @@ import menuCouponIcon from '../../assets/usercenter/menu-coupon.svg';
 import menuWalletIcon from '../../assets/usercenter/menu-wallet.svg';
 import menuHelpIcon from '../../assets/usercenter/menu-help.svg';
 import menuSettingsIcon from '../../assets/usercenter/menu-settings.svg';
-import profileQrcodeIcon from '../../assets/usercenter/profile-qrcode.svg';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useRef, useState } from 'react';
 import { getStoredMemberProfile, getStoredToken, isLoggedIn, persistAuth } from '../../common/auth';
@@ -140,12 +140,10 @@ function H5UserCenterView(props: UserCenterViewProps) {
             <View className="usercenter__info">
               <Text className="usercenter__nickname">{userInfo.nickName}</Text>
               <Text className="usercenter__phone">
-                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode ? `邀请码：${userInfo.inviteCode}` : '点击完善个人资料'}
+                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : '点击完善个人资料'}
               </Text>
             </View>
-            <View className="usercenter__qrcode">
-              <Image className="usercenter__qrcode-icon" src={profileQrcodeIcon} mode="aspectFit" />
-            </View>
+            {renderPluginSlot('user-profile-right', { userInfo })}
           </View>
         </View>
       </View>
@@ -202,6 +200,8 @@ function H5UserCenterView(props: UserCenterViewProps) {
         </View>
       ))}
 
+      {renderPluginSlot('user-center-menu')}
+
       <View className="usercenter__version">
         <Text className="usercenter__version-text">{'\u5f53\u524d\u7248\u672c '}{versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
       </View>
@@ -243,12 +243,10 @@ function MiniProgramUserCenterView(props: UserCenterViewProps) {
             <View className="usercenter__info">
               <Text className="usercenter__nickname">{userInfo.nickName}</Text>
               <Text className="usercenter__phone">
-                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : userInfo.inviteCode ? `邀请码：${userInfo.inviteCode}` : '点击完善个人资料'}
+                {userInfo.phoneNumber ? `手机号：${userInfo.phoneNumber}` : '点击完善个人资料'}
               </Text>
             </View>
-            <View className="usercenter__qrcode">
-              <Image className="usercenter__qrcode-icon" src={profileQrcodeIcon} mode="aspectFit" />
-            </View>
+            {renderPluginSlot('user-profile-right', { userInfo })}
           </View>
         </View>
       </View>
@@ -304,6 +302,8 @@ function MiniProgramUserCenterView(props: UserCenterViewProps) {
           ))}
         </View>
       ))}
+
+      {renderPluginSlot('user-center-menu')}
 
       <View className="usercenter__version">
         <Text className="usercenter__version-text">当前版本 {versionNo ? `v${versionNo}` : 'v1.0.0'}</Text>
@@ -503,6 +503,7 @@ export default function UserCenter() {
         <View className="usercenter__diy-body" style={diyStyle(page.page?.style || {})}>
           {loadFailed ? <UserCenterLoadError onRetry={fetchData} /> : null}
           <DiyRenderer page={page} transparent />
+          {renderPluginSlot('user-center-menu')}
         </View>
         {isH5() ? <H5TabBar current="/pages/usercenter/index" /> : null}
       </View>

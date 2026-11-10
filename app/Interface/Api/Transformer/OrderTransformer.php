@@ -79,8 +79,10 @@ final class OrderTransformer
             OrderStatus::PAID->value => [
                 ['type' => 9, 'name' => '再次购买', 'primary' => true],
             ],
-            OrderStatus::SHIPPED->value,
             OrderStatus::PARTIAL_SHIPPED->value => [
+                ['type' => 8, 'name' => '查看物流', 'primary' => true],
+            ],
+            OrderStatus::SHIPPED->value => [
                 ['type' => 8, 'name' => '查看物流', 'primary' => false],
                 ['type' => 3, 'name' => '确认收货', 'primary' => true],
             ],

@@ -10,9 +10,8 @@ import locales from './locales'
 
 const pluginConfig: Plugin.PluginConfig = {
   centerOnly: true,
-  install(app: App) {
+  install(_app: App, { i18n }: Plugin.InstallOptions = {}) {
     // 注册多语言
-    const i18n = app.config.globalProperties.$i18n
     if (i18n) {
       Object.entries(locales).forEach(([lang, messages]) => {
         i18n.mergeLocaleMessage(lang, messages)

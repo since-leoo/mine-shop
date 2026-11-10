@@ -40,6 +40,7 @@ final class DomainApiOrderCommandService extends IService
         private readonly OrderTypeStrategyFactory $strategyFactory,
         private readonly DomainMemberAddressService $addressService,
         private readonly OrderPendingCacheService $pendingCacheService,
+        private readonly \App\Domain\Infrastructure\Plugin\Service\DomainExternalFulfillmentService $fulfillment,
     ) {}
 
     /**
@@ -80,6 +81,7 @@ final class DomainApiOrderCommandService extends IService
         }
         $activeId = $entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id') ?: 0;
         return [
+            'fulfillment' => array_values(array_map(static fn ($item) => ['provider' => $item->getFulfillmentProvider(), 'sku_id' => $item->getSkuId()], array_filter($entity->getItems(), static fn ($item) => $item->getFulfillmentProvider() !== 'merchant'))),
             'snapshot' => $this->buildSnapshot($entity),
             'items' => array_map(static fn ($item) => $item->toArray(), $entity->getItems()),
             'address' => $entity->getAddress()->toArray(),
@@ -111,6 +113,11 @@ final class DomainApiOrderCommandService extends IService
      * @param OrderEntity $entity 订单实体
      * @return OrderEntity 更新后的订单实体
      */
+    public function getLockedEntity(string $orderNo): OrderEntity
+    {
+        return $this->orderService->getLockedEntity($orderNo);
+    }
+
     public function confirmReceipt(OrderEntity $entity): OrderEntity
     {
         $entity->complete();
@@ -155,6 +162,7 @@ final class DomainApiOrderCommandService extends IService
         $entity = $strategy->validate($entity);
         $strategy->buildDraft($entity);
         $strategy->applyFreight($entity);
+        $this->fulfillment->prepare($entity);
         $strategy->applyCoupon($entity, $input->getCouponId());
         $input instanceof OrderSubmitInput && $entity->verifyPrice($input->getTotalAmount());
         return $entity;

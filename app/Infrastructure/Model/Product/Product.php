@@ -66,6 +66,7 @@ class Product extends Model
     protected ?string $table = 'products';
 
     protected array $fillable = [
+        'fulfillment_provider',
         'product_code',
         'category_id',
         'brand_id',

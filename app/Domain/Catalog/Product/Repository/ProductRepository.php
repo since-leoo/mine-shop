@@ -93,6 +93,9 @@ final class ProductRepository extends IRepository
         if ($entity->getSkus()) {
             foreach ($entity->getSkus() as $sku) {
                 $skuData = $sku->toArray();
+                if (($model->fulfillment_provider ?? 'merchant') !== 'merchant') {
+                    unset($skuData['stock']);
+                }
 
                 if ($sku->getId()) {
                     // 使用模型实例更新，确保 $casts 生效（spec_values 等 JSON 字段）
@@ -111,6 +114,9 @@ final class ProductRepository extends IRepository
 
         // 删除不在新列表中的 SKU
         if (! empty($data['delete_sku_ids'])) {
+            if (($model->fulfillment_provider ?? 'merchant') !== 'merchant') {
+                throw new \DomainException('外部履约SKU不可删除，请停用规格以保留历史映射');
+            }
             $model->skus()->whereIn('id', $data['delete_sku_ids'])->delete();
         }
 
@@ -143,6 +149,9 @@ final class ProductRepository extends IRepository
             return;
         }
 
+        if (($model->fulfillment_provider ?? 'merchant') !== 'merchant') {
+            throw new \DomainException('外部履约商品不可直接删除，请下架商品');
+        }
         $model->skus()->delete();
         $model->attributes()->delete();
         $model->gallery()->delete();

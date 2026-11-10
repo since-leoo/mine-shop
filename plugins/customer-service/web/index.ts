@@ -4,8 +4,7 @@ import locales from './locales'
 
 const pluginConfig: Plugin.PluginConfig = {
   centerOnly: true,
-  install(app: App) {
-    const i18n = app.config.globalProperties.$i18n as { mergeLocaleMessage: (locale: string, messages: any) => void } | undefined
+  install(_app: App, { i18n }: Plugin.InstallOptions = {}) {
     if (i18n) {
       Object.entries(locales).forEach(([locale, messages]) => i18n.mergeLocaleMessage(locale, messages))
     }

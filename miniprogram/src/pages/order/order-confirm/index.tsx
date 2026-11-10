@@ -9,6 +9,7 @@ import { normalizeErrorMessage, showErrorToast } from '../../../common/error-fee
 import { isH5 } from '../../../common/platform';
 import addressIcon from '../../../assets/usercenter/menu-address.svg';
 import storeIcon from '../../../assets/order-confirm/store.svg';
+import { formatOrderSpecValues } from './spec-values';
 import './index.scss';
 
 interface SettleData {
@@ -233,9 +234,7 @@ export default function OrderConfirm() {
       id: item.skuId,
       thumb: item.productImage,
       title: item.productName,
-      specs: Array.isArray(item.specValues)
-        ? item.specValues.map((sv: any) => (typeof sv === 'string' ? sv : sv.valueName || '')).join(' ')
-        : '',
+      specs: formatOrderSpecValues(item.specValues),
       price: item.unitPrice,
       num: item.quantity,
     }));

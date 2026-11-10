@@ -28,6 +28,9 @@ final class AppOrderSubmissionService
 
     public function submit(string $tradeNo, int $memberId, array $payload): void
     {
+        $preparing = new \App\Domain\Trade\Order\Event\OrderSubmissionPreparing($memberId, $payload);
+        event($preparing);
+        $payload = $preparing->payload;
         // 先有持久记录，任何后续中断都能由扫描器恢复。库存使用该单号幂等预占。
         $this->submissions->create($tradeNo, $memberId, $payload);
         try {
@@ -74,6 +77,7 @@ final class AppOrderSubmissionService
                     $this->stock->reserve($tradeNo, $payload['items'], $payload['stock_key']);
                 }
                 $this->creation->create($tradeNo, $payload);
+                event(new \App\Domain\Trade\Order\Event\OrderPersisted($tradeNo, $payload));
             }
             $this->submissions->updateStatus($tradeNo, 'created');
             $this->outbox->append('created:' . $tradeNo, 'order.created', [

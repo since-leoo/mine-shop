@@ -77,6 +77,7 @@ class OrderMapper
         if ($items->isNotEmpty()) {
             array_map(static function (OrderItem $item) use ($entity) {
                 $itemEntity = new OrderItemEntity();
+                $itemEntity->freezeFulfillment((string) ($item->fulfillment_provider ?? 'merchant'), (array) ($item->fulfillment_snapshot ?? []));
                 $itemEntity->setProductId((int) $item->product_id);
                 $itemEntity->setProductImage((string) $item->product_image);
                 $itemEntity->setQuantity($item->quantity);

@@ -82,39 +82,30 @@ class MiniAppAppHandler extends AbstractWechat implements MiniAppInterface
     {
         $url = $isLimited ? '/wxa/getwxacodeunlimit' : '/wxa/getwxacode';
         $params = [
-            'path' => $page,
-            'width' => 430,
-            'scene' => $scene,
-            'check_path' => $options['check_path'] ?? false,
-            'is_hyaline' => $options['is_hyaline'] ?? false,
-            'env_version' => $options['env_version'] ?? 'release',
+            'width' => $options['width'] ?? 430,
             'auto_color' => $options['auto_color'] ?? false,
-            'line_color' => [
-                'r' => $options['line_color']['r'] ?? 0,
-                'g' => $options['line_color']['g'] ?? 0,
-                'b' => $options['line_color']['b'] ?? 0,
-            ],
+            'line_color' => $options['line_color'] ?? ['r' => 0, 'g' => 0, 'b' => 0],
         ];
-        $response = $this->getClient()->postJson($url, $params);
-
-        // 保存小程序码到文件
-        $path = $options['save_path'] ?? '/uploadfile/wechat/mini/qrcode/';
-
-        $fileName = BASE_PATH . '/public' . $path . md5($page . $scene) . '.png';
-
-        // 如果请求成功，则保存小程序码到文件
-        if ($response->isSuccessful()) {
-            // 保存文件
-            $response->saveAs($fileName);
-
-            if (file_exists($fileName)) {
-                return ['path' => $path . $fileName, 'name' => $fileName, 'msg' => '成功'];
-            }
-
-            return ['path' => $path . $fileName, 'msg' => '失败，请检查文件夹是否创建'];
+        if ($isLimited) {
+            $params += ['page' => ltrim($page, '/'), 'scene' => $scene, 'check_path' => $options['check_path'] ?? true,
+                'is_hyaline' => $options['is_hyaline'] ?? false, 'env_version' => $options['env_version'] ?? 'release'];
+        } else {
+            $params['path'] = ltrim($page, '/') . ($scene !== '' ? (str_contains($page, '?') ? '&' : '?') . $scene : '');
         }
-
-        return ['path' => '', 'msg' => '失败'];
+        $response = $this->getClient()->postJson($url, $params);
+        $contentType = strtolower(implode(';', $response->getHeaders(false)['content-type'] ?? []));
+        if (!str_contains($contentType, 'image/')) {
+            $error = $response->toArray(false);
+            return ['path' => '', 'errcode' => $error['errcode'] ?? -1, 'errmsg' => $error['errmsg'] ?? '微信未返回图片'];
+        }
+        $relativeDirectory = '/uploadfile/wechat/mini/qrcode/';
+        $directory = BASE_PATH . '/public' . $relativeDirectory;
+        if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+            throw new \RuntimeException('无法创建小程序码目录');
+        }
+        $filename = hash('sha256', json_encode($params, JSON_THROW_ON_ERROR)) . '.png';
+        file_put_contents($directory . $filename, $response->getContent());
+        return ['path' => $relativeDirectory . $filename, 'name' => $filename, 'msg' => '成功'];
     }
 
     /**

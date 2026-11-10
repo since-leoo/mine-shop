@@ -356,6 +356,8 @@ export const componentRegistry: DiyComponentMeta[] = [
       inviteCode: 'WARM2026',
       avatar: '',
       qrcodeIcon: 'assets/usercenter/profile-qrcode.svg',
+      showInvite: true,
+      showQrcode: true,
     }, {
       padding: { top: 96, right: 28, bottom: 38, left: 28 },
       background: 'linear-gradient(180deg, var(--diy-primary-color) 0%, color-mix(in srgb, var(--diy-primary-color) 62%, #ffffff) 72%, var(--diy-page-background-color) 100%)',
@@ -407,6 +409,26 @@ export const componentRegistry: DiyComponentMeta[] = [
       moreLink: { type: 'page', path: '/pages/order/order-list/index' },
     }, {
       margin: { top: 0, right: 20, bottom: 14, left: 20 },
+      background: '#FFFFFF',
+      borderRadius: 14,
+    }),
+  },
+  {
+    type: 'distribution-center',
+    name: '分销中心',
+    icon: 'ph:users-three',
+    description: '邀请入口、粉丝团队、消费订单与佣金统计，需开启分销插件',
+    category: 'user',
+    orientation: 'horizontal',
+    defaults: () => component('distribution-center', '分销中心', {}, {
+      title: '分销中心',
+      showInvite: true,
+      showTeam: true,
+      showOrders: true,
+      showCommission: true,
+    }, {
+      margin: { top: 0, right: 20, bottom: 14, left: 20 },
+      padding: { top: 16, right: 14, bottom: 16, left: 14 },
       background: '#FFFFFF',
       borderRadius: 14,
     }),

@@ -23,6 +23,8 @@ final class AppApiAfterSaleCommandService
     public function __construct(
         private readonly DomainAfterSaleService $afterSaleService,
         private readonly AfterSaleRepository $afterSaleRepository,
+        private readonly \App\Domain\Trade\Shared\Contract\TransactionManagerInterface $transactions,
+        private readonly \App\Domain\Trade\Shared\Contract\TradeOutboxInterface $outbox,
     ) {}
 
     /**
@@ -30,9 +32,12 @@ final class AppApiAfterSaleCommandService
      */
     public function apply(AfterSaleApplyInput $input): object
     {
-        $entity = $this->afterSaleService->apply($input);
-
-        return $this->afterSaleRepository->findById($entity->getId());
+        return $this->transactions->run(function () use ($input): object {
+            $this->afterSaleService->lockOrder($input->getOrderId());
+            $entity = $this->afterSaleService->apply($input);
+            $this->recordChange($entity->getId(), 'apply');
+            return $this->afterSaleRepository->findById($entity->getId());
+        });
     }
 
     /**
@@ -40,10 +45,10 @@ final class AppApiAfterSaleCommandService
      */
     public function cancel(int $memberId, int $id): void
     {
-        $model = $this->afterSaleRepository->findByIdAndMember($id, $memberId);
-        $entity = AfterSaleMapper::fromModel($model);
-        $entity->cancel();
-        $this->afterSaleRepository->updateFromEntity($entity);
+        $this->transactions->run(function () use ($id, $memberId): void {
+            $this->afterSaleService->cancelForMember($memberId, $id);
+            $this->recordChange($id, 'cancel');
+        });
     }
 
     /**
@@ -51,10 +56,17 @@ final class AppApiAfterSaleCommandService
      */
     public function submitReturnShipment(AfterSaleReturnShipmentInput $input): void
     {
-        $model = $this->afterSaleRepository->findByIdAndMember($input->getId(), $input->getMemberId());
-        $entity = AfterSaleMapper::fromModel($model);
-        $entity->submitBuyerReturn($input->getLogisticsCompany(), $input->getLogisticsNo());
-        $this->afterSaleRepository->updateFromEntity($entity);
+        $this->transactions->run(function () use ($input): void {
+            $this->afterSaleService->submitMemberReturn($input);
+            $this->recordChange($input->getId(), 'return_shipment');
+        });
+    }
+
+    private function recordChange(int $id, string $action): void
+    {
+        $this->outbox->append('after-sale:' . $id . ':' . $action, 'after_sale.changed', [
+            'after_sale_id' => $id, 'action' => $action,
+        ]);
     }
 
     /**

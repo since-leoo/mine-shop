@@ -148,7 +148,8 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
     public function applyFreight(OrderEntity $orderEntity): void
     {
         $province = $orderEntity->getAddress()?->getProvince() ?? '';
-        $totalFreight = $this->freightServiceInterface->calculateForItems($orderEntity->getItems(), $province);
+        $localItems = array_values(array_filter($orderEntity->getItems(), static fn (OrderItemEntity $item) => $item->getFulfillmentProvider() === 'merchant'));
+        $totalFreight = $localItems === [] ? 0 : $this->freightServiceInterface->calculateForItems($localItems, $province);
 
         $priceDetail = $orderEntity->getPriceDetail() ?? new OrderPriceValue();
         $priceDetail->setShippingFee($totalFreight);

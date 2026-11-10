@@ -1,0 +1,40 @@
+{
+  "name": "since/distribution",
+  "version": "1.0.0",
+  "description": "邀请关系、团队消费统计、直属销售佣金与提现管理",
+  "author": "Since",
+  "namespace": "Plugin\\Distribution",
+  "priority": 10,
+  "enabled": true,
+  "dependencies": [],
+  "composer_require": {},
+  "rollback_on_uninstall": false,
+  "center": {
+    "title": "分销推广",
+    "icon": "tabler:affiliate",
+    "sort": 45
+  },
+  "configProvider": "Plugin\\Distribution\\ConfigProvider",
+  "uninstall_balance_guards": [
+    {
+      "table": "distribution_accounts",
+      "positive_columns": [
+        "pending_amount",
+        "available_amount",
+        "frozen_amount",
+        "debt_amount"
+      ]
+    }
+  ],
+  "uninstall_activation_history_guards": ["distribution_rule_versions"],
+  "uninstall_retained_history_guards": [
+    "distribution_bindings",
+    "distribution_order_snapshots",
+    "distribution_commissions",
+    "distribution_withdrawals",
+    "distribution_ledger"
+  ],
+  "uninstall_submission_guards": [
+    {"table": "order_submissions", "payload_key": "distribution"}
+  ]
+}

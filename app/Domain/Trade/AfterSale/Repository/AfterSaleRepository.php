@@ -45,6 +45,18 @@ final class AfterSaleRepository extends IRepository
         return $record->update($entity->toArray());
     }
 
+    public function consumedAllowance(int $orderItemId): array
+    {
+        $rows = $this->model->newQuery()->where('order_item_id', $orderItemId)->whereNotIn('status', ['closed'])->get();
+        $quantity = 0;
+        $amount = 0;
+        foreach ($rows as $row) {
+            $quantity += (int) $row->quantity;
+            $amount += (int) ($row->refund_amount ?? $row->apply_amount);
+        }
+        return ['quantity' => $quantity, 'amount' => $amount];
+    }
+
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
         /** @var null|AfterSale $info */

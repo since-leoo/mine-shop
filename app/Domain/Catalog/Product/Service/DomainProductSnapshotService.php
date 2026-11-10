@@ -65,7 +65,7 @@ final class DomainProductSnapshotService implements ProductSnapshotInterface
         $cached = $this->fetchProductFromCache($productId);
 
         // 检查缓存中是否包含所需的关系数据
-        if ($cached !== null && $this->containsRelations($cached, $relations)) {
+        if ($cached !== null && array_key_exists('fulfillment_provider', $cached) && $this->containsRelations($cached, $relations)) {
             return $cached;
         }
 
@@ -99,7 +99,7 @@ final class DomainProductSnapshotService implements ProductSnapshotInterface
             }
 
             $decoded = $this->decodeSnapshot($raw);
-            if ($decoded === null) {
+            if ($decoded === null || ! array_key_exists('fulfillment_provider', $decoded)) {
                 $missing[] = $skuId;
                 continue;
             }
@@ -318,6 +318,7 @@ final class DomainProductSnapshotService implements ProductSnapshotInterface
     private function buildSkuPayload(Product $product, ProductSku $sku): array
     {
         return [
+            'fulfillment_provider' => (string) ($product->fulfillment_provider ?? 'merchant'),
             'product_id' => (int) $product->id,
             'product_code' => (string) $product->product_code,
             'product_name' => (string) $product->name,

@@ -1,4 +1,5 @@
 import { request } from '../request';
+import { notifyAuthResult, prepareAuthPayload } from '../../common/plugin-hooks';
 
 export function fetchRegisterProtocols() {
   return request({
@@ -7,12 +8,14 @@ export function fetchRegisterProtocols() {
   });
 }
 
-export function passwordLogin(phone: string, password: string) {
-  return request({
+export async function passwordLogin(phone: string, password: string) {
+  const result = await request({
     url: '/api/v1/login/h5Password',
     method: 'POST',
-    data: { phone, password },
+    data: await prepareAuthPayload('h5_login', { phone, password }),
   });
+  notifyAuthResult(result);
+  return result;
 }
 
 export function sendVerificationCode(phone: string, scene: 'register' | 'forgot_password' | 'login') {
@@ -23,17 +26,19 @@ export function sendVerificationCode(phone: string, scene: 'register' | 'forgot_
   });
 }
 
-export function registerByPhone(data: {
+export async function registerByPhone(data: {
   phone: string;
   password: string;
   passwordConfirmation: string;
   code: string;
 }) {
-  return request({
+  const result = await request({
     url: '/api/v1/auth/register',
     method: 'POST',
-    data,
+    data: await prepareAuthPayload('h5_register', data),
   });
+  notifyAuthResult(result);
+  return result;
 }
 
 export function resetPasswordByPhone(data: {
@@ -50,6 +55,8 @@ export function resetPasswordByPhone(data: {
 }
 
 /** 验证码登录与密码登录共用会员和登录后的导航流程。 */
-export function smsLogin(phone: string, code: string) {
-  return request({ url: '/api/v1/login/h5Sms', method: 'POST', data: { phone, code } });
+export async function smsLogin(phone: string, code: string) {
+  const result = await request({ url: '/api/v1/login/h5Sms', method: 'POST', data: await prepareAuthPayload('h5_login', { phone, code }) });
+  notifyAuthResult(result);
+  return result;
 }

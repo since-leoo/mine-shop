@@ -880,8 +880,35 @@ function onGroupBuysSelected(items: DiyGroupBuySelectorVo[]) {
               </el-form-item>
             </template>
 
+            <template v-else-if="component.type === 'distribution-center'">
+              <el-divider>分销中心设置</el-divider>
+              <el-alert title="仅分销插件及当前终端展示开关开启时显示。用户数据来自实时接口，预览数值仅作样式示意。" type="info" :closable="false" />
+              <el-form-item label="模块标题">
+                <el-input :model-value="component.props?.title || '分销中心'" @update:model-value="patchProps({ title: String($event) })" />
+              </el-form-item>
+              <el-form-item label="显示邀请入口">
+                <el-switch :model-value="component.props?.showInvite !== false" @update:model-value="patchProps({ showInvite: Boolean($event) })" />
+              </el-form-item>
+              <el-form-item label="显示粉丝团队">
+                <el-switch :model-value="component.props?.showTeam !== false" @update:model-value="patchProps({ showTeam: Boolean($event) })" />
+              </el-form-item>
+              <el-form-item label="显示消费订单">
+                <el-switch :model-value="component.props?.showOrders !== false" @update:model-value="patchProps({ showOrders: Boolean($event) })" />
+              </el-form-item>
+              <el-form-item label="显示佣金统计">
+                <el-switch :model-value="component.props?.showCommission !== false" @update:model-value="patchProps({ showCommission: Boolean($event) })" />
+              </el-form-item>
+            </template>
+
             <template v-else-if="component.type === 'user-profile-header'">
               <el-divider>用户头部设置</el-divider>
+              <el-alert title="邀请码与二维码仅在分销插件和当前终端展示开关开启后显示。" type="info" :closable="false" />
+              <el-form-item label="显示邀请码">
+                <el-switch :model-value="component.props?.showInvite !== false" @update:model-value="patchProps({ showInvite: Boolean($event) })" />
+              </el-form-item>
+              <el-form-item label="显示邀请二维码">
+                <el-switch :model-value="component.props?.showQrcode !== false" @update:model-value="patchProps({ showQrcode: Boolean($event) })" />
+              </el-form-item>
               <el-form-item label="头像">
                 <MaUploadImage
                   :model-value="component.props?.avatar || ''"

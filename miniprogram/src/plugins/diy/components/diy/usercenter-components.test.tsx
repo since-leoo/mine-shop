@@ -14,6 +14,9 @@ vi.mock('../diy-renderer/link', () => ({
   navigateDiyLink: vi.fn(),
 }));
 
+vi.mock('../../../../common/plugin-hooks', () => ({ renderPluginSlot: vi.fn(() => null) }));
+
+import { renderPluginSlot } from '../../../../common/plugin-hooks';
 import UserMenuList from './UserMenuList/index';
 import UserOrderPanel from './UserOrderPanel/index';
 import UserProfileHeader from './UserProfileHeader/index';
@@ -33,20 +36,35 @@ describe('DIY usercenter components', () => {
       component: {
         id: 'user-profile-header',
         type: 'user-profile-header',
-        props: { avatar: 'https://example.com/avatar.png', nickname: '小花花', inviteCode: 'WARM2026', qrcodeIcon: 'assets/usercenter/profile-qrcode.svg' },
+        props: { avatar: 'https://example.com/avatar.png', nickname: '小花花', inviteCode: 'WARM2026', showInviteEntry: true, qrcodeIcon: 'assets/usercenter/profile-qrcode.svg' },
         style: { borderRadius: { bottomLeft: 24, bottomRight: 24 } },
       },
     });
 
     expect(textContent(node)).toContain('小花花');
-    expect(textContent(node)).toContain('邀请码: WARM2026');
+    expect(textContent(node)).not.toContain('WARM2026');
+    expect(renderPluginSlot).toHaveBeenCalledWith('user-profile-right', { options: expect.objectContaining({ inviteCode: 'WARM2026' }) });
     expect(node?.props?.style?.borderBottomLeftRadius).toBe('48rpx');
     expect(node?.props?.style?.borderBottomRightRadius).toBe('48rpx');
     const children = node.props.children as any[];
     expect(children[0].props.children.props.avatar).toBe('https://example.com/avatar.png');
-    expect(children[2].type).toBe('view');
-    expect(children[2].props.children.type).toBe('image');
-    expect(children[2].props.children.props.src).toBe('assets/usercenter/profile-qrcode.svg');
+    expect(children[2]).toBeNull();
+  });
+
+  it('keeps phone text separate and hides invitation when the business switch is off', () => {
+    const node = UserProfileHeader({ component: {
+      id: 'profile', type: 'user-profile-header',
+      props: { phoneNumber: '138****8000', inviteCode: 'INV123', showInviteEntry: false },
+    } });
+    expect(textContent(node)).toContain('手机号：138****8000');
+    expect(textContent(node)).not.toContain('INV123');
+    expect(node.props.children[2]).toBeNull();
+  });
+
+  it('does not treat a stale schema invitation code as a business permission', () => {
+    const node = UserProfileHeader({ component: { id: 'profile', type: 'user-profile-header', props: { inviteCode: 'STALE123' } } });
+    expect(node.props.children[2]).toBeNull();
+    expect(textContent(node)).not.toContain('STALE123');
   });
 
   it('does not force radius when profile header schema has no radius', () => {

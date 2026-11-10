@@ -411,6 +411,11 @@ final class OrderEntity
 
     public function ship(): self
     {
+        foreach ($this->getItems() as $item) {
+            if ($item->getFulfillmentProvider() !== 'merchant') {
+                throw new \DomainException('外部履约订单须按包裹明细登记发货');
+            }
+        }
         if (! \in_array($this->getStatus(), [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
             throw new \RuntimeException('当前订单状态不可发货');
         }
@@ -429,7 +434,7 @@ final class OrderEntity
 
     public function complete(): void
     {
-        if (! \in_array($this->getStatus(), [OrderStatus::SHIPPED->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
+        if (! \in_array($this->getStatus(), [OrderStatus::SHIPPED->value], true)) {
             throw new \RuntimeException('当前订单状态不可完成');
         }
 

@@ -98,7 +98,18 @@ final class AppTradeRecoveryService
             $this->stock->release($data['trade_no'], $data['items'], $data['stock_key'], (bool) ($data['legacy'] ?? false));
             return;
         }
+        if ($type === 'order.paid') {
+            $this->events->dispatch(new \App\Domain\Trade\Order\Event\OrderPaidIntegrationEvent((int) $data['order_id'], (string) $data['order_no']));
+        }
+        if ($type === 'after_sale.changed') {
+            $this->events->dispatch(new \App\Domain\Trade\AfterSale\Event\AfterSaleChangedIntegrationEvent((int) $data['after_sale_id'], (string) $data['action']));
+            return;
+        }
+        if ($type === 'order.cancelled') {
+            $this->events->dispatch(new \App\Domain\Trade\Order\Event\OrderCancelledIntegrationEvent((string) $data['order_no'], (string) $data['reason']));
+        }
         $event = match ($type) {
+            'order.completed' => new \App\Domain\Trade\Order\Event\OrderCompletedEvent($data['order_id'], $data['order_no'], $data['member_id'], $data['completed_at'] ?? null),
             'order.paid' => new OrderPaidForMember($data['member_id'], $data['order_no'], $data['amount'], $data['order_id']),
             'order.created' => new OrderCreatedEvent($this->orders->getCreatedEventEntity($data['order_no'], (bool) $data['from_cart'])),
             'order.cancelled' => new OrderCancelledEvent($this->orders->getEntity(orderNo: $data['order_no']), $data['reason'], $data['operator_id'], $data['operator_name']),

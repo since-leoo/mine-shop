@@ -38,22 +38,59 @@ final class DomainAfterSaleService
     {
         $orderItem = $this->resolveEligibleOrderItem($memberId, $orderId, $orderItemId);
 
+        $allowance = $this->allowance($orderItem);
         return [
-            'can_apply' => true,
+            'can_apply' => $allowance->quantity > 0,
             'types' => $this->resolveAvailableTypes((string) $orderItem->order->status),
-            'max_quantity' => (int) $orderItem->quantity,
-            'max_amount' => (int) $orderItem->total_price,
+            'max_quantity' => $allowance->quantity,
+            'max_amount' => $allowance->amount,
         ];
     }
 
     public function apply(AfterSaleApplyInput $input): AfterSaleEntity
     {
-        $this->resolveEligibleOrderItem($input->getMemberId(), $input->getOrderId(), $input->getOrderItemId());
-
+        $item = $this->resolveEligibleOrderItem($input->getMemberId(), $input->getOrderId(), $input->getOrderItemId());
+        $this->allowance($item)->assertRequest($input->getQuantity(), $input->getApplyAmount());
+        if (! in_array($input->getType(), $this->resolveAvailableTypes((string) $item->order->status), true)) {
+            throw new \DomainException('当前订单状态不支持该售后类型');
+        }
         $entity = AfterSaleEntity::apply($input);
         $this->afterSaleRepository->createFromEntity($entity);
 
         return $entity;
+    }
+
+    public function lockOrder(int $orderId): void
+    {
+        if ($this->orderRepository->findByIdForLock($orderId) === null) { throw new \RuntimeException('订单不存在'); }
+    }
+
+    public function cancelForMember(int $memberId, int $id): void
+    {
+        $model = $this->afterSaleRepository->findByIdAndMember($id, $memberId);
+        $this->lockOrder((int) $model->order_id);
+        $entity = $this->getLockedEntity($id);
+        $entity->cancel();
+        $this->saveEntity($entity);
+    }
+
+    public function submitMemberReturn(\App\Domain\Trade\AfterSale\Contract\AfterSaleReturnShipmentInput $input): void
+    {
+        $model = $this->afterSaleRepository->findByIdAndMember($input->getId(), $input->getMemberId());
+        $this->lockOrder((int) $model->order_id);
+        $entity = $this->getLockedEntity($input->getId());
+        $entity->submitBuyerReturn($input->getLogisticsCompany(), $input->getLogisticsNo());
+        $this->saveEntity($entity);
+    }
+
+    private function allowance(OrderItem $item): \App\Domain\Trade\AfterSale\ValueObject\AfterSaleAllowanceVo
+    {
+        $used = $this->afterSaleRepository->consumedAllowance((int) $item->id);
+        return new \App\Domain\Trade\AfterSale\ValueObject\AfterSaleAllowanceVo(
+            $item->order->items->toArray(), (int) $item->id,
+            max(0, (int) $item->order->pay_amount - (int) $item->order->shipping_fee),
+            $used['quantity'], $used['amount'],
+        );
     }
 
     public function saveEntity(AfterSaleEntity $entity): bool

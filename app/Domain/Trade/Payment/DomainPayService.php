@@ -26,6 +26,7 @@ class DomainPayService
         private readonly MemberWalletTransactionRepository $ledger,
         private readonly PaymentPolicy $policy,
         private readonly \App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository $refunds,
+        private readonly \App\Domain\Infrastructure\Plugin\Contract\ExternalFulfillmentInterface $fulfillment,
     ) {}
 
     /** 与线上支付、取消共用订单行锁，必须在应用事务中调用。 */
@@ -45,6 +46,7 @@ class DomainPayService
         }
 
         $this->policy->assertManualPayable($order);
+        $this->assertFulfillmentAvailable($order);
         foreach ($records as $record) {
             if (in_array($record->status, ['paid', 'refunded'], true) || (int) $record->paid_amount > 0) {
                 throw new \DomainException('订单已有收款记录，请先核实支付情况');
@@ -72,6 +74,7 @@ class DomainPayService
         }
         $order = $this->orders->getLockedEntity($orderNo);
         $payload = $this->policy->wechatPayload($order, $member);
+        $this->assertFulfillmentAvailable($order);
         $payment = $this->paymentRepository->findForOrder($order->getId(), 'wechat');
         if ($payment === null) {
             $this->payments->create($order->getId(), $orderNo, $member->getId(), 'wechat', $order->getPayAmount());
@@ -89,6 +92,7 @@ class DomainPayService
             return null;
         }
         $this->policy->assertPayable($order);
+        $this->assertFulfillmentAvailable($order);
         if ($order->getPayMethod() === 'wechat') {
             throw new \DomainException('已发起微信支付，请完成或取消原支付订单');
         }
@@ -117,6 +121,15 @@ class DomainPayService
             'operator_type' => 'member', 'operator_id' => $memberId,
         ]);
         return $order;
+    }
+
+    private function assertFulfillmentAvailable(OrderEntity $order): void
+    {
+        foreach ($order->getItems() as $item) {
+            if ($item->getFulfillmentProvider() !== 'merchant') {
+                $this->fulfillment->assertAvailable($item->getFulfillmentProvider(), $item->getFulfillmentSnapshot() + ['sku_id' => $item->getSkuId()]);
+            }
+        }
     }
 
     public function notify(array $payload, array $config): ?OrderEntity

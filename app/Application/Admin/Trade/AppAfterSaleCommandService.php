@@ -16,9 +16,9 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleActionInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReshipInput;
 use App\Domain\Trade\AfterSale\Contract\AfterSaleReviewInput;
-use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundService;
 use App\Domain\Trade\AfterSale\Service\DomainAfterSaleService;
+use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
 use Hyperf\DbConnection\Annotation\Transactional;
 
 final class AppAfterSaleCommandService
@@ -28,7 +28,7 @@ final class AppAfterSaleCommandService
         private readonly AppAfterSaleQueryService $queryService,
         private readonly AppAfterSaleRefundService $refundService,
         private readonly DomainAfterSaleRefundService $refundPreparation,
-        private readonly \App\Domain\Trade\Shared\Contract\TransactionManagerInterface $transactions,
+        private readonly TransactionManagerInterface $transactions,
         private readonly DomainMallSettingService $mallSettingService,
     ) {}
 
@@ -38,7 +38,8 @@ final class AppAfterSaleCommandService
     public function approve(AfterSaleReviewInput $input): array
     {
         $refund = $this->transactions->run(fn () => $this->refundPreparation->approve(
-            $input, ! $this->mallSettingService->payment()->refundReview()
+            $input,
+            ! $this->mallSettingService->payment()->refundReview()
         ));
         if ($refund !== null) {
             $this->refundService->process($refund->refund_no);
@@ -115,5 +116,4 @@ final class AppAfterSaleCommandService
     {
         return $this->queryService->detail($id) ?? [];
     }
-
 }

@@ -749,9 +749,21 @@ function pageStyle(schema: DiySchema) {
               </span>
               <div class="preview-user-profile-header__body">
                 <strong>{{ component.props?.nickname || '小花花' }}</strong>
-                <em>邀请码: {{ component.props?.inviteCode || 'WARM2026' }}</em>
+                <em v-if="component.props?.showInvite !== false">邀请码: {{ component.props?.inviteCode || 'WARM2026' }}</em>
               </div>
-              <img class="preview-user-profile-header__qrcode" :src="resolvePreviewAsset(component.props?.qrcodeIcon || 'assets/usercenter/profile-qrcode.svg')">
+              <img v-if="component.props?.showQrcode !== false" class="preview-user-profile-header__qrcode" :src="resolvePreviewAsset(component.props?.qrcodeIcon || 'assets/usercenter/profile-qrcode.svg')">
+            </div>
+          </template>
+
+          <template v-else-if="component.type === 'distribution-center'">
+            <div class="preview-distribution" :style="componentStyle(component)">
+              <div class="preview-distribution__head"><strong>{{ component.props?.title || '分销中心' }}</strong><span v-if="component.props?.showInvite !== false">邀请好友 ›</span></div>
+              <div class="preview-distribution__stats">
+                <div v-if="component.props?.showTeam !== false"><strong>12</strong><span>粉丝团队</span></div>
+                <div v-if="component.props?.showOrders !== false"><strong>26</strong><span>消费订单</span></div>
+                <div v-if="component.props?.showCommission !== false"><strong>¥128.00</strong><span>可提现佣金</span></div>
+              </div>
+              <small>预览示意 · 实际数据随登录会员变化</small>
             </div>
           </template>
 
@@ -1689,6 +1701,49 @@ function pageStyle(schema: DiySchema) {
   flex: 0 0 18px;
   object-fit: contain;
   opacity: 0.86;
+}
+
+.preview-distribution {
+  color: var(--diy-primary-color, #E8836B);
+  background: #fff;
+}
+
+.preview-distribution__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.preview-distribution__head span,
+.preview-distribution small {
+  font-size: 10px;
+}
+
+.preview-distribution small {
+  display: block;
+  margin-top: 10px;
+  color: #9ca3af;
+}
+
+.preview-distribution__stats {
+  display: flex;
+  justify-content: space-around;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.preview-distribution__stats div {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.preview-distribution__stats span {
+  color: #8b6f63;
+  font-size: 10px;
 }
 
 .preview-user-stats {

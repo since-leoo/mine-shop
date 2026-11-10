@@ -45,6 +45,13 @@ final class ProductSkuStockListener implements ListenerInterface
     public function process(object $event): void
     {
         try {
+            // 外部库存只能由版本化投影端口写入；标题/图片编辑不得覆盖交易预占。
+            if (! $event instanceof ProductDeleted) {
+                $product = \App\Infrastructure\Model\Product\Product::query()->find($event->productId);
+                if ($product !== null && ($product->fulfillment_provider ?? 'merchant') !== 'merchant') {
+                    return;
+                }
+            }
             $this->redis->setPrefix(self::STOCK_HASH_KEY_PREFIX);
 
             match (true) {

@@ -22,6 +22,7 @@ import UserProfileHeader from '../diy/UserProfileHeader/index';
 import UserStats from '../diy/UserStats/index';
 import UserOrderPanel from '../diy/UserOrderPanel/index';
 import UserMenuList from '../diy/UserMenuList/index';
+import { hasPluginRenderer, renderPluginComponent } from '../../../../common/plugin-hooks';
 import { diyStyle, handleComponentClick, schemaSize } from './style';
 import './index.scss';
 
@@ -59,7 +60,7 @@ const registry: Record<string, (component: DiyComponent) => JSX.Element | null> 
 export function renderDiyComponent(component: DiyComponent): JSX.Element | null {
   if (component.enabled === false) return null;
   const renderer = registry[component.type];
-  return renderer ? renderer(component) : null;
+  return renderer ? renderer(component) : renderPluginComponent(component.type, { component });
 }
 
 export default function DiyRenderer({ page, className = '', transparent = false }: DiyRendererProps) {
@@ -90,7 +91,7 @@ export default function DiyRenderer({ page, className = '', transparent = false 
         '--diy-card-radius': schemaSize(theme.cardRadius),
       } as Record<string, string>}
     >
-      {components.filter((component) => component.enabled !== false && registry[component.type]).map((component) => (
+      {components.filter((component) => component.enabled !== false && (registry[component.type] || hasPluginRenderer(component.type))).map((component) => (
         <View
           key={component.id}
           className={`diy-renderer__item diy-renderer__item--${component.type}`}

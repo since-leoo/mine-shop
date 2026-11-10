@@ -39,6 +39,9 @@ class OrderPackage extends Model
     protected ?string $table = 'order_packages';
 
     protected array $fillable = [
+        'fulfillment_provider',
+        'integration_key',
+        'integration_digest',
         'order_id',
         'package_no',
         'express_company',

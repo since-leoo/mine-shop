@@ -14,6 +14,7 @@ namespace App\Domain\Trade\Order\Repository;
 
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\Enum\OrderStatus;
+use App\Domain\Trade\Order\Mapper\OrderExportMapper;
 use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\Order;
@@ -277,7 +278,7 @@ final class OrderRepository extends IRepository
 
             // 业务说明。
             foreach ($items as $item) {
-                yield array_merge($orderData, $item->toArray());
+                yield OrderExportMapper::toRow($orderData, $item->toArray());
             }
         }
     }

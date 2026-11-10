@@ -10,12 +10,23 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 use App\Application\Admin\Infrastructure\JwtTokenChecker;
+use App\Application\Commad\Plugin\AppCommerceAfterSaleService;
+use App\Application\Commad\Plugin\AppCommerceInventoryService;
+use App\Application\Commad\Plugin\AppCommerceOrderService;
+use App\Application\Commad\Plugin\AppCommerceProductService;
+use App\Application\Commad\Plugin\AppPluginPermissionRegistrar;
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Catalog\Product\Service\DomainProductSnapshotService;
 use App\Domain\Infrastructure\Plugin\Contract\AnalyticsQueryInterface;
+use App\Domain\Infrastructure\Plugin\Contract\CommerceAfterSaleInterface;
+use App\Domain\Infrastructure\Plugin\Contract\CommerceInventoryInterface;
+use App\Domain\Infrastructure\Plugin\Contract\CommerceOrderInterface;
 use App\Domain\Infrastructure\Plugin\Contract\CommerceOverviewInterface;
+use App\Domain\Infrastructure\Plugin\Contract\CommerceProductInterface;
 use App\Domain\Infrastructure\Plugin\Contract\DiyCatalogDataSourceInterface;
 use App\Domain\Infrastructure\Plugin\Contract\DiyPageQueryInterface;
+use App\Domain\Infrastructure\Plugin\Contract\ExternalFulfillmentInterface;
+use App\Domain\Infrastructure\Plugin\Contract\PluginPermissionRegistrarInterface;
 use App\Domain\Infrastructure\Plugin\Contract\ProductReviewCommandInterface;
 use App\Domain\Infrastructure\Plugin\Contract\ProductReviewQueryInterface;
 use App\Domain\Infrastructure\Plugin\Contract\ReviewEligibilityInterface;
@@ -45,6 +56,7 @@ use App\Infrastructure\Plugin\DiyCatalogDataSource;
 use App\Infrastructure\Plugin\InstalledPluginMigratorFactory;
 use App\Infrastructure\Plugin\NullAnalyticsQuery;
 use App\Infrastructure\Plugin\NullDiyPageQuery;
+use App\Infrastructure\Plugin\NullExternalFulfillment;
 use App\Infrastructure\Plugin\NullProductReview;
 use App\Infrastructure\Plugin\NullSystemNotification;
 use App\Infrastructure\Plugin\OptionalCapabilityFactory;
@@ -63,6 +75,12 @@ use Psr\Container\ContainerInterface;
 use SinceLeoo\Plugin\Contract\PluginConfigReaderInterface;
 
 return [
+    PluginPermissionRegistrarInterface::class => AppPluginPermissionRegistrar::class,
+    CommerceProductInterface::class => AppCommerceProductService::class,
+    CommerceInventoryInterface::class => AppCommerceInventoryService::class,
+    CommerceOrderInterface::class => AppCommerceOrderService::class,
+    CommerceAfterSaleInterface::class => AppCommerceAfterSaleService::class,
+    ExternalFulfillmentInterface::class => static fn (ContainerInterface $container) => OptionalCapabilityFactory::resolve($container, ExternalFulfillmentInterface::class, NullExternalFulfillment::class),
     // 插件源码可以独立存放，但标准迁移命令必须发现已安装插件的建表文件。
     PluginConfigReaderInterface::class => PluginConfigReader::class,
     Migrator::class => InstalledPluginMigratorFactory::class,

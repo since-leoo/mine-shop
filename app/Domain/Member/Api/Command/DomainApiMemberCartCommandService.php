@@ -38,6 +38,7 @@ final class DomainApiMemberCartCommandService
         ICache $cache,
         private readonly ProductSkuRepository $skuRepository,
         private readonly DomainApiMemberCartQueryService $queryService,
+        private readonly \App\Domain\Infrastructure\Plugin\Contract\ExternalFulfillmentInterface $fulfillment,
     ) {
         $this->cache = clone $cache;
         $this->cache->setPrefix(self::CACHE_PREFIX);
@@ -155,6 +156,10 @@ final class DomainApiMemberCartCommandService
         $sku = $this->skuRepository->findSaleableWithProduct($skuId);
         if ($sku === null || $sku->product === null || ! $this->isSaleable($sku->product, $sku)) {
             throw new BusinessException(ResultCode::NOT_FOUND, '商品不存在或已下架');
+        }
+        $provider = (string) ($sku->product->fulfillment_provider ?? 'merchant');
+        if ($provider !== 'merchant') {
+            $this->fulfillment->assertAvailable($provider, ['sku_id' => $skuId]);
         }
         return $sku;
     }

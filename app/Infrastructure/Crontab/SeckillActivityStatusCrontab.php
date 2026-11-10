@@ -24,7 +24,7 @@ use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
-#[Crontab(name: 'seckill-activity-status', rule: '* *\/10 * * * *', callback: 'execute', memo: '秒杀活动状态自动推进', enable: true)]
+#[Crontab(name: 'seckill-activity-status', rule: '*\/1 * * * * *', callback: 'execute', memo: '秒杀活动状态自动推进', enable: true)]
 class SeckillActivityStatusCrontab
 {
     public function __construct(

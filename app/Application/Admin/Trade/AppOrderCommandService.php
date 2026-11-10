@@ -25,6 +25,7 @@ final class AppOrderCommandService
     public function __construct(
         private readonly DomainOrderService $orderService,
         private readonly \App\Application\Api\Order\AppOrderCancellationService $cancellation,
+        private readonly \App\Domain\Infrastructure\Plugin\Service\DomainCommerceOrderService $fulfillment,
     ) {}
 
     /**
@@ -33,7 +34,9 @@ final class AppOrderCommandService
     #[Transactional]
     public function ship(OrderShipInput $input): array
     {
-        $orderEntity = $this->orderService->getEntity($input->getOrderId());
+        $mixed = $this->fulfillment->shipMerchantIfExternal($input->getOrderId(), $input->getPackages());
+        if ($mixed !== null) { return $mixed; }
+        $orderEntity = $this->orderService->getLockedEntityById($input->getOrderId());
 
         $shipEntity = new OrderShipEntity();
         $shipEntity->setOrderId($input->getOrderId());

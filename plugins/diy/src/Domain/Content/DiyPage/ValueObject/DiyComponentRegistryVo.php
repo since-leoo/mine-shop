@@ -55,6 +55,7 @@ final class DiyComponentRegistryVo
         'user-stats',
         'user-order-panel',
         'user-menu-list',
+        'distribution-center',
         'rich-text',
         'image-cube',
     ];
@@ -165,6 +166,8 @@ final class DiyComponentRegistryVo
             'user-stats' => self::assertItemsLimit($data, 8, '用户统计最多8项'),
             'user-order-panel' => self::assertItemsLimit($data, 10, '订单入口最多10项'),
             'user-menu-list' => self::assertItemsLimit($data, 10, '用户菜单最多10项'),
+            'distribution-center' => self::assertDistributionCenter($props, $data),
+            'user-profile-header' => self::assertUserProfileHeader($props),
             default => null,
         };
 
@@ -202,6 +205,36 @@ final class DiyComponentRegistryVo
         $couponIds = $data['couponIds'] ?? [];
         if (\is_array($couponIds) && \count($couponIds) > self::MAX_COUPON_GROUP_LIMIT) {
             throw new \DomainException('优惠券组最多10张');
+        }
+    }
+
+    private static function assertDistributionCenter(array $props, array $data): void
+    {
+        $allowed = ['title', 'showInvite', 'showTeam', 'showOrders', 'showCommission'];
+        if (array_diff(array_keys($props), $allowed) !== [] || $data !== []) {
+            throw new \DomainException('分销组件仅允许展示配置，会员与佣金数据由服务端实时提供');
+        }
+        self::assertDisplaySwitches($props, ['showInvite', 'showTeam', 'showOrders', 'showCommission']);
+        if (isset($props['title']) && (! \is_string($props['title']) || mb_strlen($props['title']) > 50)) {
+            throw new \DomainException('分销模块标题不能超过50个字');
+        }
+    }
+
+    private static function assertUserProfileHeader(array $props): void
+    {
+        // Runtime eligibility is supplied by the distribution API, never by published DIY content.
+        if (array_key_exists('showInviteEntry', $props) || array_key_exists('phoneNumber', $props)) {
+            throw new \DomainException('用户头部不能配置运行时会员数据或分销资格');
+        }
+        self::assertDisplaySwitches($props, ['showInvite', 'showQrcode']);
+    }
+
+    private static function assertDisplaySwitches(array $props, array $keys): void
+    {
+        foreach ($keys as $key) {
+            if (array_key_exists($key, $props) && ! \is_bool($props[$key])) {
+                throw new \DomainException('展示开关必须为布尔值');
+            }
         }
     }
 

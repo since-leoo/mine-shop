@@ -26,8 +26,10 @@ vi.mock('../diy/UserProfileHeader/index', () => ({ default: () => 'UserProfileHe
 vi.mock('../diy/UserStats/index', () => ({ default: () => 'UserStats' }));
 vi.mock('../diy/UserOrderPanel/index', () => ({ default: () => 'UserOrderPanel' }));
 vi.mock('../diy/UserMenuList/index', () => ({ default: () => 'UserMenuList' }));
+vi.mock('../../../distribution/components/DistributionCenter/index', () => ({ default: () => 'DistributionCenter' }));
 
 import { renderDiyComponent } from './index';
+import { registerStorefrontPlugin, unregisterStorefrontPlugin } from '../../../../common/plugin-hooks';
 
 describe('DIY 渲染器注册表', () => {
   it('已注册二期组件类型', () => {
@@ -58,5 +60,12 @@ describe('DIY 渲染器注册表', () => {
 
   it('未知组件会跳过', () => {
     expect(renderDiyComponent({ id: 'unknown', type: 'unknown' })).toBeNull();
+  });
+
+  it('通过公共插件接口扩展渲染器，移除插件后跳过该组件', () => {
+    registerStorefrontPlugin({ name: 'renderer-test', renderers: { 'example-extension': () => null } });
+    expect(renderDiyComponent({ id: 'example', type: 'example-extension' })).not.toBeNull();
+    unregisterStorefrontPlugin('renderer-test');
+    expect(renderDiyComponent({ id: 'example', type: 'example-extension' })).toBeNull();
   });
 });

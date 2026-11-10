@@ -12,9 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Crontab;
 
+use App\Application\Api\Order\AppApiOrderCommandService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
-use App\Domain\Trade\Order\Entity\OrderEntity;
-use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use Carbon\Carbon;
 use Hyperf\Crontab\Annotation\Crontab;
@@ -35,6 +34,7 @@ class OrderAutoConfirmCrontab
         private readonly OrderRepository $orderRepository,
         private readonly DomainMallSettingService $mallSettingService,
         private readonly LoggerInterface $logger,
+        private readonly AppApiOrderCommandService $checkout,
     ) {}
 
     public function execute(): void
@@ -56,9 +56,8 @@ class OrderAutoConfirmCrontab
         $confirmed = 0;
         foreach ($orders as $order) {
             try {
-                $entity = $this->makeCompletableEntity($order->id);
-                $entity->complete();
-                $this->orderRepository->complete($entity);
+                // Re-read under a row lock; completion and its durable event share one transaction.
+                $this->checkout->confirmReceipt((int) $order->member_id, (string) $order->order_no);
                 ++$confirmed;
             } catch (\Throwable $e) {
                 $this->logger->error('[OrderAutoConfirm] 确认收货失败', [
@@ -72,12 +71,4 @@ class OrderAutoConfirmCrontab
         $this->logger->info('[OrderAutoConfirm] 本轮确认收货订单', ['count' => $confirmed]);
     }
 
-    private function makeCompletableEntity(int $orderId): OrderEntity
-    {
-        $entity = new OrderEntity();
-        $entity->setId($orderId);
-        $entity->setStatus(OrderStatus::SHIPPED->value);
-
-        return $entity;
-    }
 }

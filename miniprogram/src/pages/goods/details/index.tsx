@@ -1,8 +1,14 @@
 import { View, Text, Image, Swiper, SwiperItem, RootPortal, ScrollView, Button } from '@tarojs/components';
-import Taro, { useShareAppMessage } from '@tarojs/taro';
+import Taro, { useDidShow, useShareAppMessage } from '@tarojs/taro';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchGood, fetchSeckillGood } from '../../../services/good/fetchGood';
-import { isLoggedIn } from '../../../common/auth';
+import { getStoredToken, isLoggedIn } from '../../../common/auth';
+import {
+  buildProductSharePath,
+  prepareProductShare,
+  type ProductShare,
+  type ProductShareOptions,
+} from '../../../common/plugin-hooks';
 import { addCartItem, fetchCartGroupData } from '../../../services/cart/cart';
 import { fetchGroupBuyProductDetail, fetchOngoingGroups } from '../../../services/promotion/groupBuy';
 import { trackEvent } from '../../../common/analytics';
@@ -174,6 +180,7 @@ export default function GoodsDetails() {
   const popupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seckillTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const hasTrackViewRef = useRef(false);
+  const preparedShareRef = useRef<{ session: string; key: string; createdAt: number; result: ProductShare } | null>(null);
 
   const getDetail = useCallback(async (id: string, mode: string, groupActivityId: string, seckillSessionId = '') => {
     setLoading(true);
@@ -528,14 +535,44 @@ export default function GoodsDetails() {
     }
   }, [details.images, spuId, orderType]);
 
-  const handleShareClick = useCallback(() => {
+  const productShareOptions = useCallback((channel: ProductShareOptions['channel']): ProductShareOptions => ({
+    channel,
+    spuId,
+    skuId: selectItemRef.current?.skuId || Taro.getCurrentInstance().router?.params?.skuId,
+    orderType: orderType || undefined,
+    activityId: activityId || undefined,
+    sessionId: sessionId || undefined,
+    groupBuyId: groupBuyId || undefined,
+    groupNo: groupBuyIntentRef.current?.groupNo || undefined,
+  }), [spuId, orderType, activityId, sessionId, groupBuyId]);
+
+  const preloadProductShare = useCallback(async () => {
+    if (!spuId || !isLoggedIn()) return;
+    const session = getStoredToken();
+    const options = productShareOptions('card');
+    const key = JSON.stringify(options);
+    try {
+      const result = await prepareProductShare(options);
+      if (session === getStoredToken()) preparedShareRef.current = { session, key, createdAt: Date.now(), result };
+    } catch { /* A share action retries; ordinary product browsing remains available. */ }
+  }, [spuId, productShareOptions]);
+
+  useEffect(() => { void preloadProductShare(); }, [preloadProductShare, selectedSku]);
+  useDidShow(() => { void preloadProductShare(); });
+
+  const handleShareClick = useCallback(async () => {
     if (isH5()) {
-      Taro.setClipboardData({ data: window.location.href }).catch(() => Taro.showToast({ title: '请复制浏览器地址分享商品', icon: 'none' }));
+      try {
+        const share = await prepareProductShare(productShareOptions('link'));
+        await Taro.setClipboardData({ data: share.h5Url });
+      } catch {
+        Taro.showToast({ title: '分享链接生成失败，请重试', icon: 'none' });
+      }
       return;
     }
     trackEvent('goods_share_click', { spuId, orderType: orderType || 'normal', activityId: activityId || groupBuyId || '' });
     if (!isMiniProgram()) Taro.showShareMenu({ withShareTicket: true }).catch(() => {});
-  }, [spuId, orderType, activityId, groupBuyId]);
+  }, [spuId, orderType, activityId, groupBuyId, productShareOptions]);
 
   const handleGroupJoinClick = useCallback((team: GroupTeam) => {
     trackEvent('group_team_join_click', { spuId, groupNo: team.groupNo || '', joinedCount: team.joinedCount || 0, needCount: team.needCount || 0 });
@@ -578,11 +615,25 @@ export default function GoodsDetails() {
   const seckillCountdownSegments = parseCountdownSegments(seckillCountdown || '00:00:00');
   const seckillLimitCount = Number(details.activityInfo?.maxQuantityPerUser || details.limitQuantity || details.buyLimit || details.seckillLimit || details.limitBuyNum || 0) || 0;
 
-  useShareAppMessage(() => ({
-    title: mainTitle || '商品详情',
-    path: `/pages/goods/details/index?spuId=${spuId}`,
-    imageUrl: primaryImage || images[0] || '',
-  }));
+  useShareAppMessage(() => {
+    const options = productShareOptions('card');
+    const prepared = preparedShareRef.current;
+    const currentShare = prepared?.session === getStoredToken() && prepared?.key === JSON.stringify(options)
+      && Date.now() - prepared.createdAt < 5 * 60 * 1000
+      ? prepared.result : null;
+    const message = {
+      title: mainTitle || '商品详情',
+      path: currentShare?.path || buildProductSharePath(options),
+      imageUrl: primaryImage || images[0] || '',
+    };
+    if (currentShare || !isLoggedIn()) return message;
+    return {
+      ...message,
+      promise: prepareProductShare(options)
+        .then((share) => ({ ...message, path: share.path }))
+        .catch(() => message),
+    };
+  });
   const specPopupBody = (
     <>
       <View className="spec-popup__header">

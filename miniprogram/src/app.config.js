@@ -38,7 +38,8 @@
     'pages/user/address/list/index',
     'pages/user/address/edit/index',
     'pages/user/name-edit/index',
-    'pages/customer-service/index'
+    'pages/customer-service/index',
+    ...require('./plugins/routes'),
   ],
   tabBar: {
     // H5 已由 H5TabBar 渲染；避免框架底栏叠在登录页和自定义底栏之上。
