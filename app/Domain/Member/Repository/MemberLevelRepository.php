@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Repository;
 
-use App\Domain\Member\Entity\MemberLevelEntity;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\MemberLevel;
 use Hyperf\Database\Model\Builder;
@@ -36,13 +35,4 @@ final class MemberLevelRepository extends IRepository
             ->orderBy('growth_value_min');
     }
 
-    public function save(MemberLevelEntity $entity): MemberLevel
-    {
-        return $this->model->newQuery()->create($entity->toArray());
-    }
-
-    public function updateEntity(MemberLevelEntity $entity): bool
-    {
-        return $this->updateById($entity->getId(), $entity->toArray());
-    }
 }

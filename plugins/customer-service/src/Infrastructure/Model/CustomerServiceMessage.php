@@ -14,6 +14,24 @@ namespace Plugin\CustomerService\Infrastructure\Model;
 
 use Hyperf\DbConnection\Model\Model;
 
+/**
+ * @property int $id
+ * @property int $conversation_id
+ * @property string $sender_type
+ * @property null|int $sender_id
+ * @property string $client_message_id
+ * @property int $sequence
+ * @property string $message_type
+ * @property array $content_json
+ * @property null|int $reply_to_message_id
+ * @property null|int $ai_run_id
+ * @property string $visibility
+ * @property null|array $evidence_json
+ * @property null|\Carbon\Carbon $sent_at
+ * @property null|\Carbon\Carbon $recalled_at
+ * @property null|\Carbon\Carbon $created_at
+ * @property null|\Carbon\Carbon $updated_at
+ */
 final class CustomerServiceMessage extends Model
 {
     protected ?string $table = 'customer_service_messages';

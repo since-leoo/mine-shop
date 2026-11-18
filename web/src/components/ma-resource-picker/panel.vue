@@ -365,8 +365,9 @@ function executeContextmenu(e: MouseEvent, resource: Resource) {
   })
 }
 
-function handleFile(ev: InputEvent, btn: Resources.Button) {
-  btn.upload?.((ev?.target!.files) as FileList, { btn, getResourceList })
+function handleFile(ev: Event, btn: Resources.Button) {
+  const files = (ev.target as HTMLInputElement | null)?.files
+  if (files) btn.upload?.(files, { btn, getResourceList })
 }
 
 onMounted(async () => {
@@ -450,17 +451,17 @@ onUnmounted(() => {
       <div>
         <el-segmented
           v-model="fileTypeSelected"
-          :options="fileTypes as any" size="default"
+          :options="fileTypes.map(item => ({ ...item, label: typeof item.label === 'function' ? item.label() : item.label }))" size="default"
           block
           @change="onfileTypesChange"
         >
           <template #default="{ item }">
             <div class="flex items-center justify-center">
               <ma-svg-icon
-                v-if="item?.icon" :name="item!.icon" :size="17"
+                v-if="typeof item === 'object' && 'icon' in item" :name="String(item.icon)" :size="17"
                 class="mr-1 flex items-center justify-center"
               />
-              <span>{{ typeof item.label === 'function' ? item.label() : item.label }}</span>
+              <span>{{ typeof item === 'object' ? item.label : item }}</span>
             </div>
           </template>
         </el-segmented>

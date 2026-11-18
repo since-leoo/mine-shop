@@ -45,7 +45,7 @@ final class DomainAgentService
         $entity = $this->mapper->fromModel($conversation);
         $newReservation = $entity->accept((int) $agent->id);
         if ($newReservation && $agent->current_conversations >= $agent->max_conversations) { throw new \DomainException('已达到最大接待容量'); }
-        if ($newReservation) { $agent->increment('current_conversations'); }
+        if ($newReservation) { $agent->update(['current_conversations' => $agent->current_conversations + 1]); }
         $agent->update(['status' => 'online', 'last_heartbeat_at' => date('Y-m-d H:i:s')]);
         $conversation->update($entity->toArray());
         $this->assignment->recordAgent($conversation, (int) $agent->id, 'accepted', $adminUserId);
@@ -64,7 +64,7 @@ final class DomainAgentService
         $entity = $this->mapper->fromModel($conversation);
         $entity->transfer((int) $current->id, $targetId);
         $this->assignment->release($conversation);
-        $target->increment('current_conversations');
+        $target->update(['current_conversations' => $target->current_conversations + 1]);
         $conversation->update($entity->toArray());
         $this->assignment->recordAgent($conversation, $targetId, 'transferred_in', $adminUserId);
         $this->assignment->log($conversation, 'transferred', 'agent', $adminUserId, ['from_agent_id' => $current->id, 'to_agent_id' => $targetId]);

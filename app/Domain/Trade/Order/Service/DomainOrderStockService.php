@@ -151,13 +151,13 @@ final class DomainOrderStockService
      *
      * @param array<int, array<string, mixed>> $items 商品列表，每项包含 sku_id 和 quantity
      * @param string $stockHashKey 库存 Hash Key
-     * @throws \RuntimeException 库存不足或商品不存在时抛出
+     * @throws \DomainException 库存不足或商品不存在时抛出
      */
     public function reserve(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void
     {
         $normalized = $this->normalizeItems($items);
         if ($normalized === []) {
-            throw new \RuntimeException('没有可扣减的商品');
+            throw new \DomainException('没有可扣减的商品');
         }
 
         $args = [];
@@ -171,7 +171,7 @@ final class DomainOrderStockService
 
         $result = $this->redis()->eval(self::DEDUCT_SCRIPT, $payload, 1);
         if ((int) $result !== 1) {
-            throw new \RuntimeException('库存不足或商品已下架');
+            throw new \DomainException('库存不足或商品已下架');
         }
 
         $this->triggerStockWarnings($normalized, $stockHashKey);
@@ -247,7 +247,7 @@ final class DomainOrderStockService
      * 扣减库存后检查剩余库存，如果低于预警阈值则触发事件。
      * 仅对普通商品库存生效，秒杀/团购库存不触发预警。
      *
-     * @param array<int, int> $deducted 已扣减的 SKU 和数量
+     * @param array<int, array<string, mixed>> $items 已扣减的商品列表
      * @param string $stockHashKey 库存 Hash Key
      */
     public function notifyLowStock(array $items, string $stockHashKey = self::STOCK_HASH_KEY): void

@@ -62,7 +62,7 @@ final class CategoryController extends AbstractController
     #[Permission(code: 'product:category:read')]
     public function show(int $id): Result
     {
-        $category = $this->queryService->findById($id);
+        $category = $this->queryService->find($id);
         return $category ? $this->success($category->toArray()) : $this->error('分类不存在', 404);
     }
 

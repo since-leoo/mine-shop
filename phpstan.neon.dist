@@ -4,12 +4,14 @@
 # vendor/bin/phpstan analyse app --memory-limit 200M -l 0
 #
 parameters:
-  reportUnmatchedIgnoredErrors: false
   stubFiles:
-    - phpstan/stubs/model.php
+    - phpstan/framework.stub
+  bootstrapFiles:
+    - phpstan/bootstrap.php
+  reportUnmatchedIgnoredErrors: false
   excludePaths:
     - tests/
-    - app/Library/DataPermission/Scope/DataScopes.php
+    - app/Infrastructure/Library/DataPermission/Scope/DataScopes.php
   ignoreErrors:
     - '#Static call to instance method Hyperf\\HttpServer\\Router\\Router::[a-zA-Z0-9\\_]+\(\)#'
     - '#Static call to instance method Hyperf\\DbConnection\\Db::[a-zA-Z0-9\\_]+\(\)#'
@@ -19,6 +21,5 @@ parameters:
     - '#Call to an undefined static method T of Hyperf\\.*#'
     - '#.with no value type specified in iterable type array.*#'
     - '#.return type specified.*#'
-    - '#Access to an undefined property.*#'
     - '#Call to an undefined static method App\\Kernel\\Casbin\\Rule\\Rule::getModel\(\)#'
     - '#should return Hyperf\\Database\\Model\\Builder but returns Hyperf\\Database\\Query\\Builder#'

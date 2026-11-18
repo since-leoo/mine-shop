@@ -55,8 +55,8 @@ final class EasySmsSender implements SmsSenderInterface
                     'sign_name' => (string) ($smsConfig['sign_name'] ?? ''),
                 ],
                 'tencent' => [
-                    'secret_id' => (string) $smsConfig['access_key_id'] ?? '',
-                    'secret_key' => (string) $smsConfig['access_key_secret'] ?? '',
+                    'secret_id' => (string) ($smsConfig['access_key_id'] ?? ''),
+                    'secret_key' => (string) ($smsConfig['access_key_secret'] ?? ''),
                     'sign_name' => (string) ($smsConfig['sign_name'] ?? ''),
                 ],
             ],

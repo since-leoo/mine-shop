@@ -7,6 +7,10 @@ const mocks = vi.hoisted(() => ({
   switchTab: vi.fn(),
   redirectTo: vi.fn(),
   reLaunch: vi.fn(),
+  isH5: vi.fn(),
+  getCurrentPages: vi.fn(),
+  setStorageSync: vi.fn(),
+  navigateTo: vi.fn(),
 }));
 
 vi.mock('@tarojs/taro', () => ({
@@ -16,17 +20,23 @@ vi.mock('@tarojs/taro', () => ({
     switchTab: mocks.switchTab,
     redirectTo: mocks.redirectTo,
     reLaunch: mocks.reLaunch,
+    getCurrentPages: mocks.getCurrentPages,
+    setStorageSync: mocks.setStorageSync,
+    navigateTo: mocks.navigateTo,
   },
 }));
-vi.mock('./platform', () => ({ isH5: () => true }));
+vi.mock('./platform', () => ({ isH5: mocks.isH5 }));
 
-import { navigateAfterLogin } from './auth-guard';
+import { navigateAfterLogin, redirectToLogin } from './auth-guard';
 
 const REDIRECT_KEY = 'h5LoginRedirect';
 
 beforeEach(() => {
   vi.resetAllMocks();
   mocks.storage.clear();
+  mocks.isH5.mockReturnValue(false);
+  mocks.getCurrentPages.mockReturnValue([]);
+  mocks.navigateTo.mockResolvedValue({});
   mocks.getStorageSync.mockImplementation((key: string) => mocks.storage.get(key) || '');
   mocks.removeStorageSync.mockImplementation((key: string) => mocks.storage.delete(key));
   mocks.switchTab.mockResolvedValue({});
@@ -34,7 +44,38 @@ beforeEach(() => {
   mocks.reLaunch.mockResolvedValue({});
 });
 
+describe('redirectToLogin', () => {
+  it.each(['pages/cart/index', '/pages/cart/index'])('兼容当前页面路径 %s，不生成双斜线回跳地址', (route) => {
+    mocks.isH5.mockReturnValue(true);
+    mocks.getCurrentPages.mockReturnValue([{ route, options: {} }]);
+    redirectToLogin();
+    expect(mocks.setStorageSync).toHaveBeenCalledExactlyOnceWith(REDIRECT_KEY, '/pages/cart/index');
+    expect(mocks.navigateTo).toHaveBeenCalledExactlyOnceWith({ url: '/pages/auth/login/index?redirect=%2Fpages%2Fcart%2Findex' });
+  });
+
+  it('H5 当前已经在登录页时不重复打开登录页', () => {
+    mocks.isH5.mockReturnValue(true);
+    mocks.getCurrentPages.mockReturnValue([{ route: '/pages/auth/login/index' }]);
+    redirectToLogin('/pages/cart/index');
+    expect(mocks.navigateTo).not.toHaveBeenCalled();
+  });
+});
+
 describe('navigateAfterLogin', () => {
+  it('拒绝双斜线回跳地址', async () => {
+    await navigateAfterLogin('//example.com/path');
+    expect(mocks.switchTab).toHaveBeenCalledExactlyOnceWith({ url: '/pages/usercenter/index' });
+  });
+
+  it('H5 登录后重新创建 Tab 页面，清除登录前的页面缓存', async () => {
+    mocks.isH5.mockReturnValue(true);
+    mocks.storage.set(REDIRECT_KEY, '/pages/cart/index?source=login');
+    await navigateAfterLogin();
+    expect(mocks.reLaunch).toHaveBeenCalledExactlyOnceWith({ url: '/pages/cart/index' });
+    expect(mocks.switchTab).not.toHaveBeenCalled();
+    expect(mocks.storage.has(REDIRECT_KEY)).toBe(false);
+  });
+
   it('没有显式或缓存目标时进入个人中心', async () => {
     await expect(navigateAfterLogin()).resolves.toBeUndefined();
     expect(mocks.switchTab).toHaveBeenCalledExactlyOnceWith({ url: '/pages/usercenter/index' });

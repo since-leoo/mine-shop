@@ -19,6 +19,8 @@ use App\Infrastructure\Model\Member\MemberTag;
 
 /**
  * 会员标签服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\MemberTag>
  */
 final class DomainMemberTagService extends IService
 {

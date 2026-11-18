@@ -18,7 +18,7 @@ final class DomainCommerceOrderService
     public function shipMerchantIfExternal(int $orderId, array $packages): ?array
     {
         $order = $this->repository->find($orderId, true);
-        if ($order === null) { throw new \RuntimeException('订单不存在'); }
+        if ($order === null) { throw new \DomainException('订单不存在'); }
         $hasExternal = array_filter($order['items'], static fn ($item) => ($item['fulfillment_provider'] ?? 'merchant') !== 'merchant');
         if ($hasExternal === []) { return null; }
         if ($packages === []) { throw new \InvalidArgumentException('请提供自营商品包裹'); }
@@ -44,7 +44,7 @@ final class DomainCommerceOrderService
         if ($provider !== 'merchant') { DomainCommerceProductService::validateProvider($provider); }
         if ($shipmentKey === '') { throw new \InvalidArgumentException('包裹幂等键不能为空'); }
         $order = $this->repository->find($orderId, true);
-        if ($order === null) { throw new \RuntimeException('订单不存在'); }
+        if ($order === null) { throw new \DomainException('订单不存在'); }
         $key = hash('sha256', $shipmentKey);
         $existing = $this->repository->package($orderId, $provider, $key);
         if ($existing !== null) {

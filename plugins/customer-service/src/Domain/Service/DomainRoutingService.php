@@ -20,7 +20,7 @@ final class DomainRoutingService
             }
             $rank = $this->skillRank((int) $agent['id'], $snapshot, $categoryId);
             if ($rank === null) { continue; }
-            $agent['_rank'] = $rank ?? [0, 0, 0];
+            $agent['_rank'] = $rank;
             $eligible[] = $agent;
         }
         $strategy = $snapshot['settings']['assignment_strategy'] ?? 'least_load';

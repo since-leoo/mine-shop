@@ -58,6 +58,11 @@ final class ProductRepository extends IRepository
         return $this->handlePage($result);
     }
 
+    public function findByIdForUpdate(int $id): ?Product
+    {
+        return $this->model::with(['skus', 'attributes', 'gallery'])->whereKey($id)->lockForUpdate()->first();
+    }
+
     public function findById(int $id): ?object
     {
         return $this->model::with(['skus', 'attributes', 'gallery'])->whereKey($id)->first();
@@ -70,7 +75,10 @@ final class ProductRepository extends IRepository
     {
         /** @var Product $model */
         $model = $this->create(ProductMapper::toArray($entity));
-        $model->skus()->createMany(array_map(static function ($sku) {return $sku->toArray(); }, $entity->getSkus()));
+        $savedSkus = $model->skus()->createMany(array_map(static fn ($sku) => $sku->toArray(), $entity->getSkus()));
+        foreach ($entity->getSkus() as $index => $sku) {
+            $sku->setId((int) $savedSkus[$index]->id);
+        }
         $model->attributes()->createMany(array_map(static function ($attr) {return $attr->toArray(); }, $entity->getAttributes()));
 
         $entity->setId($model->id);
@@ -107,7 +115,7 @@ final class ProductRepository extends IRepository
                 } else {
                     // 创建新的 SKU（移除 id 字段）
                     unset($skuData['id']);
-                    $model->skus()->create($skuData);
+                    $sku->setId((int) $model->skus()->create($skuData)->id);
                 }
             }
         }

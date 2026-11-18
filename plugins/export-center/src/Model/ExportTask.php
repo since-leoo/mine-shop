@@ -64,6 +64,8 @@ class ExportTask extends Model
         'completed_at',
     ];
 
+    protected array $hidden = ['file_path'];
+
     protected array $casts = [
         'id' => 'integer',
         'user_id' => 'integer',

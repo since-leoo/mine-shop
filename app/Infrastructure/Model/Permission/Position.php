@@ -31,7 +31,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
  * @property null|Department $department
- * @property Collection<int,User>|User[] $users
+ * @property Collection<int, User> $users
  * @property Policy $policy
  */
 class Position extends Model
@@ -53,16 +53,19 @@ class Position extends Model
      */
     protected array $casts = ['id' => 'integer', 'dept_id' => 'integer', 'created_at' => 'datetime', 'updated_at' => 'datetime', 'deleted_at' => 'datetime'];
 
+    /** @return BelongsTo<Department, $this> */
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class, 'dept_id', 'id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_position', 'position_id', 'user_id');
     }
 
+    /** @return HasOne<Policy, $this> */
     public function policy(): HasOne
     {
         return $this->hasOne(Policy::class, 'position_id', 'id');

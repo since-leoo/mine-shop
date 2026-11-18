@@ -8,7 +8,7 @@ defineOptions({ name: 'DataScope' })
 
 const { label = '名称' } = defineProps<{ label?: string }>()
 
-const model = defineModel()
+const model = defineModel<{ policy_type?: string; value?: number[]; name?: string; func_name?: string }>({ default: () => ({}) })
 const deptRef = ref()
 const t = useTrans().globalTrans
 const depts = ref<any[]>([])

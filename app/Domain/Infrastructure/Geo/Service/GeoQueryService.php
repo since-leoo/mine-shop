@@ -29,7 +29,7 @@ class GeoQueryService
     {
         $version = $this->latestVersion();
         if (! $version) {
-            throw new \RuntimeException('尚未同步行政区划数据');
+            throw new \DomainException('尚未同步行政区划数据');
         }
 
         $cacheKey = \sprintf(self::CACHE_KEY, $version->id);

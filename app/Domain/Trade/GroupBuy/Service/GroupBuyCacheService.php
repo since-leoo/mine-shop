@@ -39,8 +39,8 @@ final class GroupBuyCacheService
             return;
         }
         $hashKey = $this->stockKey($groupBuyId);
-        $this->cache->delete($hashKey);
-        $this->cache->hMset($hashKey, [(string) $skuId => (string) $remaining]);
+        // 重复预热不能清掉已预占数量及幂等标记。
+        $this->cache->hSetNx($hashKey, (string) $skuId, (string) $remaining);
     }
 
     public function evictStock(int $groupBuyId): void

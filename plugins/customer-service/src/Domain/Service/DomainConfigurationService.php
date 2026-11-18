@@ -181,6 +181,7 @@ final class DomainConfigurationService
         return $this->repository->save($this->validate($snapshot), $expectedRevision, $operatorId, false);
     }
 
+    /** @param value-of<self::RESOURCES> $resource */
     private function validateRecord(string $resource, array $record): void
     {
         $fields = match ($resource) {

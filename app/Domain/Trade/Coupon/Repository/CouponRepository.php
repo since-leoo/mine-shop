@@ -75,8 +75,8 @@ final class CouponRepository extends IRepository
     {
         return [
             'total' => Coupon::count(),
-            'active' => $this->model->where('status', 'active')->count(),
-            'inactive' => $this->model->where('status', 'inactive')->count(),
+            'active' => $this->getQuery()->where('status', 'active')->count(),
+            'inactive' => $this->getQuery()->where('status', 'inactive')->count(),
         ];
     }
 
@@ -88,7 +88,7 @@ final class CouponRepository extends IRepository
      */
     public function countIssued(int $couponId): int
     {
-        return $this->model->where('coupon_id', $couponId)->count();
+        return CouponUser::query()->where('coupon_id', $couponId)->count();
     }
 
     /**
@@ -100,7 +100,7 @@ final class CouponRepository extends IRepository
      */
     public function countIssuedByMember(int $couponId, int $memberId): int
     {
-        return $this->model->where('coupon_id', $couponId)
+        return CouponUser::query()->where('coupon_id', $couponId)
             ->where('member_id', $memberId)
             ->count();
     }
@@ -175,10 +175,11 @@ final class CouponRepository extends IRepository
         }
     }
 
+    /** @return Builder<Coupon> */
     private function buildAvailableQuery(array $filters = []): Builder
     {
         $now = Carbon::now();
-        $query = $this->model
+        $query = $this->getQuery()
             ->where('status', 'active')
             ->where('start_time', '<=', $now)
             ->where('end_time', '>=', $now)

@@ -28,7 +28,7 @@ final class DomainApiReviewQueryService extends IService
      * 获取商品评价列表（仅返回 approved，支持筛选，按时间倒序）.
      *
      * @param array{rating_level?: string, has_images?: bool} $filters
-     * @return array{total: int, list: array, page: int, page_size: int}
+     * @return array{total: int, list: \Hyperf\Collection\Collection<int, \Plugin\ProductReview\Infrastructure\Model\Review\Review>, page: int, page_size: int}
      */
     public function listByProduct(int $productId, array $filters, int $page, int $pageSize): array
     {
@@ -53,7 +53,7 @@ final class DomainApiReviewQueryService extends IService
     /**
      * 获取商品评价摘要（商品详情页用）.
      *
-     * @return array{total: int, list: array}
+     * @return array{total: int, list: \Hyperf\Collection\Collection<int, \Plugin\ProductReview\Infrastructure\Model\Review\Review>}
      */
     public function getProductSummary(int $productId, int $limit = 3): array
     {

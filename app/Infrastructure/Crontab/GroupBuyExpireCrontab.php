@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Crontab;
 
-use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyLifecycleService;
+use App\Application\Admin\GroupBuy\AppGroupBuyLifecycleService;
 use Hyperf\Crontab\Annotation\Crontab;
 use Psr\Log\LoggerInterface;
 
@@ -26,7 +26,7 @@ use Psr\Log\LoggerInterface;
 class GroupBuyExpireCrontab
 {
     public function __construct(
-        private readonly DomainGroupBuyLifecycleService $groupService,
+        private readonly AppGroupBuyLifecycleService $groupService,
         private readonly LoggerInterface $logger
     ) {}
 

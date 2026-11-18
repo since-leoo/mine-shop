@@ -33,6 +33,7 @@ use Hyperf\DbConnection\Model\Model;
  * @property string $status
  * @property Carbon $created_at
  * @property Carbon $updated_at
+ * @property Product|null $product
  */
 class ProductSku extends Model
 {

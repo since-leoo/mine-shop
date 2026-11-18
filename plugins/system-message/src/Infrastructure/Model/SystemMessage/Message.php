@@ -25,6 +25,7 @@ use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Enum\MessageType;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Enum\RecipientType;
 
 /**
+ * @method static \Hyperf\Database\Model\Builder<static> pendingSend()
  * @property int $id 消息ID，主键
  * @property string $title 消息标题
  * @property string $content 消息内容
@@ -32,19 +33,19 @@ use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Enum\RecipientType;
  * @property int $priority 优先级 1-5
  * @property int $sender_id 发送者ID
  * @property string $recipient_type 收件人类型
- * @property array $recipient_ids 收件人ID列表
+ * @property null|array $recipient_ids 收件人ID列表
  * @property int $template_id 模板ID
- * @property array $template_variables 模板变量
+ * @property null|array $template_variables 模板变量
  * @property null|array $extra_data 扩展数据
- * @property array $channels 传递渠道
- * @property Carbon $scheduled_at 计划发送时间
- * @property Carbon $sent_at 实际发送时间
+ * @property null|array $channels 传递渠道
+ * @property null|Carbon $scheduled_at 计划发送时间
+ * @property null|Carbon $sent_at 实际发送时间
  * @property string $status 状态
  * @property int $created_by 创建者
  * @property int $updated_by 更新者
- * @property Carbon $created_at 创建时间
- * @property Carbon $updated_at 更新时间
- * @property Carbon $deleted_at 删除时间
+ * @property null|Carbon $created_at 创建时间
+ * @property null|Carbon $updated_at 更新时间
+ * @property null|Carbon $deleted_at 删除时间
  * @property string $remark 备注
  * @property User $sender 发送者
  * @property MessageTemplate $template 消息模板

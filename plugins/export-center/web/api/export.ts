@@ -18,8 +18,8 @@ export function page(params: Record<string, any>): Promise<ResponseStruct<PageLi
   return useHttp().get('/admin/export/tasks', { params })
 }
 
-export function download(id: number): Promise<ResponseStruct<{ url: string, file_name: string }>> {
-  return useHttp().get(`/admin/export/tasks/${id}/download`)
+export function download(id: number): Promise<{ data: Blob, fileName: string }> {
+  return useHttp().get(`/admin/export/tasks/${id}/download`, { responseType: 'blob' })
 }
 
 export function remove(id: number): Promise<ResponseStruct<null>> {

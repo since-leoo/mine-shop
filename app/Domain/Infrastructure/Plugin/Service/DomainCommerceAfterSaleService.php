@@ -14,7 +14,7 @@ final class DomainCommerceAfterSaleService
     {
         DomainCommerceProductService::validateProvider($provider);
         $sale = $this->find($id);
-        if ($sale === null) { throw new \RuntimeException('售后单不存在'); }
+        if ($sale === null) { throw new \DomainException('售后单不存在'); }
         if (($sale['order_item']['fulfillment_provider'] ?? 'merchant') !== $provider) {
             throw new \DomainException('售后单不属于当前履约能力');
         }

@@ -11,7 +11,7 @@ import type { MaFormItem } from '@mineadmin/form'
 import type { BrandVo } from '~/mall/api/brand'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 
-export default function getFormItems(formType: 'add' | 'edit', model: BrandVo, t: (key: string) => string): MaFormItem[] {
+export default function getFormItems(formType: 'add' | 'edit', model: BrandVo, t: (key: string, values?: Record<string, unknown>) => string): MaFormItem[] {
 
   if (formType === 'add') {
     model.status = 'active'

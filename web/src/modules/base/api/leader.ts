@@ -10,7 +10,9 @@
 import type { PageList, ResponseStruct } from '#/global'
 
 export interface LeaderVo {
-  user_id?: number | null
+  id?: number
+  users?: { id: number }[]
+  user_id?: number | number[] | null
   dept_id?: number
   dept_name?: string
 }

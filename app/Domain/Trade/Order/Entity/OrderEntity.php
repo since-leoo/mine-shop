@@ -417,12 +417,12 @@ final class OrderEntity
             }
         }
         if (! \in_array($this->getStatus(), [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
-            throw new \RuntimeException('当前订单状态不可发货');
+            throw new \DomainException('当前订单状态不可发货');
         }
 
         $packages = $this->getShipEntity()->getPackages();
         if (empty($packages)) {
-            throw new \RuntimeException('请至少提供一个包裹信息');
+            throw new \DomainException('请至少提供一个包裹信息');
         }
 
         $this->setStatus(OrderStatus::SHIPPED->value);
@@ -435,7 +435,7 @@ final class OrderEntity
     public function complete(): void
     {
         if (! \in_array($this->getStatus(), [OrderStatus::SHIPPED->value], true)) {
-            throw new \RuntimeException('当前订单状态不可完成');
+            throw new \DomainException('当前订单状态不可完成');
         }
 
         $this->setStatus(OrderStatus::COMPLETED->value);
@@ -460,7 +460,7 @@ final class OrderEntity
     public function markPaid(): void
     {
         if ($this->getStatus() !== OrderStatus::PENDING->value) {
-            throw new \RuntimeException('当前订单状态不可支付');
+            throw new \DomainException('当前订单状态不可支付');
         }
 
         $this->setPayStatus(PaymentStatus::PAID->value);

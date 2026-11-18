@@ -24,6 +24,8 @@ use Hyperf\Collection\Collection;
  *
  * 包含小程序端专属的地址写操作（create、update、delete、setDefault）.
  * 公共查询方法（list、detail、default）保留在 MemberAddressService.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\MemberAddress>
  */
 final class DomainApiMemberAddressCommandService extends IService
 {

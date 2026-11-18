@@ -1,0 +1,48 @@
+import { test, expect } from '@playwright/test'
+const settings = { enabled: true, ai_enabled: false, assignment_strategy: 'least_load', queue_enabled: true, allow_member_image: true, allow_product_card: true, schedule: {}, welcome_message: '欢迎', offline_message: '稍后联系', max_queue_size: 100, queue_timeout_seconds: 600, accept_timeout_seconds: 60, max_conversations_per_agent: 5, history_page_size: 30, max_message_length: 1000, max_image_size_mb: 5, ai_timeout_seconds: 15, ai_max_clarifications: 1, ai_max_rounds: 8, ai_daily_token_budget: 100000 }
+const fixture = () => ({ revision: 4, published_revision: 3, history: [{ id: 3, published: true, created_at: '2026-10-12' }], snapshot: { _next_ids: { keyword_rules: 12 }, settings: { ...settings }, categories: [{ id: 1, parent_id: 0, name: '售后', code: 'after_sale', enabled: true }, { id: 2, parent_id: 1, name: '退货', code: 'return', enabled: true }, { id: 3, parent_id: 2, name: '质量问题', code: 'quality', enabled: true }], keyword_rules: [], skill_groups: [{ id: 1, name: '售后组', enabled: true }], agent_skills: [], ai_connections: [{ id: 1, name: '测试连接', enabled: true, endpoint: 'https://ai.example.com/v1', credential_env: 'CUSTOMER_SERVICE_AI_TEST_KEY' }], ai_agents: [{ id: 1, name: '售后助手', connection_id: 1, model: 'test-model', prompt: '回答商品问题', enabled: true, category_ids: [], tool_allowlist: [] }] } })
+test('真实配置组件：三级限制、规则编辑、草稿发布与版本冲突保留本地修改', async ({ page }) => {
+  let document: any = fixture(); const writes: any[] = []; let conflict = false
+  await page.route('**/admin/customer-service/**', async route => {
+    const path = new URL(route.request().url()).pathname
+    if (path.endsWith('/agents')) return route.fulfill({ json: { data: [{ id: 1, name: '小李', status: 'online', enabled: true, priority: 10, weight: 2, max_conversations: 5, schedule_json: {} }] } })
+    if (route.request().method() === 'PUT') { const payload = route.request().postDataJSON(); writes.push(payload); if (conflict) return route.fulfill({ status: 409, json: { message: '配置已被其他管理员更新，请刷新' } }); document = { ...document, snapshot: payload.snapshot, revision: document.revision + 1, published_revision: payload.publish ? document.revision + 1 : document.published_revision } }
+    return route.fulfill({ json: { data: document } })
+  })
+  await page.goto('/'); await expect(page.getByText('草稿 v4', { exact: false })).toBeVisible()
+  await page.getByRole('tab', { name: '问题类目', exact: true }).click(); await page.getByTestId('add-categories').click(); await page.getByTestId('entry-name').fill('四级类目'); await page.getByTestId('category-code').fill('level4')
+  const dialog = page.getByRole('dialog'); await dialog.locator('.el-form-item').filter({ hasText: '父级类目' }).locator('.el-select').click(); await page.getByRole('option', { name: '售后 / 退货 / 质量问题', exact: true }).click(); await page.getByTestId('apply-entry').click(); await expect(page.getByText('问题类目最多三级，移动父级时也需要保留后代层级')).toBeVisible(); await dialog.getByRole('button', { name: '取消', exact: true }).click()
+  await page.getByRole('tab', { name: '关键词规则', exact: true }).click(); await page.getByTestId('add-keyword_rules').click(); await page.getByTestId('entry-name').fill('退款关键词')
+  await dialog.locator('.el-form-item').filter({ hasText: '目标类目' }).locator('.el-select').click(); await page.getByRole('option', { name: '售后 / 退货', exact: true }).click()
+  const terms = dialog.locator('.el-form-item').filter({ hasText: '正向词' }).locator('input'); await terms.fill('退款'); await page.getByRole('option', { name: '退款', exact: true }).click(); await page.getByTestId('apply-entry').click(); await page.getByTestId('save-draft').click(); await expect.poll(() => writes.length).toBe(1); expect(writes[0].expected_revision).toBe(4); expect(writes[0].snapshot.keyword_rules[0].include_terms).toEqual(['退款']); expect(writes[0].snapshot.keyword_rules[0].id).toBe(12); expect(writes[0].snapshot._next_ids.keyword_rules).toBe(13); expect(writes[0].publish).toBe(false)
+  await page.getByTestId('publish').click(); await expect.poll(() => writes.length).toBe(2); expect(writes[1].expected_revision).toBe(5); expect(writes[1].publish).toBe(true)
+  await page.getByRole('tab', { name: '接待策略', exact: true }).click(); await page.getByTestId('ai-enabled').click(); conflict = true; await page.getByTestId('save-draft').click(); await expect(page.getByRole('alert').filter({ hasText: '配置已被其他管理员更新' }).first()).toBeVisible(); await expect(page.getByTestId('ai-enabled')).toHaveClass(/is-checked/); expect(writes[2].expected_revision).toBe(6)
+})
+test('真实配置组件：坐席优先级保存、沙盒试问与回滚', async ({ page }) => {
+  const calls: any[] = []; const document: any = fixture()
+  await page.route('**/admin/customer-service/**', async route => {
+    const path = new URL(route.request().url()).pathname; const body = route.request().postDataJSON(); if (body) calls.push({ path, body })
+    if (path.endsWith('/agents')) return route.fulfill({ json: { data: [{ id: 1, name: '小李', status: 'online', enabled: true, priority: 10, weight: 2, max_conversations: 5, schedule_json: {} }] } })
+    if (path.endsWith('/ai-runs')) return route.fulfill({ json: { data: [{ id: 7, status: 'handed_off', reason: 'no_knowledge', created_at: '2026-10-12 10:00:00' }] } })
+    if (path.endsWith('/test-agent')) return route.fulfill({ json: { data: { action: 'answer', text: '可以在订单中申请售后', evidence_ids: [8], sandbox: true } } })
+    if (path.endsWith('/simulate')) return route.fulfill({ json: { data: { category_id: 2, matched_rule_ids: [1] } } })
+    return route.fulfill({ json: { data: document } })
+  })
+  await page.goto('/'); await page.getByRole('tab', { name: '人工坐席' }).click(); await page.getByRole('button', { name: '配置', exact: true }).click(); const dialog = page.getByRole('dialog'); await dialog.locator('.el-form-item').filter({ hasText: '优先级' }).locator('input').fill('80'); await dialog.getByRole('button', { name: '保存坐席' }).click(); await expect.poll(() => calls.some(c => c.path.endsWith('/agents/1') && c.body.priority === 80)).toBe(true)
+  await page.getByRole('tab', { name: '测试与发布记录' }).click(); await page.getByPlaceholder('输入实际的客户问题').fill('商品如何退货'); await page.getByRole('button', { name: '模拟类目匹配' }).click(); await expect(page.getByTestId('simulation-result')).toContainText('category_id')
+  await page.locator('.el-form-item').filter({ hasText: '试问 AI Agent' }).locator('.el-select').click(); await page.getByRole('option', { name: '售后助手', exact: true }).click(); await page.getByRole('button', { name: '使用已配置模型试问' }).click(); await expect(page.getByTestId('simulation-result')).toContainText('sandbox'); expect(calls.find(c => c.path.endsWith('/test-agent')).body).toEqual({ agent_id: 1, question: '商品如何退货' }); await page.getByRole('button', { name: '加载运行记录' }).click(); await expect(page.getByRole('cell', { name: 'no_knowledge', exact: true })).toBeVisible()
+  await page.getByText('选择历史版本', { exact: true }).click(); await page.getByRole('option', { name: 'v3 · 2026-10-12', exact: true }).click(); await page.getByRole('button', { name: '回滚并发布', exact: true }).click(); await page.getByRole('button', { name: '确认回滚', exact: true }).click(); await expect.poll(() => calls.some(c => c.path.endsWith('/rollback') && c.body.revision === 3 && c.body.expected_revision === 4)).toBe(true)
+})
+test('真实AI配置表单：连接、Agent工具限制、默认AI接待发布', async ({ page }) => {
+  let document: any = fixture(); let published: any
+  await page.route('**/admin/customer-service/**', async route => {
+    if (new URL(route.request().url()).pathname.endsWith('/agents')) return route.fulfill({ json: { data: [] } })
+    if (route.request().method() === 'PUT') { published = route.request().postDataJSON(); document = { ...document, snapshot: published.snapshot, revision: 5, published_revision: 5 } }
+    return route.fulfill({ json: { data: document } })
+  })
+  await page.goto('/'); await page.getByRole('tab', { name: 'AI 连接', exact: true }).click(); await page.getByTestId('add-ai_connections').click(); const dialog = page.getByRole('dialog')
+  await page.getByTestId('entry-name').fill('商店模型连接'); await dialog.getByPlaceholder('https://供应商域名/v1').fill('https://ai.example.com/v1'); await dialog.getByPlaceholder('CUSTOMER_SERVICE_AI_PROVIDER_KEY').fill('CUSTOMER_SERVICE_AI_SHOP_KEY'); await page.getByTestId('apply-entry').click()
+  await page.getByRole('tab', { name: 'AI Agent', exact: true }).click(); await page.getByTestId('add-ai_agents').click(); await page.getByTestId('entry-name').fill('商城助手'); await dialog.locator('.el-form-item').filter({ hasText: 'AI 连接' }).locator('.el-select').click(); await page.getByRole('option', { name: '商店模型连接', exact: true }).click(); await dialog.getByPlaceholder('填写供应商提供的模型 ID').fill('shop-model-v1'); await dialog.locator('.el-form-item').filter({ hasText: '角色说明' }).locator('textarea').fill('依据已发布知识回答；无法解决转人工。'); await dialog.getByText('查询当前用户订单状态', { exact: true }).click(); await page.getByTestId('apply-entry').click()
+  await page.getByRole('tab', { name: '接待策略', exact: true }).click(); await page.getByTestId('ai-enabled').click(); await page.locator('.el-form-item').filter({ hasText: '默认 AI Agent' }).locator('.el-select').first().click(); await page.getByRole('option', { name: '商城助手', exact: true }).click(); await page.getByTestId('publish').click(); await expect.poll(() => Boolean(published)).toBe(true)
+  expect(published.snapshot.ai_connections[1].credential_env).toBe('CUSTOMER_SERVICE_AI_SHOP_KEY'); expect(published.snapshot.ai_agents[1]).toMatchObject({ connection_id: 2, model: 'shop-model-v1', tool_allowlist: ['order_status'] }); expect(published.snapshot.settings).toMatchObject({ ai_enabled: true, default_ai_agent_id: 2 }); expect(published.publish).toBe(true)
+})

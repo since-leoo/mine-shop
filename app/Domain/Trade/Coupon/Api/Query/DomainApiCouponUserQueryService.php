@@ -17,6 +17,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 面向 API 场景的用户优惠券查询领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Coupon\CouponUser>
  */
 final class DomainApiCouponUserQueryService extends IService
 {

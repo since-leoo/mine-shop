@@ -17,11 +17,13 @@ use App\Domain\Catalog\Product\Event\ProductCreated;
 use App\Domain\Catalog\Product\Event\ProductDeleted;
 use App\Domain\Catalog\Product\Event\ProductUpdated;
 use App\Domain\Catalog\Product\Service\DomainProductService;
+use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
 use Hyperf\DbConnection\Annotation\Transactional;
 use Hyperf\DbConnection\Db;
+use Psr\Log\LoggerInterface;
 
 /**
  * 商品命令服务：处理所有写操作.
@@ -31,6 +33,8 @@ final class AppProductCommandService
     public function __construct(
         private readonly DomainProductService $productService,
         private readonly AppProductQueryService $queryService,
+        private readonly TradeOutboxInterface $outbox,
+        private readonly LoggerInterface $logger,
     ) {}
 
     /**
@@ -38,18 +42,21 @@ final class AppProductCommandService
      */
     public function create(ProductInput $input): Product
     {
-        $entity = $this->productService->create($input);
-        $model = $this->queryService->find($entity->getId());
-        if (! $entity->getId()) {
-            throw new BusinessException(ResultCode::FAIL, '创建商品失败');
-        }
-
-        // 3. 发布领域事件
-        event(new ProductCreated(
-            productId: $entity->getId(),
-            skuIds: $this->extractSkuIds($model),
-            stockData: $entity->getStockData()
-        ));
+        [$model, $event] = Db::transaction(function () use ($input) {
+            $entity = $this->productService->create($input);
+            $model = $this->queryService->find($entity->getId());
+            if ($model === null) {
+                throw new BusinessException(ResultCode::FAIL, '创建商品失败');
+            }
+            $event = new ProductCreated(
+                productId: $entity->getId(),
+                skuIds: $this->extractSkuIds($model),
+                stockData: $entity->getStockData(),
+            );
+            $this->outbox->append('catalog-product:' . $event->operationId, 'catalog.product.created', get_object_vars($event));
+            return [$model, $event];
+        });
+        $this->publish($event);
 
         return $model;
     }
@@ -59,14 +66,18 @@ final class AppProductCommandService
      */
     public function update(ProductInput $input): bool
     {
-        $changes = $this->productService->update($input);
-        $entity = $this->productService->getEntity($input->getId());
-
-        event(new ProductUpdated(
-            productId: $input->getId(),
-            changes: $changes,
-            stockData: $entity->getStockData()
-        ));
+        $event = Db::transaction(function () use ($input) {
+            $changes = $this->productService->update($input);
+            $entity = $this->productService->getEntity($input->getId());
+            $event = new ProductUpdated(
+                productId: $input->getId(),
+                changes: $changes,
+                stockData: $entity->getStockData(),
+            );
+            $this->outbox->append('catalog-product:' . $event->operationId, 'catalog.product.updated', get_object_vars($event));
+            return $event;
+        });
+        $this->publish($event);
 
         return true;
     }
@@ -76,23 +87,13 @@ final class AppProductCommandService
      */
     public function delete(int $id): bool
     {
-        // 1. 查询商品
-        $product = $this->queryService->find($id);
-        if (! $product) {
-            throw new BusinessException(ResultCode::FAIL, '商品不存在');
-        }
-
-        // 2. 提取 SKU IDs
-        $skuIds = $this->extractSkuIds($product);
-
-        // 3. 事务管理
-        Db::transaction(fn () => $this->productService->delete($id));
-
-        // 4. 发布领域事件
-        $this->dispatcher->dispatch(new ProductDeleted(
-            productId: $id,
-            skuIds: $skuIds
-        ));
+        $event = Db::transaction(function () use ($id) {
+            $skuIds = $this->productService->delete($id);
+            $event = new ProductDeleted(productId: $id, skuIds: $skuIds);
+            $this->outbox->append('catalog-product:' . $event->operationId, 'catalog.product.deleted', get_object_vars($event));
+            return $event;
+        });
+        $this->publish($event);
 
         return true;
     }
@@ -101,6 +102,19 @@ final class AppProductCommandService
     public function updateSort(array $sortData): bool
     {
         return $this->productService->updateSort($sortData);
+    }
+
+    private function publish(ProductCreated|ProductDeleted|ProductUpdated $event): void
+    {
+        // 外层事务尚未提交时由 outbox 后续分发，避免发布最终回滚的变更。
+        if (Db::connection()->transactionLevel() > 0) {
+            return;
+        }
+        try {
+            event($event);
+        } catch (\Throwable $error) {
+            $this->logger->warning('商品事件等待持久化事件重试', ['operation_id' => $event->operationId, 'product_id' => $event->productId, 'error' => $error->getMessage()]);
+        }
     }
 
     /**

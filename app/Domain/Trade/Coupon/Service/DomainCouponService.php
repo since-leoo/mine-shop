@@ -26,6 +26,8 @@ use App\Interface\Common\ResultCode;
  *
  * 负责优惠券的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Coupon\Coupon>
  */
 final class DomainCouponService extends IService
 {
@@ -49,6 +51,16 @@ final class DomainCouponService extends IService
             throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');
         }
 
+        return CouponMapper::fromModel($coupon);
+    }
+
+    /** 在发放事务中先锁定优惠券，串行复核库存和个人限领次数。 */
+    public function getLockedEntity(int $id): CouponEntity
+    {
+        $coupon = $this->repository->findByIdForLock($id);
+        if ($coupon === null) {
+            throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');
+        }
         return CouponMapper::fromModel($coupon);
     }
 
@@ -89,14 +101,14 @@ final class DomainCouponService extends IService
      *
      * @param int $id 优惠券 ID
      * @return int 删除的记录数
-     * @throws \RuntimeException 有发放记录时抛出
+     * @throws \DomainException 有发放记录时抛出
      */
     public function deleteById(mixed $id): int
     {
         // 检查是否有发放记录，有则不允许删除
         $issued = $this->couponUserRepository->countByCouponId($id);
         if ($issued > 0) {
-            throw new \RuntimeException('已有发放记录，无法删除');
+            throw new \DomainException('已有发放记录，无法删除');
         }
 
         return $this->repository->deleteById($id);

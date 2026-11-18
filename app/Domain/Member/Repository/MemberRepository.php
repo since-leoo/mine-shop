@@ -209,7 +209,7 @@ final class MemberRepository extends IRepository
         /** @var null|Member $member */
         $member = $this->getQuery()->find($memberId);
         if (! $member) {
-            throw new \RuntimeException('会员不存在');
+            throw new \DomainException('会员不存在');
         }
 
         $member->tags()->sync($tagIds);
@@ -302,12 +302,12 @@ final class MemberRepository extends IRepository
             ->limit(6)
             ->get()
             ->map(static function ($row) {
-                $key = (string) $row->source_key;
+                $key = (string) $row->getAttribute('source_key');
                 $label = MemberSource::tryFrom($key)?->label() ?? ($key === 'unknown' ? '未标记' : $key);
                 return [
                     'key' => $key,
                     'label' => $label,
-                    'value' => (int) $row->total,
+                    'value' => (int) $row->getAttribute('total'),
                 ];
             })
             ->toArray();
@@ -327,11 +327,11 @@ final class MemberRepository extends IRepository
             ->limit(6)
             ->get()
             ->map(static function ($row) {
-                $label = (string) $row->region_key;
+                $label = (string) $row->getAttribute('region_key');
                 return [
                     'key' => $label,
                     'label' => $label,
-                    'value' => (int) $row->total,
+                    'value' => (int) $row->getAttribute('total'),
                 ];
             })
             ->toArray();
@@ -348,12 +348,12 @@ final class MemberRepository extends IRepository
             ->orderByDesc('total')
             ->get()
             ->map(static function ($row) {
-                $key = (string) $row->level_key;
+                $key = (string) $row->getAttribute('level_key');
                 $label = MemberLevelEnum::tryFrom($key)?->label() ?? ($key === 'unranked' ? '未分级' : $key);
                 return [
                     'key' => $key,
                     'label' => $label,
-                    'value' => (int) $row->total,
+                    'value' => (int) $row->getAttribute('total'),
                 ];
             })
             ->toArray();

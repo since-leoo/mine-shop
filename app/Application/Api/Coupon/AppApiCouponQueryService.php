@@ -27,7 +27,7 @@ final class AppApiCouponQueryService
     ) {}
 
     /**
-     * @return array{collection: Collection, receivedMap: array<int, int>, total: int}
+     * @return array{collection: Collection<int, Coupon>, receivedMap: array<int, int>, total: int}
      */
     public function available(array $filters = [], ?int $memberId = null, int $limit = 20): array
     {

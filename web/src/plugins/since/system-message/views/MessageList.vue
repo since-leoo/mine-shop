@@ -82,7 +82,7 @@
         <template #default="{ row }">
           <div class="message-title" :class="{ 'unread': !row.is_read }">
             <div class="title-content">
-              <span class="title-text" @click="viewMessage(row)">
+              <span class="title-text" @click="viewMessage(row as UserMessage)">
                 {{ row.message.title }}
               </span>
               <el-tag 
@@ -112,21 +112,21 @@
       
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="viewMessage(row)">
+          <el-button type="primary" link size="small" @click="viewMessage(row as UserMessage)">
             查看
           </el-button>
           <el-button 
             type="primary" 
             link 
             size="small" 
-            @click="markAsRead(row)"
+            @click="markAsRead(row as UserMessage)"
             v-if="!row.is_read"
           >
             标记已读
           </el-button>
           <el-popconfirm
             title="确定要删除这条消息吗？"
-            @confirm="deleteMessage(row)"
+            @confirm="deleteMessage(row as UserMessage)"
           >
             <template #reference>
               <el-button type="danger" link size="small">
@@ -181,9 +181,9 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 
 // 获取消息类型 Tag 类型
-const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
-  const types: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
-    system: '',
+const getTypeTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: 'primary',
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',

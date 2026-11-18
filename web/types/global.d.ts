@@ -1,5 +1,6 @@
 import type { ResultCode } from '@/utils/ResultCode.ts'
 import type { App, Component, Ref } from 'vue'
+import type { Composer } from 'vue-i18n'
 /**
  * MineAdmin is committed to providing solutions for quickly building web applications
  * Please view the LICENSE file that was distributed with this source code,
@@ -79,6 +80,8 @@ declare namespace Plugin {
 
   /** 插件中心页面定义。插件无需注册主应用菜单即可在插件中心展示。 */
   interface Center {
+    /** 业务启停由插件设置 API 管理，本地插件开关不代表业务状态。 */
+    businessManaged?: boolean
     title?: string
     icon?: string
     description?: string
@@ -105,8 +108,13 @@ declare namespace Plugin {
 
   interface Views extends Route.RouteRecordRaw {}
 
+  interface InstallOptions {
+    /** Composition 模式下 $i18n 不提供消息合并方法，使用实际的全局 Composer。 */
+    i18n?: Pick<Composer, 'mergeLocaleMessage'>
+  }
+
   interface PluginConfig {
-    install: (app: App) => void
+    install: (app: App, options?: InstallOptions) => void
     config: Config
     center?: Center
     /**
@@ -365,6 +373,9 @@ interface MineTabbar {
   icon?: string
   i18n?: string
   affix?: boolean
+  tabKey?: string
+  tabTitle?: string
+  tabIcon?: string
 }
 
 declare namespace ProviderService {
@@ -396,6 +407,9 @@ declare namespace MineRoute {
     i18n?: string | (() => string)
     badge?: () => string | number
     icon?: string
+    tabKey?: string
+    tabTitle?: string
+    tabIcon?: string
     affix?: boolean
     hidden?: boolean
     subForceShow?: boolean

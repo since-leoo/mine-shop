@@ -25,7 +25,7 @@ final class AppAuthCommandService
     /**
      * 构造函数，注入认证服务实例。
      *
-     * @param AuthService $authService 认证服务实例，用于处理具体的认证逻辑
+     * @param DomainAuthService $authService 认证服务实例，用于处理具体的认证逻辑
      */
     public function __construct(private readonly DomainAuthService $authService) {}
 

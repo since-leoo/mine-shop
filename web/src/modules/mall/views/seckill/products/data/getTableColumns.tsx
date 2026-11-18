@@ -26,7 +26,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { type: 'selection', showOverflowTooltip: false },
     { label: () => 'ID', prop: 'id', width: '80px' },
     { label: () => t('mall.seckill.productImage'), prop: 'product_image', width: '100px',
-      cellRender: ({ row }: { row: SeckillProductVo }) => (
+      cellRender: ({ row }) => (
         row.product_image
           ? <ElImage src={row.product_image} style="width: 60px; height: 60px" fit="cover" preview-src-list={[row.product_image]} />
           : <span class="text-gray-400">{t('mall.seckill.noImage')}</span>
@@ -35,12 +35,12 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { label: () => t('mall.seckill.productName'), prop: 'product_name', minWidth: '180px', showOverflowTooltip: true },
     { label: () => 'SKU', prop: 'sku_name', width: '120px', showOverflowTooltip: true },
     { label: () => t('mall.seckill.originalPrice'), prop: 'original_price', width: '100px',
-      cellRender: ({ row }: { row: SeckillProductVo }) => (
+      cellRender: ({ row }) => (
         <span class="text-gray-400 line-through">¥{formatYuan(row.original_price)}</span>
       ),
     },
     { label: () => t('mall.seckill.seckillPrice'), prop: 'seckill_price', width: '100px',
-      cellRender: ({ row }: { row: SeckillProductVo }) => (
+      cellRender: ({ row }) => (
         <span class="text-red-500 font-semibold">¥{formatYuan(row.seckill_price)}</span>
       ),
     },
@@ -48,7 +48,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { label: () => t('mall.seckill.sold'), prop: 'sold_quantity', width: '80px' },
     { label: () => t('mall.seckill.purchaseLimit'), prop: 'max_quantity_per_user', width: '80px' },
     { label: () => t('mall.common.enabled'), prop: 'is_enabled', width: '80px',
-      cellRender: ({ row }: { row: SeckillProductVo }) => (
+      cellRender: ({ row }) => (
         <ElSwitch
           modelValue={row.is_enabled}
           disabled={!hasAuth('seckill:product:update')}
@@ -75,7 +75,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
             show: () => hasAuth('seckill:product:update'),
             icon: 'material-symbols:edit',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: SeckillProductVo }) => {
+            onClick: ({ row }) => {
               dialog.setTitle(t('mall.seckill.editProductConfig'))
               dialog.open({ formType: 'edit', data: row })
             },
@@ -85,7 +85,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
             show: () => hasAuth('seckill:product:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: SeckillProductVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.seckill.confirmRemoveSingle')).then(async () => {
                 const response = await productRemove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {

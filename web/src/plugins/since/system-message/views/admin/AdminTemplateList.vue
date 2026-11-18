@@ -13,7 +13,7 @@
 
     <el-dialog v-model="createVisible" title="创建消息模板" width="620px" destroy-on-close>
       <el-form label-position="top">
-        <el-form-item label="模板名称" required><el-input v-model="createForm.name" maxlength="100" /></el-form-item>
+        <el-form-item label="模板名称" required><el-input v-model="createForm.name" :maxlength="100" /></el-form-item>
         <el-form-item label="模板类型" required>
           <el-select v-model="createForm.type" style="width:100%">
             <el-option value="system" label="系统模板" /><el-option value="announcement" label="公告模板" />
@@ -21,10 +21,10 @@
           </el-select>
         </el-form-item>
         <el-form-item label="分类" required><el-input v-model="createForm.category" /></el-form-item>
-        <el-form-item label="标题模板" required><el-input v-model="createForm.title" maxlength="255" /></el-form-item>
+        <el-form-item label="标题模板" required><el-input v-model="createForm.title" :maxlength="255" /></el-form-item>
         <el-form-item :label="createForm.type === 'email' ? '邮件内容' : (createForm.type === 'sms' ? '短信内容模板' : '内容模板')" required>
           <MaRichEditor v-if="createForm.type === 'email'" initial-value="" :height="260" @update:model-value="createForm.content = $event" />
-          <el-input v-else v-model="createForm.content" type="textarea" :rows="5" maxlength="10000" show-word-limit />
+          <el-input v-else v-model="createForm.content" type="textarea" :rows="5" :maxlength="10000" show-word-limit />
         </el-form-item>
         <template v-if="createForm.type === 'miniapp'">
           <el-form-item label="微信订阅消息模板 ID" required><el-input v-model="miniappConfig.template_id" /></el-form-item>
@@ -108,7 +108,7 @@
         <template #default="{ row }">
           <div class="template-name-cell">
             <div class="name-content">
-              <a @click="editTemplate(row)" class="name-link">
+              <a @click="editTemplate(row as MessageTemplate)" class="name-link">
                 {{ row.name }}
               </a>
               <el-tag :type="getTypeTagType(row.type)" size="small">
@@ -152,7 +152,7 @@
         <template #default="{ row }">
           <el-switch
             :model-value="row.is_active"
-            @change="toggleStatus(row)"
+            @change="toggleStatus(row as MessageTemplate)"
             :loading="row.statusLoading"
           />
         </template>
@@ -160,18 +160,18 @@
       
       <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="showPreview(row)">
+          <el-button type="primary" link size="small" @click="showPreview(row as MessageTemplate)">
             预览
           </el-button>
-          <el-button type="primary" link size="small" @click="editTemplate(row)">
+          <el-button type="primary" link size="small" @click="editTemplate(row as MessageTemplate)">
             编辑
           </el-button>
-          <el-button type="primary" link size="small" @click="duplicateTemplate(row)">
+          <el-button type="primary" link size="small" @click="duplicateTemplate(row as MessageTemplate)">
             复制
           </el-button>
           <el-popconfirm
             title="确定要删除这个模板吗？"
-            @confirm="deleteTemplate(row)"
+            @confirm="deleteTemplate(row as MessageTemplate)"
           >
             <template #reference>
               <el-button type="danger" link size="small">
@@ -274,8 +274,8 @@ const previewContent = ref('')
 
 // 获取模板类型标签类型
 const getTypeTagType = (type: string) => {
-  const types: Record<string, '' | 'success' | 'warning' | 'danger' | 'info'> = {
-    system: '',
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
+    system: 'primary',
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',

@@ -100,7 +100,7 @@
         <template #default="{ row }">
           <div class="message-title-cell">
             <div class="title-content">
-              <a @click="showEditDialog(row)" class="title-link">{{ row.title }}</a>
+              <a @click="showEditDialog(row as Message)" class="title-link">{{ row.title }}</a>
               <el-tag :type="getTypeTagType(row.type)" size="small">{{ getTypeLabel(row.type) }}</el-tag>
             </div>
             <div class="message-meta">
@@ -147,10 +147,10 @@
       </el-table-column>
       <el-table-column label="操作" width="200" fixed="right">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="showEditDialog(row)">编辑</el-button>
-          <el-button type="primary" link size="small" @click="sendMessage(row)" v-if="row.status === 'draft'">发送</el-button>
-          <el-button type="primary" link size="small" @click="duplicateMessage(row)">复制</el-button>
-          <el-popconfirm title="确定要删除这条消息吗？" @confirm="deleteMessage(row)">
+          <el-button type="primary" link size="small" @click="showEditDialog(row as Message)">编辑</el-button>
+          <el-button type="primary" link size="small" @click="sendMessage(row as Message)" v-if="row.status === 'draft'">发送</el-button>
+          <el-button type="primary" link size="small" @click="duplicateMessage(row as Message)">复制</el-button>
+          <el-popconfirm title="确定要删除这条消息吗？" @confirm="deleteMessage(row as Message)">
             <template #reference>
               <el-button type="danger" link size="small">删除</el-button>
             </template>

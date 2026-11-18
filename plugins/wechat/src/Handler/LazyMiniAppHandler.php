@@ -28,6 +28,11 @@ final class LazyMiniAppHandler implements MiniAppInterface
         return $this->handler()->{$name}(...$arguments);
     }
 
+    public function getClient(): \EasyWeChat\Kernel\HttpClient\AccessTokenAwareClient
+    {
+        return $this->handler()->getClient();
+    }
+
     public function sendSubscribeMessage(string $openid, string $templateId, array $data, string $page = ''): array
     {
         return $this->handler()->sendSubscribeMessage($openid, $templateId, $data, $page);

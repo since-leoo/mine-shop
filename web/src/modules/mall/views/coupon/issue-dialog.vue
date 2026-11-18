@@ -70,7 +70,7 @@ defineExpose({ submit, reset })
       <el-input
         v-model="model.member_ids"
         type="textarea"
-        rows="3"
+        :rows="3"
         :placeholder="t('mall.coupon.memberIdsPlaceholder')"
       />
     </el-form-item>

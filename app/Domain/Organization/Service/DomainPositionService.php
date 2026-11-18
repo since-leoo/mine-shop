@@ -18,11 +18,13 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 职位领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Permission\Position>
  */
 final class DomainPositionService extends IService
 {
     public function __construct(
-        private readonly PositionRepository $repository
+        public readonly PositionRepository $repository
     ) {}
 
     /**
@@ -74,7 +76,7 @@ final class DomainPositionService extends IService
     /**
      * 设置岗位数据权限策略.
      */
-    public function setDataPermissionPolicy(int $positionId, string $policyType, mixed $value): bool
+    public function setDataPermissionPolicy(int $positionId, \App\Domain\Permission\Enum\DataPermission\PolicyType $policyType, array $value): bool
     {
         $positionModel = $this->repository->findById($positionId);
         if ($positionModel === null) {

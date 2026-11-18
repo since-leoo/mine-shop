@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\Service;
 
+use App\Infrastructure\Abstract\IService;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPageDraftInput;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPageInput;
 use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use Plugin\Diy\Domain\Content\DiyPage\Repository\DiyPageRepository;
 use Plugin\Diy\Domain\Content\DiyPage\ValueObject\DiyPagePublishValidationVo;
 use Plugin\Diy\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
-use App\Infrastructure\Abstract\IService;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPage;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPageVersion;
 
@@ -77,7 +77,7 @@ final class DomainDiyPageService extends IService
 
     public function saveDraft(int $id, DiyPageDraftInput $input, ?int $operatorId = null): DiyPageVersion
     {
-        $page = $this->requirePage($id);
+        $page = $this->requireLockedPage($id);
         $schema = DiyPageSchemaVo::fromArray($input->getSchema(), $page->page_key)->toArray();
 
         return $this->repository->storeDraft($id, $schema, $operatorId);
@@ -85,21 +85,38 @@ final class DomainDiyPageService extends IService
 
     public function publish(int $id, ?int $operatorId = null): DiyPageVersion
     {
-        $page = $this->requirePage($id);
+        $page = $this->requireLockedPage($id);
         $draft = $this->repository->findDraftVersion($id);
 
         if (! $draft instanceof DiyPageVersion) {
             throw new \DomainException('请先保存草稿后再发布');
         }
 
-        $schema = DiyPageSchemaVo::fromArray($draft->schema, $page->page_key)->toArray();
+        return $this->publishSelectedVersion($page, $draft, $operatorId);
+    }
+
+    public function requireLockedPage(int $id): DiyPage
+    {
+        return $this->repository->findForUpdate($id) ?? throw new \DomainException('DIY页面不存在或不在当前数据权限范围内');
+    }
+
+    public function validateVersion(DiyPage $page, DiyPageVersion $version): void
+    {
+        if ($version->page_id !== $page->id || $version->status !== DiyPageStatus::VERSION_DRAFT) {
+            throw new \DomainException('只能发布当前页面的草稿版本');
+        }
+        $schema = DiyPageSchemaVo::fromArray($version->schema, $page->page_key)->toArray();
         $validation = DiyPagePublishValidationVo::inspect($schema);
         if (! $validation->passed()) {
             $firstIssue = $validation->issues()[0];
             throw new \DomainException('发布前校验失败：' . $firstIssue['component_name'] . ' - ' . $firstIssue['message']);
         }
+    }
 
-        return $this->repository->publishVersion($page, $draft, $operatorId);
+    public function publishSelectedVersion(DiyPage $page, DiyPageVersion $version, ?int $operatorId): DiyPageVersion
+    {
+        $this->validateVersion($page, $version);
+        return $this->repository->publishVersion($page, $version, $operatorId);
     }
 
     public function enable(int $id, ?int $operatorId = null): bool
@@ -145,7 +162,7 @@ final class DomainDiyPageService extends IService
 
     public function resetDraft(int $id, ?int $operatorId = null): DiyPageVersion
     {
-        $page = $this->requirePage($id);
+        $page = $this->requireLockedPage($id);
         $schema = $this->defaultSchema($page);
 
         return $this->repository->storeDraft($id, $schema, $operatorId);

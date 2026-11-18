@@ -34,26 +34,26 @@ export default function getTableColumns(
     { label: () => 'ID', prop: 'id', width: '80px' },
     { label: () => t('mall.coupon.name'), prop: 'name', minWidth: '160px' },
     { label: () => t('mall.coupon.typeLabel'), prop: 'type', width: '90px',
-      cellRender: ({ row }: { row: CouponVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={row.type === 'fixed' ? 'success' : 'warning'}>
           {row.type === 'fixed' ? t('mall.coupon.typeFixed') : t('mall.coupon.typePercent')}
         </ElTag>
       ),
     },
     { label: () => t('mall.coupon.valueLabel'), prop: 'value', width: '100px',
-      cellRender: ({ row }: { row: CouponVo }) => row.type === 'percent'
+      cellRender: ({ row }) => row.type === 'percent'
         ? `${(row.value ?? 0) / 100}x`
         : `¥${formatYuan(row.value)}`,
     },
     { label: () => t('mall.coupon.minAmountLabel'), prop: 'min_amount', width: '110px',
-      cellRender: ({ row }: { row: CouponVo }) => `¥${formatYuan(row.min_amount)}`,
+      cellRender: ({ row }) => `¥${formatYuan(row.min_amount)}`,
     },
     { label: () => t('mall.coupon.totalCountLabel'), prop: 'total_quantity', width: '130px',
-      cellRender: ({ row }: { row: CouponVo }) => `${row.issued_quantity ?? 0} / ${row.total_quantity ?? 0}`,
+      cellRender: ({ row }) => `${row.issued_quantity ?? 0} / ${row.total_quantity ?? 0}`,
     },
     { label: () => t('mall.couponUser.used'), prop: 'used_quantity', width: '90px' },
     { label: () => t('mall.coupon.statusLabel'), prop: 'status', width: '120px',
-      cellRender: ({ row }: { row: CouponVo }) => (
+      cellRender: ({ row }) => (
         <ElSwitch
           modelValue={row.status === 'active'}
           disabled={!hasAuth('coupon:update')}
@@ -68,7 +68,7 @@ export default function getTableColumns(
       ),
     },
     { label: () => t('mall.coupon.validityLabel'), prop: 'start_time', minWidth: '220px',
-      cellRender: ({ row }: { row: CouponVo }) => `${row.start_time ?? '--'} ~ ${row.end_time ?? '--'}`,
+      cellRender: ({ row }) => `${row.start_time ?? '--'} ~ ${row.end_time ?? '--'}`,
     },
     { label: () => t('crud.createTime'), prop: 'created_at', width: '170px' },
     {
@@ -83,14 +83,14 @@ export default function getTableColumns(
             show: () => hasAuth('coupon:issue'),
             icon: 'ph:gift',
             text: () => t('mall.coupon.issueAction'),
-            onClick: ({ row }: { row: CouponVo }) => handleIssue(row),
+            onClick: ({ row }) => handleIssue(row),
           },
           {
             name: 'records',
             show: () => hasAuth('coupon:user:list'),
             icon: 'ph:users-three',
             text: () => t('mall.couponUser.recordTitle'),
-            onClick: ({ row }: { row: CouponVo }) => {
+            onClick: ({ row }) => {
               router.push({ path: '/mall/coupon/users', query: { coupon_id: row.id } })
             },
           },
@@ -99,7 +99,7 @@ export default function getTableColumns(
             show: () => hasAuth('coupon:update'),
             icon: 'material-symbols:edit-outline',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: CouponVo }) => {
+            onClick: ({ row }) => {
               formDialog.setTitle(t('mall.coupon.editCoupon'))
               formDialog.open({ formType: 'edit', data: row })
             },
@@ -109,7 +109,7 @@ export default function getTableColumns(
             show: () => hasAuth('coupon:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: CouponVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.coupon.confirmDelete')).then(async () => {
                 const res = await couponRemove(row.id as number)
                 if (res.code === ResultCode.SUCCESS) {

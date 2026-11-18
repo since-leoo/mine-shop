@@ -25,6 +25,8 @@ use App\Infrastructure\Model\Order\Order;
  *
  * API 端专属操作（preview、submit、cancel、confirmReceipt）已迁移至
  * Domain\Order\Api\Command\OrderCommandApiService.
+ *
+ * @extends IService<\App\Infrastructure\Model\Order\Order>
  */
 final class DomainOrderService extends IService
 {
@@ -38,6 +40,7 @@ final class DomainOrderService extends IService
     public function __construct(
         public readonly OrderRepository $repository,
         public readonly DomainMallSettingService $mallSettingService,
+        private readonly \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository $groupOrders,
     ) {}
 
     /**
@@ -57,7 +60,7 @@ final class DomainOrderService extends IService
         $order = $id ? $this->repository->findById($id) : $this->repository->findByOrderNo($orderNo);
 
         if (! $order) {
-            throw new \RuntimeException('订单不存在');
+            throw new \DomainException('订单不存在');
         }
 
         return OrderMapper::fromModel($order);
@@ -81,6 +84,9 @@ final class DomainOrderService extends IService
      */
     public function ship(OrderEntity $entity): OrderEntity
     {
+        if ($entity->getOrderType() === 'group_buy' && $this->groupOrders->findByOrderId($entity->getId())?->status !== 'grouped') {
+            throw new \DomainException('拼团尚未成功，不能发货');
+        }
         $entity->ensureShippable($this->mallSettingService->shipping());
         $this->repository->ship($entity);
 
@@ -110,7 +116,7 @@ final class DomainOrderService extends IService
     {
         $model = $this->repository->findByOrderNoForUpdate($orderNo);
         if ($model === null) {
-            throw new \RuntimeException('订单不存在');
+            throw new \DomainException('订单不存在');
         }
         return OrderMapper::fromModel($model);
     }
@@ -119,7 +125,7 @@ final class DomainOrderService extends IService
     {
         $model = $this->repository->findByIdForLock($id);
         if ($model === null) {
-            throw new \RuntimeException('订单不存在');
+            throw new \DomainException('订单不存在');
         }
         return OrderMapper::fromModel($model);
     }

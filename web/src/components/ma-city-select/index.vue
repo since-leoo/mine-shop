@@ -34,10 +34,10 @@ const { mode = 'name', showLevel = 3 } = defineProps<{
 }>()
 
 const t = useLocalTrans()
-const model = defineModel<ModelType>({ province: undefined, city: undefined, area: undefined})
-const province = ref<Area>([])
-const city = ref<Area>([])
-const area = ref<Area>([])
+const model = defineModel<ModelType>({ default: () => ({}) })
+const province = ref<Area[]>([])
+const city = ref<Area[]>([])
+const area = ref<Area[]>([])
 
 function provinceChange(val, clear = true) {
   if (clear) {
@@ -86,7 +86,7 @@ onMounted(() => {
         }
       "
     >
-      <el-option v-for="item in province" :key="item" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
+      <el-option v-for="item in province" :key="item.code" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
     </el-select>
     <el-select
       v-if="showLevel >= 2"
@@ -102,7 +102,7 @@ onMounted(() => {
         }
       "
     >
-      <el-option v-for="item in city" :key="item" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
+      <el-option v-for="item in city" :key="item.code" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
     </el-select>
     <el-select
       v-if="showLevel >= 3"
@@ -116,7 +116,7 @@ onMounted(() => {
         }
       "
     >
-      <el-option v-for="item in area" :key="item" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
+      <el-option v-for="item in area" :key="item.code" :label="item.name" :value="mode === 'name' ? item.name : item.code" />
     </el-select>
   </div>
 </template>

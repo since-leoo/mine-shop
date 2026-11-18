@@ -23,6 +23,8 @@ use App\Infrastructure\Model\GroupBuy\GroupBuy;
  *
  * 负责团购活动的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\GroupBuy\GroupBuy>
  */
 final class DomainGroupBuyService extends IService
 {
@@ -86,7 +88,7 @@ final class DomainGroupBuyService extends IService
     {
         $groupBuy = $this->repository->findById($id);
         if (! $groupBuy) {
-            throw new \RuntimeException('团购活动不存在');
+            throw new \DomainException('团购活动不存在');
         }
 
         $entity = GroupBuyMapper::fromModel($groupBuy);
@@ -118,12 +120,17 @@ final class DomainGroupBuyService extends IService
         return $this->repository->updateById($id, $entity->toArray());
     }
 
+    public function lock(int $id): void
+    {
+        $this->repository->lock($id);
+    }
+
     public function getEntity(int $id): GroupBuyEntity
     {
         /** @var null|GroupBuy $model */
         $model = $this->repository->findById($id);
         if (! $model) {
-            throw new \RuntimeException("团购活动不存在: ID={$id}");
+            throw new \DomainException("团购活动不存在: ID={$id}");
         }
         return GroupBuyMapper::fromModel($model);
     }
@@ -132,6 +139,13 @@ final class DomainGroupBuyService extends IService
     {
         $entity = $this->getEntity($id);
         $entity->increaseSoldQuantity($quantity);
+        return $this->repository->updateById($id, $entity->toArray());
+    }
+
+    public function releaseQuantity(int $id, int $quantity): bool
+    {
+        $entity = $this->getEntity($id);
+        $entity->releaseQuantity($quantity);
         return $this->repository->updateById($id, $entity->toArray());
     }
 

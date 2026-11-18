@@ -66,7 +66,7 @@ class UpdateTemplateRequest extends FormRequest
                 $content = $data['content'] ?? '';
                 if (! isset($data['title']) || ! isset($data['content'])) {
                     $templateId = $this->route('id');
-                    $existingTemplate = MessageTemplate::find($templateId);
+                    $existingTemplate = MessageTemplate::query()->find($templateId);
                     if ($existingTemplate) {
                         $title = $data['title'] ?? $existingTemplate->title;
                         $content = $data['content'] ?? $existingTemplate->content;

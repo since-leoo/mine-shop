@@ -77,7 +77,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->update($id, $request->validated()), '模板更新成功');
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -93,7 +93,7 @@ class TemplateController extends SystemMessageAbstractController
             $deleted = $this->templateService->batchDelete((array) $ids);
             return $this->success(['deleted' => $deleted, 'failed' => \count((array) $ids) - $deleted], '删除操作完成');
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage());
+            throw $e;
         }
     }
 
@@ -109,7 +109,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->preview($id, $variables));
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -125,7 +125,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->render($id, $variables));
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -141,7 +141,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->validateVariables($id, $variables));
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -152,7 +152,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->getVariables($id));
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -168,7 +168,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success($this->templateService->duplicate($id, $newName), '模板复制成功');
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 
@@ -183,7 +183,7 @@ class TemplateController extends SystemMessageAbstractController
         try {
             return $this->success(['result' => $this->templateService->toggleActive($id)], '状态更新成功');
         } catch (\InvalidArgumentException $e) {
-            return $this->error($e->getMessage(), 404);
+            throw $e;
         }
     }
 

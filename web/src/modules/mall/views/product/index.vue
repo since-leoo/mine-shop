@@ -115,7 +115,7 @@ function handleBatchDelete() {
 
 async function handleExport() {
   try {
-    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const searchParams = proTableRef.value?.getSearchForm?.() ?? {}
     const res = await exportProduct(searchParams)
     msg.success(res.message || '导出任务已创建')
   }

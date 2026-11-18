@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\GroupBuy\Listener;
 
 use App\Domain\Member\Event\OrderPaidForMember;
-use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyLifecycleService;
+use App\Application\Admin\GroupBuy\AppGroupBuyLifecycleService;
 use Hyperf\Event\Contract\ListenerInterface;
 
 /**
@@ -22,16 +22,22 @@ use Hyperf\Event\Contract\ListenerInterface;
 final class GroupBuyOrderPaidListener implements ListenerInterface
 {
     public function __construct(
-        private readonly DomainGroupBuyLifecycleService $lifecycleService,
+        private readonly AppGroupBuyLifecycleService $lifecycleService,
     ) {}
 
     public function listen(): array
     {
-        return [OrderPaidForMember::class];
+        return [OrderPaidForMember::class, \App\Domain\Trade\Order\Event\OrderCancelledEvent::class];
     }
 
     public function process(object $event): void
     {
+        if ($event instanceof \App\Domain\Trade\Order\Event\OrderCancelledEvent) {
+            if ($event->order->getOrderType() === 'group_buy') {
+                $this->lifecycleService->onOrderCancelled($event->order->getId());
+            }
+            return;
+        }
         if (! $event instanceof OrderPaidForMember || $event->orderId === 0) {
             return;
         }

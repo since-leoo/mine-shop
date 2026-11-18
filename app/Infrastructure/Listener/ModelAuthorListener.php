@@ -31,6 +31,7 @@ class ModelAuthorListener implements ListenerInterface
      * 需要自动填充 author 字段的表.
      */
     private const AUTHOR_TABLES = [
+        'attachment',
         'products',
         'categories',
         'brands',
@@ -42,6 +43,9 @@ class ModelAuthorListener implements ListenerInterface
         'reviews',
         'member_levels',
         'member_tags',
+        'diy_pages',
+        'message_templates',
+        'system_messages',
     ];
 
     public function listen(): array
@@ -57,6 +61,14 @@ class ModelAuthorListener implements ListenerInterface
         $model = $event->getModel();
         $table = $model->getTable();
 
+        if (Context::get('data_permission_enabled', false) && Context::get('current_user') !== null
+            && isset(\App\Infrastructure\Library\DataPermission\OwnedTables::CHILDREN[$table])) {
+            [$parent, $foreignKey] = \App\Infrastructure\Library\DataPermission\OwnedTables::CHILDREN[$table];
+            if (! \Hyperf\DbConnection\Db::table($parent)->where('id', $model->getAttribute($foreignKey))->exists()) {
+                throw new \DomainException('所属记录不存在或不在当前数据权限范围内');
+            }
+        }
+
         // 检查是否是需要自动填充的表
         if (! $this->shouldFillAuthor($table)) {
             return;
@@ -68,7 +80,7 @@ class ModelAuthorListener implements ListenerInterface
         }
 
         if ($event instanceof Creating) {
-            if ($model->isFillable('created_by') && empty($model->created_by)) {
+            if ($model->isFillable('created_by')) {
                 $model->created_by = $userId;
             }
         }

@@ -212,7 +212,7 @@ export default function getFormItems(
         },
       },
       itemSlots: {
-        label: (
+        label: () => (
           <div class="flex items-center gap-x-1">
             {t('baseUserManage.dataScope')}
             <el-tooltip content="设置后将覆盖岗位的数据权限" placement="top">

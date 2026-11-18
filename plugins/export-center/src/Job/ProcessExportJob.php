@@ -47,8 +47,7 @@ class ProcessExportJob extends Job
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            // 直接标记失败，不再 throw（避免队列重试时状态已非 pending）
-            $exportService->markTaskFailed($this->taskId, $e->getMessage());
+            // 服务已经标记失败，避免重复增加重试次数或将内部异常写回前端。
         }
     }
 }

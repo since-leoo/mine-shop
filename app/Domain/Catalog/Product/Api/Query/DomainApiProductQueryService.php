@@ -16,6 +16,7 @@ use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Catalog\Product\Repository\ProductRepository;
 use App\Infrastructure\Abstract\IService;
 
+/** @extends IService<\App\Infrastructure\Model\Product\Product> */
 final class DomainApiProductQueryService extends IService
 {
     public function __construct(

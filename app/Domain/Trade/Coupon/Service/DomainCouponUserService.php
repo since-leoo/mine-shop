@@ -25,6 +25,8 @@ use Carbon\Carbon;
 
 /**
  * 用户优惠券领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Coupon\CouponUser>
  */
 final class DomainCouponUserService extends IService
 {
@@ -50,7 +52,7 @@ final class DomainCouponUserService extends IService
      */
     public function issue(int $couponId, array $memberIds, ?string $expireAt = null): array
     {
-        $coupon = $this->couponService->getEntity($couponId);
+        $coupon = $this->couponService->getLockedEntity($couponId);
 
         $now = Carbon::now();
         $coupon->assertActive()->assertEffectiveAt($now);

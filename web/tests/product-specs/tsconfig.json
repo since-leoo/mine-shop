@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "types": ["vite/client", "element-plus/global"],
+    "paths": {
+      "@/components/ma-upload-image/index.vue": ["tests/product-specs/harness/MediaStub.vue"],
+      "@/components/ma-rich-editor/index.vue": ["tests/product-specs/harness/MediaStub.vue"],
+      "@/*": ["src/*"],
+      "~/*": ["src/modules/*"],
+      "#/*": ["types/*"],
+      "vue": ["node_modules/vue"],
+      "element-plus": ["node_modules/element-plus"]
+    }
+  },
+  "include": ["../../src/modules/mall/views/product/form.vue", "../../src/modules/mall/views/product/data/specValues.ts", "../../src/modules/mall/api/product.ts", "../../types/global.d.ts", "harness/**/*.ts", "harness/**/*.vue"],
+  "exclude": ["../../node_modules"]
+}

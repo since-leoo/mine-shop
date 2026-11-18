@@ -42,10 +42,6 @@ final class SeckillSessionEntity
 
     private ?string $remark = null;
 
-    private ?Carbon $createdAt = null;
-
-    private ?Carbon $updatedAt = null;
-
     public function __construct() {}
 
     /**
@@ -63,9 +59,7 @@ final class SeckillSessionEntity
         int $sortOrder,
         bool $isEnabled,
         ?array $rulesData,
-        ?string $remark,
-        ?Carbon $createdAt = null,
-        ?Carbon $updatedAt = null
+        ?string $remark
     ): self {
         $entity = new self();
         $entity->id = $id;
@@ -78,8 +72,6 @@ final class SeckillSessionEntity
         $entity->sortOrder = $sortOrder;
         $entity->isEnabled = $isEnabled;
         $entity->remark = $remark;
-        $entity->createdAt = $createdAt;
-        $entity->updatedAt = $updatedAt;
         return $entity;
     }
 

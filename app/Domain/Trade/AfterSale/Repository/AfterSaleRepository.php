@@ -60,7 +60,7 @@ final class AfterSaleRepository extends IRepository
     public function findActiveByOrderItemId(int $orderItemId): ?AfterSale
     {
         /** @var null|AfterSale $info */
-        $info = $this->model->where('order_item_id', $orderItemId)
+        $info = $this->getQuery()->where('order_item_id', $orderItemId)
             ->whereNotIn('status', [
                 AfterSaleStatus::COMPLETED->value,
                 AfterSaleStatus::CLOSED->value,
@@ -72,7 +72,7 @@ final class AfterSaleRepository extends IRepository
 
     public function paginateByMember(int $memberId, string $status = 'all', int $page = 1, int $pageSize = 10): LengthAwarePaginatorInterface
     {
-        $query = $this->model->where('member_id', $memberId)
+        $query = $this->getQuery()->where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->orderByDesc('id');
 
@@ -86,13 +86,13 @@ final class AfterSaleRepository extends IRepository
     public function findByIdAndMember(int $id, int $memberId): AfterSale
     {
         /** @var null|AfterSale $record */
-        $record = $this->model->where('id', $id)
+        $record = $this->getQuery()->where('id', $id)
             ->where('member_id', $memberId)
             ->with(['order', 'orderItem'])
             ->first();
 
         if ($record === null) {
-            throw new \RuntimeException('售后单不存在');
+            throw new \DomainException('售后单不存在');
         }
 
         return $record;
@@ -113,7 +113,7 @@ final class AfterSaleRepository extends IRepository
      */
     public function findDetailById(int $id): ?AfterSale
     {
-        return $this->model->whereKey($id)
+        return $this->getQuery()->whereKey($id)
             ->with(['order', 'orderItem'])
             ->whereKey($id)
             ->first();
@@ -127,7 +127,9 @@ final class AfterSaleRepository extends IRepository
             ->when(! empty($params['member_id']), static fn (Builder $builder) => $builder->where('member_id', (int) $params['member_id']))
             ->when(! empty($params['type']), static fn (Builder $builder) => $builder->where('type', $params['type']))
             ->when(! empty($params['status']) && $params['status'] !== 'all', static fn (Builder $builder) => $builder->where('status', $params['status']))
-            ->when(! empty($params['order_no']), static fn (Builder $builder) => $builder->whereHas('order', static fn (Builder $orderQuery) => $orderQuery->where('order_no', 'like', '%' . $params['order_no'] . '%')))
+            ->when(! empty($params['order_no']), static fn (Builder $builder) => $builder->whereHas('order', static function (Builder $orderQuery) use ($params): void {
+                $orderQuery->where('order_no', 'like', '%' . $params['order_no'] . '%');
+            }))
             ->orderByDesc('id');
     }
 

@@ -559,7 +559,7 @@
       <el-button
         type="primary"
         :disabled="!dialogSetting"
-        :loading="dialogSetting && savingKey === dialogSetting.key"
+        :loading="!!dialogSetting && savingKey === dialogSetting.key"
         @click="handleDialogSave"
       >
         {{ t('mall.system.saveAction') }}
@@ -1274,7 +1274,7 @@ const collectTagPayload = (item: SystemSettingItem, validate = true) => {
     .map((value) => String(value).trim())
     .filter((value) => value.length)
 
-  const minItems = Number.isFinite(item.meta?.min_items) ? Number(item.meta.min_items) : 0
+  const minItems = Number.isFinite(item.meta?.min_items) ? Number(item.meta?.min_items) : 0
   if (validate && normalized.length < minItems) {
     tagErrors[item.key] = t('mall.system.minTags', { n: minItems })
     jsonErrors[item.key] = tagErrors[item.key]

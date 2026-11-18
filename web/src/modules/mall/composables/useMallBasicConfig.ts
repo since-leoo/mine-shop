@@ -16,9 +16,9 @@ export const MALL_BASIC_KEYS = [
   'mall.basic.logo',
 ] as const
 
-export type MallBasicKey = typeof MALL[number]
+export type MallBasicKey = typeof MALL_BASIC_KEYS[number]
 
-export interface MallBasic_BASIC_KEYSConfig {
+export interface MallBasicConfig {
   'mall.basic.name': string
   'mall.basic.admin_logo': string
   'mall.basic.admin_small_logo': string

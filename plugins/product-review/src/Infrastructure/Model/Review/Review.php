@@ -36,8 +36,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|Carbon $reply_time
  * @property null|int $created_by
  * @property null|int $updated_by
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property null|Carbon $created_at
+ * @property null|Carbon $updated_at
  * @property null|Carbon $deleted_at
  */
 class Review extends Model

@@ -41,8 +41,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $buyer_return_logistics_no
  * @property null|string $reship_logistics_company
  * @property null|string $reship_logistics_no
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property null|Carbon $created_at
+ * @property null|Carbon $updated_at
  */
 class AfterSale extends Model
 {

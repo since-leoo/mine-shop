@@ -59,6 +59,7 @@ final class ManualOrderPaymentTest extends DatabaseTestCase
         $this->orders = new DomainOrderService(
             new OrderRepository(new Order()),
             $this->createMock(DomainMallSettingService::class),
+            new \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuyOrder()),
         );
         $repository = new OrderPaymentRepository(new OrderPayment());
         $this->payments = new DomainPayService(

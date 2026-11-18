@@ -15,9 +15,12 @@ return [
     | 临时文件存储路径
     |--------------------------------------------------------------------------
     |
-    | 导出文件生成时的临时目录，文件上传到第三方存储后会自动清理。
+    | 导出文件生成时的临时目录，文件移入私有存储后会自动清理。
     |
     */
+    // HTTP 和导出队列必须共享此非公开目录，禁止映射为静态资源。
+    'private_path' => env('EXPORT_PRIVATE_PATH', BASE_PATH . '/storage/exports/private'),
+
     'temp_path' => env('EXPORT_TEMP_PATH', BASE_PATH . '/storage/exports/temp'),
 
     /*

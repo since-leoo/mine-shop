@@ -19,6 +19,7 @@ use Hyperf\Database\Model\SoftDeletes;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property-read null|DiyPageVersion $publishedVersion
  * @property int $id
  * @property string $page_key
  * @property string $title

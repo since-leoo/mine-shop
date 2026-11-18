@@ -50,7 +50,7 @@ final class DomainApiGroupBuyListService
         // Use the first activity to build section-level status/countdown
         $first = $activities->first();
         $statusTag = $first->status === 'active' ? 'running' : 'notStart';
-        $remainMs = max(0, ($first->end_time?->getTimestamp() - time()) * 1000);
+        $remainMs = max(0, ($first->end_time->getTimestamp() - time()) * 1000);
 
         return [
             'list' => $list,

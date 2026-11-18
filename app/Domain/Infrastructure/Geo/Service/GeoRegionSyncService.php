@@ -136,6 +136,7 @@ class GeoRegionSyncService
         }
 
         $nodesById = [];
+        /** @var array<int|string, list<string>> $childrenMap */
         $childrenMap = [];
 
         foreach ($lines as $line) {

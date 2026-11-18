@@ -94,6 +94,11 @@ class ICache implements InterfaceCache
         return (bool) $this->redis->hSet($this->prefix . ':' . $key, $field, $value);
     }
 
+    public function hSetNx(string $key, string $field, mixed $value): bool
+    {
+        return (bool) $this->redis->hSetNx($this->prefix . ':' . $key, $field, $value);
+    }
+
     public function hGet(string $key, string $field): mixed
     {
         return $this->redis->hGet($this->prefix . ':' . $key, $field);
@@ -114,9 +119,9 @@ class ICache implements InterfaceCache
         return $this->redis->hMget($this->prefix . ':' . $key, $fields);
     }
 
-    public function hDel(string $key, string $field): bool
+    public function hDel(string $key, string ...$fields): bool
     {
-        return (bool) $this->redis->hDel($this->prefix . ':' . $key, $field);
+        return (bool) $this->redis->hDel($this->prefix . ':' . $key, ...$fields);
     }
 
     public function eval(string $script, array $args = [], int $numKeys = 0): bool

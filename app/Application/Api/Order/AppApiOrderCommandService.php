@@ -63,15 +63,23 @@ final class AppApiOrderCommandService
     {
         $row = $this->submissionStore->find($tradeNo);
         if ($row === null || (int) $row['member_id'] !== $memberId) {
-            throw new \RuntimeException('订单提交不存在');
+            throw new \DomainException('订单提交不存在');
         }
-        $result = ['status' => in_array($row['status'], ['pending', 'reserved'], true) ? 'processing' : $row['status'], 'error' => $row['last_error'] ?? ''];
+        $status = in_array($row['status'], ['pending', 'reserved'], true) ? 'processing' : $row['status'];
+        $error = '';
+        if ($row['status'] === 'failed') {
+            $storedError = (string) ($row['last_error'] ?? '');
+            // 只有新版失败处理明确标记的文案可公开；历史诊断保留在内部。
+            $error = str_starts_with($storedError, AppOrderSubmissionService::PUBLIC_ERROR_PREFIX)
+                ? substr($storedError, strlen(AppOrderSubmissionService::PUBLIC_ERROR_PREFIX))
+                : AppOrderSubmissionService::GENERIC_FAILURE_MESSAGE;
+        }
 
         return [
             'trade_no' => $tradeNo,
-            'status' => $result['status'] ?: 'not_found',
-            'error' => $result['error'],
-            'pay_methods' => $result['status'] === 'created' ? $this->resolvePaymentMethods() : [],
+            'status' => $status ?: 'not_found',
+            'error' => $error,
+            'pay_methods' => $status === 'created' ? $this->resolvePaymentMethods() : [],
         ];
     }
 
@@ -112,7 +120,7 @@ final class AppApiOrderCommandService
         Db::transaction(function () use ($memberId, $orderNo): void {
             $entity = $this->orderCommandService->getLockedEntity($orderNo);
             if ($entity->getMemberId() !== $memberId) {
-                throw new \RuntimeException('订单不存在');
+                throw new \DomainException('订单不存在');
             }
             $this->orderCommandService->confirmReceipt($entity);
             $this->outbox->append('completed:' . $orderNo, 'order.completed', [

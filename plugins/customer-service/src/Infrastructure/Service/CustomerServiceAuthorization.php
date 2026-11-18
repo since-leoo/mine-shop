@@ -23,7 +23,7 @@ final class CustomerServiceAuthorization implements CustomerServiceAuthorization
         }
         $roles = $user->roles()->where('role.status', Status::Normal);
         $superAdmin = (clone $roles)->where('code', 'SuperAdmin')->exists();
-        $permitted = $superAdmin || (clone $roles)->whereHas('menus', static fn ($query) => $query->where('name', $permission)->where('status', Status::Normal))->exists();
+        $permitted = $superAdmin || (clone $roles)->whereHas('menus', static function ($query) use ($permission): void { $query->where('name', $permission)->where('status', Status::Normal); })->exists();
         if (! $permitted) {
             throw new \DomainException('没有执行此客服操作的权限');
         }

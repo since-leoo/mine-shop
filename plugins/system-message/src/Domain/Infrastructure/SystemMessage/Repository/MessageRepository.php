@@ -23,12 +23,17 @@ class MessageRepository
 {
     public function create(array $data): Message
     {
-        return Message::create($data);
+        return Message::query()->create($data);
     }
 
     public function findById(int $id): ?Message
     {
-        return Message::find($id);
+        return Message::query()->find($id);
+    }
+
+    public function findForUpdate(int $id): ?Message
+    {
+        return Message::query()->whereKey($id)->lockForUpdate()->first();
     }
 
     public function list(array $filters = [], int $page = 1, int $pageSize = 20): array
@@ -85,18 +90,18 @@ class MessageRepository
 
     public function getStatistics(): array
     {
-        $total = Message::count();
-        $sent = Message::where('status', MessageStatus::SENT->value)->count();
-        $draft = Message::where('status', MessageStatus::DRAFT->value)->count();
-        $scheduled = Message::where('status', MessageStatus::SCHEDULED->value)->count();
-        $failed = Message::where('status', MessageStatus::FAILED->value)->count();
-        $byType = Message::selectRaw('type, COUNT(*) as count')->groupBy('type')->pluck('count', 'type')->toArray();
-        $recentMessages = Message::where('created_at', '>=', Carbon::now()->subDays(7))
+        $total = Message::query()->count();
+        $sent = Message::query()->where('status', MessageStatus::SENT->value)->count();
+        $draft = Message::query()->where('status', MessageStatus::DRAFT->value)->count();
+        $scheduled = Message::query()->where('status', MessageStatus::SCHEDULED->value)->count();
+        $failed = Message::query()->where('status', MessageStatus::FAILED->value)->count();
+        $byType = Message::query()->selectRaw('type, COUNT(*) as count')->groupBy('type')->pluck('count', 'type')->toArray();
+        $recentMessages = Message::query()->where('created_at', '>=', Carbon::now()->subDays(7))
             ->selectRaw('DATE(created_at) as date, COUNT(*) as count')
             ->groupBy('date')->orderBy('date')->pluck('count', 'date')->toArray();
-        $totalUserMessages = UserMessage::count();
-        $readMessages = UserMessage::where('is_read', true)->count();
-        $unreadMessages = UserMessage::where('is_read', false)->where('is_deleted', false)->count();
+        $totalUserMessages = UserMessage::query()->count();
+        $readMessages = UserMessage::query()->where('is_read', true)->count();
+        $unreadMessages = UserMessage::query()->where('is_read', false)->where('is_deleted', false)->count();
         return [
             'messages' => [
                 'total' => $total, 'sent' => $sent, 'draft' => $draft,
@@ -112,7 +117,7 @@ class MessageRepository
 
     public function getPopularMessages(int $limit = 10): Collection
     {
-        return Message::withCount('userMessages')
+        return Message::query()->withCount('userMessages')
             ->where('status', MessageStatus::SENT->value)
             ->orderBy('user_messages_count', 'desc')
             ->limit($limit)->get();
@@ -120,7 +125,7 @@ class MessageRepository
 
     public function getRecentMessages(int $days = 7, int $limit = 20): Collection
     {
-        return Message::where('created_at', '>=', Carbon::now()->subDays($days))
+        return Message::query()->where('created_at', '>=', Carbon::now()->subDays($days))
             ->orderBy('created_at', 'desc')->limit($limit)->get();
     }
 

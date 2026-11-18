@@ -22,7 +22,9 @@ final class AppExceptionHandler extends AbstractHandler
         $this->stopPropagation();
         return new Result(
             code: ResultCode::FAIL,
-            message: $throwable->getMessage()
+            message: $this->isDebug() || in_array($throwable::class, [\DomainException::class, \InvalidArgumentException::class], true)
+                ? $throwable->getMessage()
+                : '系统繁忙，请稍后重试'
         );
     }
 

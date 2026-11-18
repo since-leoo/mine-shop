@@ -17,6 +17,8 @@ namespace App\Domain\Catalog\Product\Event;
  */
 final class ProductCreated
 {
+    public readonly string $operationId;
+
     /**
      * @param int $productId 商品ID
      * @param array<int, int> $skuIds SKU ID列表
@@ -25,6 +27,9 @@ final class ProductCreated
     public function __construct(
         public readonly int $productId,
         public readonly array $skuIds = [],
-        public readonly array $stockData = []
-    ) {}
+        public readonly array $stockData = [],
+        ?string $operationId = null,
+    ) {
+        $this->operationId = $operationId ?? bin2hex(random_bytes(16));
+    }
 }

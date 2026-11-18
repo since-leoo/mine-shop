@@ -54,7 +54,7 @@ $container->set(Db::class, new Db($container));
 ApplicationContext::setContainer($container);
 // No setting lookup is needed for balance payment/cancellation; no application bootstrap or .env is loaded.
 $settings = (new ReflectionClass(DomainMallSettingService::class))->newInstanceWithoutConstructor();
-$orders = new DomainOrderService(new OrderRepository(new Order()), $settings);
+$orders = new DomainOrderService(new OrderRepository(new Order()), $settings, new \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuyOrder()));
 $paymentRepo = new OrderPaymentRepository(new OrderPayment());
 $pay = new DomainPayService($orders, new DomainOrderPaymentService($paymentRepo), $paymentRepo,
     new DomainMemberWalletService(new MemberWalletRepository(new MemberWallet())),

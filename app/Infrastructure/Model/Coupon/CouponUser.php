@@ -19,6 +19,9 @@ use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property Coupon|null $coupon
+ * @property Member|null $member
+ * @property Order|null $order
  * @property int $id
  * @property null|int $coupon_id
  * @property null|int $member_id

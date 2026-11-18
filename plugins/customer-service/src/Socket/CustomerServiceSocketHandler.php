@@ -23,6 +23,7 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
         private readonly CustomerServiceAuthorizationInterface $authorization,
     ) {}
 
+    /** @param object $server */
     public function onOpen($server, $request): void
     {
         $this->responder->send($server, $request->fd, 'connected', ['fd' => $request->fd]);

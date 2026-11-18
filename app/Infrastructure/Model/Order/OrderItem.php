@@ -18,6 +18,7 @@ use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property Order|null $order
  * @property int $id
  * @property int $order_id
  * @property int $product_id

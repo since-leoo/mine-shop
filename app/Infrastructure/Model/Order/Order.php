@@ -25,6 +25,11 @@ use Hyperf\Database\Model\Relations\HasOne;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property \Hyperf\Database\Model\Collection<int, OrderItem> $items
+ * @property OrderAddress|null $address
+ * @property \Hyperf\Database\Model\Collection<int, OrderPackage> $packages
+ * @property \Hyperf\Database\Model\Collection<int, OrderLog> $logs
+ * @property Member|null $member
  * @property int $id
  * @property string $order_no
  * @property int $member_id
@@ -115,6 +120,7 @@ class Order extends Model
         return 'ORD' . date('YmdHis') . bin2hex(random_bytes(6));
     }
 
+    /** @return HasMany<OrderItem, $this> */
     public function items(): HasMany
     {
         $relation = $this->hasMany(OrderItem::class, 'order_id', 'id');
@@ -137,11 +143,13 @@ class Order extends Model
         return $relation;
     }
 
+    /** @return HasMany<OrderLog, $this> */
     public function logs(): HasMany
     {
         return $this->hasMany(OrderLog::class, 'order_id', 'id');
     }
 
+    /** @return HasOne<OrderAddress, $this> */
     public function address(): HasOne
     {
         $relation = $this->hasOne(OrderAddress::class, 'order_id', 'id');
@@ -160,11 +168,15 @@ class Order extends Model
         return $relation;
     }
 
+    /** @return HasOne<Member, $this> */
     public function member(): HasOne
     {
-        return $this->hasOne(Member::class, 'id', 'member_id')->select(['id', 'nickname', 'phone']);
+        $relation = $this->hasOne(Member::class, 'id', 'member_id');
+        $relation->select(['id', 'nickname', 'phone']);
+        return $relation;
     }
 
+    /** @return HasMany<OrderPackage, $this> */
     public function packages(): HasMany
     {
         $relation = $this->hasMany(OrderPackage::class, 'order_id', 'id');

@@ -475,7 +475,7 @@ final class PluginCommerceBridgeTest extends DatabaseTestCase
         $this->connection->table('orders')->where('id', $orderId)->update(['status' => 'pending', 'pay_status' => 'pending', 'expire_time' => date('Y-m-d H:i:s', time() + 3600)]);
         $settings = $this->createMock(DomainMallSettingService::class);
         $orderRepository = new OrderRepository(new Order());
-        $orderDomain = new DomainOrderService($orderRepository, $settings);
+        $orderDomain = new DomainOrderService($orderRepository, $settings, new \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuyOrder()));
         $paymentRepository = new OrderPaymentRepository(new OrderPayment());
         $outbox = new TradeOutboxRepository();
         $gate = $this->createMock(ExternalFulfillmentInterface::class);

@@ -12,139 +12,28 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule\Executable;
 
-use App\Domain\Organization\Repository\DepartmentRepository;
-use App\Infrastructure\Model\Permission\Department;
-use App\Infrastructure\Model\Permission\Position;
 use App\Infrastructure\Model\Permission\User;
-use Hyperf\Database\Model\Collection;
 
 class CreatedByIdsExecute extends AbstractExecutable
 {
     public function execute(): ?array
     {
         $policy = $this->getPolicy();
-        $policyType = $policy->policy_type;
-        if ($policyType->isAll()) {
+        if ($policy->policy_type->isAll()) {
             return null;
         }
-        /*
-         * @var Department[]|Collection $departmentList
-         */
-        if ($policyType->isCustomDept()) {
-            $departmentList = $this->getRepository(DepartmentRepository::class)->getByIds($policy->value);
+        if ($policy->policy_type->isSelf()) {
+            return [(int) $this->getUser()->id];
         }
-        if ($policyType->isDeptSelf()) {
-            $departmentList = $this->getUser()->department()->get();
+        $departments = (new DeptExecute($this->getUser(), $policy))->execute() ?? [];
+        if ($departments === []) {
+            return [];
         }
-        if ($policyType->isDeptTree()) {
-            $departmentList = collect();
-            /**
-             * @var Collection|Department[] $currentList
-             */
-            $currentList = $this->getUser()->department()->get();
-            foreach ($currentList as $item) {
-                $departmentList = $departmentList->merge($item->getFlatChildren());
-            }
-        }
-        if ($policyType->isCustomFunc()) {
-            $departmentList = $this->loadCustomFunc($policy);
-        }
-        $ids = [
-            $this->getUser()->id,
-        ];
-        if ($policyType->isSelf()) {
-            return $ids;
-        }
-
-        if ($policyType->isNotCustomFunc() && $policyType->isNotCustomDept()) {
-            /**
-             * @var Collection|Department[] $leaderDepartmentList
-             */
-            $leaderDepartmentList = $this->getUser()->department()->get();
-            foreach ($leaderDepartmentList as $department) {
-                if ($policyType->isDeptSelf()) {
-                    // @phpstan-ignore-next-line
-                    $this->getUser()->newQuery()
-                        ->whereHas('department', static function ($query) use ($department) {
-                            $query->where('id', $department->id);
-                            // @phpstan-ignore-next-line
-                        })->get()->each(static function (User $user) use (&$ids) {
-                            $ids[] = $user->id;
-                        });
-                }
-                if ($policyType->isDeptTree()) {
-                    // @phpstan-ignore-next-line
-                    $department->getFlatChildren()->each(function (Department $department) use (&$ids) {
-                        $this->getUser()->newQuery()
-                            ->whereHas('department', static function ($query) use ($department) {
-                                $query->where('id', $department->id);
-                                // @phpstan-ignore-next-line
-                            })->get()->each(static function (User $user) use (&$ids) {
-                                $ids[] = $user->id;
-                            });
-                    });
-                }
-            }
-            /**
-             * @var Collection|Position[] $positionList
-             */
-            $positionList = $this->getUser()->position()->get();
-            foreach ($positionList as $position) {
-                if ($policyType->isDeptSelf()) {
-                    // @phpstan-ignore-next-line
-                    $position->department()->get()->each(function (Department $department) use (&$ids) {
-                        $this->getUser()->newQuery()
-                            ->whereHas('department', static function ($query) use ($department) {
-                                $query->where('id', $department->id);
-                                // @phpstan-ignore-next-line
-                            })->get()->each(static function (User $user) use (&$ids) {
-                                $ids[] = $user->id;
-                            });
-                    });
-                }
-                if ($policyType->isDeptTree()) {
-                    // @phpstan-ignore-next-line
-                    $position->department()->get()->each(function (Department $department) use (&$ids) {
-                        $department->getFlatChildren()->each(function (Department $department) use (&$ids) {
-                            $this->getUser()->newQuery()
-                                ->whereHas('department', static function ($query) use ($department) {
-                                    $query->where('id', $department->id);
-                                    // @phpstan-ignore-next-line
-                                })->get()->each(static function (User $user) use (&$ids) {
-                                    $ids[] = $user->id;
-                                });
-                        });
-                    });
-                }
-            }
-
-            if (! empty($departmentList)) {
-                foreach ($departmentList as $department) {
-                    if ($policyType->isDeptSelf()) {
-                        // @phpstan-ignore-next-line
-                        $this->getUser()->newQuery()
-                            ->whereHas('department', static function ($query) use ($department) {
-                                $query->where('id', $department->id);
-                                // @phpstan-ignore-next-line
-                            })->get()->each(static function (User $user) use (&$ids) {
-                                $ids[] = $user->id;
-                            });
-                    }
-                    if ($policyType->isDeptTree()) {
-                        // @phpstan-ignore-next-line
-                        $department->getFlatChildren()->each(function (Department $department) use (&$ids) {
-                            $this->getUser()->newQuery()
-                                ->whereHas('department', static function ($query) use ($department) {
-                                    $query->where('id', $department->id);
-                                    // @phpstan-ignore-next-line
-                                })->get()->each(static function (User $user) use (&$ids) {
-                                    $ids[] = $user->id;
-                                });
-                        });
-                    }
-                }
-            }
-        }
-        return array_unique($ids);
+        return User::query()->where(static function ($query) use ($departments): void {
+            $query->whereHas('department', static fn ($dept) => $dept->whereIn('department.id', $departments))
+                ->orWhereHas('position', static fn ($position) => $position->whereIn('position.dept_id', $departments))
+                ->orWhereHas('dept_leader', static fn ($dept) => $dept->whereIn('department.id', $departments));
+        })
+            ->pluck('id')->map(static fn ($id) => (int) $id)->all();
     }
 }

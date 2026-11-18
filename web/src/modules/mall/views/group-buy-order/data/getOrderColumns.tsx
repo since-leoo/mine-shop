@@ -1,11 +1,11 @@
-import type { MaProTableColumns } from '@mineadmin/pro-table'
+import type { MaTableColumns } from '@mineadmin/table'
 import type { GroupBuyOrderDetailVo } from '~/mall/api/group-buy-order'
 
 import { ElTag } from 'element-plus'
 import { formatYuan } from '@/utils/price'
 import { useI18n } from 'vue-i18n'
 
-export default function getOrderColumns(): MaProTableColumns[] {
+export default function getOrderColumns(): MaTableColumns[] {
   const { t } = useI18n()
 
   const orderStatusMap: Record<string, { text: string, type: string }> = {
@@ -22,7 +22,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       label: () => t('mall.groupBuyOrder.leader'),
       prop: 'is_leader',
       width: '60px',
-      cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) =>
+      cellRender: ({ row }) =>
         row.is_leader ? <ElTag type="warning" size="small">{t('mall.groupBuyOrder.leaderTag')}</ElTag> : <span class="text-gray-400">{t('mall.groupBuyOrder.member')}</span>,
     },
     { label: () => t('mall.groupBuyOrder.memberName'), prop: 'member_nickname', width: '100px' },
@@ -32,7 +32,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       label: () => t('mall.groupBuyOrder.groupPrice'),
       prop: 'group_price',
       width: '90px',
-      cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => (
+      cellRender: ({ row }) => (
         <span class="text-red-500">¥{formatYuan(row.group_price)}</span>
       ),
     },
@@ -40,7 +40,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       label: () => t('mall.groupBuyOrder.paidAmount'),
       prop: 'total_amount',
       width: '100px',
-      cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => (
+      cellRender: ({ row }) => (
         <span class="font-semibold">¥{formatYuan(row.total_amount)}</span>
       ),
     },
@@ -48,7 +48,7 @@ export default function getOrderColumns(): MaProTableColumns[] {
       label: () => t('mall.groupBuyOrder.groupStatus'),
       prop: 'status',
       width: '90px',
-      cellRender: ({ row }: { row: GroupBuyOrderDetailVo }) => {
+      cellRender: ({ row }) => {
         const s = orderStatusMap[row.status] || { text: row.status, type: 'info' }
         return <ElTag type={s.type as any} size="small">{s.text}</ElTag>
       },

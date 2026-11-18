@@ -23,7 +23,6 @@ const props = withDefaults(
   defineProps<MDrawerProps>(),
   {
     clickModalClose: true,
-    side: 'right',
     modal: true,
     direction: 'right',
     nested: true,
@@ -31,7 +30,7 @@ const props = withDefaults(
 )
 const emits = defineEmits<DialogRootEmits>()
 
-interface MDrawerProps extends DrawerRootProps {
+type MDrawerProps = DrawerRootProps & {
   clickModalClose?: boolean
   contentClass?: string
   title?: string
@@ -79,7 +78,7 @@ const isOpen = defineModel<boolean>()
         </Transition>
         <DrawerContent
           class="drawer-content" :class="{
-            [props?.contentClass]: true,
+            [props.contentClass ?? '']: true,
           }"
         >
           <DrawerTitle as="div">

@@ -14,8 +14,8 @@ namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service;
 
 use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
-use Hyperf\AsyncQueue\Annotation\AsyncQueueMessage;
 use Hyperf\Context\ApplicationContext;
+use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\NotificationTransportInterface;
 use Plugin\Sms\Model\SmsMessage;
 use Plugin\Sms\Service\SmsSenderInterface;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Event\NotificationFailed;
@@ -35,15 +35,18 @@ class NotificationService
     public function __construct(
         protected UserPreferenceRepository $preferenceRepository,
         protected SmsSenderInterface $smsSender,
-        protected MiniAppInterface $miniApp
+        protected MiniAppInterface $miniApp,
+        protected NotificationTransportInterface $transport
     ) {}
 
     /**
      * Send a notification to a user via a specific channel.
      */
-    #[AsyncQueueMessage]
     public function send(Message $message, int $userId, string $channel): bool
     {
+        if ($this->hasSuccessfulDelivery($message->id, $userId, $channel)) {
+            return true;
+        }
         try {
             if (! $this->shouldSendNotification($message, $userId, $channel)) {
                 logger()->info('Notification skipped due to user preferences', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
@@ -54,18 +57,26 @@ class NotificationService
                 return false;
             }
             $result = $this->sendByChannel($message, $userId, $channel);
-            $this->logDelivery($message, $userId, $channel, $result);
-            if ($result) {
-                $this->getEventDispatcher()->dispatch(new NotificationSent($message, $userId, $channel));
-                logger()->info('Notification sent successfully', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+            if (! $result) {
+                throw new \RuntimeException('通知渠道未确认发送成功: ' . $channel);
             }
-            return $result;
+            $this->logDelivery($message, $userId, $channel, true);
+            $this->getEventDispatcher()->dispatch(new NotificationSent($message, $userId, $channel));
+            logger()->info('Notification sent successfully', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+            return true;
         } catch (\Throwable $e) {
             $this->logDelivery($message, $userId, $channel, false, $e->getMessage());
             $this->getEventDispatcher()->dispatch(new NotificationFailed($message, $userId, $channel, $e->getMessage()));
             logger()->error('Failed to send notification', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel, 'error' => $e->getMessage()]);
-            return false;
+            throw $e;
         }
+    }
+
+    public function hasSuccessfulDelivery(int $messageId, int $userId, string $channel): bool
+    {
+        return MessageDeliveryLog::query()->where('message_id', $messageId)
+            ->where('user_id', $userId)->where('channel', $channel)
+            ->whereIn('status', [MessageDeliveryLog::STATUS_SENT, MessageDeliveryLog::STATUS_DELIVERED])->exists();
     }
 
     /**
@@ -176,7 +187,7 @@ class NotificationService
      */
     protected function sendDatabaseNotification(Message $message, int $userId): bool
     {
-        return UserMessage::where('message_id', $message->id)
+        return UserMessage::query()->where('message_id', $message->id)
             ->where('user_id', $userId)
             ->where('is_deleted', false)
             ->exists();
@@ -187,7 +198,7 @@ class NotificationService
      */
     protected function sendRealtimeNotification(Message $message, int $userId, string $channel): bool
     {
-        logger()->info('Realtime notification skipped (not implemented)', ['message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel]);
+        $this->transport->gateway($channel, $userId, ['message_id' => $message->id, 'title' => $message->title, 'content' => $message->content, 'type' => $message->type, 'priority' => $message->priority]);
         return true;
     }
 
@@ -200,16 +211,8 @@ class NotificationService
         if (! $user || empty($user->email)) {
             return false;
         }
-        $from = (string) config('system_message.email.from', config('mail.from.address', ''));
-        $headers = ['MIME-Version: 1.0', 'Content-type: text/html; charset=UTF-8'];
-        if ($from !== '') {
-            $headers[] = 'From: ' . $from;
-        }
-        $sent = mail((string) $user->email, $message->title, $this->formatEmailContent($message), implode("\r\n", $headers));
-        if (! $sent) {
-            logger()->warning('Email notification failed', ['message_id' => $message->id, 'user_id' => $userId, 'email' => $user->email]);
-        }
-        return $sent;
+        $this->transport->email((string) $user->email, $message->title, $this->formatEmailContent($message));
+        return true;
     }
 
     /**
@@ -225,7 +228,7 @@ class NotificationService
         $this->smsSender->send(new SmsMessage(
             (string) $user->phone,
             $variables,
-            (string) $message->extra_data['template_code'] ?? null,
+            isset($message->extra_data['template_code']) ? (string) $message->extra_data['template_code'] : null,
             $this->formatSmsContent($message),
         ));
         return true;
@@ -236,8 +239,8 @@ class NotificationService
      */
     protected function sendPushNotification(Message $message, int $userId): bool
     {
-        logger()->info('Push notification skipped (push service not configured)', ['message_id' => $message->id, 'user_id' => $userId]);
-        return false;
+        $this->transport->gateway('push', $userId, ['message_id' => $message->id, 'title' => $message->title, 'content' => $this->formatPushContent($message), 'type' => $message->type, 'priority' => $message->priority]);
+        return true;
     }
 
     /**
@@ -245,6 +248,9 @@ class NotificationService
      */
     protected function sendMiniappNotification(Message $message, int $userId): bool
     {
+        if ($message->recipient_type !== 'user' || array_map('intval', $message->recipient_ids ?? []) !== [$userId]) {
+            throw new \DomainException('小程序通知必须明确指定单个收件人，不能复用 openid 群发');
+        }
         $extra = \is_array($message->extra_data) ? $message->extra_data : [];
         $openid = (string) ($extra['openid'] ?? $extra['miniapp_openid'] ?? '');
         $templateId = (string) ($extra['miniapp_template_id'] ?? $extra['template_id'] ?? '');
@@ -257,12 +263,15 @@ class NotificationService
         if (! \is_array($data)) {
             $data = [];
         }
-        $this->miniApp->sendSubscribeMessage(
+        $receipt = $this->miniApp->sendSubscribeMessage(
             $openid,
             $templateId,
             $data,
             (string) ($extra['miniapp_page'] ?? ''),
         );
+        if (! in_array($receipt['errcode'] ?? null, [0, '0'], true)) {
+            throw new \RuntimeException('微信订阅消息未确认成功，错误码: ' . ($receipt['errcode'] ?? 'missing'));
+        }
         return true;
     }
 
@@ -311,10 +320,11 @@ class NotificationService
      */
     protected function logDelivery(Message $message, int $userId, string $channel, bool $success, ?string $error = null): void
     {
-        MessageDeliveryLog::create([
+        MessageDeliveryLog::query()->create([
             'message_id' => $message->id, 'user_id' => $userId, 'channel' => $channel,
-            'status' => $success ? MessageDeliveryLog::STATUS_DELIVERED : MessageDeliveryLog::STATUS_FAILED,
-            'error_message' => $error, 'sent_at' => Carbon::now(),
+            'status' => $success ? ($channel === 'database' ? MessageDeliveryLog::STATUS_DELIVERED : MessageDeliveryLog::STATUS_SENT) : MessageDeliveryLog::STATUS_FAILED,
+            'attempt_count' => 1, 'error_message' => $error, 'sent_at' => $success ? Carbon::now() : null,
+            'delivered_at' => $success && $channel === 'database' ? Carbon::now() : null,
         ]);
     }
 
@@ -323,8 +333,9 @@ class NotificationService
      */
     protected function formatEmailContent(Message $message): string
     {
-        $template = config('system_message.email.template', 'default');
-        return view($template, ['message' => $message, 'title' => $message->title, 'content' => $message->content, 'type' => $message->type, 'priority' => $message->priority])->render();
+        $title = htmlspecialchars($message->title, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $content = nl2br(htmlspecialchars(strip_tags($message->content), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+        return '<!doctype html><html><head><meta charset="UTF-8"></head><body><h1>' . $title . '</h1><p>' . $content . '</p></body></html>';
     }
 
     /**

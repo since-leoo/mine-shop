@@ -33,6 +33,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
 
+#[\App\Infrastructure\Library\DataPermission\Attribute\DataScope(scopeType: \App\Infrastructure\Library\DataPermission\ScopeType::CREATED_BY, onlyTables: ['user'])]
 #[Controller(prefix: '/admin/user')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 #[Middleware(middleware: PermissionMiddleware::class, priority: 99)]

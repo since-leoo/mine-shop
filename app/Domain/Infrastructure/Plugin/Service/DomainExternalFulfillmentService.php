@@ -31,6 +31,8 @@ final class DomainExternalFulfillmentService
             }
             $payload[] = $snapshot + ['quantity' => $item->getQuantity()];
         }
+        // 插件返回的数据仍须在核心交易边界校验，不能仅信任接口声明。
+        /** @var array<string, mixed> $quote */
         $quote = $this->capability->prepare($payload, $order->getAddress()?->toArray() ?? [], $order->getOrderType());
         if (! isset($quote['shipping_fee']) || ! is_int($quote['shipping_fee']) || $quote['shipping_fee'] < 0) {
             throw new \DomainException('履约报价运费无效');

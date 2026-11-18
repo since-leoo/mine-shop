@@ -14,8 +14,10 @@ namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Job;
 
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
+use Hyperf\DbConnection\Db;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service\NotificationService;
 use Plugin\SystemMessage\Infrastructure\Model\SystemMessage\Message;
+use Plugin\SystemMessage\Infrastructure\Model\SystemMessage\UserMessage;
 use Psr\Log\LoggerInterface;
 
 class SendMessageJob extends Job
@@ -39,18 +41,39 @@ class SendMessageJob extends Job
 
         try {
             // 获取消息
-            $message = Message::find($this->messageId);
+            $message = Message::query()->find($this->messageId);
             if (! $message) {
                 $logger->warning('Message not found for notification job', [
                     'message_id' => $this->messageId,
                     'user_id' => $this->userId,
                     'channel' => $this->channel,
                 ]);
-                return;
+                // 外层业务事务可能尚未提交；重试而不是永久丢弃已入队的通知。
+                throw new \RuntimeException('通知消息尚不可见或已删除');
             }
 
-            // 发送通知
-            $result = $notificationService->send($message, $this->userId, $this->channel);
+            $failure = null;
+            $result = Db::transaction(function () use ($message, $notificationService, &$failure): bool {
+                // 仅串行同一收件人的重复任务，避免已确认成功的渠道再次投递。
+                $receipt = UserMessage::query()->where('message_id', $this->messageId)
+                    ->where('user_id', $this->userId)->lockForUpdate()->first();
+                if ($receipt === null) {
+                    throw new \RuntimeException('通知收件记录尚不可见');
+                }
+                if ($receipt->is_deleted) {
+                    return false;
+                }
+                try {
+                    return $notificationService->send($message, $this->userId, $this->channel);
+                } catch (\Throwable $error) {
+                    // 提交失败投递日志，再交给队列重试。
+                    $failure = $error;
+                    return false;
+                }
+            });
+            if ($failure !== null) {
+                throw $failure;
+            }
 
             $logger->info('Message notification job completed', [
                 'message_id' => $this->messageId,

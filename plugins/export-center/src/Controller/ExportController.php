@@ -74,13 +74,16 @@ class ExportController extends AbstractController
     }
 
     /**
-     * 获取导出文件下载地址（第三方存储直链）.
+     * 鉴权下载私有导出文件。
      */
     #[GetMapping(path: 'tasks/{id}/download')]
-    public function downloadFile(int $id): Result
+    #[\Mine\Access\Attribute\Permission(code: 'export:task:download')]
+    public function downloadFile(int $id, \Hyperf\HttpServer\Contract\ResponseInterface $response): \Psr\Http\Message\ResponseInterface
     {
-        $result = $this->exportService->getDownloadUrl($id, $this->currentUser->id());
-        return $this->success($result);
+        $result = $this->exportService->getDownloadFile($id, $this->currentUser->id());
+        return $response->download($result['path'], $result['file_name'])
+            ->withHeader('Cache-Control', 'private, no-store')
+            ->withHeader('X-Content-Type-Options', 'nosniff');
     }
 
     /**

@@ -55,7 +55,10 @@ class DomainAfterSaleRefundCallbackService
                 'third_party_response' => $payload, 'processed_at' => date('Y-m-d H:i:s'),
             ]);
             // 晚到支付从未发放购买奖励，因此不发送售后奖励回退事件。
-            if ((int) ($refund->extra_data['after_sale_id'] ?? 0) === 0) {
+            if (! empty($refund->extra_data['group_buy_failed'])) {
+                $this->outbox->append('release:' . $refund->order_no, 'stock.release', $refund->extra_data['stock_release']);
+            }
+            if ((int) ($refund->extra_data['after_sale_id'] ?? 0) === 0 && empty($refund->extra_data['group_buy_failed'])) {
                 return;
             }
             $this->outbox->append('refunded:' . $refundNo, 'refund.succeeded', [

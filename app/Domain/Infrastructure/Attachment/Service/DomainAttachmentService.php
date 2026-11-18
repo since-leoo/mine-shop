@@ -18,6 +18,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 附件领域服务：封装附件查询与持久化逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Attachment\Attachment>
  */
 final class DomainAttachmentService extends IService
 {

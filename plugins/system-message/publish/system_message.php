@@ -39,7 +39,12 @@ return [
         'max_name_length' => 100,
     ],
     'email' => [
-        'template' => 'default',
+        'from' => '',
+    ],
+    'gateways' => [
+        'socketio' => ['url' => '', 'token' => ''],
+        'websocket' => ['url' => '', 'token' => ''],
+        'push' => ['url' => '', 'token' => ''],
     ],
     'sms' => [
         'max_length' => 70,

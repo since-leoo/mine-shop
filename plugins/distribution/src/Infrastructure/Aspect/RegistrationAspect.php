@@ -33,7 +33,6 @@ final class RegistrationAspect extends AbstractAspect
         if ($proceedingJoinPoint->methodName === 'miniProgramLogin') {
             // 宿主已有的无限邀请逻辑由插件统一接管；只信 code 换取的微信身份。
             $proceedingJoinPoint->arguments['keys']['inviteCode'] = null;
-            $proceedingJoinPoint->arguments['keys']['openid'] = null;
         }
         return $this->registrations->run($source, static fn () => $proceedingJoinPoint->process());
     }

@@ -86,7 +86,7 @@ final class DomainMemberWalletService extends IService
     {
         $model = $this->repository->findByMemberIdAndTypeForUpdate($memberId, $type);
         if ($model === null) {
-            throw new \RuntimeException('钱包不存在');
+            throw new \DomainException('钱包不存在');
         }
         return MemberWalletMapper::fromModel($model);
     }

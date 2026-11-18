@@ -56,7 +56,7 @@ class OrderMapper
         $entity->setPackageCount($model->package_count ?? 0);
 
         // 获取订单地址信息并映射到实体对象
-        /** @var OrderAddress $address */
+        /** @var null|OrderAddress $address */
         $address = $model->address()->first();
 
         if ($address) {

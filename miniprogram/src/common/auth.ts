@@ -24,7 +24,7 @@ const persistAuthResponse = (response: any = {}) => {
   }
 };
 
-const runLoginRequest = ({ encryptedData = '', iv = '', openid = '' } = {}): Promise<any> => {
+const runLoginRequest = ({ encryptedData = '', iv = '' } = {}): Promise<any> => {
   return new Promise((resolve, reject) => {
     Taro.login({
       timeout: 10000,
@@ -34,7 +34,7 @@ const runLoginRequest = ({ encryptedData = '', iv = '', openid = '' } = {}): Pro
           reject(new Error('未获取到登录凭证 code'));
           return;
         }
-        miniProgramLogin({ code, encryptedData, iv, openid })
+        miniProgramLogin({ code, encryptedData, iv })
           .then((response) => {
             persistAuthResponse(response);
             resolve(response);
@@ -65,20 +65,20 @@ export const persistAuth = (response: any = {}) => {
 };
 
 export const ensureMiniProgramLogin = (options: any = {}): Promise<any> => {
-  const { force = false, encryptedData = '', iv = '', openid = '' } = options || {};
+  const { force = false, encryptedData = '', iv = '' } = options || {};
   if (!force) {
     const cachedToken = getStoredToken();
     if (cachedToken) {
       return Promise.resolve({ token: cachedToken });
     }
     if (!sharedLoginPromise) {
-      sharedLoginPromise = runLoginRequest({ encryptedData, iv, openid }).finally(() => {
+      sharedLoginPromise = runLoginRequest({ encryptedData, iv }).finally(() => {
         sharedLoginPromise = null;
       });
     }
     return sharedLoginPromise;
   }
-  return runLoginRequest({ encryptedData, iv, openid });
+  return runLoginRequest({ encryptedData, iv });
 };
 
 export const ensureAuthenticated = (options: any = {}): Promise<any> => {

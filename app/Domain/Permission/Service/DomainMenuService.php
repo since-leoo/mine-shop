@@ -19,9 +19,10 @@ use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\Menu;
 use Hyperf\Collection\Collection;
 
+/** @extends IService<\App\Infrastructure\Model\Permission\Menu> */
 final class DomainMenuService extends IService
 {
-    public function __construct(private readonly MenuRepository $repository) {}
+    public function __construct(public readonly MenuRepository $repository) {}
 
     /**
      * 查询菜单列表.

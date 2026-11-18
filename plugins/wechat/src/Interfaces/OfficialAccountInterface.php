@@ -12,10 +12,12 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Interfaces;
 
-use EasyWeChat\Exceptions\InvalidArgumentException;
+use InvalidArgumentException;
 
 interface OfficialAccountInterface
 {
+    public function getClient(): \EasyWeChat\Kernel\HttpClient\AccessTokenAwareClient;
+
     /**
      * 创建授权链接.
      *

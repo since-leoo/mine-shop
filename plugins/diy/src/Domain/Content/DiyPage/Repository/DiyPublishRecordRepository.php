@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace Plugin\Diy\Domain\Content\DiyPage\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Model\Permission\User;
+use Carbon\Carbon;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPagePreviewToken;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPagePublishRecord;
 
@@ -57,7 +59,32 @@ class DiyPublishRecordRepository extends IRepository
     {
         return (bool) DiyPagePublishRecord::query()
             ->whereKey($id)
+            ->where('publish_status', 'pending')
             ->update(['publish_status' => 'cancelled']);
+    }
+
+    /** @return list<int> */
+    public function dueScheduleIds(int $limit = 100): array
+    {
+        return DiyPagePublishRecord::query()->where('publish_type', 'scheduled')->where('publish_status', 'pending')
+            ->where('scheduled_at', '<=', Carbon::now())->orderBy('scheduled_at')->orderBy('id')
+            ->limit($limit)->pluck('id')->map(static fn ($id) => (int) $id)->all();
+    }
+
+    public function lockRecord(int $id): ?DiyPagePublishRecord
+    {
+        return DiyPagePublishRecord::query()->whereKey($id)->lockForUpdate()->first();
+    }
+
+    public function findOperator(int $id): ?User
+    {
+        return User::query()->find($id);
+    }
+
+    public function failSchedule(int $id, string $reason): void
+    {
+        DiyPagePublishRecord::query()->whereKey($id)->where('publish_status', 'pending')
+            ->update(['publish_status' => 'failed', 'error_message' => mb_substr($reason, 0, 500)]);
     }
 
     public function createPreviewToken(array $data): DiyPagePreviewToken

@@ -42,6 +42,6 @@ final class OrderTypeStrategyFactory
     public function make(string $type): OrderTypeStrategyInterface
     {
         return $this->strategies[$type]
-            ?? throw new \RuntimeException(\sprintf('不支持的订单类型：%s', $type));
+            ?? throw new \DomainException(\sprintf('不支持的订单类型：%s', $type));
     }
 }

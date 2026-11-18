@@ -48,7 +48,7 @@ final class AppGroupBuyCommandService
 
         // 如果活动开始时间已过且已启用，立即激活并预热缓存
         if ($result && $input->getIsEnabled()) {
-            $this->activateIfStarted($input->getStartTime());
+            $this->activateIfStarted($input->getStartTime(), $entity->getId());
         }
 
         return $result;
@@ -112,21 +112,12 @@ final class AppGroupBuyCommandService
 
     /**
      * 如果开始时间已过，立即激活活动并预热库存缓存.
-     * $id 为 null 时表示刚创建的活动，通过查询最新一条获取.
      */
-    private function activateIfStarted(string $startTime, ?int $id = null): void
+    private function activateIfStarted(string|\DateTimeInterface $startTime, int $id): void
     {
         try {
             if (Carbon::parse($startTime)->gt(Carbon::now())) {
                 return;
-            }
-
-            // 刚创建的活动需要查出 ID
-            if ($id === null) {
-                $id = $this->groupBuyService->findLatestPendingId();
-                if ($id === null) {
-                    return;
-                }
             }
 
             if (! $this->groupBuyService->isPending($id)) {

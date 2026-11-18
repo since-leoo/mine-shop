@@ -17,6 +17,7 @@ use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property-read null|DiyPage $page
  * @property int $id
  * @property int $page_id
  * @property int $version_no

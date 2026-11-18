@@ -122,7 +122,7 @@ export const orderApi = {
     data,
   ),
 
-  export: (params?: OrderListParams) => http.post<{ message: string }>(`${baseUrl}/export`, params),
+  export: (params?: OrderListParams) => http.post<never, import('#/global').ResponseStruct<{ message: string }>>(`${baseUrl}/export`, params),
 }
 
 export type { OrderVo as MallOrder, OrderListParams as MallOrderListParams }

@@ -207,6 +207,39 @@ final class SmsAuthenticationTest extends DatabaseTestCase
         self::assertTrue($sms->verifyCode($phone, 'login', $codes[1]));
     }
 
+    public function testProductionSmsAuditDoesNotPersistTheCodeOrProviderFailureDetails(): void
+    {
+        $this->migrate('plugins/system-message/Database/Migrations/2024_12_21_000001_create_system_messages_table.php');
+        putenv('APP_ENV=production');
+        $code = '';
+        $sms = $this->service(static function (SmsMessage $message) use (&$code): void {
+            $code = $message->variables()['code'];
+        });
+        $phone = '13800138201';
+        self::assertArrayNotHasKey('code', $sms->sendCode($phone, 'login'));
+        $record = $this->connection->table('system_messages')->first();
+        self::assertSame('短信验证码发送成功', $record->content);
+        self::assertSame(['phone' => $phone, 'scene' => 'login', 'status' => 'sent'], json_decode($record->extra_data, true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame('sent', $record->status);
+        self::assertTrue($sms->verifyCode($phone, 'login', $code));
+        self::assertFalse($sms->verifyCode($phone, 'login', $code));
+
+        $failed = $this->service(static function (SmsMessage $message): void {
+            throw new \RuntimeException('provider token=private-token code=' . $message->variables()['code']);
+        });
+        try {
+            $failed->sendCode('13800138202', 'register');
+            self::fail('Provider rejection must propagate.');
+        } catch (\RuntimeException $error) {
+            self::assertStringContainsString('private-token', $error->getMessage());
+        }
+        $record = $this->connection->table('system_messages')->orderByDesc('id')->first();
+        self::assertSame('短信验证码发送失败', $record->content);
+        self::assertSame(['phone' => '13800138202', 'scene' => 'register', 'status' => 'failed'], json_decode($record->extra_data, true, 512, JSON_THROW_ON_ERROR));
+        self::assertSame('failed', $record->status);
+        self::assertFalse($this->nativeRedis->get(self::PREFIX . 'code:register:13800138202'));
+    }
+
     private function service(?\Closure $send = null): EasySmsVerificationService
     {
         $settings = $this->createMock(DomainMallSettingService::class);

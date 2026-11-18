@@ -23,6 +23,7 @@ final class AppApiCategoryQueryService
 
     /**
      * 返回分类树 Collection（Category Model）.
+     * @return Collection<int, \App\Infrastructure\Model\Product\Category>
      */
     public function tree(int $parentId = 0): Collection
     {

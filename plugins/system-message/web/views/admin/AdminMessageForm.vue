@@ -21,7 +21,7 @@
             <el-input 
               v-model="formData.title" 
               placeholder="请输入消息标题"
-              maxlength="200"
+              :maxlength="200"
               show-word-limit
             />
           </el-form-item>
@@ -32,7 +32,7 @@
               type="textarea"
               placeholder="请输入消息内容"
               :rows="6"
-              maxlength="2000"
+              :maxlength="2000"
               show-word-limit
             />
           </el-form-item>

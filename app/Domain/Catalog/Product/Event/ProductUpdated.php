@@ -19,6 +19,8 @@ use App\Domain\Catalog\Product\ValueObject\ProductChangeVo;
  */
 final class ProductUpdated
 {
+    public readonly string $operationId;
+
     /**
      * @param int $productId 商品ID
      * @param ProductChangeVo $changes 变更信息
@@ -27,6 +29,9 @@ final class ProductUpdated
     public function __construct(
         public readonly int $productId,
         public readonly ProductChangeVo $changes,
-        public readonly array $stockData = []
-    ) {}
+        public readonly array $stockData = [],
+        ?string $operationId = null,
+    ) {
+        $this->operationId = $operationId ?? bin2hex(random_bytes(16));
+    }
 }

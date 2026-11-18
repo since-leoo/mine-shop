@@ -33,7 +33,8 @@ final class ProductChangeVo
         public readonly bool $priceChanged = false,
         public readonly bool $statusChanged = false,
         public readonly bool $stockChanged = false,
-        public readonly bool $freightChanged = false
+        public readonly bool $freightChanged = false,
+        public readonly array $stockAdjustments = [],
     ) {}
 
     public function hasSkuDeleted(): bool

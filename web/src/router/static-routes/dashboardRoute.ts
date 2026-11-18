@@ -8,6 +8,7 @@
  * @Link   https://github.com/mineadmin
  */
 import type { RouteRecordRaw } from 'vue-router'
+import { pluginTabMeta } from '@/router/pluginTab'
 
 const dashboardRoute: RouteRecordRaw = {
   name: 'dashboard',
@@ -24,6 +25,7 @@ const dashboardRoute: RouteRecordRaw = {
       path: '/dashboard/workbench',
       meta: {
         title: '工作台',
+        ...pluginTabMeta,
         i18n: 'menu.dashboard:workbench',
         icon: 'ic:round-computer',
         type: 'M',
@@ -38,6 +40,7 @@ const dashboardRoute: RouteRecordRaw = {
       path: '/dashboard/analysis',
       meta: {
         title: '分析页',
+        ...pluginTabMeta,
         i18n: 'menu.dashboard:analysis',
         icon: 'hugeicons:analysis-text-link',
         type: 'M',
@@ -52,6 +55,7 @@ const dashboardRoute: RouteRecordRaw = {
       path: '/dashboard/report',
       meta: {
         title: '统计报表',
+        ...pluginTabMeta,
         i18n: 'menu.dashboard:report',
         icon: 'iconoir:stats-report',
         type: 'M',

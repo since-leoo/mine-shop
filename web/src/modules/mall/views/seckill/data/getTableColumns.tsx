@@ -42,7 +42,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
     { label: () => t('mall.seckill.activityTitle'), prop: 'title', minWidth: '200px' },
     { label: () => t('mall.seckill.activityDesc'), prop: 'description', minWidth: '200px', showOverflowTooltip: true },
     { label: () => t('mall.seckill.sessionsCount'), prop: 'sessions_count', width: '100px',
-      cellRender: ({ row }: { row: SeckillActivityVo }) => (
+      cellRender: ({ row }) => (
         <el-button
           type="primary"
           link
@@ -53,14 +53,14 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
       ),
     },
     { label: () => t('mall.common.status'), prop: 'status', width: '100px',
-      cellRender: ({ row }: { row: SeckillActivityVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={statusTypeMap[row.status || 'pending'] as any}>
           {statusTextMap[row.status || 'pending']}
         </ElTag>
       ),
     },
     { label: () => t('mall.seckill.enabledStatus'), prop: 'is_enabled', width: '100px',
-      cellRender: ({ row }: { row: SeckillActivityVo }) => (
+      cellRender: ({ row }) => (
         <ElSwitch
           modelValue={row.is_enabled}
           disabled={!hasAuth('seckill:activity:update')}
@@ -87,7 +87,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:session:list'),
             icon: 'material-symbols:schedule',
             text: () => t('mall.seckill.sessions'),
-            onClick: ({ row }: { row: SeckillActivityVo }) => {
+            onClick: ({ row }) => {
               router.push({ path: '/mall/seckill/sessions', query: { activity_id: row.id, activity_title: row.title } })
             },
           },
@@ -96,7 +96,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:activity:update'),
             icon: 'material-symbols:edit',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: SeckillActivityVo }) => {
+            onClick: ({ row }) => {
               dialog.setTitle(t('mall.seckill.editActivity'))
               dialog.open({ formType: 'edit', data: row })
             },
@@ -106,7 +106,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:activity:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: SeckillActivityVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.seckill.confirmDeleteSingle')).then(async () => {
                 const response = await activityRemove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {

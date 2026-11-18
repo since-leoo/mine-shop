@@ -90,7 +90,7 @@ final class SeckillProductTransformer
                 'skuId' => $targetSkuId, 'seckillPrice' => $seckillPrice, 'originalPrice' => $originalPrice,
                 'stock' => $seckillStock, 'soldQuantity' => (int) $seckillProduct->sold_quantity,
                 'maxQuantityPerUser' => (int) ($seckillProduct->max_quantity_per_user ?: $session->max_quantity_per_user),
-                'endTime' => $session->end_time?->toDateTimeString(), 'startTime' => $session->start_time?->toDateTimeString(),
+                'endTime' => $session->end_time->toDateTimeString(), 'startTime' => $session->start_time->toDateTimeString(),
                 'status' => $session->getDynamicStatus()->value,
             ],
         ]);

@@ -23,6 +23,8 @@ use Hyperf\Codec\Json;
 /**
  * 系统设置服务类
  * 提供系统配置的获取、更新、缓存管理等功能.
+ *
+ * @extends IService<\App\Infrastructure\Model\Setting\SystemSetting>
  */
 final class DomainSystemSettingService extends IService
 {
@@ -116,7 +118,7 @@ final class DomainSystemSettingService extends IService
     {
         $definition = $this->configGroups()[$group] ?? null;
         if (! $definition) {
-            throw new \RuntimeException(\sprintf('配置分组 %s 不存在', $group));
+            throw new \DomainException(\sprintf('配置分组 %s 不存在', $group));
         }
 
         $items = $definition['settings'] ?? [];
@@ -159,7 +161,7 @@ final class DomainSystemSettingService extends IService
         if (! $entity) {
             [$group, $definition] = $this->definitionByKey($input->getKey());
             if (! $definition) {
-                throw new \RuntimeException(\sprintf('系统配置 %s 不存在', $input->getKey()));
+                throw new \DomainException(\sprintf('系统配置 %s 不存在', $input->getKey()));
             }
 
             $entity = SystemSettingEntity::fromDefinition($group, $input->getKey(), $definition);

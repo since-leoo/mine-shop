@@ -105,8 +105,6 @@ final class ProductEntity
     /** @var array<int, mixed> */
     private array $gallery = [];
 
-    /** @var array<string, bool> dirty 追踪机制 */
-    private array $dirty = [];
 
     /**
      * 创建行为方法：接收 DTO，内部组装设置值.
@@ -313,7 +311,6 @@ final class ProductEntity
     public function setProductCode(?string $code): void
     {
         $this->productCode = $code;
-        $this->markDirty('product_code');
     }
 
     public function getProductCode(): ?string
@@ -329,7 +326,6 @@ final class ProductEntity
     public function setCategoryId(?int $categoryId): void
     {
         $this->categoryId = $categoryId;
-        $this->markDirty('category_id');
     }
 
     public function getBrandId(): ?int
@@ -340,7 +336,6 @@ final class ProductEntity
     public function setBrandId(?int $brandId): void
     {
         $this->brandId = $brandId;
-        $this->markDirty('brand_id');
     }
 
     public function getName(): ?string
@@ -351,7 +346,6 @@ final class ProductEntity
     public function setName(?string $name): void
     {
         $this->name = $name;
-        $this->markDirty('name');
     }
 
     public function getSubTitle(): ?string
@@ -548,7 +542,6 @@ final class ProductEntity
     public function setStatus(?string $status): void
     {
         $this->changeStatus($status);
-        $this->markDirty('status');
     }
 
     public function getId(): int
@@ -630,7 +623,6 @@ final class ProductEntity
     public function applySort(int $sort): self
     {
         $this->sort = max(0, $sort);
-        $this->markDirty('sort');
         return $this;
     }
 
@@ -680,7 +672,6 @@ final class ProductEntity
         }
 
         $this->status = $targetStatus;
-        $this->markDirty('status');
         return $this;
     }
 
@@ -785,14 +776,6 @@ final class ProductEntity
             'delete_sku_ids' => $this->getDeleteSkuIds($model),
             'delete_attr_ids' => $this->getDeleteAttributeIds($model),
         ], static fn ($v) => $v !== null);
-    }
-
-    /**
-     * 标记字段为已修改.
-     */
-    private function markDirty(string $field): void
-    {
-        $this->dirty[$field] = true;
     }
 
     private function assertCreateRequirements(): void

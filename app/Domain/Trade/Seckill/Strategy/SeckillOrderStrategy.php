@@ -51,15 +51,15 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
     {
         $sessionId = (int) $orderEntity->getExtra('session_id');
         if ($sessionId <= 0) {
-            throw new \RuntimeException('缺少秒杀场次信息');
+            throw new \DomainException('缺少秒杀场次信息');
         }
         if (empty($item = $orderEntity->getItems()[0] ?? null)) {
-            throw new \RuntimeException('商品信息非法');
+            throw new \DomainException('商品信息非法');
         }
 
         $session = $this->cacheService->getSession($sessionId);
         if (! $session || ! $session->canPurchase()) {
-            throw new \RuntimeException('秒杀场次不存在或已结束');
+            throw new \DomainException('秒杀场次不存在或已结束');
         }
 
         $seckillProduct = $this->loadSeckillProduct($orderEntity, $item->getSkuId(), $item->getQuantity());
@@ -73,7 +73,7 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
 
         // 检测限购
         if (! $seckillProduct->canUserPurchase($item->getQuantity(), $purchased)) {
-            throw new \RuntimeException(\sprintf('超出限购数量，每人限购 %d 件', $seckillProduct->getMaxQuantityPerUser()));
+            throw new \DomainException(\sprintf('超出限购数量，每人限购 %d 件', $seckillProduct->getMaxQuantityPerUser()));
         }
         $orderEntity->setExtra('seckill_product_entity', $seckillProduct);
 
@@ -81,7 +81,7 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
         $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
         $snapshot = $snapshots[$item->getSkuId()] ?? null;
         if (! $snapshot) {
-            throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
+            throw new \DomainException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
         }
         $item->attachSnapshot($snapshot);
 
@@ -132,7 +132,7 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
     {
         $sessionId = (int) ($orderEntity->getExtra('session_id') ?? 0);
         $items = $orderEntity->getItems();
-        $skuId = $items[0]?->getSkuId() ?? 0;
+        $skuId = isset($items[0]) ? $items[0]->getSkuId() : 0;
         if ($sessionId > 0 && $skuId > 0) {
             $cacheService = $container->get(SeckillCacheService::class);
             $seckillProduct = $cacheService->getProductBySkuId($sessionId, $skuId);
@@ -176,14 +176,14 @@ final class SeckillOrderStrategy implements OrderTypeStrategyInterface
         $sessionId = (int) $entity->getExtra('session_id');
         $product = $this->cacheService->getProductBySkuId($sessionId, $skuId);
         if (! $product) {
-            throw new \RuntimeException('该商品不在当前秒杀场次中');
+            throw new \DomainException('该商品不在当前秒杀场次中');
         }
         $session = $this->cacheService->getSession($sessionId);
         if (! $session || ! $session->canPurchase()) {
-            throw new \RuntimeException('秒杀场次不存在或已结束');
+            throw new \DomainException('秒杀场次不存在或已结束');
         }
         if (! $product->canSell($quantity)) {
-            throw new \RuntimeException('秒杀商品库存不足或已下架');
+            throw new \DomainException('秒杀商品库存不足或已下架');
         }
         return $product;
     }

@@ -25,7 +25,7 @@ function normalizeRedirectTarget(url?: string): string {
     return DEFAULT_AFTER_LOGIN_PAGE;
   }
 
-  if (!cleanUrl.startsWith('/')) {
+  if (!cleanUrl.startsWith('/') || cleanUrl.startsWith('//')) {
     return DEFAULT_AFTER_LOGIN_PAGE;
   }
 
@@ -35,7 +35,7 @@ function normalizeRedirectTarget(url?: string): string {
 function buildCurrentRoute(): string {
   const pages = Taro.getCurrentPages();
   const current = pages[pages.length - 1] as any;
-  const route = current?.route ? `/${current.route}` : DEFAULT_AFTER_LOGIN_PAGE;
+  const route = current?.route ? `/${current.route.replace(/^\/+/, '')}` : DEFAULT_AFTER_LOGIN_PAGE;
   const options = current?.options || {};
   const query = Object.keys(options)
     .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(options[key] ?? '')}`)
@@ -53,7 +53,7 @@ export function redirectToLogin(redirect?: string) {
 
   const pages = Taro.getCurrentPages();
   const current = pages[pages.length - 1] as any;
-  const currentRoute = current?.route ? `/${current.route}` : '';
+  const currentRoute = current?.route ? `/${current.route.replace(/^\/+/, '')}` : '';
   if (currentRoute === LOGIN_PAGE) return;
 
   Taro.navigateTo({ url }).catch(() => {
@@ -71,7 +71,10 @@ export async function navigateAfterLogin(target?: string): Promise<void> {
   const url = isTabPage ? path : cleanUrl;
 
   try {
-    if (isTabPage) {
+    if (isTabPage && isH5()) {
+      // H5 的 Tab 缓存可能保留登录前的页面实例，登录后重新创建页面栈。
+      await Taro.reLaunch({ url });
+    } else if (isTabPage) {
       await Taro.switchTab({ url });
     } else {
       await Taro.redirectTo({ url });

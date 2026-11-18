@@ -48,8 +48,8 @@ class UserLoginLog extends Model
 
     public function creating(Creating $event): void
     {
-        if ($event->getModel()->login_time === null) {
-            $event->getModel()->login_time = Carbon::now();
+        if ($this->login_time === null) {
+            $this->login_time = Carbon::now();
         }
     }
 }

@@ -82,7 +82,7 @@ const orderColumns = getOrderColumns()
 
 async function handleExport() {
   try {
-    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const searchParams = proTableRef.value?.getSearchForm?.() ?? {}
     const res = await seckillOrderExport(searchParams)
     ElMessage.success(res.message || '导出任务已创建')
   }
@@ -129,7 +129,7 @@ async function handleExport() {
           :min-width="col.minWidth"
         >
           <template v-if="col.cellRender" #default="scope">
-            <component :is="() => col.cellRender!(scope)" />
+            <component :is="() => col.cellRender!({ row: scope.row, column: col, $index: scope.$index, options: {}, attrs: {} })" />
           </template>
         </el-table-column>
       </el-table>

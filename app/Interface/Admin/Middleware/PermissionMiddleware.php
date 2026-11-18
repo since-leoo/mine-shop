@@ -39,11 +39,16 @@ final class PermissionMiddleware implements MiddlewareInterface
         if ($user->status->isDisable()) {
             throw new BusinessException(code: ResultCode::DISABLED, message: trans('user.disable'));
         }
-        if ($user->isSuperAdmin()) {
-            return $handler->handle($request);
+        if (! $user->isSuperAdmin()) {
+            $this->check($request->getAttribute(Dispatched::class));
         }
-        $this->check($request->getAttribute(Dispatched::class));
-        return $handler->handle($request);
+        $previous = \Hyperf\Context\Context::get('data_permission_enabled');
+        try {
+            \Hyperf\Context\Context::set('data_permission_enabled', true);
+            return $handler->handle($request);
+        } finally {
+            $previous === null ? \Hyperf\Context\Context::destroy('data_permission_enabled') : \Hyperf\Context\Context::set('data_permission_enabled', $previous);
+        }
     }
 
     private function check(Dispatched $dispatched): bool

@@ -87,7 +87,7 @@
         <template #default="{ row }">
           <div class="template-name-cell">
             <div class="name-content">
-              <a @click="editTemplate(row)" class="name-link">
+              <a @click="editTemplate(row as MessageTemplate)" class="name-link">
                 {{ row.name }}
               </a>
               <el-tag :type="getTypeTagType(row.type)" size="small">
@@ -131,7 +131,7 @@
         <template #default="{ row }">
           <el-switch
             :model-value="row.is_active"
-            @change="toggleStatus(row)"
+            @change="toggleStatus(row as MessageTemplate)"
             :loading="row.statusLoading"
           />
         </template>
@@ -139,18 +139,18 @@
       
       <el-table-column label="操作" width="200">
         <template #default="{ row }">
-          <el-button type="primary" link size="small" @click="showPreview(row)">
+          <el-button type="primary" link size="small" @click="showPreview(row as MessageTemplate)">
             预览
           </el-button>
-          <el-button type="primary" link size="small" @click="editTemplate(row)">
+          <el-button type="primary" link size="small" @click="editTemplate(row as MessageTemplate)">
             编辑
           </el-button>
-          <el-button type="primary" link size="small" @click="duplicateTemplate(row)">
+          <el-button type="primary" link size="small" @click="duplicateTemplate(row as MessageTemplate)">
             复制
           </el-button>
           <el-popconfirm
             title="确定要删除这个模板吗？"
-            @confirm="deleteTemplate(row)"
+            @confirm="deleteTemplate(row as MessageTemplate)"
           >
             <template #reference>
               <el-button type="danger" link size="small">
@@ -249,7 +249,7 @@ const previewContent = ref('')
 // 获取模板类型标签类型
 const getTypeTagType = (type: string) => {
   const types: Record<string, '' | 'success' | 'warning' | 'danger' | 'info'> = {
-    system: '',
+    system: 'primary',
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',

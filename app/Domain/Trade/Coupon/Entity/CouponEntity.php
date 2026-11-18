@@ -231,7 +231,7 @@ final class CouponEntity
     public function assertActive(): self
     {
         if ($this->status !== 'active') {
-            throw new \RuntimeException('优惠券未启用');
+            throw new \DomainException('优惠券未启用');
         }
         return $this;
     }
@@ -242,11 +242,11 @@ final class CouponEntity
         $end = $this->getEndTimeCarbon();
 
         if ($start && $now->lt($start)) {
-            throw new \RuntimeException('优惠券未开始');
+            throw new \DomainException('优惠券未开始');
         }
 
         if ($end && $now->gt($end)) {
-            throw new \RuntimeException('优惠券已过期');
+            throw new \DomainException('优惠券已过期');
         }
 
         return $this;
@@ -255,7 +255,7 @@ final class CouponEntity
     public function assertAvailableStock(int $availableQuantity, int $requestQuantity): self
     {
         if ($availableQuantity < $requestQuantity) {
-            throw new \RuntimeException('优惠券库存不足');
+            throw new \DomainException('优惠券库存不足');
         }
         return $this;
     }

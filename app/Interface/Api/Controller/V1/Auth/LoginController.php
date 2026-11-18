@@ -44,7 +44,6 @@ final class LoginController extends AbstractController
             $payload['encrypted_data'] ?? null,
             $payload['iv'] ?? null,
             ip(),
-            $payload['openid'] ?? null
         );
 
         return $this->success($result, '授权登录成功');

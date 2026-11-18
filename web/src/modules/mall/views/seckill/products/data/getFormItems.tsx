@@ -17,7 +17,7 @@ export default function getFormItems(
   skuOptions: Ref<{ id: number; label: string; price: number }[]>,
   onProductChange: (productId?: number) => void,
   onSkuChange: (skuId?: number) => void,
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, unknown>) => string,
 ): MaFormItem[] {
 
   if (formType === 'add') {

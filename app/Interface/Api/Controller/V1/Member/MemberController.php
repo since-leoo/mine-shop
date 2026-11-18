@@ -66,7 +66,7 @@ final class MemberController extends AbstractController
             $data['orderCounts'],
             $data['couponCount'],
             $data['servicePhone'],
-            $data['referralCount'] ?? 0
+            $data['referralCount']
         );
 
         return $this->success($overview, '获取成功');

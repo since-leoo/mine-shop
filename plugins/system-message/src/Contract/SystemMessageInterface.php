@@ -15,6 +15,7 @@ namespace Plugin\SystemMessage\Contract;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Facade\SystemMessage;
 
 /**
+ * @mixin SystemMessage
  * 系统消息对外调用入口。
  * 主应用和其他插件只依赖这个公开 API，不直接依赖领域服务和模型。
  */

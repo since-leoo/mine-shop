@@ -20,6 +20,7 @@ use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\MemberLevel;
 use App\Interface\Common\ResultCode;
 
+/** @extends IService<\App\Infrastructure\Model\Member\MemberLevel> */
 final class DomainMemberLevelService extends IService
 {
     public function __construct(

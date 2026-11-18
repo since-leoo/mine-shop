@@ -19,6 +19,10 @@ use Hyperf\Database\Model\Relations\BelongsTo;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property SeckillSession|null $session
+ * @property Order|null $order
+ * @property Member|null $member
+ * @property SeckillActivity|null $activity
  * @property int $id
  * @property int $order_id
  * @property int $activity_id

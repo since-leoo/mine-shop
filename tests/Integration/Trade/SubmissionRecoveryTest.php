@@ -5,6 +5,12 @@ declare(strict_types=1);
 namespace HyperfTests\Integration\Trade;
 
 use App\Application\Api\Order\AppOrderSubmissionService;
+use App\Application\Api\Order\AppApiOrderCommandService;
+use App\Application\Api\Order\AppOrderCancellationService;
+use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Domain\Infrastructure\SystemSetting\ValueObject\PaymentSetting;
+use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
+use App\Domain\Trade\Order\Job\OrderCreateJob;
 use App\Domain\Trade\Order\Contract\OrderJobQueueInterface;
 use App\Domain\Trade\Order\Contract\StockReservationInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
@@ -15,6 +21,7 @@ use App\Domain\Trade\Shared\Repository\TradeOutboxRepository;
 use App\Infrastructure\Service\Trade\HyperfTransactionManager;
 use HyperfTests\Support\DatabaseTestCase;
 use Psr\Log\NullLogger;
+use Psr\Log\LoggerInterface;
 
 final class SubmissionRecoveryTest extends DatabaseTestCase
 {
@@ -42,6 +49,80 @@ final class SubmissionRecoveryTest extends DatabaseTestCase
 
     }
 
+    public function testFailedJobsPersistOnlySafeErrorsAndKeepFullExceptionsInLogs(): void
+    {
+        $logged = [];
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::exactly(5))->method('error')->willReturnCallback(static function (string $message, array $context) use (&$logged): void {
+            self::assertSame('订单创建失败', $message);
+            $logged[$context['trade_no']] = $context['exception'];
+        });
+        $orders = $this->createMock(OrderRepository::class);
+        $orders->method('findExistingByOrderNo')->willReturn(null);
+        $service = new AppOrderSubmissionService($this->store,
+            $this->createMock(StockReservationInterface::class),
+            $this->createMock(OrderJobQueueInterface::class), $orders,
+            $this->createMock(DomainOrderCreationService::class), new HyperfTransactionManager(),
+            new TradeOutboxRepository(), $logger);
+        $this->container->set(AppOrderSubmissionService::class, $service);
+        $polling = $this->pollingService($service);
+        $cases = [
+            [new \DomainException('库存不足'), '库存不足'],
+            [new \InvalidArgumentException('商品信息无效'), '商品信息无效'],
+            [new \PDOException('SQLSTATE password=private-db-secret'), '订单创建失败，请稍后重试'],
+            [new \RuntimeException('SDK token=private-provider-secret'), '订单创建失败，请稍后重试'],
+            [new class('vendor secret') extends \InvalidArgumentException {}, '订单创建失败，请稍后重试'],
+        ];
+        foreach ($cases as $index => [$error, $expected]) {
+            $tradeNo = 'SAFE-ERROR-' . $index;
+            $this->store->create($tradeNo, 7, ['items' => [], 'stock_key' => 'product:stock']);
+            (new OrderCreateJob($tradeNo))->fail($error);
+            self::assertSame($error, $logged[$tradeNo]);
+            self::assertSame(AppOrderSubmissionService::PUBLIC_ERROR_PREFIX . $expected, $this->store->find($tradeNo)['last_error']);
+            self::assertSame('failed', $polling->getSubmitResult($tradeNo, 7)['status']);
+            self::assertSame($expected, $polling->getSubmitResult($tradeNo, 7)['error']);
+        }
+        self::assertSame(5, $this->connection->table('trade_outbox')->where('event_type', 'stock.release')->count());
+    }
+
+    public function testHistoricalFailedDiagnosticsAreHiddenWithoutChangingStoredRecords(): void
+    {
+        $polling = $this->pollingService($this->createMock(AppOrderSubmissionService::class));
+        $this->store->create('LEGACY-ERROR', 7, ['items' => [], 'stock_key' => 'product:stock']);
+        foreach (['SQLSTATE credential=old-private-secret', '库存不足', '', 'public:v2:unrecognized-format'] as $error) {
+            $this->store->updateStatus('LEGACY-ERROR', 'failed', $error);
+            $result = $polling->getSubmitResult('LEGACY-ERROR', 7);
+            self::assertSame('failed', $result['status']);
+            self::assertSame('订单创建失败，请稍后重试', $result['error']);
+            self::assertSame($error, $this->store->find('LEGACY-ERROR')['last_error']);
+        }
+    }
+
+    public function testPollingDoesNotExposeRecoveryDiagnosticsAndStillChecksMembership(): void
+    {
+        $polling = $this->pollingService($this->createMock(AppOrderSubmissionService::class));
+        $this->store->create('RECOVERY', 7, ['items' => [], 'stock_key' => 'product:stock']);
+        foreach (['pending', 'reserved', 'created'] as $status) {
+            $this->store->updateStatus('RECOVERY', $status, 'SQLSTATE credential=private-secret');
+            $result = $polling->getSubmitResult('RECOVERY', 7);
+            self::assertSame($status === 'created' ? 'created' : 'processing', $result['status']);
+            self::assertSame('', $result['error']);
+        }
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('订单提交不存在');
+        $polling->getSubmitResult('RECOVERY', 8);
+    }
+
+    private function pollingService(AppOrderSubmissionService $submissions): AppApiOrderCommandService
+    {
+        $settings = $this->createMock(DomainMallSettingService::class);
+        $settings->method('payment')->willReturn(new PaymentSetting(false, [], true, 0, true, []));
+        return new AppApiOrderCommandService(
+            $this->createMock(DomainApiOrderCommandService::class), $settings, $submissions,
+            $this->createMock(AppOrderCancellationService::class), $this->store, new TradeOutboxRepository(),
+        );
+    }
+
     public function testQueueFailureRemainsRecoverableAndRepeatedConsumptionCreatesOnce(): void
     {
         $stock = $this->createMock(StockReservationInterface::class);
@@ -57,7 +138,7 @@ final class SubmissionRecoveryTest extends DatabaseTestCase
         self::assertSame('reserved', $this->store->find('A')['status']);
         $service->process('A');
         $service->process('A');
-        $service->fail('A', 'late queue failure');
+        $service->fail('A', new \RuntimeException('late queue failure'));
         self::assertSame('created', $this->store->find('A')['status']);
         self::assertSame(1, $this->connection->table('trade_outbox')->count());
         self::assertSame('order.created', $this->connection->table('trade_outbox')->value('event_type'));
@@ -80,8 +161,8 @@ final class SubmissionRecoveryTest extends DatabaseTestCase
         } catch (\RuntimeException) {
             self::assertSame('reserved', $this->store->find('A')['status']);
         }
-        $service->fail('A', 'database failure');
-        $service->fail('A', 'database failure');
+        $service->fail('A', new \RuntimeException('database failure'));
+        $service->fail('A', new \RuntimeException('database failure'));
         self::assertSame('failed', $this->store->find('A')['status']);
         self::assertSame(1, $this->connection->table('trade_outbox')->where('event_type', 'stock.release')->count());
     }

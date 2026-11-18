@@ -43,7 +43,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
     { type: 'selection', showOverflowTooltip: false },
     { label: () => 'ID', prop: 'id', width: '80px' },
     { label: () => t('mall.groupBuy.product'), prop: 'product', minWidth: '220px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => (
+      cellRender: ({ row }) => (
         <div class="flex items-center gap-2">
           {row.product?.main_image && <ElImage src={row.product.main_image} style="width: 40px; height: 40px" fit="cover" />}
           <div class="flex-1 min-w-0">
@@ -54,7 +54,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
       ),
     },
     { label: () => t('mall.groupBuy.price'), prop: 'price', width: '140px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => (
+      cellRender: ({ row }) => (
         <div>
           <div class="text-red-500 font-semibold">¥{formatYuan(row.group_price)}</div>
           <div class="text-xs text-gray-400 line-through">¥{formatYuan(row.original_price)}</div>
@@ -62,10 +62,10 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
       ),
     },
     { label: () => t('mall.groupBuy.groupSize'), prop: 'min_people', width: '100px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => `${row.min_people ?? 2}-${row.max_people ?? 10}${t('mall.groupBuy.people')}`,
+      cellRender: ({ row }) => `${row.min_people ?? 2}-${row.max_people ?? 10}${t('mall.groupBuy.people')}`,
     },
     { label: () => t('mall.groupBuy.stockSales'), prop: 'quantity', width: '160px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => {
+      cellRender: ({ row }) => {
         const total = row.total_quantity || 0
         const sold = row.sold_quantity || 0
         const percent = total > 0 ? Math.round((sold / total) * 100) : 0
@@ -78,14 +78,14 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
       },
     },
     { label: () => t('mall.common.status'), prop: 'status', width: '100px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={statusTypeMap[row.status || 'pending'] as any}>
           {statusTextMap[row.status || 'pending']}
         </ElTag>
       ),
     },
     { label: () => t('mall.common.enabled'), prop: 'is_enabled', width: '80px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => (
+      cellRender: ({ row }) => (
         <ElSwitch
           modelValue={row.is_enabled}
           disabled={!hasAuth('promotion:group_buy:update')}
@@ -100,7 +100,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
       ),
     },
     { label: () => t('mall.groupBuy.time'), prop: 'time', width: '180px',
-      cellRender: ({ row }: { row: GroupBuyVo }) => (
+      cellRender: ({ row }) => (
         <div class="text-xs">
           <div>{t('mall.groupBuy.startLabel')}: {row.start_time}</div>
           <div>{t('mall.groupBuy.endLabel')}: {row.end_time}</div>
@@ -119,7 +119,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
             show: () => hasAuth('promotion:group_buy:update'),
             icon: 'material-symbols:edit',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: GroupBuyVo }) => {
+            onClick: ({ row }) => {
               dialog.setTitle(t('mall.groupBuy.editGroupBuy'))
               dialog.open({ formType: 'edit', data: row })
             },
@@ -129,7 +129,7 @@ export default function getTableColumns(dialog: UseDialogExpose, tableRef: { val
             show: () => hasAuth('promotion:group_buy:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: GroupBuyVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.groupBuy.confirmDeleteSingle')).then(async () => {
                 const response = await remove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {

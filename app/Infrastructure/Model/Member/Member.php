@@ -51,8 +51,8 @@ use Hyperf\DbConnection\Model\Model;
  * @property null|string $remark
  * @property null|string $invite_code
  * @property null|int $referrer_id
- * @property Carbon $created_at
- * @property Carbon $updated_at
+ * @property null|Carbon $created_at
+ * @property null|Carbon $updated_at
  */
 class Member extends Model
 {

@@ -14,6 +14,16 @@ namespace Plugin\CustomerService\Infrastructure\Model;
 
 use Hyperf\DbConnection\Model\Model;
 
+/**
+ * @property int $id
+ * @property int $conversation_id
+ * @property int $agent_id
+ * @property string $action
+ * @property null|int $operator_admin_user_id
+ * @property null|string $reason
+ * @property null|\Carbon\Carbon $created_at
+ * @property null|\Carbon\Carbon $updated_at
+ */
 final class CustomerServiceConversationAgent extends Model
 {
     protected ?string $table = 'customer_service_conversation_agents';

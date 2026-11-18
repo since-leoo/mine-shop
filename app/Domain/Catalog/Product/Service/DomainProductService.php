@@ -22,10 +22,11 @@ use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
-use Hyperf\DbConnection\Annotation\Transactional;
 
 /**
  * 商品领域服务：封装商品相关的核心业务逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Product\Product>
  */
 final class DomainProductService extends IService
 {
@@ -37,7 +38,6 @@ final class DomainProductService extends IService
     /**
      * 创建商品.
      */
-    #[Transactional]
     public function create(ProductInput $input): ProductEntity
     {
         // 1. 获取新实体
@@ -62,11 +62,15 @@ final class DomainProductService extends IService
     /**
      * 更新商品.
      */
-    #[Transactional]
     public function update(ProductInput $input): ProductChangeVo
     {
         // 1. 获取实体
-        $entity = $this->getEntity($input->getId());
+        $model = $this->repository->findByIdForUpdate($input->getId());
+        if ($model === null) {
+            throw new \DomainException('商品不存在');
+        }
+        $entity = ProductMapper::fromModel($model);
+        $previousStocks = array_column($entity->getStockData(), 'stock', 'sku_id');
 
         // 2. 调用实体的 update 行为方法（返回变更信息）
         $changes = $entity->update($input);
@@ -84,15 +88,30 @@ final class DomainProductService extends IService
         $this->repository->update($entity);
 
         // 7. 返回变更信息
-        return $changes;
+        $adjustments = [];
+        if (($model->fulfillment_provider ?? 'merchant') === 'merchant') {
+            foreach ($entity->getStockData() as $item) {
+                $previous = $previousStocks[$item['sku_id']] ?? null;
+                if ($previous === null || $previous !== $item['stock']) {
+                    $adjustments[] = $item + ['delta' => $previous === null ? null : $item['stock'] - $previous];
+                }
+            }
+        }
+        return new ProductChangeVo(
+            $changes->productId, $changes->deletedSkuIds, $changes->deletedAttributeIds,
+            $changes->priceChanged, $changes->statusChanged, $changes->stockChanged,
+            $changes->freightChanged, $adjustments,
+        );
     }
 
     /**
      * 删除商品.
+     *
+     * @return array<int, int> 删除前的 SKU IDs
      */
-    public function delete(int $id): void
+    public function delete(int $id): array
     {
-        $product = $this->repository->findById($id);
+        $product = $this->repository->findByIdForUpdate($id);
         if (! $product) {
             throw new BusinessException(ResultCode::FAIL, '商品不存在');
         }
@@ -100,7 +119,9 @@ final class DomainProductService extends IService
         $entity = new ProductEntity();
         $entity->setId($id);
 
+        $skuIds = $product->skus->pluck('id')->map(static fn ($skuId) => (int) $skuId)->all();
         $this->repository->remove($entity);
+        return $skuIds;
     }
 
     /**

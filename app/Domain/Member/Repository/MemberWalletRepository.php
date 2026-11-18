@@ -34,7 +34,7 @@ final class MemberWalletRepository
             ->first();
 
         if ($info === null) {
-            throw new \RuntimeException('钱包不存在');
+            throw new \DomainException('钱包不存在');
         }
         if ($wallet->getChangeBalance() !== 0 && (int) $info->balance !== $wallet->getBeforeBalance()) {
             throw new \DomainException('钱包余额已变化，请重试');
@@ -49,7 +49,7 @@ final class MemberWalletRepository
     {
         $info = $this->model::query()->create($wallet->toArray());
 
-        $info && $wallet->setId($info->id);
+        $wallet->setId($info->id);
 
         return $wallet;
     }

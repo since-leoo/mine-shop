@@ -16,13 +16,9 @@ import { centsToYuan, yuanToCents } from '@/utils/price'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 import MaRichEditor from '@/components/ma-rich-editor/index.vue'
 import { useI18n } from 'vue-i18n'
+import { normalizeSpecValues, specValuesKey, specValueTexts } from './data/specValues'
 
 defineOptions({ name: 'mall:product:form' })
-
-/** 从 spec_values 元素中提取纯字符串（后端存储格式为 {name, value} 对象） */
-function specValStr(v: any): string {
-  return typeof v === 'object' && v !== null ? (v.value ?? v.name ?? String(v)) : String(v)
-}
 
 type ProductFormModel = ProductVo & { skus?: ProductSkuVo[] }
 
@@ -45,6 +41,9 @@ const shippingTemplateOptions = ref<{ id: number; name: string }[]>([])
 // Specs
 type SpecItem = { nameTags: string[]; values: string[] }
 const specItems = ref<SpecItem[]>([])
+const specNameAt = (index: number, provider = model.value.fulfillment_provider) => provider === 'supply_chain'
+  ? '默认'
+  : t('mall.productForm.defaultSpecName', { n: index + 1 })
 
 // Init defaults
 if (formType === 'add') {
@@ -93,17 +92,16 @@ async function loadDetail() {
     freight_type: d.freight_type ?? 'default',
     flat_freight_amount: centsToYuan(d.flat_freight_amount),
     shipping_template_id: d.shipping_template_id ?? undefined,
-    skus: d.skus?.map((sku: any) => ({
+    skus: d.skus?.map(sku => ({
       ...sku,
+      sku_name: sku.sku_name?.trim() ? sku.sku_name : d.name,
       cost_price: centsToYuan(sku.cost_price),
       market_price: centsToYuan(sku.market_price),
       sale_price: centsToYuan(sku.sale_price),
       stock: sku.stock ? Number(sku.stock) : 0,
       warning_stock: sku.warning_stock ? Number(sku.warning_stock) : 0,
       weight: sku.weight ? Number(sku.weight) : 0,
-      spec_values: Array.isArray(sku.spec_values)
-        ? sku.spec_values.map((v: any) => specValStr(v))
-        : sku.spec_values,
+      spec_values: normalizeSpecValues(sku.spec_values, index => specNameAt(index, d.fulfillment_provider)),
     })) || [],
   })
   if (model.value.gallery_images) {
@@ -116,15 +114,10 @@ async function loadDetail() {
   if (model.value.skus && model.value.skus.length > 0) {
     const specMap = new Map<number, { name: string; values: Set<string> }>()
     model.value.skus.forEach((sku) => {
-      if (Array.isArray(sku.spec_values)) {
-        sku.spec_values.forEach((raw: any, index: number) => {
-          if (!specMap.has(index)) {
-            const specName = typeof raw === 'object' && raw !== null ? (raw.name ?? t('mall.productForm.defaultSpecName', { n: index + 1 })) : t('mall.productForm.defaultSpecName', { n: index + 1 })
-            specMap.set(index, { name: specName, values: new Set() })
-          }
-          specMap.get(index)!.values.add(specValStr(raw))
-        })
-      }
+      normalizeSpecValues(sku.spec_values, specNameAt).forEach((spec, index) => {
+        if (!specMap.has(index)) specMap.set(index, { name: spec.name, values: new Set() })
+        specMap.get(index)!.values.add(spec.value)
+      })
     })
     if (specMap.size > 0) {
       specItems.value = Array.from(specMap.entries()).map(([_, spec]) => ({
@@ -146,6 +139,15 @@ function removeSpec(index: number) { specItems.value.splice(index, 1); updateSku
 function addAttribute() { model.value.attributes?.push({ attribute_name: '', value: '' } as ProductAttributeVo) }
 function removeAttribute(index: number) { model.value.attributes?.splice(index, 1) }
 
+function updateSkuSpecValues(sku: ProductSkuVo, input: string) {
+  const previous = normalizeSpecValues(sku.spec_values, specNameAt)
+  sku.spec_values = input.split(',').map(value => value.trim()).filter(Boolean).map((value, index) => ({
+    ...previous[index],
+    name: specItems.value[index]?.nameTags[0]?.trim() || previous[index]?.name || specNameAt(index),
+    value,
+  }))
+}
+
 function batchSet(field: keyof ProductSkuVo, label: string, isInt = false) {
   msg.prompt(t('mall.productForm.inputPrompt', { label }), '', label, (value) => {
     if (value === '' || value === null || value === undefined) return t('mall.productForm.inputValidNumber')
@@ -157,6 +159,8 @@ function batchSet(field: keyof ProductSkuVo, label: string, isInt = false) {
 }
 
 function updateSkusFromSpecs() {
+  // 改名时先删除旧标签、再输入新名称；保留这段编辑过程中的现有 SKU。
+  if (specItems.value.some(item => !item.nameTags?.[0]?.trim() || !item.values.length)) return
   const specs = specItems.value
     .map(item => ({ name: item.nameTags?.[0]?.trim() ?? '', values: item.values.map(v => v.trim()).filter(Boolean) }))
     .filter(item => item.name && item.values.length > 0)
@@ -171,29 +175,28 @@ function updateSkusFromSpecs() {
   if (formType === 'edit' && model.value.skus && model.value.skus.length > 0) {
     const existingMap = new Map<string, ProductSkuVo>()
     model.value.skus.forEach(sku => {
-      const key = Array.isArray(sku.spec_values) ? sku.spec_values.map((v: any) => specValStr(v)).join('/') : String(sku.spec_values || '')
-      existingMap.set(key, sku)
+      existingMap.set(specValuesKey(sku.spec_values), sku)
     })
     model.value.skus = cartesian.map((values, i) => {
-      const existing = existingMap.get(values.join('/'))
-      if (existing) return { ...existing, sku_name: values.join('/'), spec_values: values }
-      return { sku_code: model.value.product_code ? `${model.value.product_code}-${i + 1}` : '', sku_name: values.join('/'), spec_values: values, image: (base as ProductSkuVo).image, cost_price: base.cost_price ?? 0, market_price: base.market_price ?? 0, sale_price: base.sale_price ?? 0, stock: base.stock ?? 0, warning_stock: base.warning_stock ?? 0, weight: base.weight ?? 0, status: base.status ?? 'active' } as ProductSkuVo
+      const existing = existingMap.get(specValuesKey(values))
+      const previous = normalizeSpecValues(existing?.spec_values, specNameAt)
+      const specValues = values.map((value, index) => ({ ...previous[index], name: specs[index].name, value }))
+      if (existing) return { ...existing, sku_name: existing.sku_name?.trim() ? existing.sku_name : model.value.name, spec_values: specValues }
+      return { sku_code: model.value.product_code ? `${model.value.product_code}-${i + 1}` : '', sku_name: values.join('/'), spec_values: specValues, image: (base as ProductSkuVo).image, cost_price: base.cost_price ?? 0, market_price: base.market_price ?? 0, sale_price: base.sale_price ?? 0, stock: base.stock ?? 0, warning_stock: base.warning_stock ?? 0, weight: base.weight ?? 0, status: base.status ?? 'active' } as ProductSkuVo
     })
   } else {
     model.value.skus = cartesian.map((values, i) => ({
-      sku_code: model.value.product_code ? `${model.value.product_code}-${i + 1}` : '', sku_name: values.join('/'), spec_values: values, image: (base as ProductSkuVo).image, cost_price: base.cost_price ?? 0, market_price: base.market_price ?? 0, sale_price: base.sale_price ?? 0, stock: base.stock ?? 0, warning_stock: base.warning_stock ?? 0, weight: base.weight ?? 0, status: base.status ?? 'active',
+      sku_code: model.value.product_code ? `${model.value.product_code}-${i + 1}` : '', sku_name: values.join('/'), spec_values: values.map((value, index) => ({ name: specs[index].name, value })), image: (base as ProductSkuVo).image, cost_price: base.cost_price ?? 0, market_price: base.market_price ?? 0, sale_price: base.sale_price ?? 0, stock: base.stock ?? 0, warning_stock: base.warning_stock ?? 0, weight: base.weight ?? 0, status: base.status ?? 'active',
     } as ProductSkuVo))
   }
 }
 
 function normalizeSkus(skus: ProductSkuVo[] = []): ProductSkuVo[] {
-  return skus.filter(item => item.sku_name).map(item => {
-    const next: ProductSkuVo = { ...item }
-    if (typeof (next as any).spec_values === 'string') {
-      next.spec_values = (next as any).spec_values.split(',').map((v: string) => v.trim()).filter(Boolean)
-    }
-    return next
-  })
+  return skus.map(item => ({
+    ...item,
+    sku_name: item.sku_name?.trim() ? item.sku_name : model.value.name,
+    spec_values: normalizeSpecValues(item.spec_values, specNameAt),
+  })).filter(item => item.id || item.sku_name)
 }
 
 function buildPayload(): ProductVo {
@@ -281,7 +284,8 @@ defineExpose({
                 <el-tree-select
                   v-model="model.category_id"
                   :data="categoryOptions"
-                  :props="{ value: 'id', label: 'name' }"
+                  node-key="id"
+                  :props="{ label: 'name' }"
                   check-strictly
                   clearable
                   :placeholder="t('mall.productForm.categoryPlaceholder')"
@@ -514,9 +518,9 @@ defineExpose({
             <el-table-column :label="t('mall.productForm.specValues')" min-width="140">
               <template #default="{ row }">
                 <el-input
-                  :model-value="Array.isArray(row.spec_values) ? row.spec_values.map((v: any) => specValStr(v)).join(',') : row.spec_values"
+                  :model-value="specValueTexts(row.spec_values).join(',')"
                   :placeholder="t('mall.productForm.specValuesPlaceholder')"
-                  @update:model-value="(v: string) => row.spec_values = v.split(',').map((s: string) => s.trim()).filter(Boolean)"
+                  @update:model-value="(v: string) => updateSkuSpecValues(row, v)"
                 />
               </template>
             </el-table-column>

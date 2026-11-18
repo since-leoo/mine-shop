@@ -17,6 +17,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 面向 API 场景的会员地址查询领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\MemberAddress>
  */
 final class DomainApiMemberAddressQueryService extends IService
 {

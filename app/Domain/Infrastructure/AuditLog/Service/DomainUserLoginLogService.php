@@ -17,6 +17,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 用户登录日志领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\System\UserLoginLog>
  */
 final class DomainUserLoginLogService extends IService
 {

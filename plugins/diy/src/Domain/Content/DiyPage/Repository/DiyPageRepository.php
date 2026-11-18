@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\Repository;
 
-use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use App\Infrastructure\Abstract\IRepository;
-use Plugin\Diy\Infrastructure\Model\Content\DiyPage;
-use Plugin\Diy\Infrastructure\Model\Content\DiyPageVersion;
 use Carbon\Carbon;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
+use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
+use Plugin\Diy\Infrastructure\Model\Content\DiyPage;
+use Plugin\Diy\Infrastructure\Model\Content\DiyPagePublishRecord;
+use Plugin\Diy\Infrastructure\Model\Content\DiyPageVersion;
 
 /**
  * @extends IRepository<DiyPage>
@@ -64,6 +65,11 @@ class DiyPageRepository extends IRepository
     {
         /* @var DiyPage $page */
         return $this->create($data);
+    }
+
+    public function findForUpdate(int $id): ?DiyPage
+    {
+        return $this->getQuery()->whereKey($id)->lockForUpdate()->first();
     }
 
     public function updatePage(int $id, array $data): bool
@@ -145,7 +151,9 @@ class DiyPageRepository extends IRepository
     public function storeDraft(int $pageId, array $schema, ?int $operatorId): DiyPageVersion
     {
         $draft = $this->findDraftVersion($pageId);
-        if ($draft instanceof DiyPageVersion) {
+        // 已预约的版本保持不变，后续编辑另存草稿。
+        if ($draft instanceof DiyPageVersion && ! DiyPagePublishRecord::query()
+            ->where('version_id', $draft->id)->where('publish_status', 'pending')->exists()) {
             $draft->fill([
                 'schema' => $schema,
                 'created_by' => $operatorId,

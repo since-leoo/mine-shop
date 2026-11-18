@@ -71,13 +71,13 @@ final class EasySmsVerificationService implements SmsVerificationServiceInterfac
                 $result['code'] = $code;
                 $this->logNonProductionCode($phone, $scene, $code);
             }
-            $this->recordSmsMessage($phone, $scene, $code, true);
+            $this->recordSmsMessage($phone, $scene, true);
             return $result;
         } catch (\Throwable $error) {
             if ($reservation !== null) {
                 $this->releaseSend($phone, $scene, $reservation);
             }
-            $this->recordSmsMessage($phone, $scene, null, false, $error->getMessage());
+            $this->recordSmsMessage($phone, $scene, false);
             throw $error;
         }
     }
@@ -204,14 +204,14 @@ LUA;
     /**
      * Record the SMS message.
      */
-    private function recordSmsMessage(string $phone, string $scene, ?string $code, bool $success, ?string $failureReason = null): void
+    private function recordSmsMessage(string $phone, string $scene, bool $success): void
     {
         $sentAt = Carbon::now();
 
         try {
-            Message::create([
+            Message::query()->create([
                 'title' => '短信验证码（' . $scene . '）',
-                'content' => $code === null ? '短信验证码发送失败' : '短信验证码：' . $code,
+                'content' => $success ? '短信验证码发送成功' : '短信验证码发送失败',
                 'type' => 'system',
                 'priority' => 1,
                 'recipient_type' => 'all',
@@ -221,12 +221,8 @@ LUA;
                 'remark' => '短信插件发送记录',
                 'extra_data' => [
                     'phone' => $phone,
-                    'code' => $code,
                     'scene' => $scene,
-                    'sent_at' => $sentAt->toDateTimeString(),
                     'status' => $success ? 'sent' : 'failed',
-                    'failure_reason' => $failureReason,
-                    'provider' => $this->smsProvider(),
                 ],
             ]);
         } catch (\Throwable $e) {
@@ -240,18 +236,6 @@ LUA;
             } catch (\Throwable) {
                 // 日志设施不可用时仍保留原始短信发送结果。
             }
-        }
-    }
-
-    /**
-     * Get the SMS provider.
-     */
-    private function smsProvider(): string
-    {
-        try {
-            return $this->mallSettingService->integration()->smsProvider();
-        } catch (\Throwable) {
-            return 'unknown';
         }
     }
 

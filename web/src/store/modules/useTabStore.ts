@@ -35,7 +35,9 @@ const useTabStore = defineStore(
     } as MineTabbar)
 
     function initTab() {
-      tabList.value = get('tabList', [])
+      const cachedTabs = get('tabList', [])
+      tabList.value = Array.isArray(cachedTabs) ? cachedTabs : []
+      normalizeTabs()
       if (tabList.value?.length === 0) {
         addTab(defaultTab.value)
 
@@ -49,6 +51,9 @@ const useTabStore = defineStore(
             icon: item.meta?.icon,
             title: item.meta?.title,
             affix: item.meta?.affix === true,
+            tabKey: item.meta?.tabKey,
+            tabTitle: item.meta?.tabTitle,
+            tabIcon: item.meta?.tabIcon,
           } as MineTabbar)
         })
       }
@@ -56,8 +61,93 @@ const useTabStore = defineStore(
       watch(() => tabList.value, () => storage(), { immediate: true, deep: true })
     }
 
+    function getTabKey(tab: MineTabbar): string {
+      return tab.tabKey || tab.fullPath || tab.path
+    }
+
+    function currentTabKey(): string {
+      return typeof route.meta.tabKey === 'string' && route.meta.tabKey
+        ? route.meta.tabKey
+        : route.fullPath
+    }
+
+    function isCurrentTab(tab: MineTabbar): boolean {
+      return getTabKey(tab) === currentTabKey()
+    }
+
+    function normalizeTab(tab: MineTabbar): MineTabbar {
+      const fullPath = tab.fullPath || tab.path
+      const resolved = router.resolve(fullPath)
+      const meta = resolved.meta
+      const normalized = { ...tab, fullPath }
+      for (const key of ['tabKey', 'tabTitle', 'tabIcon'] as const) {
+        if (typeof meta[key] === 'string' && meta[key]) normalized[key] = meta[key] as string
+      }
+      if (normalized.tabKey) {
+        if (normalized.tabTitle) {
+          normalized.title = normalized.tabTitle
+          delete normalized.i18n
+        }
+        if (normalized.tabIcon) normalized.icon = normalized.tabIcon
+      }
+      return normalized
+    }
+
+    /** 动态路由注册完成后再次调用，将旧缓存中的插件子页归并到同一个标签。 */
+    function normalizeTabs() {
+      const normalized: MineTabbar[] = []
+      const byKey = new Map<string, MineTabbar>()
+      for (const tab of tabList.value) {
+        if (!tab || !(tab.fullPath || tab.path)) continue
+        const next = normalizeTab(tab)
+        const key = getTabKey(next)
+        const existing = byKey.get(key)
+        if (existing) {
+          const affix = existing.affix || next.affix
+          Object.assign(existing, next, { affix })
+        }
+        else {
+          byKey.set(key, next)
+          normalized.push(next)
+        }
+      }
+      // 恢复旧缓存时，以当前地址为准，避免激活标签退回另一个插件子页。
+      const active = byKey.get(currentTabKey())
+      if (active?.tabKey && route.name) {
+        Object.assign(active, normalizeTab({
+          ...active,
+          name: String(route.name),
+          path: route.path,
+          fullPath: route.fullPath,
+        }))
+      }
+      tabList.value = normalized
+      storage()
+    }
+
+    function findTab(tab: MineTabbar): MineTabbar | undefined {
+      const key = getTabKey(normalizeTab(tab))
+      return tabList.value.find(item => getTabKey(item) === key)
+    }
+
+    function removeTabCache(tab: MineTabbar) {
+      const names = new Set([tab.name])
+      if (tab.tabKey) {
+        for (const record of router.getRoutes()) {
+          if (record.meta.tabKey !== tab.tabKey) continue
+          if (typeof record.name === 'string') names.add(record.name)
+          const component = record.components?.default as { name?: string } | undefined
+          if (component?.name) names.add(component.name)
+        }
+      }
+      keepAliveStore.remove([...names])
+      if (tab.tabKey || tab.path.indexOf('MineIframe') > 0) iframeKeepLiveStore.remove([...names])
+    }
+
     function affixTab(tab: MineTabbar) {
-      tab.affix = true
+      const target = findTab(tab)
+      if (!target) return
+      target.affix = true
       useSorted(tabList.value,
         (a: MineTabbar, b: MineTabbar) => Number(b.affix) - Number(a.affix),
         { dirty: true },
@@ -65,25 +155,24 @@ const useTabStore = defineStore(
     }
 
     function cancelAffixTab(tab: MineTabbar) {
-      tab.affix = false
+      const target = findTab(tab)
+      if (target) target.affix = false
     }
 
     function addTab(route: MineTabbar) {
-      if (route.name === 'MineSystemError') {
+      if (route.name === 'MineSystemError' || settingStore.getSettings('app').whiteRoute.includes(route.name)) {
         return
       }
-      if (!tabList.value?.find(item => item.fullPath === route.fullPath)
-        && !settingStore.getSettings('app').whiteRoute.includes(route.name)
-      ) {
-        tabList.value?.push({
-          name: route.name,
-          path: route.path,
-          fullPath: route?.fullPath ?? route.path,
-          i18n: route?.i18n,
-          affix: route?.affix === true,
-          icon: route?.icon,
-          title: route?.title,
-        } as MineTabbar)
+      const next = normalizeTab(route)
+      const existing = tabList.value.find(item => getTabKey(item) === getTabKey(next))
+      if (existing) {
+        if (next.tabKey) {
+          Object.assign(existing, next, { affix: existing.affix })
+          if (existing.tabTitle) delete existing.i18n
+        }
+      }
+      else {
+        tabList.value.push({ ...next, affix: next.affix === true })
       }
     }
 
@@ -97,71 +186,57 @@ const useTabStore = defineStore(
     }
 
     async function refreshTab(tab: MineTabbar | null = null) {
-      if (tab === null) {
-        tab = getCurrentTab() as MineTabbar
-      }
+      const target = tab ? findTab(tab) : getCurrentTab()
+      if (!target) return
       isLoading.value = true
       keepAliveStore.hidden()
-      await new Promise(resolve => resolve(setTimeout(() => {
-      }, 200)))
-      if (tab.path.indexOf('MineIframe') > 0) {
-        iframeKeepLiveStore.remove(tab.name)
-      }
-      keepAliveStore.remove(tab.name)
-      await nextTick(async () => {
-        iframeKeepLiveStore.add(tab.name)
-        keepAliveStore.add(tab.name)
+      removeTabCache(target)
+      try {
+        await nextTick()
+        const resolved = router.resolve(target.fullPath)
+        const component = resolved.matched.at(-1)?.components?.default as { name?: string } | undefined
+        if (resolved.meta.type === 'I') iframeKeepLiveStore.add(target.name)
+        else if (resolved.meta.cache) keepAliveStore.add(component?.name || target.name)
         keepAliveStore.display()
-        await go(tab)
+        await go(target)
+      }
+      finally {
+        keepAliveStore.display()
         isLoading.value = false
-      })
+      }
     }
 
-    function closeTab(tab: MineTabbar) {
-      if (tab.affix) {
-        return
+    async function closeTab(tab: MineTabbar) {
+      const target = findTab(tab)
+      if (!target || target.affix) return
+      const key = getTabKey(target)
+      const index = tabList.value.findIndex(item => getTabKey(item) === key)
+      if (isCurrentTab(target)) {
+        const neighbor = tabList.value[index + 1] ?? tabList.value[index - 1]
+        if (neighbor) await router.push(neighbor.fullPath)
       }
-      tabList.value?.map(async (item: MineTabbar, idx: number) => {
-        if (item.fullPath === tab.fullPath) {
-          if (route.fullPath === tab.fullPath) {
-            if (tabList.value[idx + 1]) {
-              await router.push(tabList.value[idx + 1].fullPath)
-            }
-            else if (idx > 0) {
-              await router.push(tabList.value[idx - 1].fullPath)
-            }
-          }
-          if (tab.path.indexOf('MineIframe') > 0) {
-            iframeKeepLiveStore.remove(tab.name)
-          }
-          tabList.value.splice(idx, 1)
-          keepAliveStore.remove(item.name)
-        }
-      })
+      tabList.value = tabList.value.filter(item => getTabKey(item) !== key)
+      removeTabCache(target)
     }
 
     async function closeOtherTab(tab: MineTabbar) {
+      const target = findTab(tab)
+      if (!target) return
       tabList.value = tabList.value?.filter((item: any) => {
-        if (item.fullPath === tab.fullPath || item.affix === true) {
+        if (getTabKey(item) === getTabKey(target) || item.affix === true) {
           return true
         }
         else {
-          if (item.path.indexOf('MineIframe') > 0) {
-            iframeKeepLiveStore.remove(item.name)
-          }
-          keepAliveStore.remove(item.name)
+          removeTabCache(item)
           return false
         }
       })
-      await go(tab)
+      await go(target)
     }
     async function closeLeftTab(tab: MineTabbar) {
-      let index: number = -1
-      tabList.value?.find((item: MineTabbar, idx: number) => {
-        if (item.fullPath === tab.fullPath) {
-          index = idx
-        }
-      })
+      const target = findTab(tab)
+      if (!target) return
+      const index = tabList.value.findIndex(item => getTabKey(item) === getTabKey(target))
 
       if (index !== -1) {
         tabList.value = tabList.value.filter((item: MineTabbar, idx: number) => {
@@ -169,23 +244,17 @@ const useTabStore = defineStore(
             return true
           }
           else {
-            if (item.path.indexOf('MineIframe') > 0) {
-              iframeKeepLiveStore.remove(item.name)
-            }
-            keepAliveStore.remove(item.name)
+            removeTabCache(item)
             return false
           }
         })
-        await go(tab)
+        await go(target)
       }
     }
     async function closeRightTab(tab: MineTabbar) {
-      let index: number = -1
-      tabList.value?.find((item: MineTabbar, idx: number) => {
-        if (item.fullPath === tab.fullPath) {
-          index = idx
-        }
-      })
+      const target = findTab(tab)
+      if (!target) return
+      const index = tabList.value.findIndex(item => getTabKey(item) === getTabKey(target))
 
       if (index !== -1) {
         tabList.value = tabList.value.filter((item: MineTabbar, idx: number) => {
@@ -193,30 +262,29 @@ const useTabStore = defineStore(
             return true
           }
           else {
-            if (item.path.indexOf('MineIframe') > 0) {
-              iframeKeepLiveStore.remove(item.name)
-            }
-            keepAliveStore.remove(item.name)
+            removeTabCache(item)
             return false
           }
         })
-        await go(tab)
+        await go(target)
       }
     }
 
     function closeCurrentTab() {
-      closeTab(getCurrentTab() as MineTabbar)
+      const current = getCurrentTab()
+      if (current) return closeTab(current)
     }
 
     function getCurrentTab() {
-      return tabList.value.find(item => item.fullPath === route.fullPath)
+      return tabList.value.find(isCurrentTab)
     }
 
     function changeTabTitle(title: string, tab: MineTabbar | null = null) {
-      const t = (tab ?? getCurrentTab())
-      t!.title = title
-      delete t?.i18n
-      useSettingStore().setTitle(title)
+      const target = tab ? findTab(tab) : getCurrentTab()
+      if (!target) return
+      target.title = target.tabTitle || title
+      delete target.i18n
+      useSettingStore().setTitle(target.title)
       storage()
     }
 
@@ -230,8 +298,10 @@ const useTabStore = defineStore(
       set('tabList', tabList.value)
     }
 
-    async function go(item: any) {
-      await router.replace(item?.fullPath ?? item.path)
+    async function go(item?: MineTabbar) {
+      if (!item) return
+      // 标签对象在组内导航时原地更新；收藏项仍须打开它保存的具体子页。
+      await router.replace(item.fullPath || item.path)
     }
 
     return {
@@ -239,6 +309,9 @@ const useTabStore = defineStore(
       defaultTab,
       go,
       initTab,
+      normalizeTabs,
+      getTabKey,
+      isCurrentTab,
       changeTabTitle,
       affixTab,
       cancelAffixTab,

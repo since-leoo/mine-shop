@@ -46,7 +46,7 @@ final class AppSeckillSessionCommandService
     {
         $entity = $this->sessionService->getEntity($dto->getId());
         if (! $entity) {
-            throw new \RuntimeException('场次不存在');
+            throw new \DomainException('场次不存在');
         }
         $entity->update($dto);
         return Db::transaction(fn () => $this->sessionService->update($entity));
@@ -58,7 +58,7 @@ final class AppSeckillSessionCommandService
     public function delete(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('场次不存在');
+            throw new \DomainException('场次不存在');
         }
         return Db::transaction(fn () => $this->sessionService->delete($id));
     }
@@ -69,7 +69,7 @@ final class AppSeckillSessionCommandService
     public function toggleStatus(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('场次不存在');
+            throw new \DomainException('场次不存在');
         }
         return Db::transaction(fn () => $this->sessionService->toggleStatus($id));
     }

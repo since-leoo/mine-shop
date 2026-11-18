@@ -40,7 +40,7 @@ final class ReviewRepository extends IRepository
      */
     public function createFromEntity(ReviewEntity $entity): Review
     {
-        $review = Review::create($entity->toArray());
+        $review = Review::query()->create($entity->toArray());
         $entity->setId((int) $review->id);
 
         return $review;
@@ -51,7 +51,7 @@ final class ReviewRepository extends IRepository
      */
     public function updateFromEntity(ReviewEntity $entity): bool
     {
-        $review = Review::find($entity->getId());
+        $review = Review::query()->find($entity->getId());
         if ($review === null) {
             return false;
         }
@@ -133,7 +133,7 @@ final class ReviewRepository extends IRepository
      */
     public function findByOrderItemId(int $orderItemId): ?Review
     {
-        return Review::where('order_item_id', $orderItemId)->first();
+        return Review::query()->where('order_item_id', $orderItemId)->first();
     }
 
     /**
@@ -141,7 +141,7 @@ final class ReviewRepository extends IRepository
      */
     public function existsByOrderItemId(int $orderItemId): bool
     {
-        return Review::where('order_item_id', $orderItemId)->exists();
+        return Review::query()->where('order_item_id', $orderItemId)->exists();
     }
 
     /**
@@ -188,10 +188,10 @@ final class ReviewRepository extends IRepository
         $today = Carbon::today();
 
         return [
-            'today_reviews' => Review::whereDate('created_at', $today)->count(),
-            'pending_reviews' => Review::where('status', 'pending')->count(),
-            'total_reviews' => Review::count(),
-            'average_rating' => round((float) Review::avg('rating'), 1),
+            'today_reviews' => Review::query()->whereDate('created_at', '=', $today->toDateString())->count(),
+            'pending_reviews' => Review::query()->where('status', 'pending')->count(),
+            'total_reviews' => Review::query()->count(),
+            'average_rating' => round((float) Review::query()->avg('rating'), 1),
         ];
     }
 

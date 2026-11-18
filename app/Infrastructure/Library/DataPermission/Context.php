@@ -31,7 +31,7 @@ final class Context
 
     public static function getOnlyTables(): array
     {
-        return Ctx::get(self::ONLY_TABLES_KEY, []);
+        return Ctx::get(self::ONLY_TABLES_KEY) ?? [];
     }
 
     public static function getDeptColumn(): string

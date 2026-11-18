@@ -14,6 +14,19 @@ namespace Plugin\CustomerService\Infrastructure\Model;
 
 use Hyperf\DbConnection\Model\Model;
 
+/**
+ * @property int $id
+ * @property string $question
+ * @property string $answer
+ * @property null|string $category_name
+ * @property null|int $category_id
+ * @property null|int $published_revision_id
+ * @property null|array $alternate_questions
+ * @property int $sort
+ * @property bool $enabled
+ * @property null|\Carbon\Carbon $created_at
+ * @property null|\Carbon\Carbon $updated_at
+ */
 final class CustomerServiceFaq extends Model
 {
     protected ?string $table = 'customer_service_faqs';

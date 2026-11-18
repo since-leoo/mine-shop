@@ -48,6 +48,9 @@ use Hyperf\DbConnection\Model\Model;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property null|Carbon $deleted_at
+ * @property string $fulfillment_provider
+ * @property \Hyperf\Database\Model\Collection<int, ProductSku> $skus
+ * @property \Hyperf\Database\Model\Collection<int, ProductGallery> $gallery
  */
 class Product extends Model
 {
@@ -127,6 +130,7 @@ class Product extends Model
         return $this->belongsTo(Brand::class, 'brand_id');
     }
 
+    /** @return HasMany<ProductSku, $this> */
     public function skus(): HasMany
     {
         return $this->hasMany(ProductSku::class, 'product_id');

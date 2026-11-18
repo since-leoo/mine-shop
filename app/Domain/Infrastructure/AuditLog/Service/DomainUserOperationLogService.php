@@ -17,6 +17,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 用户操作日志领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\System\UserOperationLog>
  */
 final class DomainUserOperationLogService extends IService
 {

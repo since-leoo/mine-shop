@@ -19,6 +19,8 @@ use Hyperf\Database\Model\Collection;
 
 /**
  * 面向 API 场景的优惠券查询领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Coupon\Coupon>
  */
 final class DomainApiCouponQueryService extends IService
 {

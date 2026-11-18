@@ -32,7 +32,7 @@ final class GroupBuyOrderRepository extends IRepository
         $query = $this->perQuery($this->getQuery(), $params);
 
         foreach ($query->cursor() as $order) {
-            $order->loads(['groupBuy', 'member']);
+            $order->load(['groupBuy', 'member']);
             yield $order;
         }
     }
@@ -82,13 +82,14 @@ final class GroupBuyOrderRepository extends IRepository
     public function countPaidByGroupNo(string $groupNo): int
     {
         return GroupBuyOrder::where('group_no', $groupNo)
-            ->where('status', 'paid')
+            ->whereIn('status', ['paid', 'grouped'])
             ->count();
     }
 
     public function markGroupedByGroupNo(string $groupNo): int
     {
         return GroupBuyOrder::where('group_no', $groupNo)
+            ->where('status', 'paid')
             ->update(['status' => 'grouped', 'group_time' => Carbon::now()]);
     }
 
@@ -98,7 +99,7 @@ final class GroupBuyOrderRepository extends IRepository
     public function findExpiredPendingGroupNos(Carbon $now): array
     {
         return GroupBuyOrder::where('expire_time', '<', $now)
-            ->where('status', 'pending')
+            ->whereIn('status', ['pending', 'paid'])
             ->distinct()
             ->pluck('group_no')
             ->all();
@@ -117,6 +118,7 @@ final class GroupBuyOrderRepository extends IRepository
     public function markFailedByGroupNo(string $groupNo, Carbon $now): int
     {
         return GroupBuyOrder::where('group_no', $groupNo)
+            ->whereIn('status', ['pending', 'paid'])
             ->update(['status' => 'failed', 'cancel_time' => $now]);
     }
 
@@ -129,6 +131,11 @@ final class GroupBuyOrderRepository extends IRepository
             ->where('order_id', $orderId)
             ->where('status', 'pending')
             ->update(['status' => 'paid', 'pay_time' => Carbon::now()]);
+    }
+
+    public function hasGrouped(string $groupNo): bool
+    {
+        return $this->getQuery()->where('group_no', $groupNo)->where('status', 'grouped')->exists();
     }
 
     public function handleSearch(Builder $query, array $params): Builder

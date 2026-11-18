@@ -24,6 +24,8 @@ export default async ({ mode, command }) => {
   const proxyPrefix = env.VITE_PROXY_PREFIX
   return defineConfig({
     base: env.VITE_APP_ROOT_BASE,
+    // 主站与独立测试服务分别维护依赖缓存，避免运行测试后出现 Outdated Optimize Dep。
+    cacheDir: path.resolve(__dirname, 'node_modules/.vite-main'),
     // 开发服务器选项 https://cn.vite.dev/config/#server-options
     server: {
       open: true,

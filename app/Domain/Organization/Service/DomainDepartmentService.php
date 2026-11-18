@@ -18,6 +18,7 @@ use App\Domain\Organization\Repository\DepartmentRepository;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Permission\Department;
 
+/** @extends IService<\App\Infrastructure\Model\Permission\Department> */
 final class DomainDepartmentService extends IService
 {
     public function __construct(

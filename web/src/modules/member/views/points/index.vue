@@ -177,7 +177,7 @@
           </el-select>
         </el-form-item>
         <el-form-item :label="t('member.points.remarkLabel')">
-          <el-input v-model="adjustForm.remark" type="textarea" rows="3" />
+          <el-input v-model="adjustForm.remark" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>

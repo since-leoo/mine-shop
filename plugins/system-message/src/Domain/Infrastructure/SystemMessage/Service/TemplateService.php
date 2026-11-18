@@ -147,7 +147,7 @@ class TemplateService
         if (! $template) {
             throw new \InvalidArgumentException("Template not found: {$templateId}");
         }
-        return $template->getVariables();
+        return $template->getRequiredVariables();
     }
 
     public function duplicate(int $templateId, ?string $newName = null): MessageTemplate
@@ -213,7 +213,7 @@ class TemplateService
         if (empty($templateIds)) {
             $templates = MessageTemplate::all();
         } else {
-            $templates = MessageTemplate::whereIn('id', $templateIds)->get();
+            $templates = MessageTemplate::query()->whereIn('id', $templateIds)->get();
         }
         return $templates->map(static function ($template) {
             $data = $template->toArray();
@@ -234,7 +234,7 @@ class TemplateService
         if (mb_strlen($data['name']) > $maxNameLength) {
             throw new \InvalidArgumentException("Name too long, max {$maxNameLength} characters");
         }
-        $query = MessageTemplate::where('name', $data['name']);
+        $query = MessageTemplate::query()->where('name', $data['name']);
         if ($template) {
             $query->where('id', '!=', $template->id);
         }

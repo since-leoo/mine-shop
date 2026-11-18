@@ -47,6 +47,7 @@ final class ProductSnapshotListener implements ListenerInterface
                 $event instanceof ProductCreated => $this->handleCreated($event),
                 $event instanceof ProductUpdated => $this->handleUpdated($event),
                 $event instanceof ProductDeleted => $this->handleDeleted($event),
+                default => null,
             };
         } catch (\Throwable $throwable) {
             $productId = property_exists($event, 'productId') ? $event->productId : 0;
@@ -55,6 +56,7 @@ final class ProductSnapshotListener implements ListenerInterface
                 'product_id' => $productId,
                 'error' => $throwable->getMessage(),
             ]);
+            throw $throwable;
         }
     }
 
@@ -67,6 +69,9 @@ final class ProductSnapshotListener implements ListenerInterface
         $product = $this->queryService->findById($event->productId);
         if ($product) {
             $this->snapshotService->rememberProduct($product);
+        } else {
+            $this->snapshotService->evictProduct($event->productId);
+            $this->snapshotService->deleteSkus($event->skuIds);
         }
     }
 
@@ -79,6 +84,9 @@ final class ProductSnapshotListener implements ListenerInterface
         $product = $this->queryService->findById($event->productId);
         if ($product) {
             $this->snapshotService->rememberProduct($product);
+        } else {
+            $this->snapshotService->evictProduct($event->productId);
+            $this->snapshotService->deleteSkus(array_column($event->stockData, 'sku_id'));
         }
 
         // 删除已删除的 SKU 快照

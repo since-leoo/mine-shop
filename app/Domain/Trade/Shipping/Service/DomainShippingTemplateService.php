@@ -25,6 +25,8 @@ use App\Interface\Common\ResultCode;
  *
  * 负责运费模板的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Shipping\ShippingTemplate>
  */
 final class DomainShippingTemplateService extends IService
 {

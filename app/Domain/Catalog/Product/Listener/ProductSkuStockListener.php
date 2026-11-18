@@ -1,144 +1,78 @@
 <?php
 
 declare(strict_types=1);
-/**
- * This file is part of MineAdmin.
- *
- * @link     https://www.mineadmin.com
- * @document https://doc.mineadmin.com
- * @contact  root@imoi.cn
- * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
- */
 
 namespace App\Domain\Catalog\Product\Listener;
 
 use App\Domain\Catalog\Product\Event\ProductCreated;
 use App\Domain\Catalog\Product\Event\ProductDeleted;
 use App\Domain\Catalog\Product\Event\ProductUpdated;
-use App\Infrastructure\Abstract\ICache;
+use Hyperf\Contract\ConfigInterface;
 use Hyperf\Event\Contract\ListenerInterface;
-use Psr\Log\LoggerInterface;
+use Hyperf\Redis\Redis;
 
-/**
- * SKU库存监听器：负责同步SKU库存到Redis.
- */
 final class ProductSkuStockListener implements ListenerInterface
 {
-    private const STOCK_HASH_KEY_PREFIX = 'product';
+    public const SCRIPT = <<<'LUA'
+if redis.call('HEXISTS', KEYS[1], ARGV[1]) == 1 then return 1 end
+local changes = cjson.decode(ARGV[2])
+local deleted = cjson.decode(ARGV[3])
+-- 已有 SKU 缺失库存时拒绝从商品总量重建，避免丢失尚未释放的预占。
+for _, item in ipairs(changes) do
+    local id = tostring(item.sku_id)
+    if item.delta ~= nil and item.delta ~= cjson.null and redis.call('HEXISTS', KEYS[1], id) == 0 and redis.call('HEXISTS', KEYS[1], '_deleted:' .. id) == 0 then return 0 end
+end
+for _, item in ipairs(changes) do
+    local id = tostring(item.sku_id)
+    if redis.call('HEXISTS', KEYS[1], '_deleted:' .. id) == 0 then
+        if item.delta == nil or item.delta == cjson.null then
+            redis.call('HSETNX', KEYS[1], id, item.stock)
+        else
+            redis.call('HINCRBY', KEYS[1], id, item.delta)
+        end
+    end
+end
+for _, id in ipairs(deleted) do
+    redis.call('HDEL', KEYS[1], tostring(id))
+    redis.call('HSET', KEYS[1], '_deleted:' .. tostring(id), 1)
+end
+redis.call('HSET', KEYS[1], ARGV[1], 1)
+return 1
+LUA;
 
-    private const STOCK_HASH_KEY = 'stock';
-
-    public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly ICache $redis
-    ) {}
+    public function __construct(private readonly Redis $redis, private readonly ConfigInterface $config) {}
 
     public function listen(): array
     {
-        return [
-            ProductCreated::class,
-            ProductUpdated::class,
-            ProductDeleted::class,
-        ];
+        return [ProductCreated::class, ProductUpdated::class, ProductDeleted::class];
     }
 
     public function process(object $event): void
     {
-        try {
-            // 外部库存只能由版本化投影端口写入；标题/图片编辑不得覆盖交易预占。
-            if (! $event instanceof ProductDeleted) {
-                $product = \App\Infrastructure\Model\Product\Product::query()->find($event->productId);
-                if ($product !== null && ($product->fulfillment_provider ?? 'merchant') !== 'merchant') {
-                    return;
-                }
-            }
-            $this->redis->setPrefix(self::STOCK_HASH_KEY_PREFIX);
-
-            match (true) {
-                $event instanceof ProductCreated => $this->handleCreated($event),
-                $event instanceof ProductUpdated => $this->handleUpdated($event),
-                $event instanceof ProductDeleted => $this->handleDeleted($event),
-            };
-        } catch (\Throwable $e) {
-            $productId = property_exists($event, 'productId') ? $event->productId : null;
-            $this->logger->error('Product stock sync failed', [
-                'product_id' => $productId,
-                'event' => $event::class,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
-
-    /**
-     * 处理商品创建事件.
-     */
-    private function handleCreated(ProductCreated $event): void
-    {
-        // 直接使用事件中的库存数据，不需要查询数据库
-        $this->syncStocks($event->stockData);
-    }
-
-    /**
-     * 处理商品更新事件.
-     */
-    private function handleUpdated(ProductUpdated $event): void
-    {
-        // 更新库存
-        $this->syncStocks($event->stockData);
-
-        // 删除已删除的 SKU 库存
-        if ($event->changes->hasSkuDeleted()) {
-            $this->removeStocks($event->changes->deletedSkuIds);
-        }
-    }
-
-    /**
-     * 处理商品删除事件.
-     */
-    private function handleDeleted(ProductDeleted $event): void
-    {
-        $this->removeStocks($event->skuIds);
-    }
-
-    /**
-     * 同步库存数据到Redis.
-     *
-     * @param array<int, array{sku_id: int, stock: int}> $stockData
-     */
-    private function syncStocks(array $stockData): void
-    {
-        $payload = [];
-        foreach ($stockData as $item) {
-            $skuId = $item['sku_id'] ?? 0;
-            $stock = $item['stock'] ?? 0;
-
-            if ($skuId <= 0) {
-                continue;
-            }
-
-            $payload[(string) $skuId] = $stock;
-        }
-
-        if ($payload !== []) {
-            $this->redis->hMSet(self::STOCK_HASH_KEY, $payload);
-        }
-    }
-
-    /**
-     * 删除SKU库存.
-     *
-     * @param array<int, int> $skuIds
-     */
-    private function removeStocks(array $skuIds): void
-    {
-        $fields = array_values(array_filter(array_map(static function (int $skuId) {
-            return $skuId > 0 ? (string) $skuId : null;
-        }, $skuIds)));
-
-        if ($fields === []) {
+        if (! $event instanceof ProductCreated && ! $event instanceof ProductUpdated && ! $event instanceof ProductDeleted) {
             return;
         }
-
-        $this->redis->hDel(self::STOCK_HASH_KEY, ...$fields);
+        $stocks = match (true) {
+            $event instanceof ProductCreated => $event->stockData,
+            $event instanceof ProductUpdated => $event->changes->stockAdjustments,
+            default => [],
+        };
+        $deleted = match (true) {
+            $event instanceof ProductDeleted => $event->skuIds,
+            $event instanceof ProductUpdated => $event->changes->deletedSkuIds,
+            default => [],
+        };
+        if ($stocks === [] && $deleted === []) {
+            return;
+        }
+        $result = $this->redis->eval(self::SCRIPT, [
+            (string) $this->config->get('cache.default.prefix', '') . 'product:stock',
+            '_adjustment:' . $event->operationId,
+            json_encode($stocks, JSON_THROW_ON_ERROR),
+            json_encode($deleted, JSON_THROW_ON_ERROR),
+        ], 1);
+        if ((int) $result !== 1) {
+            throw new \RuntimeException('商品库存缺失，保留库存调整事件等待恢复');
+        }
     }
 }

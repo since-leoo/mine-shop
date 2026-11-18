@@ -25,7 +25,9 @@ use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 use Hyperf\Database\Model\Builder;
 
-/** 业务方法。 */
+/** 业务方法。 *
+ * @extends IRepository<Order>
+ */
 final class OrderRepository extends IRepository
 {
     public function __construct(protected readonly Order $model) {}
@@ -97,7 +99,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
 
         $order->ship($entity);
@@ -112,7 +114,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
         $order->cancel($entity);
     }
@@ -124,7 +126,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
 
         $order->complete($entity);
@@ -137,7 +139,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
 
         $order->paid($entity);
@@ -150,7 +152,7 @@ final class OrderRepository extends IRepository
         $order = parent::findById($id);
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
 
         return $order;
@@ -163,7 +165,7 @@ final class OrderRepository extends IRepository
         $order = $this->model::where('order_no', $orderNo)->first();
 
         if (! $order) {
-            throw new \RuntimeException('Order not found.');
+            throw new \DomainException('Order not found.');
         }
 
         return $order;
@@ -211,6 +213,7 @@ final class OrderRepository extends IRepository
     }
 
     /** 业务方法。 */
+    /** @return \Hyperf\Database\Model\Collection<int, Order> */
     public function findExpiredPendingOrders(int $limit = 200): \Hyperf\Database\Model\Collection
     {
         return $this->getQuery()
@@ -221,6 +224,7 @@ final class OrderRepository extends IRepository
             ->get();
     }
 
+    /** @return \Hyperf\Database\Model\Collection<int, Order> */
     public function findAutoConfirmableOrders(Carbon $shippedBefore, int $limit = 200): \Hyperf\Database\Model\Collection
     {
         return $this->getQuery()

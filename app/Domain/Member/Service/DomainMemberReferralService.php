@@ -19,11 +19,13 @@ use App\Infrastructure\Service\Wechat\MiniAppAuthService;
 
 /**
  * 会员分销/邀请领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\Member>
  */
 final class DomainMemberReferralService extends IService
 {
     public function __construct(
-        private readonly MemberRepository $repository,
+        public readonly MemberRepository $repository,
         private readonly MiniAppAuthService $miniAppAuthService,
     ) {}
 

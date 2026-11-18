@@ -109,6 +109,7 @@ class XlsWriterWriter extends AbstractExportWriter
             }
         }
 
+        // @phpstan-ignore arguments.count (已安装 xlswriter 的 header 接受可选 format_handle；PHPStan 内置签名仍只有一个参数。)
         $excel->header(array_column($columns, 'title'), $headerFormat);
         return $excel;
     }

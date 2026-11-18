@@ -452,7 +452,7 @@ final class DomainUserService
      * 
      * @param int $id 用户ID
      * @return UserEntity 用户实体对象
-     * @throws \RuntimeException 当用户不存在时
+     * @throws \DomainException 当用户不存在时
      */
     public function getEntity(int $id): UserEntity
     {
@@ -460,7 +460,7 @@ final class DomainUserService
         $model = $this->repository->findById($id);
         
         if (!$model) {
-            throw new \RuntimeException("用户不存在: ID={$id}");
+            throw new \DomainException("用户不存在: ID={$id}");
         }
         
         return UserMapper::fromModel($model);
@@ -1185,7 +1185,7 @@ $entity = $this->userService->getEntity($id);
  * 
  * @param int $id 实体ID
  * @return UserEntity 实体对象
- * @throws \RuntimeException 当实体不存在时
+ * @throws \DomainException 当实体不存在时
  */
 public function getEntity(int $id): UserEntity
 {
@@ -1193,7 +1193,7 @@ public function getEntity(int $id): UserEntity
     $model = $this->repository->findById($id);
     
     if (!$model) {
-        throw new \RuntimeException("用户不存在: ID={$id}");
+        throw new \DomainException("用户不存在: ID={$id}");
     }
     
     return UserMapper::fromModel($model);
@@ -1279,7 +1279,7 @@ public function grantPermissions(RoleGrantPermissionsInput $input): void
 - ✅ 方法名统一为 `getEntity()`
 - ✅ 参数为实体的主键 ID
 - ✅ 返回值为对应的 Entity 对象
-- ✅ 不存在时抛出 `\RuntimeException`
+- ✅ 请求的实体不存在时抛出 `\DomainException`
 
 ### 注意事项
 
@@ -1300,10 +1300,12 @@ public function grantPermissions(RoleGrantPermissionsInput $input): void
 
 ### 使用标准 PHP 异常
 
+明确可向调用方展示的业务拒绝（含请求资源不存在）使用 `\DomainException`，输入校验使用 `\InvalidArgumentException`。生产响应只公开明确的业务提示；数据库、SDK、类型错误及普通 `\RuntimeException` 仅记录完整日志并返回通用错误。锁竞争、缓存故障、支付/退款回调中暂缺记录等可恢复的基础设施错误保留 `\RuntimeException`，避免被误判为永久业务失败。已有 `BusinessException`、验证及鉴权处理器继续负责各自的响应码。
+
 ```php
 // ✅ 正确：使用标准异常
 throw new \DomainException('用户名不能为空');
-throw new \RuntimeException('用户不存在');
+throw new \DomainException('用户不存在');
 throw new \InvalidArgumentException('无效的参数');
 
 // ❌ 错误：不要创建自定义领域异常

@@ -7,11 +7,13 @@
  * @Author X.Mo<root@imoi.cn>
  * @Link   https://github.com/mineadmin
  */
+import type { UserVo } from './user'
 import type { PageList, ResponseStruct } from '#/global'
 
 export interface DepartmentVo {
   id?: number
   name?: string
+  department_users?: UserVo[]
 }
 
 export interface DepartmentSearchVo {

@@ -1,10 +1,10 @@
-import type { MaProTableColumns } from '@mineadmin/pro-table'
+import type { MaTableColumns } from '@mineadmin/table'
 
 import { ElTag } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
 
-export default function getOrderColumns(): MaProTableColumns[] {
+export default function getOrderColumns(): MaTableColumns[] {
   const { t } = useI18n()
 
   const orderStatusMap: Record<string, { text: string, type: string }> = {

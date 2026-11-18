@@ -5,12 +5,10 @@ export async function miniProgramLogin({
   code,
   encryptedData = '',
   iv = '',
-  openid = '',
 }: {
   code: string;
   encryptedData?: string;
   iv?: string;
-  openid?: string;
 }) {
   if (!code) {
     return Promise.reject(new Error('缺少登录凭证 code'));
@@ -22,7 +20,6 @@ export async function miniProgramLogin({
       code,
       encrypted_data: encryptedData,
       iv,
-      openid,
     }),
   });
   notifyAuthResult(result);

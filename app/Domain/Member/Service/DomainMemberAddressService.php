@@ -22,6 +22,8 @@ use App\Interface\Common\ResultCode;
  *
  * API 端专属写操作（create、update、delete、setDefault）已迁移至
  * Domain\Member\Api\Command\MemberAddressCommandApiService.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\MemberAddress>
  */
 final class DomainMemberAddressService extends IService
 {

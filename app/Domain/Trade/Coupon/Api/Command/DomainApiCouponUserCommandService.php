@@ -20,12 +20,13 @@ use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use Carbon\Carbon;
 
+/** @extends IService<\App\Infrastructure\Model\Coupon\CouponUser> */
 final class DomainApiCouponUserCommandService extends IService
 {
     public function __construct(
         private readonly DomainCouponService $couponService,
         private readonly CouponRepository $couponRepository,
-        private readonly CouponUserRepository $repository,
+        public readonly CouponUserRepository $repository,
     ) {}
 
     /**
@@ -34,7 +35,7 @@ final class DomainApiCouponUserCommandService extends IService
     public function receive(int $memberId, int $couponId): CouponUser
     {
         // 1. 获取优惠券实体并验证
-        $coupon = $this->couponService->getEntity($couponId);
+        $coupon = $this->couponService->getLockedEntity($couponId);
 
         $now = Carbon::now();
 
@@ -48,7 +49,7 @@ final class DomainApiCouponUserCommandService extends IService
         // 4. 检查用户领取限制
         $memberCount = $this->couponRepository->countIssuedByMember($couponId, $memberId);
         if (! $coupon->canMemberReceive($memberCount)) {
-            throw new \RuntimeException('已达到领取上限');
+            throw new \DomainException('已达到领取上限');
         }
 
         // 5. 计算过期时间

@@ -25,7 +25,6 @@ class LoginRequest extends BaseRequest
             'code' => ['required', 'string'],
             'encrypted_data' => ['nullable', 'string'],
             'iv' => ['nullable', 'string'],
-            'openid' => ['nullable', 'string'],
         ];
     }
 
@@ -35,7 +34,6 @@ class LoginRequest extends BaseRequest
             'code' => '授权 code',
             'encrypted_data' => '加密数据',
             'iv' => '初始向量',
-            'openid' => '用户 openid',
         ];
     }
 }

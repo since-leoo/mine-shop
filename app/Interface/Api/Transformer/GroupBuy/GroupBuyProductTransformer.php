@@ -67,8 +67,8 @@ final class GroupBuyProductTransformer
                 'groupTimeLimit' => (int) $groupBuy->group_time_limit,
                 'groupCount' => (int) $groupBuy->group_count,
                 'successGroupCount' => (int) $groupBuy->success_group_count,
-                'startTime' => $groupBuy->start_time?->toDateTimeString(),
-                'endTime' => $groupBuy->end_time?->toDateTimeString(),
+                'startTime' => $groupBuy->start_time->toDateTimeString(),
+                'endTime' => $groupBuy->end_time->toDateTimeString(),
                 'status' => (string) $groupBuy->status,
                 'images' => $groupBuy->images ?? [],
             ],
@@ -81,7 +81,7 @@ final class GroupBuyProductTransformer
      */
     public function transformPromotionList(array $data): array
     {
-        $list = $data['list'] ?? [];
+        $list = $data['list'];
         $sceneBuckets = [];
 
         foreach ($list as $item) {
@@ -113,9 +113,9 @@ final class GroupBuyProductTransformer
 
         return [
             'list' => $list,
-            'statusTag' => (string) ($data['statusTag'] ?? 'expired'),
-            'time' => (int) ($data['time'] ?? 0),
-            'banner' => (string) ($data['banner'] ?? ''),
+            'statusTag' => $data['statusTag'],
+            'time' => $data['time'],
+            'banner' => $data['banner'],
             'navTabs' => $navTabs,
         ];
     }

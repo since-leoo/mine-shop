@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Interface\Admin\Controller\DiyPage;
 
-use Plugin\Diy\Application\Admin\Content\AppDiyPublishCommandService;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
-use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyPublishRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
@@ -25,6 +23,8 @@ use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\Diy\Application\Admin\Content\AppDiyPublishCommandService;
+use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyPublishRequest;
 
 #[Controller(prefix: '/admin/diy/pages')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -58,7 +58,7 @@ final class DiyPublishController extends AbstractController
     public function cancelSchedule(int $id, DiyPublishRequest $request): Result
     {
         $params = $request->validated();
-        $this->commandService->cancelSchedule((int) $params['record_id']);
+        $this->commandService->cancelSchedule((int) $params['record_id'], $id);
 
         return $this->success([], '取消定时发布成功');
     }

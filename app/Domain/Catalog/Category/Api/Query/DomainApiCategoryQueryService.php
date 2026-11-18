@@ -20,6 +20,8 @@ use Hyperf\Database\Model\Collection;
  * 面向 API 场景的分类查询领域服务.
  *
  * 继承 IService 获得 page()、count() 等基类方法.
+ *
+ * @extends IService<\App\Infrastructure\Model\Product\Category>
  */
 final class DomainApiCategoryQueryService extends IService
 {
@@ -27,6 +29,7 @@ final class DomainApiCategoryQueryService extends IService
 
     /**
      * 获取分类树.
+     * @return Collection<int, \App\Infrastructure\Model\Product\Category>
      */
     public function tree(int $parentId = 0): Collection
     {

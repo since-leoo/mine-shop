@@ -57,7 +57,7 @@ async function createI18nService(app: App) {
     }
   })
 
-  app.use(createI18n({
+  const i18n = createI18n({
     legacy: false,
     globalInjection: true,
     fallbackLocale: 'zh_CN',
@@ -65,7 +65,9 @@ async function createI18nService(app: App) {
     silentTranslationWarn: true,
     silentFallbackWarn: true,
     messages,
-  }))
+  })
+  app.use(i18n)
+  return i18n.global
 }
 
 async function initProvider(app: App) {
@@ -122,9 +124,10 @@ async function bootstrap(app: App): Promise<void> {
   app.use(ElementPlus, {})
   registerDirectives(app)
   await otherWorker(app)
-  await createI18nService(app)
-  await usePluginStore().registerPlugin(app)
+  const i18n = await createI18nService(app)
+  await usePluginStore().registerPlugin(app, { i18n })
   await router.isReady()
+  useTabStore().normalizeTabs()
   useThemeColor().initThemeColor()
 }
 

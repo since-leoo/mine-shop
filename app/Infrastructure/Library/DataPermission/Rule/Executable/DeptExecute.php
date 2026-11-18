@@ -12,53 +12,28 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule\Executable;
 
-use App\Domain\Organization\Repository\DepartmentRepository;
-use App\Infrastructure\Model\Permission\Department;
-use App\Infrastructure\Model\Permission\Position;
-use Hyperf\Database\Model\Collection;
-
 class DeptExecute extends AbstractExecutable
 {
     public function execute(): ?array
     {
         $policy = $this->getPolicy();
-        $policyType = $policy->policy_type;
-        if ($policyType->isAll()) {
+        $type = $policy->policy_type;
+        if ($type->isAll()) {
             return null;
         }
-        /*
-         * @var Department[]|Collection $departmentList
-         */
-        if ($policyType->isCustomDept()) {
-            $departmentList = $this->getRepository(DepartmentRepository::class)->getByIds($policy->value);
+        if ($type->isCustomDept()) {
+            return array_values(array_unique(array_map('intval', $policy->value ?? [])));
         }
-        if ($policyType->isCustomFunc()) {
-            $departmentList = $this->loadCustomFunc($policy);
+        $departments = $this->getUser()->department()->get()->merge($this->getUser()->dept_leader()->get());
+        foreach ($this->getUser()->position()->get() as $position) {
+            $departments = $departments->merge($position->department()->get());
         }
-        if ($policyType->isDeptSelf() || $policyType->isSelf()) {
-            $departmentList = $this->getUser()->department()->get();
-        }
-        if ($policyType->isDeptTree()) {
-            $departmentList = collect();
-            /**
-             * @var Collection|Department[] $currentList
-             */
-            $currentList = $this->getUser()->department()->get();
-            foreach ($currentList as $item) {
-                $departmentList = $departmentList->merge($item->getFlatChildren());
+        $ids = $departments->pluck('id')->all();
+        if ($type->isDeptTree()) {
+            foreach ($departments as $department) {
+                $ids = array_merge($ids, $department->getFlatChildren()->pluck('id')->all());
             }
         }
-        if (empty($departmentList)) {
-            return null;
-        }
-        $departmentList = $departmentList->merge($this->getUser()->dept_leader()->get());
-        /**
-         * @var Collection|Position[] $positionList
-         */
-        $positionList = $this->getUser()->position()->get();
-        foreach ($positionList as $position) {
-            $departmentList = $departmentList->merge($position->department()->get());
-        }
-        return $departmentList->pluck('id')->toArray();
+        return array_values(array_unique(array_map('intval', $ids)));
     }
 }

@@ -62,7 +62,7 @@ final class DomainAfterSaleService
 
     public function lockOrder(int $orderId): void
     {
-        if ($this->orderRepository->findByIdForLock($orderId) === null) { throw new \RuntimeException('订单不存在'); }
+        if ($this->orderRepository->findByIdForLock($orderId) === null) { throw new \DomainException('订单不存在'); }
     }
 
     public function cancelForMember(int $memberId, int $id): void
@@ -100,7 +100,7 @@ final class DomainAfterSaleService
 
     public function getEntity(int $id): AfterSaleEntity
     {
-        /** @var AfterSale $model */
+        /** @var null|AfterSale $model */
         $model = $this->afterSaleRepository->findById($id);
         if ($model === null) {
             throw new \DomainException('获取售后单失败');
@@ -167,7 +167,7 @@ final class DomainAfterSaleService
     {
         $model = $this->afterSaleRepository->findByIdForLock($id);
         if ($model === null) {
-            throw new \RuntimeException('售后单不存在');
+            throw new \DomainException('售后单不存在');
         }
         return AfterSaleMapper::fromModel($model);
     }

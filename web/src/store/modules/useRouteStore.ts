@@ -12,6 +12,7 @@ import type { Router, RouteRecordRaw } from 'vue-router'
 import dashboardRoute from '@/router/static-routes/dashboardRoute'
 import welcomeRoute from '@/router/static-routes/welcomeRoute'
 import usePluginStore from '@/store/modules/usePluginStore.ts'
+import { isLegacyPluginView, markPluginTab, pluginTabMeta } from '@/router/pluginTab'
 
 const useRouteStore = defineStore(
   'useRouteStore',
@@ -48,13 +49,18 @@ const useRouteStore = defineStore(
         // plugins so migration can happen one plugin at a time.
         if (plugin.config?.enable === true && plugin.centerOnly !== true && plugin?.views) {
           plugin.views.map((item: Plugin.Views) => {
-            const route = toRecordRawRoute(item)
+            const route = markPluginTab(toRecordRawRoute(item))
             MineRootLayoutRoute.children?.push(route)
             router.addRoute('MineRootLayoutRoute', route)
           })
         }
       })
+      const existingRoutes = new Set(router.getRoutes())
       await usePluginStore().callHooks('registerRoute', router, routesRaw.value)
+      // 插件通过 hook 注册的子页面也属于同一顶部标签，不要求每个插件自行重复配置。
+      for (const route of router.getRoutes()) {
+        if (!existingRoutes.has(route)) Object.assign(route.meta, pluginTabMeta)
+      }
     }
 
     function getMineRootLayoutRoute(): RouteRecordRaw {
@@ -97,6 +103,7 @@ const useRouteStore = defineStore(
             meta: {
               title: '插件中心',
               icon: 'carbon:application',
+              ...pluginTabMeta,
               type: 'M',
               breadcrumbEnable: true,
               copyright: false,
@@ -168,9 +175,11 @@ const useRouteStore = defineStore(
           if (item.component && item.meta?.type !== 'I') {
             if (moduleViews[`../../modules/${item.component}${suffix}`]) {
               component = moduleViews[`../../modules/${item.component}${suffix}`]
+              if (isLegacyPluginView(item.component)) item.meta = { ...item.meta, ...pluginTabMeta }
             }
             else if (pluginViews[`../../plugins/${item.component}${suffix}`]) {
               component = pluginViews[`../../plugins/${item.component}${suffix}`]
+              item.meta = { ...item.meta, ...pluginTabMeta }
             }
             else {
               // console.warn(`MineAdmin-UI: 路由 [${item.meta.title}] 找不到 ${item.component}${suffix} 页面`)

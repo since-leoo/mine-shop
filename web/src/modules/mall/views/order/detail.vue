@@ -52,7 +52,7 @@
           {{ order.address.name }} {{ order.address.phone }}
         </el-descriptions-item>
         <el-descriptions-item :label="t('mall.order.addressDetail')">
-          {{ order.address.province }} {{ order.address.city }} {{ order.address.district }} {{ order.address.detail || order.address.address }}
+          {{ order.address.province }} {{ order.address.city }} {{ order.address.district }} {{ order.address.address || order.address.address }}
         </el-descriptions-item>
       </el-descriptions>
 
@@ -183,7 +183,7 @@ const statusLabelMap: Record<string, string> = {
   cancelled: t('mall.order.statusCancelled'),
 }
 
-const statusTypeMap: Record<string, string> = {
+const statusTypeMap: Record<string, import('element-plus').TagProps['type']> = {
   pending: 'warning',
   paid: 'primary',
   shipped: 'success',
@@ -197,7 +197,7 @@ const reviewStatusLabel: Record<string, string> = {
   rejected: t('mall.review.statusRejected'),
 }
 
-const reviewStatusType: Record<string, string> = {
+const reviewStatusType: Record<string, import('element-plus').TagProps['type']> = {
   pending: 'warning',
   approved: 'success',
   rejected: 'danger',

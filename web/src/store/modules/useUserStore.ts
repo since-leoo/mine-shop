@@ -135,6 +135,7 @@ const useUserStore = defineStore(
         await refreshMenu()
         await refreshRole()
         await routeStore.initRoutes(router, getMenu())
+        useTabStore().normalizeTabs()
         const codes: string[] = recursionGetKey(getMenu(), 'name')
         getRoles().includes('SuperAdmin') && codes.unshift('*')
         setPermissions(codes)

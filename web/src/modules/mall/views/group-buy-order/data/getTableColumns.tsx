@@ -30,7 +30,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.activityInfo'),
       prop: 'title',
       minWidth: '220px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <div class="flex items-center gap-2">
           {row.product_image && <ElImage src={row.product_image} style="width: 40px; height: 40px" fit="cover" />}
           <div class="flex-1 min-w-0">
@@ -44,7 +44,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.common.status'),
       prop: 'status',
       width: '90px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={statusTypeMap[row.status] as any} size="small">
           {statusTextMap[row.status] || row.status}
         </ElTag>
@@ -54,7 +54,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.activityTime'),
       prop: 'time',
       width: '180px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <div class="text-xs">
           <div>{t('mall.groupBuyOrder.startLabel')}: {row.start_time}</div>
           <div>{t('mall.groupBuyOrder.endLabel')}: {row.end_time}</div>
@@ -65,7 +65,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.grouping'),
       prop: 'group_count',
       width: '100px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <div class="text-xs">
           <div>{t('mall.groupBuyOrder.opened')}: {row.group_count}</div>
           <div class="text-green-600">{t('mall.groupBuyOrder.success')}: {row.success_group_count}</div>
@@ -76,7 +76,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.groupBuyerCount'),
       prop: 'group_buyer_count',
       width: '90px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <span class="font-semibold">{row.group_buyer_count}</span>
       ),
     },
@@ -84,7 +84,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.originalBuyerCount'),
       prop: 'original_buyer_count',
       width: '90px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <span class="text-gray-500">{row.original_buyer_count}</span>
       ),
     },
@@ -92,7 +92,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.groupBuyerAmount'),
       prop: 'group_buyer_amount',
       width: '110px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <span class="text-red-500 font-semibold">¥{formatYuan(row.group_buyer_amount)}</span>
       ),
     },
@@ -100,7 +100,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       label: () => t('mall.groupBuyOrder.stockSales'),
       prop: 'quantity',
       width: '140px',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => {
+      cellRender: ({ row }) => {
         const total = row.total_quantity || 0
         const sold = row.sold_quantity || 0
         const percent = total > 0 ? Math.round((sold / total) * 100) : 0
@@ -117,7 +117,7 @@ export default function getTableColumns(onViewOrders: (row: GroupBuyOrderSummary
       prop: 'action',
       width: '120px',
       fixed: 'right',
-      cellRender: ({ row }: { row: GroupBuyOrderSummaryVo }) => (
+      cellRender: ({ row }) => (
         <ElButton type="primary" link size="small" onClick={() => onViewOrders(row)}>
           {t('mall.groupBuyOrder.viewOrders')}
         </ElButton>

@@ -20,6 +20,8 @@ use App\Interface\Common\ResultCode;
 
 /**
  * 面向 API 场景的会员查询领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\Member>
  */
 final class DomainApiMemberQueryService extends IService
 {

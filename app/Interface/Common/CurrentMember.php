@@ -24,14 +24,8 @@ class CurrentMember
 {
     use RequestScopedTokenTrait;
 
-    private ?int $cachedId = null;
-
     public function id(): int
     {
-        if ($this->cachedId !== null) {
-            return $this->cachedId;
-        }
-
         try {
             $token = $this->requireToken();
             $identifier = (string) $token->claims()->get(RegisteredClaims::ID);
@@ -45,7 +39,7 @@ class CurrentMember
                 throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
             }
 
-            return $this->cachedId = (int) $parts[1];
+            return (int) $parts[1];
         } catch (BusinessException $e) {
             return 0;
         }

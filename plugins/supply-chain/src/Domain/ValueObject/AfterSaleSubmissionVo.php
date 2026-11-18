@@ -36,10 +36,10 @@ final readonly class AfterSaleSubmissionVo
 
     public function assertLimits(array $customer, array $remoteLine, array $used, int $freightLimit): void
     {
-        $quantity = $this->data['quantity'];
-        $amount = $this->data['amount_cents'];
-        $fee = $this->data['technical_service_fee_cents'];
-        $freight = $this->data['freight_cents'];
+        $quantity = (int) $this->data['quantity'];
+        $amount = (int) $this->data['amount_cents'];
+        $fee = (int) $this->data['technical_service_fee_cents'];
+        $freight = (int) $this->data['freight_cents'];
         $customerAmount = (int) (($customer['refund_amount'] ?? 0) > 0 ? $customer['refund_amount'] : ($customer['apply_amount'] ?? 0));
         if ($quantity > (int) ($customer['quantity'] ?? 0) || $amount + $fee + $freight > $customerAmount) {
             throw new \DomainException('采购售后数量或合计金额超过本次客户售后范围');

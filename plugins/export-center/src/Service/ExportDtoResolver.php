@@ -27,7 +27,7 @@ class ExportDtoResolver
      *
      * @param string $dtoClass DTO 类的完整类名
      * @return array{
-     *   sheet: array{name: ?string, description: ?string, freezeHeader: bool, defaultColumnWidth: ?float},
+     *   sheet: array{name: ?string, description: ?string, freezeHeader: bool, defaultColumnWidth: ?float, dataProvider: ?array},
      *   columns: array<int, array{
      *     title: string,
      *     property: string,

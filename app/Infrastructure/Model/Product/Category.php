@@ -20,6 +20,8 @@ use Hyperf\Database\Model\Relations\HasMany;
 use Hyperf\DbConnection\Model\Model;
 
 /**
+ * @property self|null $parent
+ * @property Collection<int, self> $allChildren
  * @property int $id
  * @property int $parent_id
  * @property string $name
@@ -84,6 +86,7 @@ class Category extends Model
         return $this->belongsTo(self::class, 'parent_id', 'id');
     }
 
+    /** @return Collection<int, self> */
     public function parents(): Collection
     {
         $parents = new Collection();

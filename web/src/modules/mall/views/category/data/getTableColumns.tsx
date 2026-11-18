@@ -37,7 +37,7 @@ export default function getTableColumns(
     { type: 'index', width: '60px' },
     { label: () => t('mall.category.categoryName'), prop: 'name', minWidth: '180px' },
     { label: () => t('mall.category.parentCategory'), prop: 'parent_id', minWidth: '160px',
-      cellRender: ({ row }: { row: CategoryVo }) => {
+      cellRender: ({ row }) => {
         if (!row.parent_id) {
           return t('mall.category.topLevel')
         }
@@ -45,7 +45,7 @@ export default function getTableColumns(
       },
     },
     { label: () => t('mall.category.statusLabel'), prop: 'status', width: '100px',
-      cellRender: ({ row }: { row: CategoryVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={statusTypeMap[row.status || 'inactive'] as any}>
           {row.status === 'active' ? t('mall.common.enabled') : t('mall.common.disabled')}
         </ElTag>
@@ -65,7 +65,7 @@ export default function getTableColumns(
             show: () => hasAuth('product:category:update'),
             icon: 'material-symbols:edit',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: CategoryVo }) => {
+            onClick: ({ row }) => {
               dialog.setTitle(t('mall.category.editCategory'))
               dialog.open({ formType: 'edit', data: row })
             },
@@ -75,7 +75,7 @@ export default function getTableColumns(
             show: () => hasAuth('product:category:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: CategoryVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.category.confirmDeleteSingle')).then(async () => {
                 const response = await remove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {

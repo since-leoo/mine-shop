@@ -32,12 +32,12 @@ final class DomainGroupBuyOrderService extends IService
     {
         try {
             $entity = $this->groupBuyService->getEntity($groupBuyId);
-        } catch (\RuntimeException) {
-            throw new \RuntimeException('Group buy activity not found');
+        } catch (\DomainException) {
+            throw new \DomainException('Group buy activity not found');
         }
 
         if ($entity->getSkuId() !== $skuId) {
-            throw new \RuntimeException('SKU does not belong to current group buy activity');
+            throw new \DomainException('SKU does not belong to current group buy activity');
         }
 
         if ($buyOriginal) {
@@ -45,20 +45,20 @@ final class DomainGroupBuyOrderService extends IService
         }
 
         if (! $entity->canJoin()) {
-            throw new \RuntimeException('Current group buy activity is unavailable');
+            throw new \DomainException('Current group buy activity is unavailable');
         }
 
         $remainingStock = $entity->getTotalQuantity() - $entity->getSoldQuantity();
         if ($remainingStock < $quantity) {
-            throw new \RuntimeException('Insufficient group buy stock');
+            throw new \DomainException('Insufficient group buy stock');
         }
 
         if ($this->hasMemberJoined($groupBuyId, $memberId)) {
-            throw new \RuntimeException('Member has already joined this activity');
+            throw new \DomainException('Member has already joined this activity');
         }
 
         if ($groupNo !== null) {
-            $this->validateJoinGroup($groupNo, $entity->getMaxPeople());
+            $this->validateJoinGroup($groupNo, $groupBuyId, $entity->getMaxPeople());
         }
 
         return $entity;
@@ -69,6 +69,8 @@ final class DomainGroupBuyOrderService extends IService
      */
     public function createGroupBuyOrder(OrderEntity $orderEntity, GroupBuyEntity $entity): void
     {
+        $this->groupBuyService->lock($entity->getId());
+        $this->validateActivity($entity->getId(), $orderEntity->getItems()[0]->getSkuId(), $orderEntity->getItems()[0]->getQuantity(), $orderEntity->getMemberId(), $orderEntity->getExtra('group_no'));
         $item = $orderEntity->getItems()[0];
         $groupNo = $orderEntity->getExtra('group_no');
         $isLeader = $groupNo === null;
@@ -115,27 +117,29 @@ final class DomainGroupBuyOrderService extends IService
         return $this->groupBuyOrderRepository->hasJoined($groupBuyId, $memberId);
     }
 
-    public function validateJoinGroup(string $groupNo, int $maxPeople): void
+    public function validateJoinGroup(string $groupNo, int $groupBuyId, int $maxPeople): void
     {
         $groupOrders = $this->groupBuyOrderRepository->findActiveByGroupNo($groupNo);
         if ($groupOrders === []) {
-            throw new \RuntimeException('Unable to join this group');
+            throw new \DomainException('Unable to join this group');
         }
 
         if (\count($groupOrders) >= $maxPeople) {
-            throw new \RuntimeException('Unable to join this group');
+            throw new \DomainException('Unable to join this group');
         }
 
         $leaderOrder = null;
         foreach ($groupOrders as $groupOrder) {
+            if ((int) $groupOrder->group_buy_id !== $groupBuyId || $groupOrder->status === 'grouped') {
+                throw new \DomainException('拼团不属于当前活动或已经成团');
+            }
             if ($groupOrder->is_leader) {
                 $leaderOrder = $groupOrder;
-                break;
             }
         }
 
-        if ($leaderOrder && $leaderOrder->expire_time && Carbon::now()->greaterThan($leaderOrder->expire_time)) {
-            throw new \RuntimeException('Unable to join this group');
+        if (! $leaderOrder || ($leaderOrder->expire_time && Carbon::now()->greaterThanOrEqualTo($leaderOrder->expire_time))) {
+            throw new \DomainException('Unable to join this group');
         }
     }
 

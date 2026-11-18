@@ -31,6 +31,8 @@ use App\Infrastructure\Abstract\IService;
  * 预览：同步构建 + 算价。
  * 提交：同步校验 + Lua 扣库存 + 投递队列，异步入库。
  * 取消/确认收货：同步操作。
+ *
+ * @extends IService<\App\Infrastructure\Model\Order\Order>
  */
 final class DomainApiOrderCommandService extends IService
 {
@@ -51,7 +53,7 @@ final class DomainApiOrderCommandService extends IService
      * @param int $id 订单 ID（可选）
      * @param string $orderNo 订单号（可选）
      * @return OrderEntity 订单实体
-     * @throws \RuntimeException 订单不存在时抛出
+     * @throws \DomainException 订单不存在时抛出
      */
     public function getEntity(int $id = 0, string $orderNo = ''): OrderEntity
     {
@@ -105,6 +107,11 @@ final class DomainApiOrderCommandService extends IService
         return $entity;
     }
 
+    public function getLockedEntity(string $orderNo): OrderEntity
+    {
+        return $this->orderService->getLockedEntity($orderNo);
+    }
+
     /**
      * 确认收货.
      *
@@ -113,11 +120,6 @@ final class DomainApiOrderCommandService extends IService
      * @param OrderEntity $entity 订单实体
      * @return OrderEntity 更新后的订单实体
      */
-    public function getLockedEntity(string $orderNo): OrderEntity
-    {
-        return $this->orderService->getLockedEntity($orderNo);
-    }
-
     public function confirmReceipt(OrderEntity $entity): OrderEntity
     {
         $entity->complete();

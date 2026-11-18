@@ -1,0 +1,41 @@
+<?php
+
+namespace Hyperf\Database\Model;
+
+abstract class Model {}
+
+/**
+ * Query builder forwarding returns the model builder at runtime, preserving its model type.
+ * @template TModel of Model
+ * @mixin \Hyperf\Database\Query\Builder
+ * @method $this orderBy($column, $direction = 'asc')
+ * @method $this orderByDesc($column)
+ * @method $this latest($column = 'created_at')
+ * @method $this oldest($column = 'created_at')
+ * @method $this whereNotIn($column, $values, $boolean = 'and')
+ * @method $this whereIn($column, $values, $boolean = 'and', $not = false)
+ * @method $this whereNull($columns, $boolean = 'and', $not = false)
+ * @method $this whereNotNull($columns, $boolean = 'and')
+ * @method $this whereColumn($first, $operator = null, $second = null, $boolean = 'and')
+ * @method $this select($columns = ['*'])
+ * @method $this addSelect($column)
+ * @method $this selectRaw($expression, array $bindings = [])
+ * @method $this groupBy(...$groups)
+ * @method $this limit($value)
+ * @method $this offset($value)
+ * @method $this lockForUpdate()
+ */
+class Builder {}
+
+namespace Hyperf\Database\Query;
+
+class Expression {}
+
+class Builder
+{
+    /** @var list<array{query: Builder, all: bool}>|null */
+    public $unions;
+
+    /** @param string|Expression $column */
+    public function sum($column): float|int {}
+}

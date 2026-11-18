@@ -136,7 +136,7 @@ final class AppPluginCenterQueryService
             }
             return $this->commandService->update($key, $value);
         }
-        throw new \RuntimeException('配置项不属于该插件');
+        throw new \DomainException('配置项不属于该插件');
     }
 
     /** @return array<string, mixed> */
@@ -147,7 +147,7 @@ final class AppPluginCenterQueryService
                 return $plugin;
             }
         }
-        throw new \RuntimeException('插件不存在');
+        throw new \DomainException('插件不存在');
     }
 
     private function maskSensitive(mixed $value): mixed

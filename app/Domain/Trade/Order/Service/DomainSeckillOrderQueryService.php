@@ -91,7 +91,7 @@ final class DomainSeckillOrderQueryService
             'member_nickname' => $row->member?->nickname ?? '',
             'member_phone' => $row->order?->address?->phone ?? $row->member?->phone ?? '',
             'session_time' => $row->session
-                ? ($row->session->start_time?->format('H:i') . '-' . $row->session->end_time?->format('H:i'))
+                ? ($row->session->start_time->format('H:i') . '-' . $row->session->end_time->format('H:i'))
                 : '',
             'quantity' => $row->quantity,
             'original_price' => $row->original_price,

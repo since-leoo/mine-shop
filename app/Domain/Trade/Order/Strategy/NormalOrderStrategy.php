@@ -42,10 +42,10 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
     public function validate(OrderEntity $orderEntity): OrderEntity
     {
         if ($orderEntity->getMemberId() <= 0) {
-            throw new \RuntimeException('请先登录后再下单');
+            throw new \DomainException('请先登录后再下单');
         }
         if (empty($orderEntity->getItems())) {
-            throw new \RuntimeException('至少选择一件商品');
+            throw new \DomainException('至少选择一件商品');
         }
 
         $skuIds = array_map(
@@ -58,18 +58,18 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         foreach ($orderEntity->getItems() as $item) {
             $snapshot = $snapshots[$item->getSkuId()] ?? null;
             if (! $snapshot) {
-                throw new \RuntimeException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
+                throw new \DomainException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
             }
 
             $skuStatus = (string) ($snapshot['sku_status'] ?? '');
             if ($skuStatus !== ProductSku::STATUS_ACTIVE) {
-                throw new \RuntimeException(\sprintf('商品 %s 已下架', $item->getSkuName()));
+                throw new \DomainException(\sprintf('商品 %s 已下架', $item->getSkuName()));
             }
 
             $productStatus = (string) ($snapshot['product_status'] ?? '');
             if ($productStatus !== Product::STATUS_ACTIVE) {
                 $productName = (string) ($snapshot['product_name'] ?? $item->getSkuName());
-                throw new \RuntimeException(\sprintf('商品 %s 已禁用', $productName));
+                throw new \DomainException(\sprintf('商品 %s 已禁用', $productName));
             }
 
             $item->attachSnapshot($snapshot);
@@ -104,11 +104,11 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
 
         $couponData = $this->couponServiceInterface->findUsableCoupon($orderEntity->getMemberId(), $couponId);
         if (! $couponData) {
-            throw new \RuntimeException(\sprintf('优惠券 %d 不可用或已使用', $couponId));
+            throw new \DomainException(\sprintf('优惠券 %d 不可用或已使用', $couponId));
         }
 
         if ($couponData['status'] !== 'active') {
-            throw new \RuntimeException(\sprintf('优惠券 %d 已失效', $couponId));
+            throw new \DomainException(\sprintf('优惠券 %d 已失效', $couponId));
         }
 
         $goodsAmount = $orderEntity->getPriceDetail()?->getGoodsAmount() ?? 0;
@@ -116,7 +116,7 @@ final class NormalOrderStrategy implements OrderTypeStrategyInterface
         // 满减门槛检查（分）
         $minAmount = $couponData['min_amount'];
         if ($minAmount > 0 && $goodsAmount < $minAmount) {
-            throw new \RuntimeException(\sprintf(
+            throw new \DomainException(\sprintf(
                 '优惠券 %s 需满 %d 分可用，当前商品金额 %d 分',
                 $couponData['name'],
                 $minAmount,

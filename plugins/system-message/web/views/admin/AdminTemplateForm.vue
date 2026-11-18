@@ -33,7 +33,7 @@
               <el-input 
                 v-model="formData.name" 
                 placeholder="请输入模板名称"
-                maxlength="100"
+                :maxlength="100"
                 show-word-limit
               />
             </el-form-item>
@@ -44,13 +44,13 @@
                 type="textarea"
                 placeholder="请输入模板描述"
                 :rows="3"
-                maxlength="500"
+                :maxlength="500"
                 show-word-limit
               />
             </el-form-item>
 
             <el-form-item label="标题模板" prop="title" required>
-              <el-input v-model="formData.title" placeholder="请输入消息标题模板" maxlength="255" />
+              <el-input v-model="formData.title" placeholder="请输入消息标题模板" :maxlength="255" />
             </el-form-item>
 
             <el-form-item label="模板类型" prop="type" required>
@@ -107,10 +107,10 @@
                 
                 <div class="content-help">
                   <div class="help-item">
-                    <strong>变量语法：</strong>使用 <code>{{变量名}}</code> 格式插入变量
+                    <strong>变量语法：</strong>使用 <code v-pre>{{变量名}}</code> 格式插入变量
                   </div>
                   <div class="help-item">
-                    <strong>示例：</strong>尊敬的 <code>{{用户名}}</code>，您有一条新消息：<code>{{消息内容}}</code>
+                    <strong>示例：</strong>尊敬的 <code v-pre>{{用户名}}</code>，您有一条新消息：<code v-pre>{{消息内容}}</code>
                   </div>
                 </div>
               </div>
@@ -213,7 +213,8 @@
               />
               <el-statistic
                 title="最后使用"
-                :value="formData.last_used_at ? formatTime(formData.last_used_at) : '从未使用'"
+                :value="0"
+                :formatter="() => formData.last_used_at ? formatTime(formData.last_used_at) : '从未使用'"
                 class="stat-item"
               />
             </div>
@@ -373,8 +374,8 @@ const canPreview = computed(() => {
 
 // 获取模板类型标签类型
 const getTypeTagType = (type: string) => {
-  const types: Record<string, '' | 'success' | 'warning' | 'danger' | 'info'> = {
-    system: '',
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'danger' | 'info'> = {
+    system: 'primary',
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',
@@ -398,7 +399,8 @@ const getTypeLabel = (type: string) => {
 }
 
 // 格式化时间
-const formatTime = (time: string) => {
+const formatTime = (time?: string) => {
+  if (!time) return '-'
   return dayjs(time).format('YYYY-MM-DD HH:mm:ss')
 }
 

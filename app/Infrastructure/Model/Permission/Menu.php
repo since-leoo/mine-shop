@@ -28,15 +28,16 @@ use Hyperf\DbConnection\Model\Model as MineModel;
  * @property string $redirect 跳转地址
  * @property string $path 地址
  * @property int $status 状态 (1正常 2停用)
- * @property Meta $meta 附加属性
+ * @property-read Meta $meta 附加属性
+ * @property-write Meta|array $meta
  * @property int $sort 排序
  * @property int $created_by 创建者
  * @property int $updated_by 更新者
  * @property Carbon $created_at 创建时间
  * @property Carbon $updated_at 更新时间]
  * @property string $remark 备注
- * @property Collection|Role[] $roles
- * @property Collection|Menu[] $children
+ * @property Collection<int, Role> $roles
+ * @property Collection<int, Menu> $children
  */
 final class Menu extends MineModel
 {

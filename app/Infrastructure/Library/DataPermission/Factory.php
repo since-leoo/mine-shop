@@ -38,6 +38,7 @@ class Factory
             return;
         }
         if (($policy = $user->getPolicy()) === null) {
+            $builder->where(Context::getCreatedByColumn(), (int) $user->id);
             return;
         }
         $scopeType = Context::getScopeType();
@@ -47,6 +48,7 @@ class Factory
                 throw new \RuntimeException(\sprintf('Invalid custom function: %s', $customFunc));
             }
             $this->rule->loadCustomFunc($customFunc, $builder, $user, $policy, $scopeType);
+            return;
         }
         switch ($scopeType) {
             case ScopeType::CREATED_BY:
@@ -66,38 +68,34 @@ class Factory
 
     private function handleCreatedBy(User $user, Policy $policy, Builder $builder): void
     {
-        $builder->when($this->rule->getCreatedByList($user, $policy), static function (Builder $query, array $createdByList) {
-            $query->whereIn(Context::getCreatedByColumn(), $createdByList);
-        });
+        $ids = $this->rule->getCreatedByList($user, $policy);
+        if ($ids !== null) {
+            $builder->whereIn(Context::getCreatedByColumn(), $ids);
+        }
     }
 
     private function handleDept(User $user, Policy $policy, Builder $builder): void
     {
-        $builder->when($this->rule->getDeptIds($user, $policy), static function (Builder $query, array $deptList) {
-            $query->whereIn(Context::getDeptColumn(), $deptList);
-        });
+        $ids = $this->rule->getDeptIds($user, $policy);
+        if ($ids !== null) {
+            $builder->whereIn(Context::getDeptColumn(), $ids);
+        }
     }
 
     private function handleDeptCreatedBy(User $user, Policy $policy, Builder $builder): void
     {
-        $builder->when($this->rule->getDeptIds($user, $policy), static function (Builder $query, array $deptList) {
-            $query->whereIn(Context::getDeptColumn(), $deptList);
-        })->when($this->rule->getCreatedByList($user, $policy), static function (Builder $query, array $createdByList) {
-            $query->whereIn(Context::getCreatedByColumn(), $createdByList);
-        });
+        $this->handleDept($user, $policy, $builder);
+        $this->handleCreatedBy($user, $policy, $builder);
     }
 
     private function handleDeptOrCreatedBy(User $user, Policy $policy, Builder $builder): void
     {
-        $createdByList = $this->rule->getCreatedByList($user, $policy);
-        $deptList = $this->rule->getDeptIds($user, $policy);
-        $builder->where(static function (Builder $query) use ($createdByList, $deptList) {
-            if ($createdByList) {
-                $query->whereIn(Context::getCreatedByColumn(), $createdByList);
-            }
-            if ($deptList) {
-                $query->orWhereIn(Context::getDeptColumn(), $deptList);
-            }
-        });
+        $creators = $this->rule->getCreatedByList($user, $policy);
+        $departments = $this->rule->getDeptIds($user, $policy);
+        if ($creators === null || $departments === null) {
+            return;
+        }
+        $builder->where(static fn (Builder $query) => $query->whereIn(Context::getCreatedByColumn(), $creators)
+            ->orWhereIn(Context::getDeptColumn(), $departments));
     }
 }

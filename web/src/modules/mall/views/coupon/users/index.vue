@@ -37,18 +37,11 @@ const statusMap: Record<string, { text: string; type: any }> = {
 const options = ref<MaProTableOptions>({
   adaptionOffsetBottom: 110,
   requestOptions: {
-    api: couponUserPage,
-    params: () => ({
-      coupon_id: couponId.value || undefined,
-    }),
+    api: params => couponUserPage({ ...params, coupon_id: couponId.value || undefined }),
   },
   header: {
     mainTitle: () => t('mall.couponUser.recordTitle'),
     subTitle: () => t('mall.couponUser.recordSubtitle'),
-    backBtn: {
-      show: true,
-      onClick: () => router.back(),
-    },
   },
 })
 
@@ -74,7 +67,7 @@ const schema = ref<MaProTableSchema>({
   ],
   tableColumns: [
     { label: () => t('mall.couponUser.memberColumn'), prop: 'member_nickname', minWidth: '160px',
-      cellRender: ({ row }: { row: CouponUserVo }) => (
+      cellRender: ({ row }) => (
         <div>
           <div class="font-medium">{row.member_nickname ?? '--'}</div>
           <div class="text-xs text-gray-500">{row.member_phone ?? '--'}</div>
@@ -83,7 +76,7 @@ const schema = ref<MaProTableSchema>({
     },
     { label: () => t('mall.couponUser.couponColumn'), prop: 'coupon_name', minWidth: '160px' },
     { label: () => t('mall.couponUser.statusColumn'), prop: 'status', width: '120px',
-      cellRender: ({ row }: { row: CouponUserVo }) => {
+      cellRender: ({ row }) => {
         const meta = statusMap[row.status || 'unused']
         return <ElTag type={meta?.type}>{meta?.text}</ElTag>
       },
@@ -100,10 +93,10 @@ const schema = ref<MaProTableSchema>({
         actions: [
           {
             name: 'mark-used',
-            show: ({ row }: { row: CouponUserVo }) => row.status === 'unused' && hasAuth('coupon:user:update'),
+            show: ({ row }) => row.status === 'unused' && hasAuth('coupon:user:update'),
             text: () => t('mall.couponUser.markUsed'),
             icon: 'ph:check-circle',
-            onClick: async ({ row }: { row: CouponUserVo }) => {
+            onClick: async ({ row }) => {
               const res = await couponUserMarkUsed(row.id as number)
               if (res.code === ResultCode.SUCCESS) {
                 msg.success(t('mall.operationSuccess'))
@@ -113,10 +106,10 @@ const schema = ref<MaProTableSchema>({
           },
           {
             name: 'mark-expired',
-            show: ({ row }: { row: CouponUserVo }) => row.status === 'unused' && hasAuth('coupon:user:update'),
+            show: ({ row }) => row.status === 'unused' && hasAuth('coupon:user:update'),
             text: () => t('mall.couponUser.markExpired'),
             icon: 'ph:warning',
-            onClick: async ({ row }: { row: CouponUserVo }) => {
+            onClick: async ({ row }) => {
               const res = await couponUserMarkExpired(row.id as number)
               if (res.code === ResultCode.SUCCESS) {
                 msg.success(t('mall.operationSuccess'))
@@ -132,6 +125,7 @@ const schema = ref<MaProTableSchema>({
 </script>
 
 <template>
+  <el-button class="mb-3" @click="router.back()">{{ t('crud.back') }}</el-button>
   <div class="mine-layout pt-3">
     <MaProTable ref="proTableRef" :options="options" :schema="schema" />
   </div>

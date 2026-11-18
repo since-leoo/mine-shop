@@ -55,7 +55,7 @@ class UserMessageController extends SystemMessageAbstractController
             }
             return $this->success($message);
         } catch (\Throwable $e) {
-            return $this->error('获取消息失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -70,7 +70,7 @@ class UserMessageController extends SystemMessageAbstractController
             }
             return $this->success(null, '消息已标记为已读');
         } catch (\Throwable $e) {
-            return $this->error('操作失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -86,7 +86,7 @@ class UserMessageController extends SystemMessageAbstractController
             $result = $this->messageService->batchMarkAsRead($userId, $messageIds);
             return $this->success(['marked' => $result, 'total' => \count($messageIds)], '批量标记完成');
         } catch (\Throwable $e) {
-            return $this->error('批量操作失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -97,7 +97,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             return $this->success(['marked' => $this->messageService->markAllAsRead($userId)], '所有消息已标记为已读');
         } catch (\Throwable $e) {
-            return $this->error('操作失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -106,13 +106,13 @@ class UserMessageController extends SystemMessageAbstractController
     {
         $userId = $this->currentUser->id();
         try {
-            $result = $this->messageService->deleteUserMessage($userId, $messageId);
+            $result = $this->messageService->deleteUserMessage(messageId: $messageId, userId: $userId);
             if (! $result) {
                 return $this->error('消息不存在', 404);
             }
             return $this->success(null, '消息删除成功');
         } catch (\Throwable $e) {
-            return $this->error('删除失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -125,10 +125,10 @@ class UserMessageController extends SystemMessageAbstractController
             return $this->error('请选择要删除的消息');
         }
         try {
-            $result = $this->messageService->batchDeleteUserMessages($userId, $messageIds);
+            $result = $this->messageService->batchDeleteUserMessages(messageIds: $messageIds, userId: $userId);
             return $this->success(['deleted' => $result, 'total' => \count($messageIds)], '批量删除完成');
         } catch (\Throwable $e) {
-            return $this->error('批量删除失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -139,7 +139,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             return $this->success(['count' => $this->messageService->getUnreadCount($userId)]);
         } catch (\Throwable $e) {
-            return $this->error('获取未读数量失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -150,7 +150,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             return $this->success($this->messageService->getUserMessageTypeStats($userId));
         } catch (\Throwable $e) {
-            return $this->error('获取统计失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -168,7 +168,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             return $this->success($this->messageService->searchUserMessages($userId, $keyword, $filters, $page, $pageSize));
         } catch (\Throwable $e) {
-            return $this->error('搜索失败：' . $e->getMessage());
+            throw $e;
         }
     }
 }

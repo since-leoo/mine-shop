@@ -41,12 +41,12 @@ use Hyperf\DbConnection\Model\Model;
  * @property Carbon $created_at 创建时间
  * @property Carbon $updated_at 更新时间
  * @property string $remark 备注
- * @property null|Collection|Role[] $roles
+ * @property null|Collection<int, Role> $roles
  * @property mixed $password 密码
  * @property null|Policy $policy 数据权限策略
- * @property Collection|Department[] $department 部门
- * @property Collection|Department[] $dept_leader 部门领导
- * @property Collection|Position[] $position 岗位
+ * @property Collection<int, Department> $department 部门
+ * @property Collection<int, Department> $dept_leader 部门领导
+ * @property Collection<int, Position> $position 岗位
  */
 final class User extends Model
 {
@@ -123,7 +123,7 @@ final class User extends Model
 
     public function isSuperAdmin(): bool
     {
-        return $this->roles()->where('code', 'SuperAdmin')->exists();
+        return $this->roles()->where('status', Status::Normal->value)->where('code', 'SuperAdmin')->exists();
     }
 
     public function getRoles(array $fields): Collection
@@ -139,29 +139,38 @@ final class User extends Model
      */
     public function getPermissions(): Collection
     {
-        return $this->roles()->with('menus')->orderBy('sort')->get()->pluck('menus')->flatten();
+        return $this->roles()->where('role.status', Status::Normal->value)
+            ->with(['menus' => static fn ($query) => $query->where('menu.status', Status::Normal->value)])
+            ->orderBy('sort')->get()->pluck('menus')->flatten();
     }
 
     public function hasPermission(string $permission): bool
     {
-        return $this->roles()->whereRelation('menus', 'name', $permission)->exists();
+        return $this->roles()->where('role.status', Status::Normal->value)
+            ->whereHas('menus', static function ($query) use ($permission): void {
+                $query->where('menu.name', $permission)->where('menu.status', Status::Normal->value);
+            })->exists();
     }
 
+    /** @return HasOne<Policy, $this> */
     public function policy(): HasOne
     {
         return $this->hasOne(Policy::class, 'user_id', 'id');
     }
 
+    /** @return BelongsToMany<Department, $this> */
     public function department(): BelongsToMany
     {
         return $this->belongsToMany(Department::class, 'user_dept', 'user_id', 'dept_id');
     }
 
+    /** @return BelongsToMany<Department, $this> */
     public function dept_leader(): BelongsToMany
     {
         return $this->belongsToMany(Department::class, 'dept_leader', 'user_id', 'dept_id');
     }
 
+    /** @return BelongsToMany<Position, $this> */
     public function position(): BelongsToMany
     {
         return $this->belongsToMany(Position::class, 'user_position', 'user_id', 'position_id');

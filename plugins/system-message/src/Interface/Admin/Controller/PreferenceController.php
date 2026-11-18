@@ -43,7 +43,7 @@ class PreferenceController extends SystemMessageAbstractController
             }
             return $this->success($preference);
         } catch (\Throwable $e) {
-            return $this->error('获取偏好设置失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -54,7 +54,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->updateUserPreference($userId, $request->validated()), '偏好设置更新成功');
         } catch (\Throwable $e) {
-            return $this->error('更新偏好设置失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -65,7 +65,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->resetUserPreference($userId), '偏好设置已重置为默认值');
         } catch (\Throwable $e) {
-            return $this->error('重置偏好设置失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -75,7 +75,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->getDefaultPreferences());
         } catch (\Throwable $e) {
-            return $this->error('获取默认设置失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -90,7 +90,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->updateChannelPreferences($userId, $channels), '渠道偏好设置更新成功');
         } catch (\Throwable $e) {
-            return $this->error('更新渠道偏好失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -105,7 +105,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->updateTypePreferences($userId, $types), '消息类型偏好设置更新成功');
         } catch (\Throwable $e) {
-            return $this->error('更新消息类型偏好失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -122,7 +122,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->setDoNotDisturbTime($userId, $startTime, $endTime, $enabled), '免打扰时间设置成功');
         } catch (\Throwable $e) {
-            return $this->error('设置免打扰时间失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -134,7 +134,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->toggleDoNotDisturb($userId, $enabled), $enabled ? '免打扰已启用' : '免打扰已禁用');
         } catch (\Throwable $e) {
-            return $this->error('切换免打扰状态失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -149,7 +149,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success($this->notificationService->setMinPriority($userId, $priority), '最小优先级设置成功');
         } catch (\Throwable $e) {
-            return $this->error('设置最小优先级失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -160,7 +160,7 @@ class PreferenceController extends SystemMessageAbstractController
         try {
             return $this->success(['is_active' => $this->notificationService->isDoNotDisturbActive($userId)]);
         } catch (\Throwable $e) {
-            return $this->error('检查免打扰状态失败：' . $e->getMessage());
+            throw $e;
         }
     }
 }

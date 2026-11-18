@@ -25,6 +25,8 @@ use App\Infrastructure\Model\Permission\Role;
  *
  * 负责角色的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Permission\Role>
  */
 final class DomainRoleService extends IService
 {
@@ -78,7 +80,7 @@ final class DomainRoleService extends IService
         /** @var null|Role $model */
         $model = $this->repository->findById($id);
         if (! $model) {
-            throw new \RuntimeException("角色不存在: ID={$id}");
+            throw new \DomainException("角色不存在: ID={$id}");
         }
         return RoleMapper::fromModel($model);
     }
@@ -95,7 +97,7 @@ final class DomainRoleService extends IService
         /** @var null|Role $roleModel */
         $roleModel = $this->repository->findById($roleId);
         if (! $roleModel) {
-            throw new \RuntimeException("角色不存在: ID={$roleId}");
+            throw new \DomainException("角色不存在: ID={$roleId}");
         }
 
         $roleEntity = RoleMapper::fromModel($roleModel);

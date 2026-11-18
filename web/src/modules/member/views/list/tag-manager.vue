@@ -43,7 +43,7 @@
       <el-table-column :label="t('member.list.tagSort')" prop="sort_order" width="80" />
       <el-table-column :label="t('member.list.tagOperation')" width="180">
         <template #default="{ row }">
-          <el-button link size="small" type="primary" @click="openEdit(row)">
+          <el-button link size="small" type="primary" @click="openEdit(row as MemberTag)">
             <el-icon><EditPen /></el-icon>
             {{ t('mall.common.edit') }}
           </el-button>
@@ -87,7 +87,7 @@
           <el-input-number v-model="form.sort_order" :min="0" :max="9999" class="w-full" />
         </el-form-item>
         <el-form-item :label="t('member.list.tagDescLabel')">
-          <el-input v-model="form.description" type="textarea" rows="3" :placeholder="t('member.list.tagDescPlaceholder')" />
+          <el-input v-model="form.description" type="textarea" :rows="3" :placeholder="t('member.list.tagDescPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>

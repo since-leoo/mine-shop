@@ -26,6 +26,7 @@ const drawerTotal = ref(0)
 const drawerPageSize = ref(15)
 
 function onViewOrders(row: GroupBuyOrderSummaryVo) {
+  if (row.id == null) return
   drawerActivityId.value = row.id
   drawerTitle.value = t('mall.groupBuyOrder.drawerTitle', { title: row.title })
   drawerPage.value = 1
@@ -83,7 +84,7 @@ const orderColumns = getOrderColumns()
 
 async function handleExport() {
   try {
-    const searchParams = proTableRef.value?.getSearchFormData?.() ?? {}
+    const searchParams = proTableRef.value?.getSearchForm?.() ?? {}
     const res = await groupBuyOrderExport(searchParams)
     ElMessage.success(res.message || '导出任务已创建')
   }
@@ -130,7 +131,7 @@ async function handleExport() {
           :min-width="col.minWidth"
         >
           <template v-if="col.cellRender" #default="scope">
-            <component :is="() => col.cellRender!(scope)" />
+            <component :is="() => col.cellRender!({ row: scope.row, column: col, $index: scope.$index, options: {}, attrs: {} })" />
           </template>
         </el-table-column>
       </el-table>

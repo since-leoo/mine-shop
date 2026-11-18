@@ -65,7 +65,7 @@ final class TradeMoneyTest extends DatabaseTestCase
         $this->migrate('migrations/2026_10_16_000003_add_external_commerce_contracts.php');
         $settings = $this->createMock(DomainMallSettingService::class);
         $orderRepo = new OrderRepository(new Order());
-        $this->orders = new DomainOrderService($orderRepo, $settings);
+        $this->orders = new DomainOrderService($orderRepo, $settings, new \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuyOrder()));
         $this->paymentRepo = new OrderPaymentRepository(new OrderPayment());
         $this->payments = new DomainOrderPaymentService($this->paymentRepo);
         $this->wallets = new DomainMemberWalletService(new MemberWalletRepository(new MemberWallet()));
@@ -74,6 +74,47 @@ final class TradeMoneyTest extends DatabaseTestCase
         $this->afterSales = new DomainAfterSaleService($orderRepo, new AfterSaleRepository(new AfterSale()), $settings);
         $this->transactions = new HyperfTransactionManager();
         $this->refundRepo = new OrderPaymentRefundRepository();
+    }
+
+    public function testPaidFailedGroupCreatesOneRefundAndRestoresMoneyAndStockAfterSuccess(): void
+    {
+        require_once BASE_PATH . '/migrations/2024_01_01_000018_create_mall_group_buys_table.php';
+        require_once BASE_PATH . '/migrations/2024_01_01_000019_create_mall_group_buy_orders_table.php';
+        (new \CreateMallGroupBuysTable())->up();
+        (new \CreateMallGroupBuyOrdersTable())->up();
+        $activityId = $this->connection->table('group_buys')->insertGetId([
+            'title' => 'test', 'product_id' => 1, 'sku_id' => 1, 'original_price' => 800, 'group_price' => 600,
+            'start_time' => date('Y-m-d H:i:s', time() - 86400), 'end_time' => date('Y-m-d H:i:s', time() + 86400),
+            'status' => 'active', 'total_quantity' => 20, 'sold_quantity' => 1,
+        ]);
+        $id = $this->seedOrder('GROUP-FAIL');
+        $this->seedWallet();
+        $this->transactions->run(fn () => $this->pay->payByBalance('GROUP-FAIL', 7, new PaymentSetting(false, [], true, 0, true, [])));
+        $this->connection->table('group_buy_orders')->insert([
+            'group_buy_id' => $activityId, 'order_id' => $id, 'member_id' => 7, 'group_no' => 'ONE-PAID',
+            'is_leader' => true, 'original_price' => 800, 'group_price' => 600, 'total_amount' => 600,
+            'status' => 'paid', 'join_time' => date('Y-m-d H:i:s', time() - 7200), 'expire_time' => date('Y-m-d H:i:s', time() - 3600),
+        ]);
+        $repo = new \App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuyOrder());
+        $groups = new \App\Domain\Trade\GroupBuy\Service\DomainGroupBuyLifecycleService(
+            new \App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService(new \App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository(new \App\Infrastructure\Model\GroupBuy\GroupBuy())), $repo);
+        $refunds = new \App\Domain\Trade\GroupBuy\Service\DomainGroupBuyRefundService($this->orders, $this->paymentRepo, $this->refundRepo,
+            new \App\Domain\Trade\Order\Repository\OrderSubmissionRepository(), $repo);
+        $cancel = $this->createMock(\App\Application\Api\Order\AppOrderCancellationService::class);
+        $cancel->expects(self::never())->method('cancel');
+        $app = new \App\Application\Admin\GroupBuy\AppGroupBuyLifecycleService($groups, $refunds, $cancel, $this->transactions, new \Psr\Log\NullLogger());
+        self::assertSame(1, $app->cancelExpiredGroups());
+        self::assertSame(0, $app->cancelExpiredGroups());
+        self::assertSame(0, (int) $this->connection->table('group_buys')->value('sold_quantity'));
+        self::assertSame(1, $this->connection->table('payment_refunds')->count());
+        self::assertSame(400, (int) $this->connection->table('wallets')->value('balance'));
+        $handler = $this->refundHandler(new TradeOutboxRepository());
+        $response = ['out_trade_no' => 'GROUP-FAIL', 'out_refund_no' => 'GBFAIL' . $id, 'status' => 'SUCCESS', 'amount' => ['refund' => 600, 'total' => 600]];
+        $this->transactions->run(fn () => $handler->complete($response, 'balance'));
+        $this->transactions->run(fn () => $handler->complete($response, 'balance'));
+        self::assertSame(1000, (int) $this->connection->table('wallets')->value('balance'));
+        self::assertSame(1, $this->connection->table('trade_outbox')->where('event_type', 'stock.release')->count());
+        self::assertSame(1, $this->connection->table('trade_outbox')->where('event_type', 'refund.succeeded')->count());
     }
 
     private function seedOrder(string $number, int $amount = 600, string $status = 'pending', string $method = 'balance'): int

@@ -93,7 +93,7 @@ final class CoreContractsTest extends TestCase
     {
         $order = new OrderEntity();
         $order->setStatus('partial_shipped');
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(\DomainException::class);
         $order->complete();
     }
 

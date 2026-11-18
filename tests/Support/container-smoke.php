@@ -33,6 +33,9 @@ SinceLeoo\Plugin\PluginBootstrap::init();
 Hyperf\Di\ClassLoader::init();
 $container = require $base . '/config/container.php';
 $targets = [
+ App\Application\Admin\Catalog\AppProductCommandService::class,
+ App\Application\Admin\GroupBuy\AppGroupBuyLifecycleService::class,
+ App\Infrastructure\Library\DataPermission\Aspects\DataScopeAspect::class,
  App\Domain\Infrastructure\Plugin\Contract\AnalyticsQueryInterface::class,
  App\Domain\Infrastructure\Plugin\Contract\DiyPageQueryInterface::class,
  App\Domain\Infrastructure\Plugin\Contract\ProductReviewQueryInterface::class,

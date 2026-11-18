@@ -16,6 +16,7 @@ use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Order\OrderPayment;
 use Hyperf\Collection\Collection;
 
+/** @extends IRepository<OrderPayment> */
 class OrderPaymentRepository extends IRepository
 {
     public function __construct(protected readonly OrderPayment $model) {}
@@ -25,7 +26,7 @@ class OrderPaymentRepository extends IRepository
      */
     public function findByPaymentNo(string $paymentNo): ?OrderPayment
     {
-        /** @var OrderPayment $info */
+        /** @var null|OrderPayment $info */
         $info = $this->model::where('payment_no', $paymentNo)->first();
 
         return $info ?: null;
@@ -36,7 +37,7 @@ class OrderPaymentRepository extends IRepository
      */
     public function findByOrderId(int $orderId): ?OrderPayment
     {
-        /** @var OrderPayment $info */
+        /** @var null|OrderPayment $info */
         $info = $this->model::where('order_id', $orderId)->first();
 
         return $info ?: null;
@@ -47,7 +48,7 @@ class OrderPaymentRepository extends IRepository
      */
     public function findByOrderNo(string $orderNo): ?OrderPayment
     {
-        /** @var OrderPayment $info */
+        /** @var null|OrderPayment $info */
         $info = $this->model::where('order_no', $orderNo)->first();
 
         return $info ?: null;
@@ -58,7 +59,7 @@ class OrderPaymentRepository extends IRepository
      */
     public function findByThirdPartyNo(string $thirdPartyNo): ?OrderPayment
     {
-        /** @var OrderPayment $info */
+        /** @var null|OrderPayment $info */
         $info = $this->model::where('third_party_no', $thirdPartyNo)->first();
 
         return $info ?: null;
@@ -66,6 +67,7 @@ class OrderPaymentRepository extends IRepository
 
     /**
      * 获取会员的支付记录.
+     * @return Collection<int, OrderPayment>
      */
     public function getByMemberId(int $memberId, int $limit = 20): Collection
     {

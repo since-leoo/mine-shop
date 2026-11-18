@@ -9,7 +9,6 @@ use Hyperf\DbConnection\Db;
 use Plugin\CustomerService\Application\CustomerServiceOutbox;
 use Plugin\CustomerService\Domain\Contract\CustomerServiceEventPublisherInterface;
 use Plugin\CustomerService\Domain\Contract\SupportConfigurationInterface;
-use Plugin\CustomerService\Domain\Repository\CustomerServiceConversationRepository;
 use Plugin\CustomerService\Domain\Service\DomainAiReceptionService;
 use Plugin\CustomerService\Domain\Service\DomainConversationService;
 use Plugin\CustomerService\Domain\ValueObject\AiAnswerVo;
@@ -20,7 +19,7 @@ use Plugin\CustomerService\Service\CustomerServiceSettingsResolver;
 #[Crontab(name: 'customer-service-worker', rule: '*/5 * * * * *', callback: 'execute', memo: '客服消息投递、AI 异步处理及排队补偿', enable: true)]
 final class CustomerServiceWorker
 {
-    public function __construct(private readonly SupportConfigurationInterface $configuration, private readonly CustomerServiceSettingsResolver $settings, private readonly DomainAiReceptionService $ai, private readonly DomainConversationService $domain, private readonly CustomerServiceConversationRepository $repository, private readonly CustomerServiceOutbox $outbox, private readonly CustomerServiceEventPublisherInterface $publisher) {}
+    public function __construct(private readonly SupportConfigurationInterface $configuration, private readonly CustomerServiceSettingsResolver $settings, private readonly DomainAiReceptionService $ai, private readonly DomainConversationService $domain, private readonly CustomerServiceOutbox $outbox, private readonly CustomerServiceEventPublisherInterface $publisher) {}
 
     public function execute(): void
     {
@@ -41,7 +40,7 @@ final class CustomerServiceWorker
         });
         if (!$run) { return false; }
         $start = microtime(true);
-        $conversation = CustomerServiceConversation::query()->find($run['conversation_id']);
+        $conversation = CustomerServiceConversation::query()->find((int) $run['conversation_id']);
         $enabled = $this->settings->toArray()['enabled'] && $this->settings->toArray()['ai_enabled'];
         if (!$conversation || !$this->domain->allowsAi($conversation, (int) $run['generation'], (int) $run['ai_turn'], $enabled)) {
             Db::table('customer_service_ai_runs')->where('id', $run['id'])->update(['status' => 'cancelled', 'reason' => 'stale_generation', 'reserved_tokens' => 0]);
@@ -126,13 +125,12 @@ final class CustomerServiceWorker
 
     public function maintainQueue(): void
     {
-        $settings = $this->settings->toArray();
         $now = new \DateTimeImmutable();
         $staleRuns = Db::table('customer_service_ai_runs')->where('status', 'processing')->where('claimed_at', '<', date('Y-m-d H:i:s', time() - 120))->get();
         foreach ($staleRuns as $run) { $this->finishAiRun((array) $run, new AiAnswerVo('handoff', reason: 'worker_timeout'), 120000); }
         $ids = CustomerServiceConversation::query()->whereIn('reception_state', ['human_waiting', 'human_assigned', 'human_deferred', 'ai_active'])->orderByDesc('priority')->orderBy('queue_entered_at')->limit(200)->pluck('id');
         foreach ($ids as $id) {
-            Db::transaction(function () use ($id, $settings, $now) {
+            Db::transaction(function () use ($id, $now) {
                 $conversation = CustomerServiceConversation::query()->whereKey($id)->lockForUpdate()->first();
                 if ($conversation && $this->domain->maintainQueue($conversation, $now)) { $this->outbox->conversationChanged($conversation); }
             });

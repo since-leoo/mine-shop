@@ -51,7 +51,7 @@ final class BrandController extends AbstractController
     #[Permission(code: 'product:brand:read')]
     public function show(int $id): Result
     {
-        $brand = $this->queryService->findById($id);
+        $brand = $this->queryService->find($id);
         return $brand ? $this->success($brand->toArray()) : $this->error('品牌不存在', 404);
     }
 

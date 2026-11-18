@@ -9,11 +9,20 @@
  */
 import type { PageList, ResponseStruct } from '#/global'
 
+export interface ProductSpecValue {
+  name: string
+  value: string
+  image?: string | null
+}
+
+// 历史商品使用字符串数组，外部商品可能使用“规格名: 规格值”映射。
+export type ProductSpecValues = string[] | ProductSpecValue[] | Record<string, string> | null
+
 export interface ProductSkuVo {
   id?: number
   sku_code?: string
   sku_name?: string
-  spec_values?: string[]
+  spec_values?: ProductSpecValues
   image?: string
   cost_price?: number
   market_price?: number
@@ -40,6 +49,7 @@ export interface ProductGalleryVo {
 
 export interface ProductVo {
   id?: number
+  fulfillment_provider?: string
   product_code?: string
   category_id?: number
   brand_id?: number

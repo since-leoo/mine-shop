@@ -11,6 +11,7 @@ import type { MaFormItem } from '@mineadmin/form'
 import type { Ref } from 'vue'
 import type { CategoryVo } from '~/mall/api/category'
 import type { ProductAttributeVo, ProductSkuVo, ProductVo } from '~/mall/api/product'
+import { specValuesKey, specValueTexts } from './specValues'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 import MaRichEditor from '@/components/ma-rich-editor/index.vue'
 
@@ -31,7 +32,7 @@ export default function getFormItems(
   model: ProductVo,
   activeStep: Ref<number>,
   msg: ReturnType<typeof import('@/hooks/useMessage.ts').useMessage>,
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, unknown>) => string,
 ): MaFormItem[] {
   const categoryOptions = ref<CategoryVo[]>([])
   const brandOptions = ref<BrandOption[]>([])
@@ -61,8 +62,8 @@ export default function getFormItems(
     const specMap = new Map<number, Set<string>>()
     
     model.skus.forEach((sku) => {
-      if (Array.isArray(sku.spec_values) && sku.spec_values.length > 0) {
-        sku.spec_values.forEach((value, index) => {
+      if (sku.spec_values) {
+        specValueTexts(sku.spec_values).forEach((value, index) => {
           if (!specMap.has(index)) {
             specMap.set(index, new Set())
           }
@@ -183,14 +184,12 @@ export default function getFormItems(
     if (formType === 'edit' && model.skus && model.skus.length > 0) {
       const existingSkuMap = new Map<string, ProductSkuVo>()
       model.skus.forEach((sku) => {
-        const key = Array.isArray(sku.spec_values) 
-          ? sku.spec_values.join('/')
-          : String(sku.spec_values || '')
+        const key = specValuesKey(sku.spec_values)
         existingSkuMap.set(key, sku)
       })
       
       model.skus = cartesian.map((values, index) => {
-        const key = values.join('/')
+        const key = specValuesKey(values)
         const existing = existingSkuMap.get(key)
         
         if (existing) {
@@ -247,7 +246,7 @@ export default function getFormItems(
     model.attributes?.splice(index, 1)
   }
 
-  const items: MaFormItem[] = [
+  const items: (MaFormItem & { step: number })[] = [
     {
       label: t('mall.product.productCode'),
       prop: 'product_code',
@@ -478,7 +477,7 @@ export default function getFormItems(
           <el-table data={model.attributes || []} size="small" border>
             <el-table-column label={t('mall.productForm.attrName')} min-width="160">
               {{
-                default: ({ row }: { row: ProductAttributeVo }) => (
+                default: ({ row }) => (
                   <el-input
                     modelValue={row.attribute_name}
                     onUpdate:modelValue={(val: string) => row.attribute_name = val}
@@ -489,7 +488,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.attrValue')} min-width="220">
               {{
-                default: ({ row }: { row: ProductAttributeVo }) => (
+                default: ({ row }) => (
                   <el-input
                     modelValue={row.value}
                     onUpdate:modelValue={(val: string) => row.value = val}
@@ -527,7 +526,7 @@ export default function getFormItems(
           <el-table data={specItems.value} size="small" border>
             <el-table-column label={t('mall.productForm.specName')} min-width="160">
               {{
-                default: ({ row }: { row: SpecItem }) => (
+                default: ({ row }) => (
                   <div class="flex flex-col gap-2">
                     <el-select
                       modelValue={row.nameTags}
@@ -549,7 +548,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.specValue')} min-width="320">
               {{
-                default: ({ row }: { row: SpecItem }) => (
+                default: ({ row }) => (
                   <div class="flex flex-col gap-2">
                     <el-select
                       modelValue={row.values}
@@ -612,7 +611,7 @@ export default function getFormItems(
             {formType === 'edit' && (
               <el-table-column label={t('mall.productForm.skuCode')} min-width="140">
                 {{
-                  default: ({ row }: { row: ProductSkuVo }) => (
+                  default: ({ row }) => (
                     <el-input
                       modelValue={row.sku_code}
                       onUpdate:modelValue={(val: string) => row.sku_code = val}
@@ -625,7 +624,7 @@ export default function getFormItems(
             )}
             <el-table-column label={t('mall.productForm.skuName')} min-width="160">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input
                     modelValue={row.sku_name}
                     onUpdate:modelValue={(val: string) => row.sku_name = val}
@@ -636,9 +635,9 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.specValues')} min-width="160">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input
-                    modelValue={Array.isArray(row.spec_values) ? row.spec_values.join(',') : (row.spec_values as any)}
+                    modelValue={specValueTexts(row.spec_values).join(',')}
                     onUpdate:modelValue={(val: string) => {
                       row.spec_values = val.split(',').map(item => item.trim()).filter(Boolean)
                     }}
@@ -649,7 +648,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.image')} width="120">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <MaUploadImage
                     modelValue={row.image || ''}
                     onUpdate:modelValue={(val: string | string[]) => {
@@ -662,7 +661,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.costPriceYuan')} width="110">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.cost_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.cost_price = val}
@@ -676,7 +675,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.marketPriceYuan')} width="110">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.market_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.market_price = val}
@@ -690,7 +689,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.salePriceYuan')} width="110">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.sale_price ?? 0}
                     onUpdate:modelValue={(val: number) => row.sale_price = val}
@@ -704,7 +703,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.stock')} width="100">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.stock ?? 0}
                     onUpdate:modelValue={(val: number) => row.stock = val}
@@ -717,7 +716,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.warningStock')} width="110">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.warning_stock ?? 0}
                     onUpdate:modelValue={(val: number) => row.warning_stock = val}
@@ -730,7 +729,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.weight')} width="100">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-input-number
                     modelValue={row.weight ?? 0}
                     onUpdate:modelValue={(val: number) => row.weight = val}
@@ -743,7 +742,7 @@ export default function getFormItems(
             </el-table-column>
             <el-table-column label={t('mall.productForm.skuStatus')} width="90">
               {{
-                default: ({ row }: { row: ProductSkuVo }) => (
+                default: ({ row }) => (
                   <el-switch
                     modelValue={row.status || 'active'}
                     onUpdate:modelValue={(val: string) => row.status = val}

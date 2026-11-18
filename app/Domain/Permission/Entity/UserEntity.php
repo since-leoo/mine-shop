@@ -382,8 +382,8 @@ final class UserEntity
         $input->getAvatar() && $this->setAvatar($input->getAvatar());
         $input->getSigned() && $this->setSigned($input->getSigned());
         $input->getRemark() && $this->setRemark($input->getRemark());
-        $input->getUserType() && $this->setUserType($input->getUserType());
-        $input->getStatus() && $this->setStatus($input->getStatus());
+        $this->setUserType($input->getUserType());
+        $this->setStatus($input->getStatus());
         $input->getBackendSetting() && $this->setBackendSetting($input->getBackendSetting());
         $input->getCreatedBy() && $this->setCreatedBy($input->getCreatedBy());
         $input->getUpdatedBy() && $this->setUpdatedBy($input->getUpdatedBy());
@@ -414,8 +414,8 @@ final class UserEntity
         $input->getAvatar() && $this->setAvatar($input->getAvatar());
         $input->getSigned() && $this->setSigned($input->getSigned());
         $input->getRemark() && $this->setRemark($input->getRemark());
-        $input->getUserType() && $this->setUserType($input->getUserType());
-        $input->getStatus() && $this->setStatus($input->getStatus());
+        $this->setUserType($input->getUserType());
+        $this->setStatus($input->getStatus());
         $input->getBackendSetting() && $this->setBackendSetting($input->getBackendSetting());
         $input->getUpdatedBy() && $this->setUpdatedBy($input->getUpdatedBy());
         $input->getDepartmentIds() && $this->setDepartmentIds(array_map('intval', $input->getDepartmentIds()));

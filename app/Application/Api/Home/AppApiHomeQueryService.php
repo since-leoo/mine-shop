@@ -16,7 +16,6 @@ use App\Application\Api\Product\AppApiCategoryQueryService;
 use App\Application\Api\Product\AppApiProductQueryService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
-use App\Domain\Trade\Seckill\Api\Query\DomainApiSeckillQueryService;
 
 final class AppApiHomeQueryService
 {
@@ -25,7 +24,6 @@ final class AppApiHomeQueryService
         private readonly AppApiCategoryQueryService $categoryQueryService,
         private readonly DomainMallSettingService $mallSettingService,
         private readonly DomainSystemSettingService $systemSettingService,
-        private readonly DomainApiSeckillQueryService $seckillQueryService,
     ) {}
 
     /**

@@ -34,6 +34,7 @@ use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
 
+#[\App\Infrastructure\Library\DataPermission\Attribute\DataScope(scopeType: \App\Infrastructure\Library\DataPermission\ScopeType::CREATED_BY, onlyTables: ['role'])]
 #[Controller(prefix: '/admin/role')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
 #[Middleware(middleware: PermissionMiddleware::class, priority: 99)]

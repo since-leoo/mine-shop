@@ -21,7 +21,7 @@ zh_TW:
 
 <script setup lang="tsx">
 import { useLocalTrans } from '@/hooks/useLocalTrans.ts'
-import type { UploadUserFile } from 'element-plus'
+import type { ImageInstance, UploadUserFile } from 'element-plus'
 import { isArray, uid } from 'radash'
 import { useDebounceFn } from '@vueuse/core'
 import { useMessage } from '@/hooks/useMessage.ts'
@@ -38,7 +38,7 @@ const {
   limit = 5,
   multiple = false,
 } = defineProps<{
-  modelValue: string | string[] | null
+  modelValue?: string | string[] | null
   title?: string
   size?: number
   fileSize?: number
@@ -58,7 +58,7 @@ const t = useLocalTrans()
 const uploadBtnRef = ref<HTMLElement>()
 const isOpenResource = ref<boolean>(false)
 const previewList = ref<string[]>([])
-const ElImageRefs = ref([])
+const ElImageRefs = ref<ImageInstance>()
 
 const getSize = computed(() => {
   return {

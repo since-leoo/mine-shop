@@ -147,7 +147,7 @@ class UserMessage extends Model
 
     public static function batchMarkAsRead(int $userId, array $messageIds): int
     {
-        return static::where('user_id', $userId)
+        return static::query()->where('user_id', $userId)
             ->whereIn('message_id', $messageIds)
             ->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => Carbon::now()]);
@@ -155,7 +155,7 @@ class UserMessage extends Model
 
     public static function batchSoftDelete(int $userId, array $messageIds): int
     {
-        return static::where('user_id', $userId)
+        return static::query()->where('user_id', $userId)
             ->whereIn('message_id', $messageIds)
             ->where('is_deleted', false)
             ->update(['is_deleted' => true, 'deleted_at' => Carbon::now()]);
@@ -163,7 +163,7 @@ class UserMessage extends Model
 
     public static function getUnreadCount(int $userId): int
     {
-        return static::where('user_id', $userId)
+        return static::query()->where('user_id', $userId)
             ->where('is_read', false)
             ->where('is_deleted', false)
             ->count();
@@ -171,8 +171,8 @@ class UserMessage extends Model
 
     public static function getUserMessageStats(int $userId): array
     {
-        $total = static::where('user_id', $userId)->where('is_deleted', false)->count();
-        $unread = static::where('user_id', $userId)->where('is_read', false)->where('is_deleted', false)->count();
+        $total = static::query()->where('user_id', $userId)->where('is_deleted', false)->count();
+        $unread = static::query()->where('user_id', $userId)->where('is_read', false)->where('is_deleted', false)->count();
         $read = $total - $unread;
         return ['total' => $total, 'read' => $read, 'unread' => $unread];
     }

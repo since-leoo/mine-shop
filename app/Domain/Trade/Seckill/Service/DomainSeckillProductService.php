@@ -25,6 +25,8 @@ use Carbon\Carbon;
  *
  * 负责秒杀商品的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Seckill\SeckillProduct>
  */
 final class DomainSeckillProductService extends IService
 {
@@ -46,7 +48,7 @@ final class DomainSeckillProductService extends IService
      *
      * @param SeckillProductEntity $entity 秒杀商品实体
      * @return SeckillProduct 创建的模型
-     * @throws \RuntimeException 商品已存在时抛出
+     * @throws \DomainException 商品已存在时抛出
      * @throws \DomainException 场次即将开始时抛出
      */
     public function create(SeckillProductEntity $entity): SeckillProduct
@@ -55,7 +57,7 @@ final class DomainSeckillProductService extends IService
         $this->ensureSessionNotInCacheWarmupPeriod($entity->getSessionId());
 
         if ($this->repository->existsInSession($entity->getSessionId(), $entity->getProductSkuId())) {
-            throw new \RuntimeException('该商品已在此场次中');
+            throw new \DomainException('该商品已在此场次中');
         }
 
         $product = $this->repository->createFromEntity($entity);
@@ -85,14 +87,14 @@ final class DomainSeckillProductService extends IService
      *
      * @param int $id 商品 ID
      * @return bool 是否删除成功
-     * @throws \RuntimeException 商品不存在时抛出
+     * @throws \DomainException 商品不存在时抛出
      * @throws \DomainException 场次即将开始时抛出
      */
     public function delete(int $id): bool
     {
         $product = $this->repository->findById($id);
         if (! $product) {
-            throw new \RuntimeException('商品不存在');
+            throw new \DomainException('商品不存在');
         }
 
         // 检查场次是否处于缓存预热期
@@ -138,14 +140,14 @@ final class DomainSeckillProductService extends IService
      *
      * @param int $id 商品 ID
      * @return bool 是否操作成功
-     * @throws \RuntimeException 商品不存在时抛出
+     * @throws \DomainException 商品不存在时抛出
      * @throws \DomainException 场次即将开始时抛出
      */
     public function toggleStatus(int $id): bool
     {
         $product = $this->repository->findById($id);
         if (! $product) {
-            throw new \RuntimeException('商品不存在');
+            throw new \DomainException('商品不存在');
         }
 
         // 检查场次是否处于缓存预热期
@@ -182,7 +184,7 @@ final class DomainSeckillProductService extends IService
     {
         $session = $this->sessionRepository->findById($sessionId);
         if (! $session) {
-            return;
+            throw new \DomainException('场次不存在或无权访问');
         }
 
         $startTime = Carbon::parse($session->start_time);

@@ -1,6 +1,10 @@
 node_modules
 .DS_Store
 dist*
+!src/plugins/since/distribution/
+!src/plugins/since/distribution/**
+!tests/distribution/
+!tests/distribution/**
 dist-ssr
 *.local
 .eslintcache

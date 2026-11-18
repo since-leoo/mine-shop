@@ -20,12 +20,12 @@ class TemplateRepository
 {
     public function create(array $data): MessageTemplate
     {
-        return MessageTemplate::create($data);
+        return MessageTemplate::query()->create($data);
     }
 
     public function findById(int $id): ?MessageTemplate
     {
-        return MessageTemplate::find($id);
+        return MessageTemplate::query()->find($id);
     }
 
     public function list(array $filters = [], int $page = 1, int $pageSize = 20): array
@@ -67,14 +67,14 @@ class TemplateRepository
 
     public function getCategories(): array
     {
-        return MessageTemplate::selectRaw('category, COUNT(*) as count')
+        return MessageTemplate::query()->selectRaw('category, COUNT(*) as count')
             ->groupBy('category')->orderBy('category')
             ->pluck('count', 'category')->toArray();
     }
 
     public function getActiveTemplates(?string $type = null): Collection
     {
-        $query = MessageTemplate::where('is_active', true);
+        $query = MessageTemplate::query()->where('is_active', true);
         if ($type) {
             $query->where('type', $type);
         }

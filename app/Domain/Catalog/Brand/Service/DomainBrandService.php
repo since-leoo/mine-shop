@@ -15,12 +15,12 @@ namespace App\Domain\Catalog\Brand\Service;
 use App\Domain\Catalog\Brand\Contract\BrandInput;
 use App\Domain\Catalog\Brand\Repository\BrandRepository;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\BusinessException;
 use App\Infrastructure\Model\Product\Brand;
-use Mine\Support\ResultCode;
 
 /**
  * 品牌领域服务：封装品牌相关的核心业务逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Product\Brand>
  */
 final class DomainBrandService extends IService
 {
@@ -58,7 +58,7 @@ final class DomainBrandService extends IService
         $brand = $this->repository->findById($id);
 
         if (! $brand) {
-            throw new BusinessException(ResultCode::FAIL, '品牌不存在');
+            throw new \DomainException('品牌不存在');
         }
 
         return $this->repository->updateById($id, $input->toArray());
@@ -73,11 +73,11 @@ final class DomainBrandService extends IService
         $brand = $this->repository->findById($id);
 
         if (! $brand) {
-            throw new BusinessException(ResultCode::FAIL, '品牌不存在');
+            throw new \DomainException('品牌不存在');
         }
 
         if (! $brand->canDelete()) {
-            throw new BusinessException(ResultCode::FAIL, '该品牌下还有商品，无法删除');
+            throw new \DomainException('该品牌下还有商品，无法删除');
         }
 
         return $this->repository->deleteById($id) > 0;

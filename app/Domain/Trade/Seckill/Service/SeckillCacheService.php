@@ -194,9 +194,8 @@ final class SeckillCacheService
             $remaining = max(0, (int) $product->quantity - (int) $product->sold_quantity);
             $stockFields[(string) $product->product_sku_id] = (string) $remaining;
         }
-        $this->cache->delete($hashKey);
-        if ($stockFields !== []) {
-            $this->cache->hMset($hashKey, $stockFields);
+        foreach ($stockFields as $skuId => $remaining) {
+            $this->cache->hSetNx($hashKey, (string) $skuId, $remaining);
         }
     }
 

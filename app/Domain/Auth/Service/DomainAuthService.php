@@ -26,6 +26,8 @@ use Mine\JwtAuth\Event\UserLoginEvent;
 
 /**
  * 认证领域服务，封装登录/登出等核心逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Permission\User>
  */
 final class DomainAuthService extends IService
 {
@@ -35,7 +37,7 @@ final class DomainAuthService extends IService
      * @param DomainTokenService $tokenService 令牌服务实例
      */
     public function __construct(
-        private readonly UserRepository $repository,
+        public readonly UserRepository $repository,
         private readonly DomainTokenService $tokenService,
     ) {}
 

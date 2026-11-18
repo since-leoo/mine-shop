@@ -239,7 +239,7 @@
         <el-table-column :label="t('mall.order.operation')" fixed="right" width="260">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
-              <el-button type="primary" link size="small" @click="showDetail(row)">
+              <el-button type="primary" link size="small" @click="showDetail(row as OrderVo)">
                 <el-icon><View /></el-icon>
                 {{ t('mall.detail') }}
               </el-button>
@@ -260,7 +260,7 @@
                 type="success"
                 link
                 size="small"
-                @click="openShipDialog(row)"
+                @click="openShipDialog(row as OrderVo)"
               >
                 <el-icon><Van /></el-icon>
                 {{ t('mall.order.ship') }}
@@ -374,7 +374,7 @@
           </el-input>
         </el-form-item>
         <el-form-item :label="t('mall.order.remark')">
-          <el-input v-model="shipForm.remark" type="textarea" rows="3" :placeholder="t('mall.order.remarkPlaceholder')" />
+          <el-input v-model="shipForm.remark" type="textarea" :rows="3" :placeholder="t('mall.order.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -497,7 +497,7 @@ const statusLabelMap = computed<Record<string, string>>(() => ({
   cancelled: t('mall.order.statusCancelled'),
 }))
 
-const statusTypeMap: Record<string, string> = {
+const statusTypeMap: Record<string, import('element-plus').TagProps['type']> = {
   pending: 'warning',
   paid: 'primary',
   shipped: 'success',
@@ -513,7 +513,7 @@ const paymentStatusLabelMap = computed<Record<string, string>>(() => ({
   refunded: t('mall.order.payRefunded'),
 }))
 
-const paymentStatusTypeMap: Record<string, string> = {
+const paymentStatusTypeMap: Record<string, import('element-plus').TagProps['type']> = {
   pending: 'warning',
   paid: 'success',
   failed: 'danger',
@@ -528,7 +528,7 @@ const shippingStatusLabelMap = computed<Record<string, string>>(() => ({
   delivered: t('mall.order.shipDelivered'),
 }))
 
-const shippingStatusTypeMap: Record<string, string> = {
+const shippingStatusTypeMap: Record<string, import('element-plus').TagProps['type']> = {
   pending: 'info',
   partial_shipped: 'warning',
   shipped: 'success',

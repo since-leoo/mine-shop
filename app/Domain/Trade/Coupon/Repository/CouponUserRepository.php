@@ -77,26 +77,26 @@ final class CouponUserRepository extends IRepository
 
     public function countUsedByCouponId(int $couponId): int
     {
-        return $this->model->where('coupon_id', $couponId)
+        return $this->getQuery()->where('coupon_id', $couponId)
             ->where('status', 'used')
             ->count();
     }
 
     public function countByCouponId(int $couponId): int
     {
-        return $this->model->where('coupon_id', $couponId)->count();
+        return $this->getQuery()->where('coupon_id', $couponId)->count();
     }
 
     public function countByMember(int $memberId, ?string $status = null): int
     {
-        return $this->model->where('member_id', $memberId)
+        return $this->getQuery()->where('member_id', $memberId)
             ->when($status !== null, static fn ($query) => $query->where('status', $status))
             ->count();
     }
 
     public function countByMemberForCoupon(int $memberId, int $couponId): int
     {
-        return $this->model->where('member_id', $memberId)
+        return $this->getQuery()->where('member_id', $memberId)
             ->where('coupon_id', $couponId)
             ->count();
     }

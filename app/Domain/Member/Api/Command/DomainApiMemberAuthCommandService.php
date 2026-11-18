@@ -44,7 +44,6 @@ final class DomainApiMemberAuthCommandService
         ?string $encryptedData = null,
         ?string $iv = null,
         ?string $ip = null,
-        ?string $manualOpenid = null,
         ?string $inviteCode = null
     ): MemberEntity {
         if (! empty($encryptedData) && ! empty($iv)) {
@@ -53,7 +52,7 @@ final class DomainApiMemberAuthCommandService
             $payload = $this->miniApp->silentAuthorize($code);
         }
 
-        $openid = $manualOpenid ?: (string) ($payload['openid'] ?? '');
+        $openid = (string) ($payload['openid'] ?? '');
 
         if (empty($openid)) {
             throw new \InvalidArgumentException('授权失败');

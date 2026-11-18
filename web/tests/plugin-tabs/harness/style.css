@@ -1,0 +1,11 @@
+:root { --mine-g-tabbar-height: 42px; }
+body { margin: 0; font-family: sans-serif; }
+.mine-tab-container { display: flex; min-height: 42px; }
+.mine-tabbar { display: flex; gap: 5px; align-items: center; width: 100%; overflow: auto; }
+.mine-tabbar .tab-item { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding: 8px 10px; border: 1px solid #aaa; cursor: pointer; }
+.mine-tabbar .tab-item.active { background: #def; border-color: #07f; }
+.mine-tabbar .icon { padding: 2px 4px; cursor: pointer; }
+nav { display: flex; flex-wrap: wrap; gap: 12px; padding: 15px; }
+output { display: block; padding: 10px; }
+[data-testid="business-page"] { padding: 20px; }
+[data-testid="business-page"] button, [data-testid="business-page"] a { margin-right: 12px; }

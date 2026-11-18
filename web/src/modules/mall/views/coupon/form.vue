@@ -41,7 +41,7 @@ useForm('couponForm').then(async (form: MaFormExpose) => {
       model.value.value = centsToYuan(data.value) as any
     }
     model.value.min_amount = centsToYuan(data.min_amount) as any
-    model.value.dateRange = [data.start_time, data.end_time]
+    model.value.dateRange = [data.start_time ?? '', data.end_time ?? '']
   }
   else {
     model.value.status = 'active'

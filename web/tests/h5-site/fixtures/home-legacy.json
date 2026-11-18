@@ -1,0 +1,374 @@
+{
+  "version": 1,
+  "page": {
+    "key": "home",
+    "title": "首页",
+    "theme": {
+      "primaryColor": "#E8836B",
+      "priceColor": "#E8836B",
+      "backgroundColor": "#FAF3ED",
+      "cardRadius": 16,
+      "buttonShape": "round"
+    },
+    "style": {
+      "background": "linear-gradient(180deg, #E8836B 0, #F2A99A 90px, #F5C5A3 180px, #FAF3ED 330px, #FAF3ED 100%)"
+    }
+  },
+  "components": [
+    {
+      "id": "home-search",
+      "type": "search-bar",
+      "name": "搜索框",
+      "enabled": true,
+      "props": {
+        "placeholder": "搜索你需要的商品",
+        "shape": "round",
+        "target": "/pages/goods/search/index"
+      },
+      "style": {
+        "margin": {
+          "top": 4,
+          "right": 16,
+          "bottom": 10,
+          "left": 16
+        },
+        "padding": {
+          "top": 0,
+          "right": 14,
+          "bottom": 0,
+          "left": 14
+        },
+        "height": 38,
+        "borderRadius": 22,
+        "background": "rgba(255,255,255,0.88)",
+        "boxShadow": "0 2px 12px rgba(200,140,110,0.10)",
+        "color": "#C4B0A6",
+        "fontSize": 13
+      },
+      "data": []
+    },
+    {
+      "id": "home-banner",
+      "type": "banner",
+      "name": "轮播图",
+      "enabled": true,
+      "props": {
+        "widthMode": "contained",
+        "height": 148,
+        "radius": 24,
+        "objectFit": "cover",
+        "autoplay": true
+      },
+      "style": {
+        "margin": {
+          "top": 0,
+          "right": 16,
+          "bottom": 10,
+          "left": 16
+        },
+        "boxShadow": "0 2px 8px rgba(200,140,110,0.08)"
+      },
+      "data": {
+        "items": [
+          {
+            "image": "https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner1.png",
+            "title": "春日上新",
+            "link": {
+              "type": "page",
+              "path": "/pages/goods/result/index"
+            }
+          },
+          {
+            "image": "https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner2.png",
+            "title": "限时特惠",
+            "link": {
+              "type": "page",
+              "path": "/pages/coupon/coupon-center/index"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "home-nav",
+      "type": "quick-nav",
+      "name": "快捷入口",
+      "enabled": true,
+      "props": {
+        "columns": 5,
+        "rows": 1,
+        "iconSize": 48,
+        "iconRadius": 16,
+        "imageSize": 30,
+        "itemGap": 7
+      },
+      "style": {
+        "margin": {
+          "top": 0,
+          "right": 16,
+          "bottom": 8,
+          "left": 16
+        },
+        "padding": {
+          "top": 11,
+          "right": 8,
+          "bottom": 7,
+          "left": 8
+        },
+        "background": "#FFFFFF",
+        "borderRadius": 16,
+        "boxShadow": "0 2px 8px rgba(200,140,110,0.08)"
+      },
+      "data": {
+        "items": [
+          {
+            "title": "分类",
+            "icon": "assets/home-quick/grid.svg",
+            "iconText": "类",
+            "iconBg": "#F3E5F5",
+            "link": {
+              "type": "page",
+              "path": "/pages/category/index"
+            }
+          },
+          {
+            "title": "优惠券",
+            "icon": "assets/home-quick/gift.svg",
+            "iconText": "券",
+            "iconBg": "#FFF3E0",
+            "link": {
+              "type": "page",
+              "path": "/pages/coupon/coupon-center/index"
+            }
+          },
+          {
+            "title": "拼团活动",
+            "icon": "assets/home-quick/group.svg",
+            "iconText": "团",
+            "iconBg": "#E8F5E9",
+            "link": {
+              "type": "page",
+              "path": "/pages/promotion/group-buy/index"
+            }
+          },
+          {
+            "title": "热卖榜单",
+            "icon": "assets/home-quick/fire.svg",
+            "iconText": "榜",
+            "iconBg": "#FCE4EC",
+            "link": {
+              "type": "page",
+              "path": "/pages/promotion/hot-ranking/index"
+            }
+          },
+          {
+            "title": "我的",
+            "icon": "assets/tab/user.png",
+            "iconText": "我",
+            "iconBg": "#FFF1E8",
+            "link": {
+              "type": "page",
+              "path": "/pages/usercenter/index"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "home-marketing-entry",
+      "type": "marketing-entry",
+      "name": "营销入口",
+      "enabled": true,
+      "props": {
+        "title": "今日活动直达",
+        "layout": "two-column",
+        "itemGap": 10,
+        "cardRadius": 10
+      },
+      "style": {
+        "margin": {
+          "top": 0,
+          "right": 16,
+          "bottom": 8,
+          "left": 16
+        },
+        "padding": {
+          "top": 12,
+          "right": 14,
+          "bottom": 14,
+          "left": 14
+        },
+        "background": "#FFFFFF",
+        "borderRadius": 16,
+        "boxShadow": "0 2px 8px rgba(200,140,110,0.08)"
+      },
+      "data": {
+        "items": [
+          {
+            "title": "秒杀专场",
+            "subtitle": "点击进入专题页",
+            "badge": "距下一场 02:18:45",
+            "background": "#F0A18E",
+            "color": "#FFFFFF",
+            "link": {
+              "type": "page",
+              "path": "/pages/promotion/detail/index"
+            }
+          },
+          {
+            "title": "拼团会场",
+            "subtitle": "精选团购每天上新",
+            "badge": "3人团最低5折起",
+            "background": "#86BFA9",
+            "color": "#FFFFFF",
+            "link": {
+              "type": "page",
+              "path": "/pages/promotion/group-buy/index"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "home-notice",
+      "type": "notice-bar",
+      "name": "公告栏",
+      "enabled": true,
+      "props": {
+        "speed": 40,
+        "showIcon": true
+      },
+      "style": {
+        "backgroundColor": "#FFF7ED",
+        "color": "#C2410C",
+        "margin": {
+          "top": 0,
+          "right": 16,
+          "bottom": 8,
+          "left": 16
+        },
+        "padding": {
+          "top": 0,
+          "right": 4,
+          "bottom": 0,
+          "left": 4
+        },
+        "borderRadius": 10,
+        "fontSize": 12,
+        "fontWeight": 700
+      },
+      "data": {
+        "items": [
+          {
+            "text": "新人下单立减，优惠持续上新",
+            "link": {
+              "type": "page",
+              "path": "/pages/coupon/coupon-center/index"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "home-coupon-ad",
+      "type": "image-ad",
+      "name": "图片广告",
+      "enabled": true,
+      "props": {
+        "layout": "single",
+        "widthMode": "contained",
+        "height": 96,
+        "radius": 18,
+        "objectFit": "cover"
+      },
+      "style": {
+        "margin": {
+          "top": 0,
+          "right": 16,
+          "bottom": 8,
+          "left": 16
+        },
+        "boxShadow": "0 2px 8px rgba(200,140,110,0.08)"
+      },
+      "data": {
+        "items": [
+          {
+            "image": "https://tdesign.gtimg.com/miniprogram/template/retail/home/v2/banner3.png",
+            "title": "满199减40",
+            "link": {
+              "type": "page",
+              "path": "/pages/coupon/coupon-center/index"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "home-recommend-title",
+      "type": "title-bar",
+      "name": "标题栏",
+      "enabled": true,
+      "props": {
+        "title": "人气推荐",
+        "subtitle": "为你精选好物"
+      },
+      "style": {
+        "color": "#3A2A22",
+        "fontSize": 16,
+        "fontWeight": 700,
+        "margin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "padding": {
+          "top": 16,
+          "right": 16,
+          "bottom": 10,
+          "left": 16
+        }
+      },
+      "data": []
+    },
+    {
+      "id": "home-recommend-products",
+      "type": "product-group",
+      "name": "商品组",
+      "enabled": true,
+      "props": {
+        "source": "recommend",
+        "mode": "recommend",
+        "sort": "default",
+        "limit": 10,
+        "layout": "two-column",
+        "variant": "home-recommend",
+        "gap": 10,
+        "listPadding": {
+          "top": 0,
+          "right": 16,
+          "bottom": 12,
+          "left": 16
+        }
+      },
+      "style": {
+        "margin": {
+          "top": 0,
+          "right": 0,
+          "bottom": 0,
+          "left": 0
+        },
+        "padding": {
+          "top": 0,
+          "right": 0,
+          "bottom": 12,
+          "left": 0
+        }
+      },
+      "data": {
+        "product_ids": [],
+        "products": []
+      }
+    }
+  ]
+}

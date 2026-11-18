@@ -10,7 +10,7 @@
 import '@/layouts/style/tabbar.scss'
 import Message from 'vue-m-message'
 import { useI18n } from 'vue-i18n'
-import { TransitionGroup } from 'vue'
+import { toRef, TransitionGroup } from 'vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import { useMagicKeys, useScroll } from '@vueuse/core'
@@ -29,7 +29,7 @@ export default defineComponent({
     const el = ref<HTMLElement | null>(null)
     const tabbarEl = ref<HTMLElement | null>(null)
 
-    useSortable(el, tabStore.tabList)
+    useSortable(el, toRef(tabStore, 'tabList'))
 
     const executeContextmenu = (e: MouseEvent, item: MineTabbar) => {
       e.preventDefault()
@@ -105,6 +105,9 @@ export default defineComponent({
         i18n: route.meta?.i18n as string,
         icon: route.meta?.icon as string,
         affix: route.meta?.affix === true,
+        tabKey: route.meta?.tabKey as string | undefined,
+        tabTitle: route.meta?.tabTitle as string | undefined,
+        tabIcon: route.meta?.tabIcon as string | undefined,
       } as MineTabbar)
 
       await nextTick(async () => {
@@ -188,12 +191,12 @@ export default defineComponent({
           {tabStore.tabList?.map((item: any, idx: number) => {
             return (
               <a
-                key={item.fullPath}
+                key={tabStore.getTabKey(item)}
                 class={{
                   'tab-item': true,
                   'rectanglePlan': getSettings('tabbar').mode === 'rectangle',
                   'cardPlan': getSettings('tabbar').mode === 'card',
-                  'active': (route.fullPath === item.fullPath || route.path === item.path),
+                  'active': tabStore.isCurrentTab(item),
                 }}
                 title={item?.i18n ? useTrans(item.i18n) : item.title}
                 onClick={(e: MouseEvent) => redirect(e, item)}

@@ -142,7 +142,7 @@ final class AppCustomerServiceQueryService
 
     private function formatModelMessage(CustomerServiceMessage $message): array
     {
-        $content = \is_array($message->content_json) ? $message->content_json : [];
+        $content = $message->content_json;
         return $this->formatMessageData($message->toArray(), $content);
     }
 

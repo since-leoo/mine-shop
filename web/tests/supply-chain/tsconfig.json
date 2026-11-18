@@ -1,0 +1,19 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "composite": false,
+    "types": ["vite/client", "element-plus/global"],
+    "paths": {
+      "@/hooks/auto-imports/useHttp": ["tests/supply-chain/harness/http.ts"],
+      "@/hooks/auto-imports/useHttp.ts": ["tests/supply-chain/harness/http.ts"],
+      "@/utils/permission/hasAuth": ["tests/supply-chain/harness/permission.ts"],
+      "@/*": ["src/*"],
+      "#/*": ["types/*"],
+      "vue": ["node_modules/vue"],
+      "element-plus": ["node_modules/element-plus"],
+      "vue-router": ["node_modules/vue-router"]
+    }
+  },
+  "include": ["../../../plugins/supply-chain/web/**/*.ts", "../../../plugins/supply-chain/web/**/*.vue", "../../src/plugins/since/supply-chain/**/*.ts", "../../types/global.d.ts", "harness/**/*.ts"],
+  "exclude": ["../../node_modules"]
+}

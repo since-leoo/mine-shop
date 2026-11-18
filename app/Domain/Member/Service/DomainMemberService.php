@@ -26,6 +26,8 @@ use App\Interface\Common\ResultCode;
  *
  * 负责会员档案的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\Member>
  */
 final class DomainMemberService extends IService
 {

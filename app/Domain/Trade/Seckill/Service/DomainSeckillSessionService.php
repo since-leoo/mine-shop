@@ -25,6 +25,8 @@ use Hyperf\DbConnection\Db;
  *
  * 负责秒杀场次的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Seckill\SeckillSession>
  */
 final class DomainSeckillSessionService extends IService
 {
@@ -72,14 +74,14 @@ final class DomainSeckillSessionService extends IService
      *
      * @param int $id 场次 ID
      * @return bool 是否删除成功
-     * @throws \RuntimeException 场次不存在时抛出
+     * @throws \DomainException 场次不存在时抛出
      * @throws \DomainException 场次状态不允许删除时抛出
      */
     public function delete(int $id): bool
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \RuntimeException('场次不存在');
+            throw new \DomainException('场次不存在');
         }
         $entity = SeckillSessionMapper::fromModel($session);
         if (! $entity->canBeDeleted()) {
@@ -96,13 +98,13 @@ final class DomainSeckillSessionService extends IService
      *
      * @param int $id 场次 ID
      * @return bool 是否操作成功
-     * @throws \RuntimeException 场次不存在时抛出
+     * @throws \DomainException 场次不存在时抛出
      */
     public function toggleStatus(int $id): bool
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \RuntimeException('场次不存在');
+            throw new \DomainException('场次不存在');
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->toggleEnabled();
@@ -122,13 +124,13 @@ final class DomainSeckillSessionService extends IService
      *
      * @param int $id 场次 ID
      * @return bool 是否操作成功
-     * @throws \RuntimeException 场次不存在时抛出
+     * @throws \DomainException 场次不存在时抛出
      */
     public function start(int $id): bool
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \RuntimeException("场次不存在: ID={$id}");
+            throw new \DomainException("场次不存在: ID={$id}");
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->start();
@@ -140,13 +142,13 @@ final class DomainSeckillSessionService extends IService
      *
      * @param int $id 场次 ID
      * @return bool 是否操作成功
-     * @throws \RuntimeException 场次不存在时抛出
+     * @throws \DomainException 场次不存在时抛出
      */
     public function end(int $id): bool
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \RuntimeException("场次不存在: ID={$id}");
+            throw new \DomainException("场次不存在: ID={$id}");
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->end();

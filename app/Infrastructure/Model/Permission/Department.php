@@ -28,10 +28,10 @@ use Hyperf\DbConnection\Model\Model;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property Carbon $deleted_at
- * @property Collection<int,Position>|Position[] $positions 岗位
- * @property Collection<int,User>|User[] $department_users 部门用户
- * @property Collection<int,User>|User[] $leader 部门领导
- * @property Collection<int,Department>|Department[] $children 子部门
+ * @property Collection<int, Position> $positions 岗位
+ * @property Collection<int, User> $department_users 部门用户
+ * @property Collection<int, User> $leader 部门领导
+ * @property Collection<int, Department> $children 子部门
  */
 class Department extends Model
 {
@@ -59,29 +59,36 @@ class Department extends Model
         $this->leader()->detach();
     }
 
+    /** @return HasMany<Position, $this> */
     public function positions(): HasMany
     {
         return $this->hasMany(Position::class, 'dept_id', 'id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function department_users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_dept', 'dept_id', 'user_id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function leader(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'dept_leader', 'dept_id', 'user_id');
     }
 
+    /** @return HasMany<self, $this> */
     public function children(): HasMany
     {
-        // @phpstan-ignore-next-line
-        return $this->hasMany(self::class, 'parent_id', 'id')->with(['children', 'positions']);
+        $relation = $this->hasMany(self::class, 'parent_id', 'id');
+        $relation->with(['children', 'positions']);
+        return $relation;
     }
 
+    /** @return BaseCollection<int, Department> */
     public function getFlatChildren(): BaseCollection
     {
+        /** @var BaseCollection<int, Department> $flat */
         $flat = collect();
         $this->load('children'); // 预加载子部门
         $traverse = static function ($departments) use (&$traverse, $flat) {

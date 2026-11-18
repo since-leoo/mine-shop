@@ -12,7 +12,7 @@ import type { SeckillActivityVo } from '~/mall/api/seckill'
 export default function getFormItems(
   formType: 'add' | 'edit',
   model: SeckillActivityVo,
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, unknown>) => string,
 ): MaFormItem[] {
 
   if (formType === 'add') {

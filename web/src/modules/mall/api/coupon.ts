@@ -11,6 +11,7 @@
 import type { PageList, ResponseStruct } from '#/global'
 
 export interface CouponVo {
+  dateRange?: [string, string]
   id?: number
   name?: string
   type?: 'fixed' | 'percent'

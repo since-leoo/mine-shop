@@ -192,21 +192,21 @@
         <el-table-column :label="t('member.list.operation')" fixed="right" width="260">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
-              <el-button type="primary" link size="small" @click="openDetail(row)">
+              <el-button type="primary" link size="small" @click="openDetail(row as MallMember)">
                 <el-icon><View /></el-icon>
                 {{ t('member.list.detail') }}
               </el-button>
-              <el-button type="primary" link size="small" @click="openEdit(row)">
+              <el-button type="primary" link size="small" @click="openEdit(row as MallMember)">
                 <el-icon><EditPen /></el-icon>
                 {{ t('member.list.edit') }}
               </el-button>
-              <el-button type="success" link size="small" @click="openTagDrawer(row)">
+              <el-button type="success" link size="small" @click="openTagDrawer(row as MallMember)">
                 <el-icon><Collection /></el-icon>
                 {{ t('member.list.assignTag') }}
               </el-button>
               <el-popconfirm
                 :title="row.status === 'banned' ? t('member.list.unbanConfirm') : t('member.list.banConfirm')"
-                @confirm="toggleStatus(row)"
+                @confirm="toggleStatus(row as MallMember)"
               >
                 <template #reference>
                   <el-button :type="row.status === 'banned' ? 'warning' : 'danger'" link size="small">
@@ -283,7 +283,7 @@
           />
         </el-form-item>
         <el-form-item :label="t('member.list.remarkLabel')">
-          <el-input v-model="editForm.remark" type="textarea" rows="3" :placeholder="t('member.list.remarkPlaceholder')" />
+          <el-input v-model="editForm.remark" type="textarea" :rows="3" :placeholder="t('member.list.remarkPlaceholder')" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -622,8 +622,8 @@ const applyRegionSelection = (codes?: (string | number)[]) => {
     editForm.country = '中国'
 }
 
-const handleRegionChange = (codes: (string | number)[]) => {
-  applyRegionSelection(codes)
+const handleRegionChange = (codes: import('element-plus').CascaderValue | null | undefined) => {
+  applyRegionSelection(Array.isArray(codes) ? codes.flat() : [])
 }
 
 const submitEdit = async () => {

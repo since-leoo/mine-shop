@@ -20,7 +20,6 @@ use App\Infrastructure\Model\Product\Category;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Seckill\SeckillSession;
 use Hyperf\Database\Model\Builder;
-use Hyperf\Paginator\AbstractPaginator;
 
 final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
 {
@@ -44,7 +43,6 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
             ->orderByDesc('sort')
             ->orderByDesc('id');
 
-        /** @var AbstractPaginator $paginator */
         $paginator = $query->paginate($pageSize, ['*'], 'per_page', $page);
 
         return [
@@ -99,7 +97,6 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
             ->when(! empty($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
             ->orderByDesc('id');
 
-        /** @var AbstractPaginator $paginator */
         $paginator = $query->paginate($pageSize, ['*'], 'per_page', $page);
 
         return [
@@ -127,18 +124,21 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
         $query = SeckillSession::query()
             ->when(! empty($params['ids']), static fn (Builder $q) => $q->whereIn('id', $params['ids']))
             ->when(! empty($params['activity_id']), static fn (Builder $q) => $q->where('activity_id', (int) $params['activity_id']))
-            ->whereHas('activity', static fn (Builder $q) => $q->where('is_enabled', true)->where('status', 'active'))
+            ->whereHas('activity', static function (Builder $q): void {
+                $q->where('is_enabled', true)->where('status', 'active');
+            })
             ->with(['activity:id,title,status,is_enabled'])
             ->select(['id', 'activity_id', 'start_time', 'end_time', 'status', 'total_quantity', 'sold_quantity', 'sort_order', 'is_enabled'])
             ->when(! empty($params['keyword']), static function (Builder $q) use ($params): void {
-                $q->whereHas('activity', static fn (Builder $activityQuery) => $activityQuery->where('title', 'like', '%' . $params['keyword'] . '%'));
+                $q->whereHas('activity', static function (Builder $activityQuery) use ($params): void {
+                    $activityQuery->where('title', 'like', '%' . $params['keyword'] . '%');
+                });
             })
             ->when(! empty($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
             ->when(\array_key_exists('is_enabled', $params), static fn (Builder $q) => $q->where('is_enabled', (bool) $params['is_enabled']))
             ->orderByDesc('sort_order')
             ->orderByDesc('id');
 
-        /** @var AbstractPaginator $paginator */
         $paginator = $query->paginate($pageSize, ['*'], 'per_page', $page);
 
         return [
@@ -146,8 +146,8 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
                 'id' => (int) $item->id,
                 'activity_id' => (int) $item->activity_id,
                 'title' => (string) ($item->activity?->title ?? ''),
-                'start_time' => $item->start_time?->toDateTimeString(),
-                'end_time' => $item->end_time?->toDateTimeString(),
+                'start_time' => $item->start_time->toDateTimeString(),
+                'end_time' => $item->end_time->toDateTimeString(),
                 'status' => (string) $item->status,
                 'total_quantity' => (int) $item->total_quantity,
                 'sold_quantity' => (int) $item->sold_quantity,
@@ -171,7 +171,6 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
             ->orderByDesc('sort_order')
             ->orderByDesc('id');
 
-        /** @var AbstractPaginator $paginator */
         $paginator = $query->paginate($pageSize, ['*'], 'per_page', $page);
 
         return [
@@ -183,8 +182,8 @@ final class DiyCatalogDataSource implements DiyCatalogDataSourceInterface
                 'group_price' => (int) $item->group_price,
                 'min_people' => (int) $item->min_people,
                 'max_people' => (int) $item->max_people,
-                'start_time' => $item->start_time?->toDateTimeString(),
-                'end_time' => $item->end_time?->toDateTimeString(),
+                'start_time' => $item->start_time->toDateTimeString(),
+                'end_time' => $item->end_time->toDateTimeString(),
                 'status' => (string) $item->status,
                 'total_quantity' => (int) $item->total_quantity,
                 'sold_quantity' => (int) $item->sold_quantity,

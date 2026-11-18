@@ -106,7 +106,7 @@ final class CategoryRepository extends IRepository
      * 获取分类树形结构.
      *
      * @param int $parentId 父级分类ID
-     * @return Collection 分类树形集合
+     * @return Collection<int, Category> 分类树形集合
      */
     public function getTree(int $parentId = 0): Collection
     {

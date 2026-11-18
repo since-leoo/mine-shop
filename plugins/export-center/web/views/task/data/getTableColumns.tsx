@@ -112,9 +112,14 @@ export default function getTableColumns(
             text: () => t('export.download'),
             onClick: async ({ row }: any) => {
               const res = await download(row.id as number)
-              if (res.data?.url) {
-                window.open(res.data.url, '_blank')
-              }
+              const url = URL.createObjectURL(res.data)
+              const link = document.createElement('a')
+              link.href = url
+              link.download = res.fileName || row.file_name || 'export'
+              document.body.appendChild(link)
+              link.click()
+              link.remove()
+              setTimeout(() => URL.revokeObjectURL(url), 1000)
             },
           },
           {

@@ -26,7 +26,7 @@ final class CommerceOrderRepository
     {
         return Order::query()->with(['items', 'address', 'packages'])->where('id', '>', $afterId)
             ->whereIn('pay_status', ['paid', 'partial_refunded', 'refunded'])
-            ->whereHas('items', static fn ($query) => $query->where('fulfillment_provider', $provider))
+            ->whereHas('items', static function ($query) use ($provider): void { $query->where('fulfillment_provider', $provider); })
             ->orderBy('id')->limit(min(500, max(1, $limit)))->get()->map(fn ($order) => $this->snapshot($order))->all();
     }
 

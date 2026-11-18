@@ -75,23 +75,24 @@ class MessageService
     public function send(int $messageId): bool
     {
         try {
-            $message = $this->repository->findById($messageId);
-            if (! $message) {
-                throw new \InvalidArgumentException("Message not found: {$messageId}");
-            }
-            if (! $message->canSend()) {
-                throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
-            }
-            $recipients = $message->getRecipients();
-            if ($recipients->isEmpty()) {
-                throw new \InvalidArgumentException("No recipients found for message: {$messageId}");
-            }
-            Db::transaction(function () use ($message, $recipients) {
+            [$message, $recipients] = Db::transaction(function () use ($messageId) {
+                $message = $this->repository->findForUpdate($messageId);
+                if (! $message) {
+                    throw new \InvalidArgumentException("Message not found: {$messageId}");
+                }
+                if (! $message->canSend()) {
+                    throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
+                }
+                $recipients = $message->getRecipients();
+                if ($recipients->isEmpty()) {
+                    throw new \InvalidArgumentException("No recipients found for message: {$messageId}");
+                }
                 $message->markAsSending();
                 $this->createUserMessages($message, $recipients);
-                $message->markAsSent();
+                return [$message, $recipients];
             });
             $this->queueNotifications($message, $recipients);
+            $message->markAsSent();
             $this->getEventDispatcher()->dispatch(new MessageSent($message));
             $this->logger()->info('Message sent', ['message_id' => $message->id, 'recipient_count' => $recipients->count()]);
             return true;
@@ -123,12 +124,12 @@ class MessageService
 
     public function getUserMessage(int $userId, int $messageId): ?UserMessage
     {
-        return UserMessage::where('user_id', $userId)->where('message_id', $messageId)->with('message')->first();
+        return UserMessage::query()->where('user_id', $userId)->where('message_id', $messageId)->with('message')->first();
     }
 
     public function markAsRead(int $userId, int $messageId): bool
     {
-        $userMessage = UserMessage::where('message_id', $messageId)->where('user_id', $userId)->first();
+        $userMessage = UserMessage::query()->where('message_id', $messageId)->where('user_id', $userId)->first();
         if (! $userMessage) {
             return false;
         }
@@ -142,13 +143,13 @@ class MessageService
 
     public function markAllAsRead(int $userId): int
     {
-        return UserMessage::where('user_id', $userId)->where('is_read', false)
+        return UserMessage::query()->where('user_id', $userId)->where('is_read', false)
             ->update(['is_read' => true, 'read_at' => Carbon::now()]);
     }
 
     public function deleteUserMessage(int $messageId, int $userId): bool
     {
-        $userMessage = UserMessage::where('message_id', $messageId)->where('user_id', $userId)->first();
+        $userMessage = UserMessage::query()->where('message_id', $messageId)->where('user_id', $userId)->first();
         if (! $userMessage) {
             return false;
         }
@@ -162,10 +163,10 @@ class MessageService
 
     public function getUserMessageTypeStats(int $userId): array
     {
-        $stats = UserMessage::where('user_id', $userId)->where('is_deleted', false)
-            ->join('messages', 'user_messages.message_id', '=', 'messages.id')
-            ->selectRaw('messages.type, COUNT(*) as total, SUM(CASE WHEN user_messages.is_read = 0 THEN 1 ELSE 0 END) as unread')
-            ->groupBy('messages.type')->get();
+        $stats = UserMessage::query()->where('user_id', $userId)->where('is_deleted', false)
+            ->join('system_messages', 'user_messages.message_id', '=', 'system_messages.id')
+            ->selectRaw('system_messages.type, COUNT(*) as total, SUM(CASE WHEN user_messages.is_read = 0 THEN 1 ELSE 0 END) as unread')
+            ->groupBy('system_messages.type')->get();
         return $stats->toArray();
     }
 
@@ -247,12 +248,12 @@ class MessageService
     {
         $retentionDays = $this->config('system_message.message.retention_days', 90);
         $expiredDate = Carbon::now()->subDays($retentionDays);
-        $expiredMessageIds = Message::where('created_at', '<', $expiredDate)->pluck('id')->toArray();
+        $expiredMessageIds = Message::query()->where('created_at', '<', $expiredDate)->pluck('id')->toArray();
         if (empty($expiredMessageIds)) {
             return 0;
         }
-        UserMessage::whereIn('message_id', $expiredMessageIds)->delete();
-        return Message::where('created_at', '<', $expiredDate)->forceDelete();
+        UserMessage::query()->whereIn('message_id', $expiredMessageIds)->delete();
+        return Message::query()->where('created_at', '<', $expiredDate)->forceDelete();
     }
 
     protected function validateMessageData(array $data): void
@@ -302,7 +303,7 @@ class MessageService
             $userMessages[] = ['user_id' => $user->id, 'message_id' => $message->id, 'is_read' => false, 'is_deleted' => false, 'created_at' => $now];
         }
         if (! empty($userMessages)) {
-            Db::table('user_messages')->insert($userMessages);
+            Db::table('user_messages')->insertOrIgnore($userMessages);
         }
     }
 
@@ -317,8 +318,13 @@ class MessageService
         }
         foreach ($recipients as $user) {
             foreach ($channels as $channel) {
+                if ($this->notificationService->hasSuccessfulDelivery($message->id, $user->id, $channel)) {
+                    continue;
+                }
                 $job = new SendMessageJob($message->id, $user->id, $channel);
-                $driver->push($job);
+                if (! $driver->push($job)) {
+                    throw new \RuntimeException('通知队列拒绝接收任务: ' . $job->getJobId());
+                }
             }
         }
     }

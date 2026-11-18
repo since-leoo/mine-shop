@@ -297,7 +297,7 @@ class SystemMessage
      */
     public static function markAsRead(int $messageId, int $userId): bool
     {
-        return static::getMessageService()->markAsRead($messageId, $userId);
+        return static::getMessageService()->markAsRead(userId: $userId, messageId: $messageId);
     }
 
     /**
@@ -305,7 +305,7 @@ class SystemMessage
      */
     public static function batchMarkAsRead(array $messageIds, int $userId): int
     {
-        return static::getMessageService()->batchMarkAsRead($messageIds, $userId);
+        return static::getMessageService()->batchMarkAsRead(userId: $userId, messageIds: $messageIds);
     }
 
     /**

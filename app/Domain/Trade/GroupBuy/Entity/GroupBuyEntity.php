@@ -177,6 +177,16 @@ final class GroupBuyEntity
         return $this;
     }
 
+    public function releaseQuantity(int $quantity): self
+    {
+        if ($quantity <= 0) { throw new \DomainException('释放数量必须大于0'); }
+        $this->setSoldQuantity(max(0, $this->soldQuantity - $quantity));
+        if ($this->status === 'sold_out' && $this->soldQuantity < $this->totalQuantity) {
+            $this->setStatus((new ActivityTimeVo($this->startTime, $this->endTime))->isActive() ? 'active' : 'ended');
+        }
+        return $this;
+    }
+
     public function increaseGroupCount(): self
     {
         $this->setGroupCount($this->groupCount + 1);

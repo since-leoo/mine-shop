@@ -20,6 +20,7 @@ final class UnauthorizedExceptionHandler extends AbstractHandler
 {
     public function handleResponse(\Throwable $throwable): Result
     {
+        $this->stopPropagation();
         return new Result(
             ResultCode::FORBIDDEN,
         );

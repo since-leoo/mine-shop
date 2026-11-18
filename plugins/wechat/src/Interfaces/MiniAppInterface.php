@@ -14,6 +14,8 @@ namespace Plugin\Wechat\Interfaces;
 
 interface MiniAppInterface
 {
+    public function getClient(): \EasyWeChat\Kernel\HttpClient\AccessTokenAwareClient;
+
     /**
      * 发送小程序订阅消息。
      *

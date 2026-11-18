@@ -227,7 +227,7 @@ class MessageTemplate extends Model
 
     public static function getPopularTemplates(int $limit = 10): Collection
     {
-        return static::withCount('messages')
+        return static::query()->withCount('messages')
             ->where('is_active', true)
             ->orderBy('messages_count', 'desc')
             ->limit($limit)

@@ -63,8 +63,8 @@ function settingsComponent(item: NonNullable<typeof current.value>): Component |
       </header>
       <el-empty v-if="!plugins.length" description="暂无已安装插件" :image-size="120" />
       <div v-else class="plugin-grid">
-        <article v-for="item in plugins" :key="item.key" class="plugin-card" :class="{ disabled: !item.enabled }" tabindex="0" @click="openPlugin(item.key)" @keyup.enter="openPlugin(item.key)">
-          <div class="plugin-card-top"><div class="plugin-icon"><ma-svg-icon :name="item.center?.icon || 'carbon:application'" :size="30" /></div><el-tag size="small" :type="item.enabled ? 'success' : 'info'">{{ item.enabled ? '已启用' : '已停用' }}</el-tag></div>
+        <article v-for="item in plugins" :key="item.key" class="plugin-card" :class="{ disabled: !item.enabled && !item.center?.businessManaged }" tabindex="0" @click="openPlugin(item.key)" @keyup.enter="openPlugin(item.key)">
+          <div class="plugin-card-top"><div class="plugin-icon"><ma-svg-icon :name="item.center?.icon || 'carbon:application'" :size="30" /></div><el-tag v-if="item.center?.businessManaged" size="small" type="info">业务开关在设置中管理</el-tag><el-tag v-else size="small" :type="item.enabled ? 'success' : 'info'">{{ item.enabled ? '已启用' : '已停用' }}</el-tag></div>
           <h2>{{ item.center?.title || item.info.name }}</h2>
           <p>{{ item.center?.description || item.info.description || '暂无插件描述' }}</p>
           <footer><span>{{ item.info.author || '未知作者' }}</span><span>v{{ item.info.version }}</span><el-button v-if="item.center?.settings" link type="primary" size="small" @click.stop="openSettings(item)">设置</el-button><ma-svg-icon name="carbon:arrow-right" :size="18" /></footer>
@@ -74,9 +74,9 @@ function settingsComponent(item: NonNullable<typeof current.value>): Component |
     <template v-else-if="current">
       <header class="plugin-detail-header">
         <div class="plugin-detail-title"><div class="plugin-icon"><ma-svg-icon :name="current.center?.icon || 'carbon:application'" :size="28" /></div><div><h1>{{ current.center?.title || current.info.name }}</h1><p>{{ current.center?.description || current.info.description }}</p></div></div>
-        <div class="plugin-detail-actions"><el-button link @click="goBack"><ma-svg-icon name="carbon:arrow-left" :size="18" /> 返回</el-button><el-button :type="current.enabled ? 'warning' : 'success'" @click="togglePlugin(current)">{{ current.enabled ? '停用插件' : '启用插件' }}</el-button></div>
+        <div class="plugin-detail-actions"><el-button link @click="goBack"><ma-svg-icon name="carbon:arrow-left" :size="18" /> 返回</el-button><el-button v-if="current.center?.businessManaged && current.center?.settings" type="primary" @click="openSettings(current)">插件设置</el-button><el-button v-if="!current.center?.businessManaged" :type="current.enabled ? 'warning' : 'success'" @click="togglePlugin(current)">{{ current.enabled ? '停用插件' : '启用插件' }}</el-button></div>
       </header>
-      <main class="plugin-detail-content"><component :is="settingsComponent(current)" v-if="isSettings && settingsComponent(current) && current.enabled" :plugin-name="current.key" /><component :is="pageComponent(current)" v-else-if="pageComponent(current) && current.enabled" /><el-empty v-else-if="!current.enabled" description="插件已停用，请先启用后使用" /><el-empty v-else description="该插件暂未提供插件中心页面" /></main>
+      <main class="plugin-detail-content"><component :is="settingsComponent(current)" v-if="isSettings && settingsComponent(current) && (current.enabled || current.center?.businessManaged)" :plugin-name="current.key" /><component :is="pageComponent(current)" v-else-if="pageComponent(current) && (current.enabled || current.center?.businessManaged)" /><el-empty v-else-if="!current.enabled" description="插件已停用，请先启用后使用" /><el-empty v-else description="该插件暂未提供插件中心页面" /></main>
     </template>
     <el-empty v-else description="插件不存在或已卸载" />
 

@@ -94,7 +94,7 @@ final class StatisticsRepository
         $paying_members = Order::query()
             ->where('pay_status', 'paid')
             ->whereBetween('pay_time', [$start, $end])
-            ->distinct('member_id')
+            ->distinct()
             ->count('member_id');
 
         StatDailyMembers::query()->updateOrCreate(
@@ -252,7 +252,7 @@ final class StatisticsRepository
         foreach ($rows as $row) {
             StatDailyMemberLevels::query()->updateOrCreate(
                 ['date' => $date, 'level' => $row->level],
-                ['member_count' => (int) $row->member_count]
+                ['member_count' => (int) $row->getAttribute('member_count')]
             );
         }
     }

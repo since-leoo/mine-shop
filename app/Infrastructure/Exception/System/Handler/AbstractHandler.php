@@ -22,19 +22,15 @@ use Hyperf\ExceptionHandler\Formatter\FormatterInterface;
 use Hyperf\HttpMessage\Stream\SwooleStream;
 use Hyperf\Logger\LoggerFactory;
 use Mine\Support\Logger\UuidRequestIdProcessor;
-use Mine\Support\Traits\Debugging;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Swow\Psr7\Message\ResponsePlusInterface;
 
 abstract class AbstractHandler extends ExceptionHandler
 {
-    use Debugging;
-
     private const CORS_ALLOW_HEADERS = 'DNT,Keep-Alive,User-Agent,Cache-Control,Content-Type,Authorization,Accept-Language,X-Body-Sha256,X-Client-Id,X-Nonce,X-Signature,X-Timestamp';
 
     public function __construct(
-        /** @phpstan-ignore-next-line */
         private readonly ConfigInterface $config,
         private readonly ContainerInterface $container,
         private readonly LoggerFactory $loggerFactory
@@ -42,12 +38,18 @@ abstract class AbstractHandler extends ExceptionHandler
 
     abstract public function handleResponse(\Throwable $throwable): Result;
 
+    public function isDebug(): bool
+    {
+        return (bool) $this->config->get('debug', false);
+    }
+
     public function handle(\Throwable $throwable, ResponsePlusInterface $response)
     {
         $this->report($throwable);
-        return value(function (ResponsePlusInterface $responsePlus) use ($throwable) {
+        Context::destroy(self::class . '.throwable');
+        try {
             if ($this->isDebug()) {
-                $responsePlus = $this->applyCorsHeaders($responsePlus);
+                $response = $this->applyCorsHeaders($response);
                 Context::set(self::class . '.throwable', [
                     'message' => $throwable->getMessage(),
                     'file' => $throwable->getFile(),
@@ -55,13 +57,10 @@ abstract class AbstractHandler extends ExceptionHandler
                     'trace' => $throwable->getTrace(),
                 ]);
             }
-            return $responsePlus;
-        }, $this->handlerRequestId(
-            $this->handlerResult(
-                $response,
-                $this->handleResponse($throwable)
-            )
-        ));
+            return $this->handlerRequestId($this->handlerResult($response, $this->handleResponse($throwable)));
+        } finally {
+            Context::destroy(self::class . '.throwable');
+        }
     }
 
     /**

@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Application\Admin\Content;
 
+use Hyperf\DbConnection\Db;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPublishScheduleInput;
 use Plugin\Diy\Domain\Content\DiyPage\Service\DomainDiyPublishService;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPagePreviewToken;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPagePublishRecord;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPageVersion;
-use Hyperf\DbConnection\Db;
 
 final class AppDiyPublishCommandService
 {
@@ -33,9 +33,9 @@ final class AppDiyPublishCommandService
         return Db::transaction(fn () => $this->publishService->schedule($input, $operatorId));
     }
 
-    public function cancelSchedule(int $recordId): bool
+    public function cancelSchedule(int $recordId, int $pageId): bool
     {
-        return Db::transaction(fn () => $this->publishService->cancelSchedule($recordId));
+        return Db::transaction(fn () => $this->publishService->cancelSchedule($recordId, $pageId));
     }
 
     public function rollback(int $pageId, int $versionId, ?int $operatorId = null): DiyPageVersion

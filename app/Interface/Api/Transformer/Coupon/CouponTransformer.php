@@ -149,7 +149,7 @@ final class CouponTransformer
         ];
     }
 
-    private function resolveValue(Coupon $coupon): float|int
+    private function resolveValue(Coupon $coupon): int
     {
         return $this->normalizeType($coupon) === 'discount'
             ? (int) $coupon->value

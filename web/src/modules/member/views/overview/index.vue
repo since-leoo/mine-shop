@@ -185,9 +185,9 @@ const statCards = computed(() => [
 const regionColors = ['#409EFF', '#67C23A', '#E6A23C', '#F56C6C', '#909399', '#9C27B0']
 const levelColors = ['#8CC5FF', '#A0DEFF', '#FDBA74', '#F7797D', '#BB8FCE', '#67C23A']
 
-const growthChartRef = ref<HTMLDivElement>()
-const regionChartRef = ref<HTMLDivElement>()
-const levelChartRef = ref<HTMLDivElement>()
+const growthChartRef = ref<HTMLDivElement>(null!)
+const regionChartRef = ref<HTMLDivElement>(null!)
+const levelChartRef = ref<HTMLDivElement>(null!)
 
 const growthChart = useEcharts(growthChartRef)
 const regionChart = useEcharts(regionChartRef)
@@ -287,7 +287,7 @@ const renderTrendChart = () => {
       },
     ],
   }
-  growthChart.setOption(option)
+  growthChart?.setOption(option)
 }
 
 const renderRegionChart = () => {
@@ -312,7 +312,7 @@ const renderRegionChart = () => {
       },
     ],
   }
-  regionChart.setOption(option)
+  regionChart?.setOption(option)
 }
 
 const renderLevelChart = () => {
@@ -346,7 +346,7 @@ const renderLevelChart = () => {
       },
     ],
   }
-  levelChart.setOption(option)
+  levelChart?.setOption(option)
 }
 
 const loadOverview = async () => {

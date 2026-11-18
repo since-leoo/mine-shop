@@ -26,6 +26,13 @@ final class GroupBuyRepository extends IRepository
 {
     public function __construct(protected readonly GroupBuy $model) {}
 
+    public function lock(int $id): void
+    {
+        if ($this->getQuery()->whereKey($id)->lockForUpdate()->first() === null) {
+            throw new \DomainException('团购活动不存在');
+        }
+    }
+
     public function handleSearch(Builder $query, array $params): Builder
     {
         return $query
@@ -47,7 +54,7 @@ final class GroupBuyRepository extends IRepository
         $query = $this->perQuery($this->getQuery()->with(['product']), $params);
 
         foreach ($query->cursor() as $item) {
-            $item->loads(['product']);
+            $item->load(['product']);
             yield $item;
         }
     }
@@ -84,6 +91,7 @@ final class GroupBuyRepository extends IRepository
             ->get()->all();
     }
 
+    /** @return Collection<int, GroupBuy> */
     public function findPromotionActivities(int $limit = 20): Collection
     {
         $now = Carbon::now();

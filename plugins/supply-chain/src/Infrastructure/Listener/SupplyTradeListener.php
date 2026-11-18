@@ -39,7 +39,7 @@ final class SupplyTradeListener implements ListenerInterface
             $this->trade->notify($event->orderNo, 'order_complete');
         } elseif ($event instanceof AfterSaleChangedIntegrationEvent) {
             $this->trade->afterSale($event->afterSaleId, $event->action);
-        } elseif ($event instanceof AfterSaleRefundSucceeded) {
+        } elseif ($event instanceof AfterSaleRefundSucceeded && $event->afterSaleId > 0) {
             $this->trade->afterSale($event->afterSaleId, 'refund_succeeded');
         }
     }

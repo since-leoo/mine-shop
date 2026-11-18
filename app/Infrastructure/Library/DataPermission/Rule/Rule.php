@@ -17,59 +17,21 @@ use App\Infrastructure\Library\DataPermission\Rule\Executable\DeptExecute;
 use App\Infrastructure\Library\DataPermission\ScopeType;
 use App\Infrastructure\Model\DataPermission\Policy;
 use App\Infrastructure\Model\Permission\User;
-use Hyperf\Cache\CacheManager;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Database\Query\Builder;
-use Psr\SimpleCache\CacheInterface;
 
 class Rule
 {
-    private readonly CacheInterface $cache;
+    public function __construct(private readonly ConfigInterface $config) {}
 
-    public function __construct(
-        private readonly ConfigInterface $config,
-        private readonly CacheManager $cacheManager
-    ) {
-        $this->cache = $this->cacheManager->getDriver($this->config->get('department.cache.driver'));
+    public function getDeptIds(User $user, Policy $policy): ?array
+    {
+        return (new DeptExecute($user, $policy))->execute();
     }
 
-    public function isCache(): bool
+    public function getCreatedByList(User $user, Policy $policy): ?array
     {
-        return (bool) $this->config->get('department.cache.enable');
-    }
-
-    public function getTtl(): mixed
-    {
-        return $this->config->get('department.cache.ttl');
-    }
-
-    public function getPrefix(): string
-    {
-        return $this->config->get('department.cache.prefix');
-    }
-
-    public function getDeptIds(User $user, Policy $policy): array
-    {
-        $cacheKey = $this->getPrefix() . ':deptIds:' . $user->id;
-        if ($this->isCache() && $this->cache->has($cacheKey)) {
-            return $this->cache->get($cacheKey);
-        }
-        $execute = new DeptExecute($user, $policy);
-        $result = $execute->execute();
-        $this->cache->set($cacheKey, $result, $this->getTtl());
-        return $result;
-    }
-
-    public function getCreatedByList(User $user, Policy $policy): array
-    {
-        $cacheKey = $this->getPrefix() . ':createdBy:' . $user->id;
-        if ($this->isCache() && $this->cache->has($cacheKey)) {
-            return $this->cache->get($cacheKey);
-        }
-        $execute = new CreatedByIdsExecute($user, $policy);
-        $result = $execute->execute();
-        $this->cache->set($cacheKey, $result, $this->getTtl());
-        return $result;
+        return (new CreatedByIdsExecute($user, $policy))->execute();
     }
 
     public function loadCustomFunc(string $customFunc, Builder $builder, User $user, ?Policy $policy, ScopeType $scopeType): void

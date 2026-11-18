@@ -154,9 +154,9 @@ const unreadCount = computed(() => messageStore.unreadCount)
 const hasUnread = computed(() => unreadCount.value > 0)
 
 // 获取消息类型 Tag 类型
-const getTypeTagType = (type: string): '' | 'success' | 'warning' | 'info' | 'danger' => {
-  const types: Record<string, '' | 'success' | 'warning' | 'info' | 'danger'> = {
-    system: '',
+const getTypeTagType = (type: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' => {
+  const types: Record<string, 'primary' | 'success' | 'warning' | 'info' | 'danger'> = {
+    system: 'primary',
     announcement: 'success',
     alert: 'danger',
     reminder: 'warning',

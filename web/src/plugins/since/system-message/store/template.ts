@@ -297,8 +297,8 @@ export const useTemplateStore = defineStore('message-template', () => {
 
     // 获取模板的变量列表
     getTemplateVariables(template: MessageTemplate): string[] {
-      const titleVars = extractVariables(template.title_template)
-      const contentVars = extractVariables(template.content_template)
+      const titleVars = extractVariables(template.title)
+      const contentVars = extractVariables(template.content)
       return [...new Set([...titleVars, ...contentVars])]
     },
 

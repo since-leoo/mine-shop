@@ -15,6 +15,10 @@ use Psr\Log\LoggerInterface;
 
 final class AppOrderSubmissionService
 {
+    public const PUBLIC_ERROR_PREFIX = 'public:v1:';
+
+    public const GENERIC_FAILURE_MESSAGE = '订单创建失败，请稍后重试';
+
     public function __construct(
         private readonly OrderSubmissionStoreInterface $submissions,
         private readonly StockReservationInterface $stock,
@@ -43,7 +47,7 @@ final class AppOrderSubmissionService
                 $this->submissions->updateStatus($tradeNo, 'reserved');
             });
         } catch (\DomainException $e) {
-            $this->fail($tradeNo, $e->getMessage());
+            $this->fail($tradeNo, $e);
             throw $e;
         } catch (\Throwable $e) {
             // 已持久化的提交仍返回处理中，避免客户端因基础设施超时重复创建新订单。
@@ -86,8 +90,12 @@ final class AppOrderSubmissionService
         });
     }
 
-    public function fail(string $tradeNo, string $error): void
+    public function fail(string $tradeNo, \Throwable $exception): void
     {
+        $this->logger->error('订单创建失败', ['trade_no' => $tradeNo, 'exception' => $exception]);
+        $error = in_array($exception::class, [\DomainException::class, \InvalidArgumentException::class], true)
+            ? $exception->getMessage()
+            : self::GENERIC_FAILURE_MESSAGE;
         $this->transactions->run(function () use ($tradeNo, $error): void {
             $row = $this->submissions->lock($tradeNo);
             if ($row === null || $row['status'] === 'created') {
@@ -97,7 +105,7 @@ final class AppOrderSubmissionService
                 $this->submissions->updateStatus($tradeNo, 'created');
                 return;
             }
-            $this->submissions->updateStatus($tradeNo, 'failed', $error);
+            $this->submissions->updateStatus($tradeNo, 'failed', self::PUBLIC_ERROR_PREFIX . $error);
             $this->outbox->append('release:' . $tradeNo, 'stock.release', [
                 'trade_no' => $tradeNo, 'items' => $row['payload']['items'],
                 'stock_key' => $row['payload']['stock_key'], 'legacy' => $row['payload']['legacy'] ?? false,

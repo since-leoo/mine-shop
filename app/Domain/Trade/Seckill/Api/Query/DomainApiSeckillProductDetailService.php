@@ -15,7 +15,6 @@ namespace App\Domain\Trade\Seckill\Api\Query;
 use App\Domain\Catalog\Product\Contract\ProductSnapshotInterface;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
-use App\Infrastructure\Model\Seckill\SeckillProduct;
 
 final class DomainApiSeckillProductDetailService
 {
@@ -32,7 +31,7 @@ final class DomainApiSeckillProductDetailService
             return null;
         }
 
-        $seckillProduct = SeckillProduct::where('session_id', $sessionId)
+        $seckillProduct = $this->seckillProductRepository->getQuery()->where('session_id', $sessionId)
             ->where('product_id', $spuId)->where('is_enabled', true)
             ->with(['product:id,name,main_image', 'productSku'])->first();
         if (! $seckillProduct) {

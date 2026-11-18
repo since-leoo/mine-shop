@@ -168,7 +168,7 @@ final class DomainConversationService
             $this->requestHuman($conversation, $reason);
             return ['status' => 'handed_off', 'reason' => $reason, 'changed' => true, 'message' => null];
         }
-        if ($answer->action === 'clarify') { $conversation->increment('clarification_count'); }
+        if ($answer->action === 'clarify') { $conversation->update(['clarification_count' => $conversation->clarification_count + 1]); }
         $message = $this->repository->append($conversation, 'ai', (int) $run['agent_id'], 'ai-run-' . $run['id'], 'text', ['text' => mb_substr($answer->text, 0, (int) $settings['max_message_length'])], (int) $run['id'], $answer->evidenceIds);
         return ['status' => 'completed', 'reason' => $answer->reason ?: null, 'changed' => false, 'message' => $message->wasRecentlyCreated ? $message : null];
     }

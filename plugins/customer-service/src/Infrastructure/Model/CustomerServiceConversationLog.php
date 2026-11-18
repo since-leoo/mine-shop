@@ -14,6 +14,16 @@ namespace Plugin\CustomerService\Infrastructure\Model;
 
 use Hyperf\DbConnection\Model\Model;
 
+/**
+ * @property int $id
+ * @property int $conversation_id
+ * @property string $action
+ * @property string $operator_type
+ * @property null|int $operator_id
+ * @property null|array $detail_json
+ * @property null|\Carbon\Carbon $created_at
+ * @property null|\Carbon\Carbon $updated_at
+ */
 final class CustomerServiceConversationLog extends Model
 {
     protected ?string $table = 'customer_service_conversation_logs';

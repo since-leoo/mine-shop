@@ -207,10 +207,10 @@ try {
         } $result['error'] = $error->getMessage();
     }
     if ($mode === 'enabled') {
-        $raw = ['share_token' => str_repeat('a', 24)];
+        $raw = ['share_token' => str_repeat('a', 24), 'openid' => 'victim-openid'];
         $mini = $container->get(AppApiMemberAuthCommandService::class);
         for ($i = 0; $i < 3; ++$i) {
-            $result['mini'][] = $mini->miniProgramLogin('code-' . $i, openid: 'victim-openid', inviteCode: 'LEGACY99');
+            $result['mini'][] = $mini->miniProgramLogin('code-' . $i, inviteCode: 'LEGACY99');
         }
         $raw = ['invite_code' => 'OTHER001'];
         $result['existing'] = $mini->miniProgramLogin('code-0', inviteCode: 'OTHER001');

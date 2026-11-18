@@ -68,6 +68,8 @@ interface InterfaceCache
      */
     public function hSet(string $key, string $field, mixed $value): bool;
 
+    public function hSetNx(string $key, string $field, mixed $value): bool;
+
     /**
      * 获取哈希表字段值
      *
@@ -99,8 +101,8 @@ interface InterfaceCache
      * 删除哈希表字段.
      *
      * @param string $key 哈希表键
-     * @param string $field 要删除的字段名
+     * @param string ...$fields 要删除的字段名
      * @return bool 操作是否成功
      */
-    public function hDel(string $key, string $field): bool;
+    public function hDel(string $key, string ...$fields): bool;
 }

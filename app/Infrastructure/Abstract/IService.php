@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Abstract;
 
 use Hyperf\Collection\Collection;
-use Hyperf\DbConnection\Model\Model;
+use Hyperf\Database\Model\Model;
 use Hyperf\DbConnection\Traits\HasContainer;
 
 /**
@@ -26,29 +26,34 @@ abstract class IService
 
     public function count(array $params): int
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->count($params);
     }
 
     public function page(array $params, int $page = 1, int $pageSize = 10): array
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->page($params, $page, $pageSize);
     }
 
     public function getList(array $paras): Collection
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->list($paras);
     }
 
     /**
-     * @return null|mixed|T
+     * @return bool
      */
     public function updateById(mixed $id, array $data): mixed
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->updateById($id, $data);
     }
 
     public function deleteById(mixed $id): int
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->deleteById($id);
     }
 
@@ -57,11 +62,13 @@ abstract class IService
      */
     public function findById(mixed $id): mixed
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->findById($id);
     }
 
     public function existsById(mixed $id): bool
     {
+        /** @var static&object{repository: IRepository<T>} $this */
         return $this->repository->existsById($id);
     }
 }

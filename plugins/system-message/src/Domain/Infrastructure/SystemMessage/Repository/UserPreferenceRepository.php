@@ -18,12 +18,12 @@ class UserPreferenceRepository
 {
     public function getUserPreference(int $userId): ?UserNotificationPreference
     {
-        return UserNotificationPreference::where('user_id', $userId)->first();
+        return UserNotificationPreference::query()->where('user_id', $userId)->first();
     }
 
     public function createOrUpdate(int $userId, array $data): UserNotificationPreference
     {
-        return UserNotificationPreference::updateOrCreate(['user_id' => $userId], $data);
+        return UserNotificationPreference::query()->updateOrCreate(['user_id' => $userId], $data);
     }
 
     public function updateChannelPreferences(int $userId, array $channels): bool

@@ -17,6 +17,7 @@ use App\Infrastructure\Model\System\UserOperationLog;
 use Hyperf\Collection\Arr;
 use Hyperf\Database\Model\Builder;
 
+/** @extends IRepository<UserOperationLog> */
 final class UserOperationLogRepository extends IRepository
 {
     public function __construct(protected readonly UserOperationLog $model) {}

@@ -28,7 +28,7 @@
               </div>
               <el-switch 
                 v-model="preference.channel_preferences[channel]"
-                @change="(val: boolean) => updateChannelPreference(channel, val)"
+                @change="(val) => updateChannelPreference(channel, val === true)"
               />
             </div>
           </div>
@@ -55,7 +55,7 @@
               </div>
               <el-switch 
                 v-model="preference.type_preferences[type]"
-                @change="(val: boolean) => updateTypePreference(type, val)"
+                @change="(val) => updateTypePreference(type, val === true)"
               />
             </div>
           </div>
@@ -75,7 +75,7 @@
                 </div>
                 <el-switch 
                   v-model="preference.do_not_disturb_enabled"
-                  @change="updateDoNotDisturbEnabled"
+                  @change="val => updateDoNotDisturbEnabled(val === true)"
                 />
               </div>
             </div>

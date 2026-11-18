@@ -11,7 +11,7 @@ import dayjs from 'dayjs'
 import type { MaFormItem } from '@mineadmin/form'
 import type { CouponVo } from '~/mall/api/coupon'
 
-export default function getFormItems(model: CouponVo, t: (key: string) => string): MaFormItem[] {
+export default function getFormItems(model: CouponVo, t: (key: string, values?: Record<string, unknown>) => string): MaFormItem[] {
 
   if (!model.status) {
     model.status = 'active'

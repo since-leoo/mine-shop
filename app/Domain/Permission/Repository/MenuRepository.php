@@ -19,6 +19,7 @@ use Hyperf\Collection\Arr;
 use Hyperf\Collection\Collection;
 use Hyperf\Database\Model\Builder;
 
+/** @extends IRepository<Menu> */
 final class MenuRepository extends IRepository
 {
     public function __construct(protected readonly Menu $model) {}

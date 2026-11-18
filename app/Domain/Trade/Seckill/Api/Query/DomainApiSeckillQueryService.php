@@ -88,7 +88,7 @@ final class DomainApiSeckillQueryService
             'stock' => $sp->quantity - $sp->sold_quantity,
         ], $seckillProducts);
 
-        return ['list' => $list, 'endTime' => $session->end_time?->toDateTimeString(), 'title' => $activity->title ?: '限时秒杀', 'activityId' => $activity->id, 'sessionId' => $session->id];
+        return ['list' => $list, 'endTime' => $session->end_time->toDateTimeString(), 'title' => $activity->title ?: '限时秒杀', 'activityId' => $activity->id, 'sessionId' => $session->id];
     }
 
     /**

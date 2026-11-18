@@ -69,7 +69,7 @@ final class CustomerServiceFlowTest extends DatabaseTestCase
         $this->provider = $this->createMock(AiProviderInterface::class);
         $this->knowledge = $this->createMock(CustomerServiceKnowledgeInterface::class);
         $this->publisher = $this->createMock(CustomerServiceEventPublisherInterface::class);
-        $this->worker = new CustomerServiceWorker($this->config, $settings, new DomainAiReceptionService($this->provider, $this->knowledge), $domain, $repository, $outbox, $this->publisher);
+        $this->worker = new CustomerServiceWorker($this->config, $settings, new DomainAiReceptionService($this->provider, $this->knowledge), $domain, $outbox, $this->publisher);
     }
 
     private function enableAi(): void
@@ -145,6 +145,24 @@ final class CustomerServiceFlowTest extends DatabaseTestCase
         $this->worker->processOneAiRun();
         self::assertSame('human_waiting', $conversation->refresh()->reception_state);
         self::assertSame('no_knowledge', $conversation->handoff_reason);
+    }
+
+    public function testClarificationCountIsPersistedAndLimitHandsOffInsteadOfIncrementingAgain(): void
+    {
+        $this->enableAi();
+        $this->knowledge->method('search')->willReturn([['id' => 'faq:1', 'text' => '退货说明']]);
+        $this->provider->expects(self::exactly(2))->method('answer')->willReturn(new AiAnswerVo('clarify', '请提供订单编号', tokens: 10));
+        $conversation = $this->api->open(1, 'miniapp', '', 2);
+        $this->api->sendText(1, $conversation->conversation_no, 'clarify-1', '如何退货');
+        self::assertTrue($this->worker->processOneAiRun());
+        self::assertSame(1, $conversation->refresh()->clarification_count);
+        self::assertSame('ai_active', $conversation->reception_state);
+        $this->api->sendText(1, $conversation->conversation_no, 'clarify-2', '还不清楚');
+        self::assertTrue($this->worker->processOneAiRun());
+        self::assertSame(1, $conversation->refresh()->clarification_count);
+        self::assertSame('human_waiting', $conversation->reception_state);
+        self::assertSame('clarification_limit', $conversation->handoff_reason);
+        self::assertFalse($this->worker->processOneAiRun());
     }
 
     public function testOldClientRecoveryAndLateAnswerCannotRaceHumanTakeover(): void

@@ -35,6 +35,6 @@ class OrderCreateJob extends Job
 
     public function fail(\Throwable $e): void
     {
-        ApplicationContext::getContainer()->get(AppOrderSubmissionService::class)->fail($this->tradeNo, $e->getMessage());
+        ApplicationContext::getContainer()->get(AppOrderSubmissionService::class)->fail($this->tradeNo, $e);
     }
 }

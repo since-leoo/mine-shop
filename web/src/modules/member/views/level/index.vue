@@ -70,7 +70,7 @@
         <el-table-column :label="t('member.levelConfig.sortOrder')" width="90" prop="sort_order" />
         <el-table-column :label="t('member.levelConfig.operation')" width="180" fixed="right">
           <template #default="{ row }">
-            <el-button type="primary" link size="small" @click="openEdit(row)">
+            <el-button type="primary" link size="small" @click="openEdit(row as MemberLevel)">
               <el-icon><EditPen /></el-icon>
               {{ t('member.levelConfig.edit') }}
             </el-button>
@@ -133,7 +133,7 @@
           <el-input-number v-model="form.sort_order" :min="0" class="w-full" />
         </el-form-item>
         <el-form-item :label="t('member.levelConfig.descriptionLabel')">
-          <el-input v-model="form.description" type="textarea" rows="3" />
+          <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
       </el-form>
       <template #footer>

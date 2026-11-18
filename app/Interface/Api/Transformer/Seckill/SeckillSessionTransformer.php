@@ -31,14 +31,14 @@ final class SeckillSessionTransformer
     public function transformItem(SeckillSession $session): array
     {
         $statusTag = $session->getDynamicStatus()->value;
-        $remainingMs = max(0, ((int) $session->end_time?->getTimestamp() - time()) * 1000);
+        $remainingMs = max(0, ((int) $session->end_time->getTimestamp() - time()) * 1000);
 
         return [
             'id' => (int) $session->id,
             'activityId' => (int) $session->activity_id,
-            'time' => $session->start_time?->format('H:i') ?: '--:--',
-            'startTime' => $session->start_time?->toDateTimeString(),
-            'endTime' => $session->end_time?->toDateTimeString(),
+            'time' => $session->start_time->format('H:i'),
+            'startTime' => $session->start_time->toDateTimeString(),
+            'endTime' => $session->end_time->toDateTimeString(),
             'status' => match ($statusTag) {
                 'active' => 'ongoing',
                 'pending' => 'upcoming',

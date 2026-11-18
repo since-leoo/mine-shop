@@ -19,6 +19,8 @@ use Hyperf\Contract\LengthAwarePaginatorInterface;
 
 /**
  * 面向 API 场景的订单查询领域服务.
+ *
+ * @extends IService<\App\Infrastructure\Model\Order\Order>
  */
 final class DomainApiOrderQueryService extends IService
 {

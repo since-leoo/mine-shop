@@ -71,11 +71,7 @@ final class ProductMapper
 
         // 处理 SKU 关联关系
         $skuModels = $model->skus;
-        if ($skuModels instanceof Collection) {
-            $entity->setSkus($skuModels->map(static fn (ProductSku $sku) => self::mapSkuModel($sku))->all());
-        } else {
-            $entity->setSkus([]);
-        }
+        $entity->setSkus($skuModels->map(static fn (ProductSku $sku) => self::mapSkuModel($sku))->all());
 
         // 处理属性关联关系（product_attributes 表）
         $attributeModels = $model->getRelation('attributes');
@@ -90,11 +86,7 @@ final class ProductMapper
 
         // 处理图片集关联关系
         $galleryModels = $model->gallery;
-        if ($galleryModels instanceof Collection) {
-            $entity->setGallery($galleryModels->map(static fn ($gallery) => $gallery->toArray())->all());
-        } else {
-            $entity->setGallery([]);
-        }
+        $entity->setGallery($galleryModels->map(static fn ($gallery) => $gallery->toArray())->all());
 
         return $entity;
     }
@@ -107,88 +99,6 @@ final class ProductMapper
     public static function toArray(ProductEntity $entity, ?Product $model = null): array
     {
         return $entity->toArray($model);
-    }
-
-    /**
-     * @param array<string, mixed> $payload
-     */
-    private static function fillBaseFields(ProductEntity $entity, array $payload, ?string $defaultStatus = null, bool $forcePriceDefaults = true): void
-    {
-        $entity->setProductCode($payload['product_code'] ?? null);
-        $entity->setCategoryId(isset($payload['category_id']) ? (int) $payload['category_id'] : null);
-        $entity->setBrandId(isset($payload['brand_id']) ? (int) $payload['brand_id'] : null);
-        $entity->setName($payload['name'] ?? null);
-        $entity->setSubTitle($payload['sub_title'] ?? null);
-        $entity->setMainImage($payload['main_image'] ?? null);
-        $entity->setGalleryImages(\is_array($payload['gallery_images'] ?? null) ? $payload['gallery_images'] : null);
-        $entity->setDescription($payload['description'] ?? null);
-        $entity->setDetailContent($payload['detail_content'] ?? null);
-        $entity->setAttributesJson($payload['attributes'] ?? null);
-        $entity->setMinPrice(isset($payload['min_price']) ? (int) $payload['min_price'] : ($forcePriceDefaults ? 0 : null));
-        $entity->setMaxPrice(isset($payload['max_price']) ? (int) $payload['max_price'] : ($forcePriceDefaults ? 0 : null));
-        $entity->setVirtualSales(isset($payload['virtual_sales']) ? (int) $payload['virtual_sales'] : null);
-        $entity->setRealSales(isset($payload['real_sales']) ? (int) $payload['real_sales'] : null);
-        $entity->setIsRecommend(isset($payload['is_recommend']) ? (bool) $payload['is_recommend'] : null);
-        $entity->setIsHot(isset($payload['is_hot']) ? (bool) $payload['is_hot'] : null);
-        $entity->setIsNew(isset($payload['is_new']) ? (bool) $payload['is_new'] : null);
-        $entity->setShippingTemplateId(isset($payload['shipping_template_id']) ? (int) $payload['shipping_template_id'] : null);
-        $entity->setFreightType($payload['freight_type'] ?? null);
-        $entity->setFlatFreightAmount(isset($payload['flat_freight_amount']) ? (int) $payload['flat_freight_amount'] : null);
-        $entity->setSort(isset($payload['sort']) ? (int) $payload['sort'] : null);
-
-        $status = $payload['status'] ?? null;
-        if ($status === null && $defaultStatus !== null) {
-            $status = $defaultStatus;
-        }
-        $entity->changeStatus($status);
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $items
-     * @return null|ProductSkuEntity[]
-     */
-    private static function mapSkuPayloads(array $items): ?array
-    {
-        if ($items === []) {
-            return null;
-        }
-
-        return array_map(static function (array $item): ProductSkuEntity {
-            $sku = new ProductSkuEntity();
-            $sku->setId(isset($item['id']) ? (int) $item['id'] : null);
-            $sku->setSkuCode($item['sku_code'] ?? null);
-            $sku->setSkuName((string) ($item['sku_name'] ?? ''));
-            $sku->setSpecValues($item['spec_values'] ?? null);
-            $sku->setImage($item['image'] ?? null);
-            $sku->setCostPrice(isset($item['cost_price']) ? (int) $item['cost_price'] : 0);
-            $sku->setMarketPrice(isset($item['market_price']) ? (int) $item['market_price'] : 0);
-            $sku->setSalePrice(isset($item['sale_price']) ? (int) $item['sale_price'] : 0);
-            $sku->setStock(isset($item['stock']) ? (int) $item['stock'] : 0);
-            $sku->setWarningStock(isset($item['warning_stock']) ? (int) $item['warning_stock'] : 0);
-            $sku->setWeight(isset($item['weight']) ? (float) $item['weight'] : 0.0);
-            $sku->setStatus($item['status'] ?? null);
-
-            return $sku;
-        }, $items);
-    }
-
-    /**
-     * @param array<int, array<string, mixed>> $items
-     * @return null|ProductAttributeEntity[]
-     */
-    private static function mapAttributePayloads(array $items): ?array
-    {
-        if ($items === []) {
-            return null;
-        }
-
-        return array_map(static function (array $item): ProductAttributeEntity {
-            $attribute = new ProductAttributeEntity();
-            $attribute->setId(isset($item['id']) ? (int) $item['id'] : null);
-            $attribute->setAttributeName((string) ($item['attribute_name'] ?? ''));
-            $attribute->setValue((string) ($item['value'] ?? ''));
-            return $attribute;
-        }, $items);
     }
 
     private static function mapSkuModel(ProductSku $sku): ProductSkuEntity

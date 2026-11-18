@@ -46,7 +46,7 @@ final class AppSeckillActivityCommandService
     {
         $entity = $this->activityService->getEntity($dto->getId());
         if (! $entity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         $entity->update($dto);
         return Db::transaction(fn () => $this->activityService->update($entity));
@@ -58,7 +58,7 @@ final class AppSeckillActivityCommandService
     public function delete(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         return Db::transaction(fn () => $this->activityService->delete($id));
     }
@@ -69,7 +69,7 @@ final class AppSeckillActivityCommandService
     public function toggleEnabled(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         return Db::transaction(fn () => $this->activityService->toggleEnabled($id));
     }
@@ -80,7 +80,7 @@ final class AppSeckillActivityCommandService
     public function cancel(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         return Db::transaction(fn () => $this->activityService->cancel($id));
     }
@@ -91,7 +91,7 @@ final class AppSeckillActivityCommandService
     public function start(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         return Db::transaction(fn () => $this->activityService->start($id));
     }
@@ -102,7 +102,7 @@ final class AppSeckillActivityCommandService
     public function end(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         return Db::transaction(fn () => $this->activityService->end($id));
     }

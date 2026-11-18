@@ -20,6 +20,9 @@ final class ConfigProvider
     public function __invoke(): array
     {
         return [
+            'dependencies' => [
+                \Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\NotificationTransportInterface::class => \Plugin\SystemMessage\Infrastructure\Adapter\NotificationTransport::class,
+            ],
             'plugin_capabilities' => [
                 \App\Domain\Infrastructure\Plugin\Contract\SystemNotificationInterface::class => \Plugin\SystemMessage\Infrastructure\Adapter\SystemNotificationAdapter::class,
                 TradeWebhookInterface::class => TradeWebhookAdapter::class,

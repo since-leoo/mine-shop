@@ -119,7 +119,7 @@ class MessageController extends SystemMessageAbstractController
             $result = $this->messageService->send($id);
             return $this->success(['result' => $result], '消息发送成功');
         } catch (\Throwable $e) {
-            return $this->error('消息发送失败：' . $e->getMessage());
+            throw $e;
         }
     }
 
@@ -136,7 +136,7 @@ class MessageController extends SystemMessageAbstractController
             $result = $this->messageService->schedule($id, Carbon::parse($scheduledAt));
             return $this->success(['result' => $result], '消息调度成功');
         } catch (\Throwable $e) {
-            return $this->error('消息调度失败：' . $e->getMessage());
+            throw $e;
         }
     }
 

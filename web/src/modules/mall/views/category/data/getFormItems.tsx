@@ -11,7 +11,7 @@ import type { MaFormItem } from '@mineadmin/form'
 import type { CategoryVo } from '~/mall/api/category'
 import MaUploadImage from '@/components/ma-upload-image/index.vue'
 
-export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any, t: (key: string) => string): MaFormItem[] {
+export default function getFormItems(formType: 'add' | 'edit', model: CategoryVo, msg: any, t: (key: string, values?: Record<string, unknown>) => string): MaFormItem[] {
   const treeData = ref<CategoryVo[]>([])
 
   if (formType === 'add') {

@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Member\Repository;
 
-use App\Domain\Member\Entity\MemberTagEntity;
 use App\Infrastructure\Abstract\IRepository;
 use App\Infrastructure\Model\Member\MemberTag;
 use Hyperf\Database\Model\Builder;
@@ -34,34 +33,6 @@ final class MemberTagRepository extends IRepository
             ->when(isset($params['status']), static fn (Builder $q) => $q->where('status', $params['status']))
             ->orderByDesc('sort_order')
             ->orderByDesc('id');
-    }
-
-    public function save(MemberTagEntity $entity): MemberTag
-    {
-        return $this->model->newQuery()->create([
-            'name' => $entity->getName(),
-            'color' => $entity->getColor(),
-            'description' => $entity->getDescription(),
-            'status' => $entity->getStatus() ?? MemberTag::STATUS_ACTIVE,
-            'sort_order' => $entity->getSortOrder() ?? 0,
-        ]);
-    }
-
-    public function updateEntity(MemberTagEntity $entity): bool
-    {
-        $payload = array_filter([
-            'name' => $entity->getName(),
-            'color' => $entity->getColor(),
-            'description' => $entity->getDescription(),
-            'status' => $entity->getStatus(),
-            'sort_order' => $entity->getSortOrder(),
-        ], static fn ($value) => $value !== null);
-
-        if ($payload === []) {
-            return true;
-        }
-
-        return $this->updateById($entity->getId(), $payload);
     }
 
     public function existsByName(string $name, ?int $exceptId = null): bool

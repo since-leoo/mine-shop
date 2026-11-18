@@ -17,19 +17,21 @@ const usePluginStore = defineStore(
     const plugins = ref<keyPlugins>({})
     const useList = ref<Record<string, any>>({})
     const instance = ref<App>()
+    let installOptions: Plugin.InstallOptions = {}
 
-    async function registerPlugin(app: App) {
+    async function registerPlugin(app: App, options: Plugin.InstallOptions = {}) {
       instance.value = app
+      installOptions = options
       plugins.value = app.config.globalProperties.$plugins as keyPlugins
-      Object.keys(plugins.value).map(async (name: string) => {
+      for (const name of Object.keys(plugins.value)) {
         const plugin: Plugin.PluginConfig = plugins.value[name]
         if (plugin.config?.enable && plugin?.hooks && plugin?.hooks?.start) {
           await plugin.hooks.start(plugin.config)
         }
         if (plugin?.config?.enable) {
-          useList.value[name] = app.use(plugin.install)
+          useList.value[name] = app.use(plugin.install, installOptions)
         }
-      })
+      }
     }
 
     /**
@@ -75,7 +77,7 @@ const usePluginStore = defineStore(
           plg.hooks.start(plg.config)
         }
         if (!useList.value[pluginName]) {
-          useList.value[pluginName] = instance.value?.use(plg.install)
+          useList.value[pluginName] = instance.value?.use(plg.install, installOptions)
         }
       }
     }

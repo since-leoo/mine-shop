@@ -70,7 +70,7 @@ final class DomainReviewService extends IService
      */
     public function listByOrderId(int $orderId): Collection
     {
-        return Review::where('order_id', $orderId)->orderByDesc('id')->get();
+        return Review::query()->where('order_id', $orderId)->orderByDesc('id')->get();
     }
 
     /**

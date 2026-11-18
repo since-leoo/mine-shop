@@ -42,7 +42,7 @@ final class CustomerServiceAssignmentService
             $entity = $this->mapper->fromModel($conversation);
             $entity->assign((int) $agent->id, $now->modify('+' . (int) $settings['accept_timeout_seconds'] . ' seconds')->format('Y-m-d H:i:s'));
             $conversation->update($entity->toArray());
-            $agent->increment('current_conversations');
+            $agent->update(['current_conversations' => $agent->current_conversations + 1]);
             $agent->update(['last_assigned_at' => $now->format('Y-m-d H:i:s')]);
             $this->recordAgent($conversation, (int) $agent->id, 'assigned', null, 'routing');
             $this->log($conversation, 'assigned', 'system', null, ['agent_id' => $agent->id, 'category_id' => $conversation->category_id, 'config_revision' => $this->configuration->published()['revision']]);

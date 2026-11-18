@@ -31,7 +31,7 @@ final class AppApiLogisticsTrackingQueryService
     {
         $order = $this->orderQueryService->getOrderDetail($memberId, $orderNo);
         if (! \is_object($order)) {
-            throw new \RuntimeException('订单不存在');
+            throw new \DomainException('订单不存在');
         }
 
         $packages = $order->packages ?? [];
@@ -40,7 +40,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = \is_object($package) ? trim((string) ($package->express_no ?? '')) : '';
 
         if ($company === '' || $trackingNo === '') {
-            throw new \RuntimeException('订单物流信息不存在');
+            throw new \DomainException('订单物流信息不存在');
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();
@@ -56,7 +56,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = trim((string) ($afterSale->buyer_return_logistics_no ?? ''));
 
         if ($company === '' || $trackingNo === '') {
-            throw new \RuntimeException('售后退货物流信息不存在');
+            throw new \DomainException('售后退货物流信息不存在');
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();
@@ -72,7 +72,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = trim((string) ($afterSale->reship_logistics_no ?? ''));
 
         if ($company === '' || $trackingNo === '') {
-            throw new \RuntimeException('售后补发物流信息不存在');
+            throw new \DomainException('售后补发物流信息不存在');
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();

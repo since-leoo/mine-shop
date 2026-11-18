@@ -17,7 +17,7 @@ export default function getFormItems(
   productOptions: Ref<ProductVo[]>,
   skuOptions: Ref<{ id: number; label: string }[]>,
   onProductChange: (productId?: number) => void,
-  t: (key: string) => string,
+  t: (key: string, values?: Record<string, unknown>) => string,
 ): MaFormItem[] {
 
   const numberRule = (

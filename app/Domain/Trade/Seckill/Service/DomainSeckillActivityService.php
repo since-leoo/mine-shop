@@ -31,6 +31,8 @@ use Psr\EventDispatcher\EventDispatcherInterface;
  *
  * 负责秒杀活动的核心业务逻辑，只接受实体对象。
  * DTO 到实体的转换由应用层负责。
+ *
+ * @extends IService<\App\Infrastructure\Model\Seckill\SeckillActivity>
  */
 final class DomainSeckillActivityService extends IService
 {
@@ -79,7 +81,7 @@ final class DomainSeckillActivityService extends IService
     {
         $activity = $this->repository->findById($id);
         if (! $activity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         $entity = SeckillActivityMapper::fromModel($activity);
         if (! $entity->canBeDeleted()) {
@@ -120,7 +122,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         if (! $entity->isEnabled() && ! $entity->canBeEnabled()) {
             throw new \DomainException('当前活动状态不允许启用');
@@ -140,7 +142,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         $oldStatus = $entity->getStatus();
         $entity->cancel();
@@ -159,7 +161,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         $oldStatus = $entity->getStatus();
         $entity->start();
@@ -177,7 +179,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \RuntimeException('活动不存在');
+            throw new \DomainException('活动不存在');
         }
         $oldStatus = $entity->getStatus();
         $entity->end();

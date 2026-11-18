@@ -16,10 +16,11 @@ use App\Domain\Organization\Contract\Leader\LeaderCreateInput;
 use App\Domain\Organization\Repository\LeaderRepository;
 use App\Infrastructure\Abstract\IService;
 
+/** @extends IService<\App\Infrastructure\Model\Permission\Leader> */
 final class DomainLeaderService extends IService
 {
     public function __construct(
-        private readonly LeaderRepository $repository
+        public readonly LeaderRepository $repository
     ) {}
 
     /**
@@ -28,7 +29,7 @@ final class DomainLeaderService extends IService
     public function create(LeaderCreateInput $input): mixed
     {
         // 使用 DTO 的 toArray() 方法获取数据
-        return $this->repository->create($input->toArray());
+        return $this->repository->assign($input->toArray());
     }
 
     /**

@@ -17,6 +17,8 @@ use App\Infrastructure\Abstract\IService;
 
 /**
  * 会员钱包流水领域服务：封装流水查询逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Member\MemberWalletTransaction>
  */
 final class DomainMemberWalletTransactionService extends IService
 {

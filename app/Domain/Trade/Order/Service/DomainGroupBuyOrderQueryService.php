@@ -108,7 +108,7 @@ final class DomainGroupBuyOrderQueryService
             'group_price' => $row->group_price,
             'total_amount' => $row->total_amount,
             'status' => $row->status,
-            'join_time' => $row->join_time?->toDateTimeString(),
+            'join_time' => $row->join_time->toDateTimeString(),
             'expire_time' => $row->expire_time?->toDateTimeString(),
             'order_no' => $row->order?->order_no ?? '',
             'order_status' => $row->order?->status ?? '',

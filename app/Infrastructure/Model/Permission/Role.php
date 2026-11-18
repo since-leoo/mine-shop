@@ -31,8 +31,8 @@ use Hyperf\DbConnection\Model\Model as MineModel;
  * @property Carbon $created_at 创建时间
  * @property Carbon $updated_at 更新时间
  * @property string $remark 备注
- * @property Collection|Menu[] $menus
- * @property Collection|User[] $users
+ * @property Collection<int, Menu> $menus
+ * @property Collection<int, User> $users
  */
 final class Role extends MineModel
 {

@@ -23,7 +23,7 @@ final class LeaderRepository extends IRepository
 {
     public function __construct(protected readonly Leader $model) {}
 
-    public function create(array $payload): mixed
+    public function assign(array $payload): bool
     {
         foreach ($payload['user_id'] as $id) {
             $this->model::where('dept_id', $payload['dept_id'])->where('user_id', $id)->forceDelete();

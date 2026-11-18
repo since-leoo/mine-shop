@@ -28,7 +28,7 @@ use Hyperf\Paginator\AbstractPaginator;
  * 子类需要注入具体的 Model 实例，并可重写 handleSearch 方法自定义搜索逻辑。
  *
  * @template T of Model
- * @property Model $model
+ * @property T $model
  */
 abstract class IRepository
 {
@@ -46,9 +46,9 @@ abstract class IRepository
      *
      * 子类重写此方法以实现自定义的搜索逻辑。
      *
-     * @param Builder $query 查询构建器
+     * @param Builder<T> $query 查询构建器
      * @param array $params 搜索参数
-     * @return Builder 处理后的查询构建器
+     * @return Builder<T> 处理后的查询构建器
      */
     public function handleSearch(Builder $query, array $params): Builder
     {
@@ -132,7 +132,7 @@ abstract class IRepository
      * 根据 ID 查找记录.
      *
      * @param int $id 主键 ID
-     * @return null|object 模型实例或 null
+     * @return T|null 模型实例或 null
      */
     public function findById(int $id): ?object
     {
@@ -145,7 +145,7 @@ abstract class IRepository
      * 使用 FOR UPDATE 行锁，用于并发更新场景。
      *
      * @param mixed $id 主键 ID
-     * @return null|Model 模型实例或 null
+     * @return T|null 模型实例或 null
      */
     public function findByIdForLock(mixed $id)
     {
@@ -156,10 +156,11 @@ abstract class IRepository
      * 创建记录.
      *
      * @param array $payload 数据数组
-     * @return Model 创建的模型实例
+     * @return T 创建的模型实例
      */
     public function create(array $payload): mixed
     {
+        /** @var static&object{model: T} $this */
         return $this->model->newQuery()->create($payload);
     }
 
@@ -182,7 +183,7 @@ abstract class IRepository
      *
      * @param mixed $id 主键 ID
      * @param array $data 更新数据
-     * @return null|Model 更新后的模型实例或 null
+     * @return T|null 更新后的模型实例或 null
      */
     public function saveById(mixed $id, array $data): mixed
     {
@@ -249,7 +250,7 @@ abstract class IRepository
      * 根据筛选条件查找单条记录.
      *
      * @param array $params 筛选参数
-     * @return null|Model 模型实例或 null
+     * @return T|null 模型实例或 null
      */
     public function findByFilter(array $params): mixed
     {
@@ -261,9 +262,9 @@ abstract class IRepository
      *
      * 执行启动钩子并应用搜索条件。
      *
-     * @param Builder $query 查询构建器
+     * @param Builder<T> $query 查询构建器
      * @param array $params 参数
-     * @return Builder 处理后的查询构建器
+     * @return Builder<T> 处理后的查询构建器
      */
     public function perQuery(Builder $query, array $params): Builder
     {
@@ -274,10 +275,11 @@ abstract class IRepository
     /**
      * 获取新的查询构建器.
      *
-     * @return Builder 查询构建器
+     * @return Builder<T> 查询构建器
      */
     public function getQuery(): Builder
     {
+        /** @var static&object{model: T} $this */
         return $this->model->newQuery();
     }
 
@@ -295,10 +297,11 @@ abstract class IRepository
     /**
      * 获取模型实例.
      *
-     * @return Model 模型实例
+     * @return T 模型实例
      */
     public function getModel()
     {
+        /** @var static&object{model: T} $this */
         return $this->model;
     }
 

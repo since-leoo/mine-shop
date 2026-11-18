@@ -15,6 +15,8 @@ export interface MemberTag {
   id: number
   name: string
   color?: string
+  description?: string
+  sort_order?: number
   status: string
 }
 
@@ -48,11 +50,11 @@ export interface MemberVo {
   gender?: string
   phone?: string
   birthday?: string
-  city?: string
-  province?: string
-  district?: string
-  street?: string
-  region_path?: string
+  city?: string | null
+  province?: string | null
+  district?: string | null
+  street?: string | null
+  region_path?: string | null
   country?: string
   level?: string
   growth_value?: number
@@ -140,7 +142,7 @@ export const memberApi = {
 
   syncTags: (id: number, tags: number[]) => http.put(`${memberBaseUrl}/${id}/tags`, { tags }),
 
-  export: (params?: Record<string, any>) => http.post<{ task_id: number, status: string }>(`${memberBaseUrl}/export`, params),
+  export: (params?: Record<string, any>) => http.post<never, import('#/global').ResponseStruct<{ task_id: number, status: string }>>(`${memberBaseUrl}/export`, params),
 }
 
 export interface MemberTagPayload {
@@ -175,9 +177,9 @@ export interface MemberLevel {
   privileges?: Record<string, any>
   icon?: string
   color?: string
-  status: string
-  sort_order?: number
   description?: string
+  sort_order?: number
+  status: string
   created_at?: string
   updated_at?: string
 }
@@ -247,6 +249,4 @@ export const memberAccountApi = {
 export type {
   MemberVo as MallMember,
   MemberListParams as MallMemberListParams,
-  MemberOverviewResponse,
-  MemberBreakdownItem,
 }

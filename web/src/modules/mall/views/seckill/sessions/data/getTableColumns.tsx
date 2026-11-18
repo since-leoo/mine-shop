@@ -43,7 +43,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
     { label: () => t('mall.seckill.startTime'), prop: 'start_time', minWidth: '170px' },
     { label: () => t('mall.seckill.endTime'), prop: 'end_time', minWidth: '170px' },
     { label: () => t('mall.seckill.productsCount'), prop: 'products_count', minWidth: '100px',
-      cellRender: ({ row }: { row: SeckillSessionVo }) => (
+      cellRender: ({ row }) => (
         <el-button
           type="primary"
           link
@@ -57,7 +57,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
       ),
     },
     { label: () => t('mall.seckill.stockSold'), prop: 'quantity', minWidth: '180px',
-      cellRender: ({ row }: { row: SeckillSessionVo }) => {
+      cellRender: ({ row }) => {
         const total = row.total_quantity || 0
         const sold = row.sold_quantity || 0
         const percent = total > 0 ? Math.round((sold / total) * 100) : 0
@@ -71,14 +71,14 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
     },
     { label: () => t('mall.seckill.purchaseLimit'), prop: 'max_quantity_per_user', width: '80px' },
     { label: () => t('mall.common.status'), prop: 'status', width: '100px',
-      cellRender: ({ row }: { row: SeckillSessionVo }) => (
+      cellRender: ({ row }) => (
         <ElTag type={statusTypeMap[row.status || 'pending'] as any}>
           {statusTextMap[row.status || 'pending']}
         </ElTag>
       ),
     },
     { label: () => t('mall.common.enabled'), prop: 'is_enabled', width: '80px',
-      cellRender: ({ row }: { row: SeckillSessionVo }) => (
+      cellRender: ({ row }) => (
         <ElSwitch
           modelValue={row.is_enabled}
           disabled={!hasAuth('seckill:session:update')}
@@ -105,7 +105,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:product:list'),
             icon: 'material-symbols:inventory-2',
             text: () => t('mall.seckill.products'),
-            onClick: ({ row }: { row: SeckillSessionVo }) => {
+            onClick: ({ row }) => {
               router.push({
                 path: '/mall/seckill/products',
                 query: { session_id: row.id, activity_id: row.activity_id },
@@ -117,7 +117,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:session:update'),
             icon: 'material-symbols:edit',
             text: () => t('mall.common.edit'),
-            onClick: ({ row }: { row: SeckillSessionVo }) => {
+            onClick: ({ row }) => {
               dialog.setTitle(t('mall.seckill.editSession'))
               dialog.open({ formType: 'edit', data: row })
             },
@@ -127,7 +127,7 @@ export default function getTableColumns(dialog: UseDialogExpose, router: any, ta
             show: () => hasAuth('seckill:session:delete'),
             icon: 'mdi:delete',
             text: () => t('mall.common.delete'),
-            onClick: async ({ row }: { row: SeckillSessionVo }, proxy: MaProTableExpose) => {
+            onClick: async ({ row }, proxy: MaProTableExpose) => {
               msg.delConfirm(t('mall.seckill.confirmDeleteSessionSingle')).then(async () => {
                 const response = await sessionRemove(row.id as number)
                 if (response.code === ResultCode.SUCCESS) {

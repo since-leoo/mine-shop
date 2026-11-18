@@ -18,14 +18,13 @@ use Plugin\SupplyChain\Domain\Contract\ImportInput;
 use Plugin\SupplyChain\Domain\Service\DomainConnectionService;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyProductService;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyPurchaseService;
-use Plugin\SupplyChain\Domain\Service\DomainSupplyQueryService;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyTaskService;
 use Plugin\SupplyChain\Interfaces\Data\ProductQuery;
 use Plugin\SupplyChain\Interfaces\SupplyChainManagerInterface;
 
 final class AppSupplyCommandService
 {
-    public function __construct(private readonly TransactionManagerInterface $transactions, private readonly DomainConnectionService $connections, private readonly DomainSupplyProductService $products, private readonly DomainSupplyPurchaseService $purchases, private readonly DomainSupplyTaskService $tasks, private readonly DomainSupplyQueryService $queries, private readonly SupplyChainManagerInterface $clients, private readonly AppSupplyAfterSaleService $afterSales) {}
+    public function __construct(private readonly TransactionManagerInterface $transactions, private readonly DomainConnectionService $connections, private readonly DomainSupplyProductService $products, private readonly DomainSupplyPurchaseService $purchases, private readonly DomainSupplyTaskService $tasks, private readonly SupplyChainManagerInterface $clients, private readonly AppSupplyAfterSaleService $afterSales) {}
 
     public function saveConnection(?int $id, ConnectionInput $input, int $actor): array
     {

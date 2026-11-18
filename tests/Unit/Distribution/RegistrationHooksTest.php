@@ -151,9 +151,8 @@ final class RegistrationHooksTest extends TestCase
         $this->events($dispatcher);
         $app = new AppDistributionRegistrationService($domain);
         $aspect = new RegistrationAspect($app, $this->sourceRequest(['invite_code' => 'INVITE01']));
-        $join = $this->join(AppApiMemberAuthCommandService::class, 'miniProgramLogin', ['code' => 'verified-code', 'openid' => 'forged-victim', 'inviteCode' => 'UNLIMITED'], static function (string $code, ?string $openid, ?string $inviteCode) {
+        $join = $this->join(AppApiMemberAuthCommandService::class, 'miniProgramLogin', ['code' => 'verified-code', 'inviteCode' => 'UNLIMITED'], static function (string $code, ?string $inviteCode) {
             self::assertSame('verified-code', $code);
-            self::assertNull($openid);
             self::assertNull($inviteCode);
             return ['token' => 'existing', 'member' => ['id' => 9]];
         });

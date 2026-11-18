@@ -15,6 +15,7 @@ namespace App\Application\Admin\Coupon;
 use App\Domain\Trade\Coupon\Service\DomainCouponUserService;
 use App\Infrastructure\Abstract\IService;
 use App\Infrastructure\Model\Coupon\CouponUser;
+use Hyperf\DbConnection\Db;
 
 /**
  * 用户优惠券命令服务.
@@ -31,7 +32,7 @@ final class AppCouponUserCommandService extends IService
      */
     public function issue(int $couponId, array $memberIds, ?string $expireAt = null): array
     {
-        return $this->couponUserService->issue($couponId, $memberIds, $expireAt);
+        return Db::transaction(fn () => $this->couponUserService->issue($couponId, $memberIds, $expireAt));
     }
 
     public function markUsed(int $id): bool

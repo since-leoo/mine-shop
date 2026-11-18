@@ -24,10 +24,13 @@
 
 安装后配置文件位于 `config/autoload/export.php`，可配置：
 
-- `storage_path` - 导出文件存储路径
+- `private_path` - 私有导出文件目录（`EXPORT_PRIVATE_PATH`），HTTP 与队列节点须共享，禁止静态公开访问
+- `temp_path` - 生成文件的临时目录（`EXPORT_TEMP_PATH`），禁止静态公开访问
 - `expire_days` - 文件过期天数（默认 7 天）
 - `max_file_size` - 单文件最大大小（默认 100MB）
-- `max_retry_count` - 最大重试次数（默认 3 次）
+- `max_retries` - 最大失败重试计数（默认 3 次）
+
+升级现有安装前请阅读[私有导出与撤权升级说明](SECURITY-UPGRADE.md)，处理旧公开对象及 CDN 缓存。
 
 ## 使用方式
 
@@ -76,6 +79,10 @@ $task = $exportService->createTask(new ExportTaskDto(
     exportParams: ['start_date' => '2024-01-01'],
 ));
 ```
+
+队列拒收或异常时，创建/重试操作返回安全错误并将任务记录为 `failed`，完整异常写入服务端日志；不会停留在 `pending`。业务调用端可在排除队列故障后调用 `ExportService::retryTask($taskId, $currentUserId)` 显式重试，受归属与 `max_retries` 限制。通知失败不会覆盖原始异常。
+
+下载端点直接返回文件二进制，需要登录令牌与 `export:task:download` 权限，并实时复核任务归属及数据权限。前端以带令牌的 Blob 请求保存文件；业务码或 HTTP 401 会尝试刷新令牌，失败则退出登录，403 显示拒绝原因。JSON 错误（含 charset）、损坏响应与网络失败均不会保存成文件，且请求会明确结束。
 
 ## API 端点
 

@@ -1,0 +1,5 @@
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import path from 'node:path'
+const root = path.resolve(import.meta.dirname, 'harness')
+export default defineConfig({ cacheDir: path.resolve(import.meta.dirname, '../../node_modules/.vite-tests/customer-service'), root, plugins: [vue()], server: { port: 2998, host: '127.0.0.1', fs: { allow: [path.resolve(root, '../../../../')] } }, resolve: { dedupe: ['vue', 'element-plus', '@element-plus/icons-vue'], alias: { 'react': path.resolve(root, '../../../../miniprogram/node_modules/react'), 'react-dom': path.resolve(root, '../../../../miniprogram/node_modules/react-dom'), '@tarojs/taro': path.join(root, 'taro.ts'), '@tarojs/components': path.join(root, 'taro-components.tsx'), '../../../services/request': path.join(root, 'mobile-request.ts'), '../../services/upload': path.join(root, 'mobile-upload.ts'), '@/hooks/auto-imports/useHttp': path.join(root, 'http.ts'), '@/utils/permission/hasAuth': path.join(root, 'permission.ts') } } })

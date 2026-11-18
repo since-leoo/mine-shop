@@ -15,13 +15,13 @@ namespace App\Domain\Catalog\Category\Service;
 use App\Domain\Catalog\Category\Contract\CategoryInput;
 use App\Domain\Catalog\Category\Repository\CategoryRepository;
 use App\Infrastructure\Abstract\IService;
-use App\Infrastructure\Exception\BusinessException;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Database\Model\Collection;
-use Mine\Support\ResultCode;
 
 /**
  * 分类领域服务：封装分类相关的核心业务逻辑.
+ *
+ * @extends IService<\App\Infrastructure\Model\Product\Category>
  */
 final class DomainCategoryService extends IService
 {
@@ -71,7 +71,7 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($id);
 
         if (! $category) {
-            throw new BusinessException(ResultCode::FAIL, '分类不存在');
+            throw new \DomainException('分类不存在');
         }
 
         $data = $input->toArray();
@@ -93,11 +93,11 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($id);
 
         if (! $category) {
-            throw new BusinessException(ResultCode::FAIL, '分类不存在');
+            throw new \DomainException('分类不存在');
         }
 
         if (! $category->canDelete()) {
-            throw new BusinessException(ResultCode::FAIL, '该分类下还有子分类，无法删除');
+            throw new \DomainException('该分类下还有子分类，无法删除');
         }
 
         return $this->repository->deleteById($id) > 0;
@@ -111,17 +111,17 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($categoryId);
 
         if (! $category) {
-            throw new BusinessException(ResultCode::FAIL, '分类不存在');
+            throw new \DomainException('分类不存在');
         }
 
         if ($newParentId > 0) {
             $newParent = $this->repository->findById($newParentId);
             if (! $newParent) {
-                throw new BusinessException(ResultCode::FAIL, '父级分类不存在');
+                throw new \DomainException('父级分类不存在');
             }
 
             if ($this->isDescendant($categoryId, $newParentId)) {
-                throw new BusinessException(ResultCode::FAIL, '不能移动到子分类下');
+                throw new \DomainException('不能移动到子分类下');
             }
         }
 

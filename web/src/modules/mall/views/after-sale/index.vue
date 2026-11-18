@@ -445,7 +445,7 @@ async function submitReship() {
             v-model="reviewForm.reject_reason"
             type="textarea"
             :rows="3"
-            maxlength="200"
+            :maxlength="200"
             show-word-limit
             placeholder="请输入拒绝原因"
           />
@@ -455,7 +455,7 @@ async function submitReship() {
             v-model="reviewForm.remark"
             type="textarea"
             :rows="3"
-            maxlength="200"
+            :maxlength="200"
             show-word-limit
             placeholder="请输入审核备注"
           />
@@ -470,10 +470,10 @@ async function submitReship() {
     <el-dialog v-model="reshipDialogVisible" title="填写补发物流" width="520px" destroy-on-close>
       <el-form label-width="110px">
         <el-form-item label="物流公司" required>
-          <el-input v-model="reshipForm.logistics_company" maxlength="100" placeholder="请输入补发物流公司" />
+          <el-input v-model="reshipForm.logistics_company" :maxlength="100" placeholder="请输入补发物流公司" />
         </el-form-item>
         <el-form-item label="物流单号" required>
-          <el-input v-model="reshipForm.logistics_no" maxlength="100" placeholder="请输入补发物流单号" />
+          <el-input v-model="reshipForm.logistics_no" :maxlength="100" placeholder="请输入补发物流单号" />
         </el-form-item>
       </el-form>
       <template #footer>

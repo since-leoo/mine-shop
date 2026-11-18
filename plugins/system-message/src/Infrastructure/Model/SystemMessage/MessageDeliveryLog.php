@@ -26,10 +26,10 @@ use Hyperf\DbConnection\Model\Model;
  * @property int $attempt_count 尝试次数
  * @property string $error_message 错误信息
  * @property array $metadata 元数据
- * @property Carbon $sent_at 发送时间
- * @property Carbon $delivered_at 送达时间
- * @property Carbon $created_at 创建时间
- * @property Carbon $updated_at 更新时间
+ * @property null|Carbon $sent_at 发送时间
+ * @property null|Carbon $delivered_at 送达时间
+ * @property null|Carbon $created_at 创建时间
+ * @property null|Carbon $updated_at 更新时间
  * @property Message $message 消息
  * @property User $user 用户
  */
@@ -113,7 +113,7 @@ class MessageDeliveryLog extends Model
 
     public function incrementAttempt(): bool
     {
-        return $this->increment('attempt_count');
+        return $this->increment('attempt_count') > 0;
     }
 
     public function isSuccessful(): bool
@@ -261,9 +261,9 @@ class MessageDeliveryLog extends Model
             $query->where('message_id', $messageId);
         }
         $total = $query->count();
-        $successful = $query->clone()->successful()->count();
-        $failed = $query->clone()->failed()->count();
-        $pending = $query->clone()->pending()->count();
+        $successful = (clone $query)->whereIn('status', [self::STATUS_SENT, self::STATUS_DELIVERED])->count();
+        $failed = (clone $query)->where('status', self::STATUS_FAILED)->count();
+        $pending = (clone $query)->where('status', self::STATUS_PENDING)->count();
 
         return [
             'total' => $total,
@@ -276,20 +276,21 @@ class MessageDeliveryLog extends Model
 
     public static function getChannelStats(): array
     {
-        return static::selectRaw('channel, status, COUNT(*) as count')
+        return static::query()->selectRaw('channel, status, COUNT(*) as count')
             ->groupBy(['channel', 'status'])
             ->get()
             ->groupBy('channel')
             ->map(static function ($logs) {
                 $stats = ['total' => 0, 'successful' => 0, 'failed' => 0, 'pending' => 0];
                 foreach ($logs as $log) {
-                    $stats['total'] += $log->count;
+                    $count = (int) $log->getAttribute('count');
+                    $stats['total'] += $count;
                     if (\in_array($log->status, [self::STATUS_SENT, self::STATUS_DELIVERED], true)) {
-                        $stats['successful'] += $log->count;
+                        $stats['successful'] += $count;
                     } elseif ($log->status === self::STATUS_FAILED) {
-                        $stats['failed'] += $log->count;
+                        $stats['failed'] += $count;
                     } elseif ($log->status === self::STATUS_PENDING) {
-                        $stats['pending'] += $log->count;
+                        $stats['pending'] += $count;
                     }
                 }
                 $stats['success_rate'] = $stats['total'] > 0

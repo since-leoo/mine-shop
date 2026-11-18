@@ -40,9 +40,7 @@ final class SeckillSessionMapper
             sortOrder: $model->sort_order,
             isEnabled: $model->is_enabled,
             rulesData: $model->rules,
-            remark: $model->remark,
-            createdAt: $model->created_at,
-            updatedAt: $model->updated_at
+            remark: $model->remark
         );
     }
 

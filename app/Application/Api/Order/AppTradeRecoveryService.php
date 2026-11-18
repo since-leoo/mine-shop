@@ -14,12 +14,20 @@ namespace App\Application\Api\Order;
 
 use App\Application\Admin\Trade\AppAfterSaleRefundService;
 use App\Application\Api\Payment\AppPaymentReconciliationService;
+use App\Domain\Catalog\Product\Event\ProductCreated;
+use App\Domain\Catalog\Product\Event\ProductDeleted;
+use App\Domain\Catalog\Product\Event\ProductUpdated;
+use App\Domain\Catalog\Product\ValueObject\ProductChangeVo;
 use App\Domain\Member\Event\OrderPaidForMember;
+use App\Domain\Trade\AfterSale\Event\AfterSaleChangedIntegrationEvent;
 use App\Domain\Trade\AfterSale\Event\AfterSaleRefundSucceeded;
 use App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface;
 use App\Domain\Trade\Order\Contract\StockReservationInterface;
 use App\Domain\Trade\Order\Event\OrderCancelledEvent;
+use App\Domain\Trade\Order\Event\OrderCancelledIntegrationEvent;
+use App\Domain\Trade\Order\Event\OrderCompletedEvent;
 use App\Domain\Trade\Order\Event\OrderCreatedEvent;
+use App\Domain\Trade\Order\Event\OrderPaidIntegrationEvent;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
@@ -50,7 +58,7 @@ final class AppTradeRecoveryService
             try {
                 $this->submissionService->process($tradeNo);
             } catch (\DomainException $e) {
-                $this->submissionService->fail($tradeNo, $e->getMessage());
+                $this->submissionService->fail($tradeNo, $e);
             } catch (\Throwable $e) {
                 $this->transactions->run(function () use ($tradeNo, $e): void {
                     $current = $this->submissions->lock($tradeNo);
@@ -94,28 +102,32 @@ final class AppTradeRecoveryService
 
     private function dispatch(string $type, array $data): void
     {
-        if ($type === 'stock.release') {
-            $this->stock->release($data['trade_no'], $data['items'], $data['stock_key'], (bool) ($data['legacy'] ?? false));
-            return;
-        }
-        if ($type === 'order.paid') {
-            $this->events->dispatch(new \App\Domain\Trade\Order\Event\OrderPaidIntegrationEvent((int) $data['order_id'], (string) $data['order_no']));
-        }
-        if ($type === 'after_sale.changed') {
-            $this->events->dispatch(new \App\Domain\Trade\AfterSale\Event\AfterSaleChangedIntegrationEvent((int) $data['after_sale_id'], (string) $data['action']));
-            return;
-        }
-        if ($type === 'order.cancelled') {
-            $this->events->dispatch(new \App\Domain\Trade\Order\Event\OrderCancelledIntegrationEvent((string) $data['order_no'], (string) $data['reason']));
-        }
-        $event = match ($type) {
-            'order.completed' => new \App\Domain\Trade\Order\Event\OrderCompletedEvent($data['order_id'], $data['order_no'], $data['member_id'], $data['completed_at'] ?? null),
-            'order.paid' => new OrderPaidForMember($data['member_id'], $data['order_no'], $data['amount'], $data['order_id']),
-            'order.created' => new OrderCreatedEvent($this->orders->getCreatedEventEntity($data['order_no'], (bool) $data['from_cart'])),
-            'order.cancelled' => new OrderCancelledEvent($this->orders->getEntity(orderNo: $data['order_no']), $data['reason'], $data['operator_id'], $data['operator_name']),
-            'refund.succeeded' => new AfterSaleRefundSucceeded($data['after_sale_id'], $data['order_id'], $data['member_id'], $data['refund_amount'], $data['payment_id'], $data['payment_no'], $data['payment_method'], $data['refund_no'], $data['operator_id'], $data['operator_name']),
+        match ($type) {
+            'catalog.product.created' => $this->events->dispatch(new ProductCreated(...$data)),
+            'catalog.product.updated' => $this->events->dispatch(new ProductUpdated(...[
+                ...$data, 'changes' => new ProductChangeVo(...$data['changes']),
+            ])),
+            'catalog.product.deleted' => $this->events->dispatch(new ProductDeleted(...$data)),
+            'stock.release' => $this->stock->release($data['trade_no'], $data['items'], $data['stock_key'], (bool) ($data['legacy'] ?? false)),
+            'after_sale.changed' => $this->events->dispatch(new AfterSaleChangedIntegrationEvent((int) $data['after_sale_id'], (string) $data['action'])),
+            'order.completed' => $this->events->dispatch(new OrderCompletedEvent($data['order_id'], $data['order_no'], $data['member_id'], $data['completed_at'] ?? null)),
+            'order.paid' => $this->dispatchOrderPaid($data),
+            'order.created' => $this->events->dispatch(new OrderCreatedEvent($this->orders->getCreatedEventEntity($data['order_no'], (bool) $data['from_cart']))),
+            'order.cancelled' => $this->dispatchOrderCancelled($data),
+            'refund.succeeded' => $this->events->dispatch(new AfterSaleRefundSucceeded($data['after_sale_id'], $data['order_id'], $data['member_id'], $data['refund_amount'], $data['payment_id'], $data['payment_no'], $data['payment_method'], $data['refund_no'], $data['operator_id'], $data['operator_name'])),
             default => throw new \DomainException('未知交易事件: ' . $type),
         };
-        $this->events->dispatch($event);
+    }
+
+    private function dispatchOrderPaid(array $data): void
+    {
+        $this->events->dispatch(new OrderPaidIntegrationEvent((int) $data['order_id'], (string) $data['order_no']));
+        $this->events->dispatch(new OrderPaidForMember($data['member_id'], $data['order_no'], $data['amount'], $data['order_id']));
+    }
+
+    private function dispatchOrderCancelled(array $data): void
+    {
+        $this->events->dispatch(new OrderCancelledIntegrationEvent((string) $data['order_no'], (string) $data['reason']));
+        $this->events->dispatch(new OrderCancelledEvent($this->orders->getEntity(orderNo: $data['order_no']), $data['reason'], $data['operator_id'], $data['operator_name']));
     }
 }
