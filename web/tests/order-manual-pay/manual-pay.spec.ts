@@ -7,21 +7,32 @@ const pendingOrder = {
   status: 'pending',
   pay_status: 'pending',
   pay_amount: 12550,
-  total_amount: 12550,
-  shipping_fee: 0,
-  discount_amount: 0,
   created_at: '2026-10-01 12:00:00',
   expire_time: '2099-01-01 00:00:00',
   items: [],
 }
 
-async function mockOrders(page: Page, options: { failure?: string, failureStatus?: number, holdPayment?: boolean, failRefresh?: boolean } = {}) {
+async function mockOrders(page: Page, options: { failure?: string, failureStatus?: number, holdPayment?: boolean, failRefresh?: boolean, holdDetail?: boolean, detailFailure?: string } = {}) {
   let paid = false
   let pendingPaymentRoute: Route | undefined
+  let pendingDetailRoute: Route | undefined
   const requests: { method: string, body: unknown }[] = []
   const listCalls: string[] = []
   const statsCalls: string[] = []
+  const detailCalls: string[] = []
   const paidOrder = { ...pendingOrder, status: 'paid', pay_status: 'paid', pay_method: 'manual', pay_no: 'MANUAL-001' }
+  const detailOrder = () => ({
+    ...(paid ? paidOrder : pendingOrder),
+    total_amount: 13050,
+    shipping_fee: 500,
+    discount_amount: 1000,
+    seller_remark: `详情备注-${detailCalls.length}`,
+    address: {
+      name: '测试收货人', phone: '13800000000',
+      province: '浙江省', city: '杭州市', district: '西湖区', detail: '测试路1号',
+      full_address: detailCalls.length > 1 ? '浙江省杭州市西湖区测试路2号' : '',
+    },
+  })
   await page.route('**/admin/**', async (route) => {
     const path = new URL(route.request().url()).pathname
     if (path.endsWith('/manual-pay')) {
@@ -58,13 +69,26 @@ async function mockOrders(page: Page, options: { failure?: string, failureStatus
       statsCalls.push(path)
       return route.fulfill({ json: { code: 200, data: { total: 7, pending: paid ? 1 : 2, paid: paid ? 2 : 1, shipped: 0 } } })
     }
+    if (path === '/admin/order/order/1') {
+      detailCalls.push(route.request().method())
+      if (options.detailFailure) {
+        return route.fulfill({ status: 404, json: { code: 404, message: options.detailFailure } })
+      }
+      if (options.holdDetail) {
+        pendingDetailRoute = route
+        return
+      }
+      return route.fulfill({ json: { code: 200, data: detailOrder() } })
+    }
     return route.fulfill({ json: { code: 200, data: [] } })
   })
   return {
     requests,
     listCalls,
     statsCalls,
+    detailCalls,
     releasePayment: () => pendingPaymentRoute!.fulfill({ json: { code: 200, data: paidOrder } }),
+    releaseDetail: () => pendingDetailRoute!.fulfill({ json: { code: 200, data: detailOrder() } }),
   }
 }
 
@@ -75,6 +99,47 @@ test('only a valid pending order with permission can be manually marked paid', a
   await page.goto('/?permission=denied')
   await expect(page.getByText('OFFLINE-001', { exact: true })).toBeVisible()
   await expect(page.getByRole('button', { name: '人工认款', exact: true })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: '详情', exact: true })).toHaveCount(0)
+})
+
+test('detail loads separately, prevents duplicate requests and refreshes on reopening', async ({ page }) => {
+  const api = await mockOrders(page, { holdDetail: true })
+  await page.goto('/')
+  const row = page.getByRole('row').filter({ hasText: 'OFFLINE-001' })
+  const button = row.getByRole('button', { name: '详情', exact: true })
+  await expect(button).toBeVisible()
+  expect(api.detailCalls).toHaveLength(0)
+  await button.click()
+  await expect.poll(() => api.detailCalls).toEqual(['GET'])
+  await expect(button).toBeDisabled()
+  const detail = page.getByRole('dialog', { name: '订单详情', exact: true })
+  await expect(detail).not.toBeVisible()
+  await api.releaseDetail()
+  await expect(detail.getByText('详情备注-1', { exact: true })).toBeVisible()
+  await expect(detail.getByText('¥130.50', { exact: true })).toBeVisible()
+  await expect(detail.getByText('¥5.00', { exact: true })).toBeVisible()
+  await expect(detail.getByText('-¥10.00', { exact: true })).toBeVisible()
+  await expect(detail.getByText('浙江省杭州市西湖区测试路1号', { exact: true })).toBeVisible()
+  await detail.getByRole('button', { name: '关闭', exact: true }).click()
+  await expect(detail).not.toBeVisible()
+  await button.click()
+  await expect.poll(() => api.detailCalls.length).toBe(2)
+  await api.releaseDetail()
+  await expect(detail.getByText('详情备注-2', { exact: true })).toBeVisible()
+  await expect(detail.getByText('浙江省杭州市西湖区测试路2号', { exact: true })).toBeVisible()
+  expect(api.listCalls).toHaveLength(1)
+})
+
+test('detail request failure shows the server error and allows retrying', async ({ page }) => {
+  const api = await mockOrders(page, { detailFailure: '订单不存在' })
+  await page.goto('/')
+  const button = page.getByRole('row').filter({ hasText: 'OFFLINE-001' }).getByRole('button', { name: '详情', exact: true })
+  await button.click()
+  await expect(page.getByText('订单不存在', { exact: true })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: '订单详情', exact: true })).not.toBeVisible()
+  await expect(button).toBeEnabled()
+  await button.click()
+  await expect.poll(() => api.detailCalls.length).toBe(2)
 })
 
 test('confirmation shows exact amount, prevents duplicate submission and refreshes payment type in list and detail', async ({ page }) => {

@@ -120,7 +120,7 @@ final class OrderAddressValue
             'city' => $this->city,
             'district' => $this->district,
             'detail' => $this->detail,
-            'full_address' => $this->fullAddress,
+            'full_address' => $this->getFullAddress(),
         ];
     }
 }

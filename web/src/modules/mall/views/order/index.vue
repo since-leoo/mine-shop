@@ -239,18 +239,26 @@
         <el-table-column :label="t('mall.order.operation')" fixed="right" width="260">
           <template #default="{ row }">
             <div class="flex items-center justify-center gap-2">
-              <el-button type="primary" link size="small" @click="showDetail(row as OrderVo)">
+              <el-button
+                v-auth="['order:order:read']"
+                type="primary"
+                link
+                size="small"
+                :loading="detailLoadingId === row.id"
+                :disabled="detailLoadingId !== null"
+                @click="showDetail(row.id)"
+              >
                 <el-icon><View /></el-icon>
                 {{ t('mall.detail') }}
               </el-button>
               <el-button
-                v-if="canManualPay(row as OrderVo)"
+                v-if="canManualPay(row as OrderListVo)"
                 v-auth="['order:order:manual-pay']"
                 type="success"
                 link
                 size="small"
                 :disabled="manualPayLoading"
-                @click="openManualPayDialog(row as OrderVo)"
+                @click="openManualPayDialog(row as OrderListVo)"
               >
                 <el-icon><Wallet /></el-icon>
                 {{ t('mall.order.markPaid') }}
@@ -260,7 +268,7 @@
                 type="success"
                 link
                 size="small"
-                @click="openShipDialog(row as OrderVo)"
+                @click="openShipDialog(row as OrderListVo)"
               >
                 <el-icon><Van /></el-icon>
                 {{ t('mall.order.ship') }}
@@ -410,14 +418,14 @@ import {
 import dayjs from 'dayjs'
 import { useI18n } from 'vue-i18n'
 import { formatYuan } from '@/utils/price'
-import { orderApi, type OrderVo } from '~/mall/api/order'
+import { orderApi, type OrderListVo, type OrderVo } from '~/mall/api/order'
 import OrderDetail from './detail.vue'
 
 defineOptions({ name: 'mall:order' })
 
 const { t } = useI18n()
 const loading = ref(false)
-const orderList = ref<OrderVo[]>([])
+const orderList = ref<OrderListVo[]>([])
 const dateRange = ref<[string, string] | null>(null)
 
 const filters = reactive({
@@ -454,11 +462,12 @@ const statCards = [
 ] as const
 
 const detailVisible = ref(false)
+const detailLoadingId = ref<number | null>(null)
 const currentOrder = ref<OrderVo | null>(null)
 
 const manualPayDialogVisible = ref(false)
 const manualPayLoading = ref(false)
-const manualPayOrder = ref<OrderVo | null>(null)
+const manualPayOrder = ref<OrderListVo | null>(null)
 const manualPayForm = reactive({ remark: '', confirmed: false })
 
 const shipDialogVisible = ref(false)
@@ -539,14 +548,14 @@ const formatDate = (time?: string) => (time ? dayjs(time).format('YYYY-MM-DD') :
 const formatTime = (time?: string) => (time ? dayjs(time).format('HH:mm:ss') : '')
 const formatPayMethod = (method?: string | null) => method ? t(`dashboard.payMethod.${method}`, method) : '-'
 
-function canManualPay(order: OrderVo) {
+function canManualPay(order: OrderListVo) {
   if (order.status !== 'pending' || order.pay_status !== 'pending') {
     return false
   }
   return !order.expire_time || !dayjs(order.expire_time).isValid() || dayjs(order.expire_time).isAfter(dayjs())
 }
 
-const getTotalQuantity = (items?: OrderVo['items']) => {
+const getTotalQuantity = (items?: OrderListVo['items']) => {
   if (!items || !items.length) {
     return 0
   }
@@ -644,12 +653,26 @@ const handleExport = async () => {
   }
 }
 
-const showDetail = (order: OrderVo) => {
-  currentOrder.value = order
-  detailVisible.value = true
+const showDetail = async (id: number) => {
+  if (detailLoadingId.value !== null) {
+    return
+  }
+  detailLoadingId.value = id
+  currentOrder.value = null
+  try {
+    const res = await orderApi.detail(id)
+    currentOrder.value = res.data
+    detailVisible.value = true
+  }
+  catch (error: any) {
+    ElMessage.error(error?.response?.data?.message || error?.message || t('mall.order.loadFailed'))
+  }
+  finally {
+    detailLoadingId.value = null
+  }
 }
 
-function openManualPayDialog(order: OrderVo) {
+function openManualPayDialog(order: OrderListVo) {
   if (manualPayLoading.value || !canManualPay(order)) {
     return
   }
@@ -689,7 +712,7 @@ async function handleManualPay() {
   }
 }
 
-const openShipDialog = (order: OrderVo) => {
+const openShipDialog = (order: OrderListVo) => {
   shipOrderId.value = order.id
   shipForm.shipping_company = ''
   shipForm.shipping_no = ''

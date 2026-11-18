@@ -237,6 +237,8 @@ final class SubmissionRecoveryTest extends DatabaseTestCase
         self::assertSame(1, $this->connection->table('orders')->count());
         self::assertSame(1, $this->connection->table('order_items')->count());
         self::assertSame(1, $this->connection->table('order_addresses')->count());
+        self::assertSame('test', $this->connection->table('order_addresses')->value('detail'));
+        self::assertSame('testtesttesttest', $this->connection->table('order_addresses')->value('full_address'));
         self::assertSame('used', $this->connection->table('coupon_users')->value('status'));
         self::assertSame(1, (int) $this->connection->table('coupons')->value('used_quantity'));
         self::assertSame(1, $this->connection->table('trade_outbox')->count());

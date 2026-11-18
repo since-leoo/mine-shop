@@ -36,7 +36,9 @@ final class MemberWalletRepository
             ->first();
 
         if ($info === null) {
-            throw MemberError::WALLET_NOT_FOUND->exception();
+            $wallet = $this->create($wallet);
+            $this->save($wallet);
+            return;
         }
         if ($wallet->getChangeBalance() !== 0 && (int) $info->balance !== $wallet->getBeforeBalance()) {
             throw MemberError::BALANCE_CHANGED->exception();

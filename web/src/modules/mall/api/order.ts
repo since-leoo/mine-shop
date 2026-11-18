@@ -36,7 +36,8 @@ export interface OrderAddressVo {
   province: string
   city: string
   district: string
-  address: string
+  detail: string
+  full_address: string
 }
 
 export interface OrderPackageVo {
@@ -80,6 +81,14 @@ export interface OrderVo {
   packages?: OrderPackageVo[]
 }
 
+export interface OrderListVo extends Pick<OrderVo,
+  'id' | 'order_no' | 'member_id' | 'status' | 'pay_amount' | 'pay_status'
+  | 'pay_no' | 'pay_method' | 'shipping_status' | 'expire_time' | 'created_at' | 'member'
+> {
+  items?: Pick<OrderItemVo, 'product_name' | 'sku_name' | 'product_image' | 'quantity'>[]
+  address?: Pick<OrderAddressVo, 'name' | 'phone'>
+}
+
 export interface OrderListParams {
   page?: number
   page_size?: number
@@ -95,7 +104,7 @@ export interface OrderListParams {
 }
 
 export const orderApi = {
-  list: (params?: OrderListParams) => http.get<{ list: OrderVo[], total: number }>(
+  list: (params?: OrderListParams) => http.get<{ list: OrderListVo[], total: number }>(
     `${baseUrl}/list`,
     { params },
   ),

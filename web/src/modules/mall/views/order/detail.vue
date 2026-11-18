@@ -52,7 +52,7 @@
           {{ order.address.name }} {{ order.address.phone }}
         </el-descriptions-item>
         <el-descriptions-item :label="t('mall.order.addressDetail')">
-          {{ order.address.province }} {{ order.address.city }} {{ order.address.district }} {{ order.address.address || order.address.address }}
+          {{ order.address.full_address || [order.address.province, order.address.city, order.address.district, order.address.detail].filter(Boolean).join('') || '-' }}
         </el-descriptions-item>
       </el-descriptions>
 

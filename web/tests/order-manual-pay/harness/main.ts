@@ -12,7 +12,7 @@ createApp(OrderList)
   .directive('auth', {
     mounted(el, binding) {
       const allowed = new URLSearchParams(location.search).get('permission') !== 'denied'
-        && binding.value.includes('order:order:manual-pay')
+        && binding.value.some((code: string) => ['order:order:manual-pay', 'order:order:read'].includes(code))
       if (!allowed) {
         el.remove()
       }

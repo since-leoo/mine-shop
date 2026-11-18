@@ -22,11 +22,11 @@ use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
 use App\Infrastructure\Model\Order\OrderLog;
 use Carbon\Carbon;
-use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
 use Hyperf\Database\Model\Builder;
+use Hyperf\Database\Model\Collection;
 
-/** 业务方法。 *
+/** 业务方法。 *.
  * @extends IRepository<Order>
  */
 final class OrderRepository extends IRepository
@@ -38,10 +38,30 @@ final class OrderRepository extends IRepository
         OrderLog::create($log->toArray($orderId));
     }
 
-    /** 业务方法。 */
-    public function handleItems(Collection $items): Collection
+    /** 后台列表只查询展示和操作所需字段，完整关联由详情接口加载。 */
+    public function page(array $params = [], ?int $page = null, ?int $pageSize = null): array
     {
-        return $items->map(static fn (Order $order) => $order->loads(['member', 'items', 'address', 'packages']));
+        $query = $this->perQuery($this->getQuery(), $params)
+            ->select([
+                'id', 'order_no', 'member_id', 'status', 'pay_amount', 'pay_status',
+                'pay_no', 'pay_method', 'shipping_status', 'expire_time', 'created_at',
+            ])
+            ->with([
+                'member',
+                'items:order_id,product_name,sku_name,product_image,quantity',
+                'address:order_id,name,phone',
+            ]);
+
+        $result = $query->paginate(
+            perPage: $pageSize,
+            pageName: self::PER_PAGE_PARAM_NAME,
+            page: $page,
+        );
+        foreach ($result->items() as $order) {
+            $order->member?->setAppends([]);
+        }
+
+        return $this->handlePage($result);
     }
 
     /** 业务方法。 */
@@ -50,6 +70,7 @@ final class OrderRepository extends IRepository
         $query = $this->perQuery($this->getQuery(), $filters);
         $total = (clone $query)->count();
         $statusCounts = (clone $query)
+            ->reorder()
             ->selectRaw('status, COUNT(*) AS total')
             ->groupBy('status')
             ->pluck('total', 'status')
@@ -214,8 +235,8 @@ final class OrderRepository extends IRepository
     }
 
     /** 业务方法。 */
-    /** @return \Hyperf\Database\Model\Collection<int, Order> */
-    public function findExpiredPendingOrders(int $limit = 200): \Hyperf\Database\Model\Collection
+    /** @return Collection<int, Order> */
+    public function findExpiredPendingOrders(int $limit = 200): Collection
     {
         return $this->getQuery()
             ->where('status', OrderStatus::PENDING->value)
@@ -225,8 +246,8 @@ final class OrderRepository extends IRepository
             ->get();
     }
 
-    /** @return \Hyperf\Database\Model\Collection<int, Order> */
-    public function findAutoConfirmableOrders(Carbon $shippedBefore, int $limit = 200): \Hyperf\Database\Model\Collection
+    /** @return Collection<int, Order> */
+    public function findAutoConfirmableOrders(Carbon $shippedBefore, int $limit = 200): Collection
     {
         return $this->getQuery()
             ->where('status', OrderStatus::SHIPPED->value)
