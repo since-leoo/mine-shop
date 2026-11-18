@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Entity;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\ValueObject\AfterSaleSubmissionVo;
 
 /** Supplier refund lifecycle; it never transitions the customer's refund or payment. */
@@ -46,10 +47,10 @@ final class SupplyAfterSaleEntity
     public function queueSubmission(AfterSaleSubmissionVo $submission, array $remoteLine, array $types): int
     {
         if ($this->state['status'] !== 'pending_review') {
-            throw new \DomainException('采购售后已排队、已提交或结果未知，不能重复申请；请先查询');
+            throw SupplyChainError::AFTER_SALE_ALREADY_QUEUED->exception();
         }
         if (! empty($this->state['snapshot']['cancel_requested'])) {
-            throw new \DomainException('客户已取消售后');
+            throw SupplyChainError::CUSTOMER_AFTER_SALE_CANCELLED->exception();
         }
         $snapshot = $this->state['snapshot'];
         $snapshot['revision'] = (int) ($snapshot['revision'] ?? 0) + 1;
@@ -85,17 +86,17 @@ final class SupplyAfterSaleEntity
     public function begin(string $action, int $revision): void
     {
         if ((int) ($this->state['snapshot']['revision'] ?? 0) !== $revision) {
-            throw new \DomainException('采购售后任务已被新的提交版本替代');
+            throw SupplyChainError::AFTER_SALE_VERSION_SUPERSEDED->exception();
         }
         if ($action === 'after_sale_query') {
             return;
         }
         $expected = match ($action) {
             'after_sale_create' => 'queued', 'after_sale_cancel' => 'cancel_queued',
-            'after_sale_return' => 'return_queued', default => throw new \InvalidArgumentException('未知采购售后任务类型'),
+            'after_sale_return' => 'return_queued', default => throw SupplyChainError::UNKNOWN_AFTER_SALE_TASK->invalid(),
         };
         if ($this->state['status'] !== $expected) {
-            throw new \DomainException('采购售后当前状态禁止执行该写操作，结果未知必须先查单');
+            throw SupplyChainError::AFTER_SALE_WRITE_FORBIDDEN->exception();
         }
         $snapshot = $this->state['snapshot'];
         $snapshot['executing_action'] = $action;
@@ -121,7 +122,7 @@ final class SupplyAfterSaleEntity
         $changes = ['last_error' => null];
         if ($action === 'after_sale_create') {
             if (! \is_string($result) || $result === '') {
-                throw new \RuntimeException('供应商未返回有效售后编号', 10001);
+                throw new \RuntimeException(SupplyChainError::AFTER_SALE_ID_INVALID->message(), 10001);
             }
             $changes += ['external_after_sale_id' => $result, 'status' => 'submitted'];
         } elseif ($action === 'after_sale_cancel') {
@@ -146,7 +147,7 @@ final class SupplyAfterSaleEntity
             'after_sale_create' => $notSent ? 'queued' : 'pending_review',
             'after_sale_cancel' => 'cancel_queued',
             'after_sale_return' => 'return_queued',
-            default => throw new \InvalidArgumentException('未知采购售后任务类型'),
+            default => throw SupplyChainError::UNKNOWN_AFTER_SALE_TASK->invalid(),
         };
         $this->change(['status' => $status, 'last_error' => $reason]);
     }

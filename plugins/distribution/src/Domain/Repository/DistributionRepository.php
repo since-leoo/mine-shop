@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Repository;
 
+use App\Infrastructure\Error\DistributionError;
 use Hyperf\DbConnection\Db;
 use Plugin\Distribution\Domain\Entity\CommissionAccountEntity;
 use Plugin\Distribution\Domain\ValueObject\DistributionPolicyVo;
@@ -153,7 +154,7 @@ class DistributionRepository
             ->where('s.buyer_id', $buyer)->whereNotNull('o.pay_time')
             ->orderBy('o.pay_time')->orderBy('o.id')->lockForUpdate()->value('o.id');
         if ($first === null) {
-            throw new \DomainException('首单归因缺少已支付订单');
+            throw DistributionError::FIRST_ORDER_PAYMENT_MISSING->exception();
         }
         Db::table('distribution_first_orders')->insert(['buyer_id' => $buyer, 'order_id' => (int) $first, 'created_at' => $this->now()]);
         return (int) $first === $order;

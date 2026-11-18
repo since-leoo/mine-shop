@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\ExportCenter\Service;
 
+use App\Infrastructure\Error\ExportError;
 use Carbon\Carbon;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Context\ApplicationContext;
@@ -98,13 +99,13 @@ final class ExportService
             $task = ExportTask::query()->find($taskId);
             $actor = $task ? \App\Infrastructure\Model\Permission\User::find($task->user_id) : null;
             if ($actor === null || $actor->status->isDisable()) {
-                throw new \DomainException('导出任务操作者不存在或已停用');
+                throw ExportError::OPERATOR_UNAVAILABLE->exception();
             }
             \Hyperf\Context\Context::set('current_user', $actor);
             \Hyperf\Context\Context::set('data_permission_enabled', true);
             $this->doProcessExportTask($taskId);
         } catch (\Throwable $e) {
-            $this->recordTaskFailure($taskId, $e instanceof \DomainException ? $e->getMessage() : '导出处理失败，请联系管理员查看日志', $e);
+            $this->recordTaskFailure($taskId, $e instanceof \DomainException ? $e->getMessage() : ExportError::PROCESSING_FAILED->message(), $e);
             throw $e;
         } finally {
             $previousScope === null ? \Hyperf\Context\Context::destroy('data_permission_enabled') : \Hyperf\Context\Context::set('data_permission_enabled', $previousScope);
@@ -143,16 +144,16 @@ final class ExportService
     {
         $task = ExportTask::query()->find($taskId);
         if (! $task) {
-            throw new \DomainException('导出任务不存在');
+            throw ExportError::TASK_NOT_FOUND->exception();
         }
 
         if ($task->user_id !== $userId) {
-            throw new \DomainException('无权限重试此任务');
+            throw ExportError::TASK_RETRY_FORBIDDEN->exception();
         }
 
         $maxRetries = (int) config('export.max_retries', 3);
         if ($task->retry_count >= $maxRetries || $task->status !== ExportStatus::FAILED->value) {
-            throw new \DomainException('该任务无法重试');
+            throw ExportError::TASK_NOT_RETRYABLE->exception();
         }
 
         if ($task->file_path !== null) {
@@ -178,12 +179,12 @@ final class ExportService
         }
 
         if ($task->user_id !== $userId) {
-            throw new \DomainException('无权限删除此任务');
+            throw ExportError::TASK_DELETE_FORBIDDEN->exception();
         }
 
         // 不允许删除正在处理的任务
         if ($task->status === ExportStatus::PROCESSING->value) {
-            throw new \DomainException('正在处理的任务无法删除');
+            throw ExportError::PROCESSING_TASK_DELETE_FORBIDDEN->exception();
         }
 
         if ($task->file_path !== null) {
@@ -214,11 +215,11 @@ final class ExportService
     {
         $task = ExportTask::query()->find($taskId);
         if (! $task) {
-            throw new \DomainException('导出任务不存在');
+            throw ExportError::TASK_NOT_FOUND->exception();
         }
 
         if ($task->user_id !== $userId) {
-            throw new \DomainException('无权限访问此任务');
+            throw ExportError::TASK_ACCESS_FORBIDDEN->exception();
         }
 
         return $task->toArray();
@@ -228,11 +229,11 @@ final class ExportService
     {
         $task = ExportTask::query()->find($taskId);
         if (! $task) {
-            throw new \DomainException('导出任务不存在');
+            throw ExportError::TASK_NOT_FOUND->exception();
         }
 
         if ($task->user_id !== $userId) {
-            throw new \DomainException('无权限访问此任务');
+            throw ExportError::TASK_ACCESS_FORBIDDEN->exception();
         }
 
         $cachedProgress = $this->cache->get("export:progress:{$taskId}");
@@ -251,33 +252,33 @@ final class ExportService
     {
         $task = ExportTask::query()->find($taskId);
         if (! $task) {
-            throw new \DomainException('导出任务不存在');
+            throw ExportError::TASK_NOT_FOUND->exception();
         }
 
         if ($task->user_id !== $userId) {
-            throw new \DomainException('无权限下载此文件');
+            throw ExportError::FILE_DOWNLOAD_FORBIDDEN->exception();
         }
 
         if ($task->status !== ExportStatus::SUCCESS->value) {
-            throw new \DomainException('该任务尚未完成导出');
+            throw ExportError::TASK_INCOMPLETE->exception();
         }
 
         if (! $task->file_path) {
-            throw new \DomainException('文件不存在或已过期');
+            throw ExportError::FILE_MISSING_OR_EXPIRED->exception();
         }
 
         // 检查文件是否已过期
         if ($task->expired_at && Carbon::parse($task->expired_at)->isPast()) {
-            throw new \DomainException('文件已过期，请重新导出');
+            throw ExportError::FILE_EXPIRED->exception();
         }
 
         $actor = \App\Infrastructure\Model\Permission\User::query()->find($userId);
         if ($actor === null) {
-            throw new \DomainException('导出任务操作者不存在');
+            throw ExportError::OPERATOR_NOT_FOUND->exception();
         }
         $path = $this->files->path($task->file_path, $this->access->fingerprint($actor));
         if (! is_file($path)) {
-            throw new \DomainException('文件不存在或已过期，请重新导出');
+            throw ExportError::FILE_REEXPORT_REQUIRED->exception();
         }
 
         ExportDownloadLog::query()->create([
@@ -301,16 +302,16 @@ final class ExportService
     {
         try {
             if (! $this->queueFactory->get('export')->push(new ProcessExportJob($taskId))) {
-                throw new \RuntimeException('Export queue rejected the task');
+                throw ExportError::QUEUE_REJECTED->internal();
             }
         } catch (\Throwable $error) {
             ApplicationContext::getContainer()->get(LoggerInterface::class)->error('导出任务入队失败', [
                 'task_id' => $taskId,
                 'exception' => $error,
             ]);
-            $message = '导出任务暂时无法提交，请稍后重试';
+            $message = ExportError::QUEUE_SUBMISSION_FAILED->message();
             $this->recordTaskFailure($taskId, $message, $error);
-            throw new \DomainException($message, 0, $error);
+            throw ExportError::QUEUE_SUBMISSION_FAILED->exception(previous: $error);
         }
     }
 
@@ -335,7 +336,7 @@ final class ExportService
     {
         $task = ExportTask::query()->find($taskId);
         if (! $task) {
-            throw new \RuntimeException("导出任务不存在: {$taskId}");
+            throw ExportError::TASK_ID_NOT_FOUND->internal([$taskId]);
         }
 
         $status = (string) $task->status;
@@ -345,7 +346,7 @@ final class ExportService
         }
 
         if ($status !== ExportStatus::PENDING->value) {
-            throw new \DomainException("只有待处理状态的任务才能开始处理，当前状态: {$status}");
+            throw ExportError::TASK_START_STATE_INVALID->exception([$status]);
         }
 
         $affected = ExportTask::query()->where('id', $taskId)
@@ -366,11 +367,11 @@ final class ExportService
         $meta = $this->dtoResolver->resolve($task->dto_class);
         $dataProvider = $meta['sheet']['dataProvider'] ?? null;
         if (! $dataProvider || ! \is_array($dataProvider) || \count($dataProvider) !== 2) {
-            throw new \RuntimeException("DTO {$task->dto_class} 未配置 dataProvider");
+            throw ExportError::DTO_PROVIDER_MISSING->internal([$task->dto_class]);
         }
         $actor = \App\Infrastructure\Model\Permission\User::query()->find($task->user_id);
         if ($actor === null) {
-            throw new \DomainException('导出任务操作者不存在');
+            throw ExportError::OPERATOR_NOT_FOUND->exception();
         }
         $fingerprint = $this->access->fingerprint($actor);
         [$serviceClass, $method] = $dataProvider;
@@ -390,7 +391,7 @@ final class ExportService
         $baseName = $task->id . '_' . bin2hex(random_bytes(16));
         $tempPath = $tempRoot . '/' . $baseName;
         if (! mkdir($tempPath, 0700, true)) {
-            throw new \RuntimeException('无法创建导出临时目录');
+            throw ExportError::TEMP_DIRECTORY_CREATE_FAILED->internal();
         }
         $privateKey = null;
         try {
@@ -405,7 +406,7 @@ final class ExportService
             $finalFile = $this->packageFiles($generatedFiles, $tempPath, $baseName, $task->task_name, $format);
             $actor->refresh();
             if (! hash_equals($fingerprint, $this->access->fingerprint($actor))) {
-                throw new \DomainException('导出期间数据权限已变更，请重新导出');
+                throw ExportError::DATA_SCOPE_CHANGED_DURING_EXPORT->exception();
             }
             $fileName = $task->task_name . '.' . pathinfo($finalFile, PATHINFO_EXTENSION);
             $fileSize = filesize($finalFile);
@@ -438,7 +439,7 @@ final class ExportService
     private function packageFiles(array $files, string $tempPath, string $baseName, string $taskName, ExportFormat $format): string
     {
         if ($files === []) {
-            throw new \RuntimeException('导出未生成文件');
+            throw ExportError::OUTPUT_FILE_MISSING->internal();
         }
         if (\count($files) === 1) {
             return $files[0];
@@ -447,7 +448,7 @@ final class ExportService
         $zipPath = $tempPath . '/' . $baseName . '.zip';
         $zip = new \ZipArchive();
         if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            throw new \RuntimeException('无法创建 zip 文件');
+            throw ExportError::ZIP_CREATE_FAILED->internal();
         }
 
         foreach ($files as $i => $file) {

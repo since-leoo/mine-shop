@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Service;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
 use Plugin\SupplyChain\Domain\ValueObject\SupplyAddressVo;
 use Plugin\SupplyChain\Interfaces\Data\CheckoutCommand;
@@ -25,26 +26,26 @@ final class DomainSupplyCheckoutService
     public function assertAvailable(string $provider, array $snapshot = []): void
     {
         if ($provider !== 'supply_chain') {
-            throw new \DomainException('未注册的外部履约提供方');
+            throw SupplyChainError::FULFILLMENT_PROVIDER_NOT_REGISTERED->exception();
         }
         $connectionId = (int) ($snapshot['connection_id'] ?? 0);
         if ($connectionId < 1) {
             $mapping = $this->repository->mappingBySku((int) ($snapshot['sku_id'] ?? 0));
             if ($mapping === null || $mapping['link']['status'] !== 'active' || $mapping['product_link']['status'] !== 'active') {
-                throw new \DomainException('供应链商品映射不可用');
+                throw SupplyChainError::PRODUCT_MAPPING_UNAVAILABLE->exception();
             }
             $connectionId = (int) $mapping['link']['connection_id'];
         }
         $connection = $this->repository->require('connections', $connectionId);
         if (! $connection['enabled'] || $connection['mode'] !== 'active') {
-            throw new \DomainException('供应链连接当前不接收新订单');
+            throw SupplyChainError::CONNECTION_ORDERS_PAUSED->exception();
         }
     }
 
     public function groups(array $items, array $address, string $type): array
     {
         if ($type !== 'normal') {
-            throw new \DomainException('供应链商品暂不支持秒杀或拼团');
+            throw SupplyChainError::PROMOTION_NOT_SUPPORTED->exception();
         }
         SupplyAddressVo::fromArray($address);
         $groups = [];
@@ -53,16 +54,16 @@ final class DomainSupplyCheckoutService
             $skuId = (int) ($item['sku_id'] ?? $item['id'] ?? 0);
             $this->assertAvailable('supply_chain', ['sku_id' => $skuId]);
             if (isset($seen[$skuId])) {
-                throw new \DomainException('同一供应链SKU不能在结算明细重复出现');
+                throw SupplyChainError::CHECKOUT_SKU_DUPLICATED->exception();
             }
             $seen[$skuId] = true;
             $mapping = $this->repository->mappingBySku($skuId);
             $qty = (int) $item['quantity'];
             if ($qty < 1 || $mapping['product']['status'] !== 'available') {
-                throw new \DomainException('供应链商品已停供');
+                throw SupplyChainError::PRODUCT_SUPPLY_STOPPED->exception();
             }
             if (strtotime($mapping['product']['fetched_at']) < time() - 1800) {
-                throw new \DomainException('供应链库存快照已过期，请同步商品后重试');
+                throw SupplyChainError::INVENTORY_SNAPSHOT_EXPIRED->exception();
             }
             $connectionId = (int) $mapping['link']['connection_id'];
             $snapshot = ['schema_version' => 1, 'connection_id' => $connectionId, 'external_product_id' => $mapping['product']['external_product_id'], 'external_sku_id' => $mapping['sku']['external_sku_id'], 'binding_version' => (int) $mapping['link']['binding_version'], 'cost_price' => (int) $mapping['sku']['cost_price'], 'quantity' => $qty];

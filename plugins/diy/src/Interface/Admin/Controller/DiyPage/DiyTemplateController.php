@@ -12,11 +12,10 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Interface\Admin\Controller\DiyPage;
 
-use Plugin\Diy\Application\Admin\Content\AppDiyTemplateCommandService;
-use Plugin\Diy\Application\Admin\Content\AppDiyTemplateQueryService;
+use App\Infrastructure\Error\DiyError;
+
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
-use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyTemplateRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
@@ -27,6 +26,9 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\Diy\Application\Admin\Content\AppDiyTemplateCommandService;
+use Plugin\Diy\Application\Admin\Content\AppDiyTemplateQueryService;
+use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyTemplateRequest;
 
 #[Controller(prefix: '/admin/diy/templates')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -58,7 +60,7 @@ final class DiyTemplateController extends AbstractController
     {
         $template = $this->queryService->find($id);
 
-        return $template ? $this->success($template->toArray()) : $this->error('装修模板不存在', 404);
+        return $template ? $this->success($template->toArray()) : $this->error(DiyError::TEMPLATE_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

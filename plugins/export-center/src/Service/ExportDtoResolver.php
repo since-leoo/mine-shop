@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\ExportCenter\Service;
 
+use App\Infrastructure\Error\ExportError;
 use Plugin\ExportCenter\Annotation\ExportColumn;
 use Plugin\ExportCenter\Annotation\ExportSheet;
 
@@ -105,9 +106,7 @@ class ExportDtoResolver
         }
 
         if (empty($columns)) {
-            throw new \InvalidArgumentException(
-                "DTO 类 {$dtoClass} 未定义任何 #[ExportColumn] 注解"
-            );
+            throw ExportError::DTO_COLUMNS_MISSING->invalid([$dtoClass]);
         }
 
         // 按 order 排序

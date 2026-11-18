@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\AfterSale\ValueObject;
 
+use App\Infrastructure\Error\AfterSaleError;
+
 /** 逐项分摊实际商品实付金额，控制多次部分售后的数量与金额上限。 */
 final readonly class AfterSaleAllowanceVo
 {
@@ -23,7 +25,7 @@ final readonly class AfterSaleAllowanceVo
             $allocated += $share;
             if ((int) $item['id'] === $itemId) { $found = ['quantity' => (int) $item['quantity'], 'amount' => $share]; }
         }
-        if ($found === null) { throw new \DomainException('售后商品不属于订单'); }
+        if ($found === null) { throw AfterSaleError::ORDER_ITEM_MISMATCH->exception(); }
         $this->quantity = max(0, $found['quantity'] - $usedQuantity);
         $this->amount = max(0, $found['amount'] - $usedAmount);
     }
@@ -31,7 +33,7 @@ final readonly class AfterSaleAllowanceVo
     public function assertRequest(int $quantity, int $amount): void
     {
         if ($quantity <= 0 || $quantity > $this->quantity || $amount < 0 || $amount > $this->amount) {
-            throw new \DomainException('售后数量或金额超过该订单商品剩余可退范围');
+            throw AfterSaleError::ALLOWANCE_EXCEEDED->exception();
         }
     }
 }

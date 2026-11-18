@@ -16,6 +16,7 @@ use App\Domain\Trade\Shipping\Entity\ShippingTemplateEntity;
 use App\Domain\Trade\Shipping\Mapper\ShippingTemplateMapper;
 use App\Domain\Trade\Shipping\Repository\ShippingTemplateRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\ShippingError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Shipping\ShippingTemplate;
 use App\Interface\Common\ResultCode;
@@ -70,7 +71,7 @@ final class DomainShippingTemplateService extends IService
 
         // 检查是否被商品使用
         if ($this->repository->isUsedByProducts($id)) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '该模板正在被商品使用，无法删除');
+            throw new BusinessException(ShippingError::TEMPLATE_IN_USE, resultCode: ResultCode::FORBIDDEN);
         }
 
         $this->repository->deleteById($id);
@@ -89,7 +90,7 @@ final class DomainShippingTemplateService extends IService
         $model = $this->findById($id);
 
         if (! $model) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '运费模板不存在');
+            throw new BusinessException(ShippingError::TEMPLATE_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return ShippingTemplateMapper::fromModel($model);

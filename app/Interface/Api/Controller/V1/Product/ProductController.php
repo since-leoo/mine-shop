@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Product;
 
 use App\Application\Api\Product\AppApiProductQueryService;
+
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Request\V1\ProductListRequest;
@@ -55,7 +57,7 @@ final class ProductController extends AbstractController
     {
         $detail = $this->queryService->findById($id);
         if ($detail === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '商品不存在');
+            throw new BusinessException(CatalogError::PRODUCT_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return $this->successWithTransform($detail, fn (array $product) => $this->transformer->transformDetail($product));

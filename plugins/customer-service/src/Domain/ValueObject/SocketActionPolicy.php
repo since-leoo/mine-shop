@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Domain\ValueObject;
 
+use App\Infrastructure\Error\CustomerServiceError;
+
 final class SocketActionPolicy
 {
     public static function permission(string $action): string
@@ -14,7 +16,7 @@ final class SocketActionPolicy
             'message:send' => 'customer-service:conversation:reply',
             'conversation:transfer' => 'customer-service:conversation:transfer',
             'conversation:close' => 'customer-service:conversation:close',
-            default => throw new \DomainException('不支持的客服操作'),
+            default => throw CustomerServiceError::ACTION_UNSUPPORTED->exception(),
         };
     }
 }

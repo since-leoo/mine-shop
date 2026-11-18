@@ -16,6 +16,7 @@ use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\Trade\GroupBuy\Mapper\GroupBuyMapper;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\GroupBuyError;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 
 /**
@@ -78,7 +79,7 @@ final class DomainGroupBuyService extends IService
     {
         // 检查是否允许编辑
         if (! $entity->canBeEdited()) {
-            throw new \DomainException('当前活动状态不允许编辑（活动已开始或即将开始）');
+            throw GroupBuyError::NOT_EDITABLE->exception();
         }
 
         return $this->repository->updateById($entity->getId(), $entity->toArray());
@@ -88,12 +89,12 @@ final class DomainGroupBuyService extends IService
     {
         $groupBuy = $this->repository->findById($id);
         if (! $groupBuy) {
-            throw new \DomainException('团购活动不存在');
+            throw GroupBuyError::NOT_FOUND->exception();
         }
 
         $entity = GroupBuyMapper::fromModel($groupBuy);
         if (! $entity->canBeDeleted()) {
-            throw new \DomainException('当前活动状态不允许删除（活动进行中有销量或即将开始）');
+            throw GroupBuyError::NOT_DELETABLE->exception();
         }
 
         return $this->repository->deleteById($id) > 0;
@@ -130,7 +131,7 @@ final class DomainGroupBuyService extends IService
         /** @var null|GroupBuy $model */
         $model = $this->repository->findById($id);
         if (! $model) {
-            throw new \DomainException("团购活动不存在: ID={$id}");
+            throw GroupBuyError::NOT_FOUND_WITH_ID->exception([$id]);
         }
         return GroupBuyMapper::fromModel($model);
     }

@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Contract\MemberAddressInput;
+
 use App\Domain\Member\Repository\MemberAddressRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Hyperf\Collection\Collection;
@@ -55,7 +57,7 @@ final class DomainApiMemberAddressCommandService extends IService
     {
         $address = $this->repository->findForMember($memberId, $addressId);
         if ($address === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '地址不存在');
+            throw new BusinessException(MemberError::ADDRESS_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $payload = $input->toArray();
@@ -84,7 +86,7 @@ final class DomainApiMemberAddressCommandService extends IService
     {
         $address = $this->repository->findForMember($memberId, $addressId);
         if ($address === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '地址不存在');
+            throw new BusinessException(MemberError::ADDRESS_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $this->repository->unsetDefault($memberId);

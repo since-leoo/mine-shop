@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Plugin;
 
+use App\Infrastructure\Error\PluginError;
+
 use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
 
@@ -14,12 +16,12 @@ final class PluginUninstallGuard
     {
         foreach ($definition['uninstall_activation_history_guards'] ?? [] as $table) {
             if ($this->hasTable($table) && Db::table($table)->where('settings->enabled', true)->exists()) {
-                throw new \DomainException('该插件曾启用财务业务，不支持物理卸载；请关闭新增业务并保留历史处理');
+                throw PluginError::FINANCIAL_UNINSTALL_FORBIDDEN->exception();
             }
         }
         foreach ($definition['uninstall_retained_history_guards'] ?? [] as $table) {
             if ($this->hasTable($table) && Db::table($table)->exists()) {
-                throw new \DomainException('插件已有业务记录，不支持物理卸载；请在插件设置中关闭新增业务');
+                throw PluginError::DATA_UNINSTALL_FORBIDDEN->exception();
             }
         }
         foreach ($definition['uninstall_balance_guards'] ?? [] as $guard) {
@@ -29,7 +31,7 @@ final class PluginUninstallGuard
             if ($columns !== [] && Db::table($guard['table'])->where(static function ($query) use ($columns): void {
                 foreach ($columns as $column) { $query->orWhere($column, '>', 0); }
             })->exists()) {
-                throw new \DomainException('插件存在未结清资金，无法卸载');
+                throw PluginError::UNSETTLED_FUNDS->exception();
             }
         }
         foreach ($definition['uninstall_submission_guards'] ?? [] as $guard) {
@@ -46,7 +48,7 @@ final class PluginUninstallGuard
                         if (($item['fulfillment_provider'] ?? 'merchant') !== 'merchant' && ! empty($item['fulfillment_snapshot'])) { $blocked = true; break; }
                     }
                 }
-                if ($blocked) { throw new \DomainException('插件仍有待处理订单，无法卸载'); }
+                if ($blocked) { throw PluginError::PENDING_ORDERS->exception(); }
             }
         }
     }
@@ -60,7 +62,7 @@ final class PluginUninstallGuard
     private function assertIdentifier(mixed $value): void
     {
         if (! is_string($value) || preg_match('/^[a-z_][a-z0-9_]*$/D', $value) !== 1) {
-            throw new \LogicException('插件卸载保护声明包含无效表或字段标识');
+            throw new \LogicException(\App\Infrastructure\Error\PluginError::UNINSTALL_DECLARATION_INVALID->message(), \App\Infrastructure\Error\PluginError::UNINSTALL_DECLARATION_INVALID->value);
         }
     }
 }

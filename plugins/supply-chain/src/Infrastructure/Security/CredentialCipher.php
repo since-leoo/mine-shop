@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Infrastructure\Security;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final class CredentialCipher
 {
     /** @param array<string, string> $keys Base64-encoded 32-byte keys from deployment configuration. */
@@ -29,7 +31,7 @@ final class CredentialCipher
         $tag = '';
         $ciphertext = openssl_encrypt($plaintext, 'aes-256-gcm', $key, \OPENSSL_RAW_DATA, $nonce, $tag, $context, 16);
         if ($ciphertext === false) {
-            throw new \RuntimeException('供应链凭证加密失败');
+            throw SupplyChainError::CREDENTIAL_ENCRYPTION_FAILED->internal();
         }
         return json_encode(['v' => 1, 'key_id' => $this->activeKeyId, 'nonce' => base64_encode($nonce),
             'tag' => base64_encode($tag), 'ciphertext' => base64_encode($ciphertext)], \JSON_THROW_ON_ERROR);
@@ -40,13 +42,13 @@ final class CredentialCipher
         try {
             $data = json_decode($envelope, true, 16, \JSON_THROW_ON_ERROR);
             if (! \is_array($data) || ($data['v'] ?? null) !== 1) {
-                throw new \RuntimeException();
+                throw SupplyChainError::CREDENTIAL_DECRYPTION_FAILED->internal();
             }
             $nonce = base64_decode((string) ($data['nonce'] ?? ''), true);
             $tag = base64_decode((string) ($data['tag'] ?? ''), true);
             $ciphertext = base64_decode((string) ($data['ciphertext'] ?? ''), true);
             if ($nonce === false || mb_strlen($nonce, '8bit') !== 12 || $tag === false || mb_strlen($tag, '8bit') !== 16 || $ciphertext === false) {
-                throw new \RuntimeException();
+                throw SupplyChainError::CREDENTIAL_DECRYPTION_FAILED->internal();
             }
             $plain = openssl_decrypt(
                 $ciphertext,
@@ -58,11 +60,11 @@ final class CredentialCipher
                 $context
             );
             if ($plain === false) {
-                throw new \RuntimeException();
+                throw SupplyChainError::CREDENTIAL_DECRYPTION_FAILED->internal();
             }
             return $plain;
         } catch (\Throwable) {
-            throw new \RuntimeException('供应链凭证解密失败，请检查部署密钥与连接绑定');
+            throw SupplyChainError::CREDENTIAL_DECRYPTION_FAILED->internal();
         }
     }
 
@@ -70,7 +72,7 @@ final class CredentialCipher
     {
         $key = base64_decode($this->keys[$id] ?? '', true);
         if ($key === false || mb_strlen($key, '8bit') !== 32) {
-            throw new \RuntimeException('供应链凭证加密密钥未配置或不是 32 字节 Base64 密钥');
+            throw SupplyChainError::CREDENTIAL_KEY_INVALID->internal();
         }
         return $key;
     }

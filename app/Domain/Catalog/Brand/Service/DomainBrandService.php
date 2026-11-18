@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Brand\Service;
 
 use App\Domain\Catalog\Brand\Contract\BrandInput;
+
 use App\Domain\Catalog\Brand\Repository\BrandRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Model\Product\Brand;
 
 /**
@@ -58,7 +60,7 @@ final class DomainBrandService extends IService
         $brand = $this->repository->findById($id);
 
         if (! $brand) {
-            throw new \DomainException('品牌不存在');
+            throw CatalogError::BRAND_NOT_FOUND->exception();
         }
 
         return $this->repository->updateById($id, $input->toArray());
@@ -73,11 +75,11 @@ final class DomainBrandService extends IService
         $brand = $this->repository->findById($id);
 
         if (! $brand) {
-            throw new \DomainException('品牌不存在');
+            throw CatalogError::BRAND_NOT_FOUND->exception();
         }
 
         if (! $brand->canDelete()) {
-            throw new \DomainException('该品牌下还有商品，无法删除');
+            throw CatalogError::BRAND_HAS_PRODUCTS->exception();
         }
 
         return $this->repository->deleteById($id) > 0;

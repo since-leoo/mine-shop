@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Handler\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong\YunzhongClient;
 use Plugin\SupplyChain\Interfaces\SelectionInterface;
 
@@ -22,7 +23,7 @@ final class SelectionHandler implements SelectionInterface
     public function selected(int $page = 1, int $pageSize = 50): array
     {
         if ($page < 1 || $pageSize < 1 || $pageSize > 100) {
-            throw new \InvalidArgumentException('选品分页范围无效');
+            throw SupplyChainError::SELECTION_PAGINATION_INVALID->invalid();
         }
         $data = $this->client->call('selection.selected', 'POST', '/app/product/storage/getMyStorageIdsList', ['page' => $page, 'pageSize' => $pageSize]);
         return ['external_product_ids' => array_map(static fn (mixed $id): string => (string) PayloadMapper::id($id), PayloadMapper::list($data)),

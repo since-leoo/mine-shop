@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\Diy\Domain\Content\DiyPage\Service;
 
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\DiyError;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPageDraftInput;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPageInput;
 use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
@@ -89,7 +90,7 @@ final class DomainDiyPageService extends IService
         $draft = $this->repository->findDraftVersion($id);
 
         if (! $draft instanceof DiyPageVersion) {
-            throw new \DomainException('请先保存草稿后再发布');
+            throw DiyError::DRAFT_REQUIRED_FOR_PUBLISH->exception();
         }
 
         return $this->publishSelectedVersion($page, $draft, $operatorId);
@@ -97,19 +98,19 @@ final class DomainDiyPageService extends IService
 
     public function requireLockedPage(int $id): DiyPage
     {
-        return $this->repository->findForUpdate($id) ?? throw new \DomainException('DIY页面不存在或不在当前数据权限范围内');
+        return $this->repository->findForUpdate($id) ?? throw DiyError::PAGE_OUTSIDE_DATA_SCOPE->exception();
     }
 
     public function validateVersion(DiyPage $page, DiyPageVersion $version): void
     {
         if ($version->page_id !== $page->id || $version->status !== DiyPageStatus::VERSION_DRAFT) {
-            throw new \DomainException('只能发布当前页面的草稿版本');
+            throw DiyError::PUBLISH_CURRENT_DRAFT_REQUIRED->exception();
         }
         $schema = DiyPageSchemaVo::fromArray($version->schema, $page->page_key)->toArray();
         $validation = DiyPagePublishValidationVo::inspect($schema);
         if (! $validation->passed()) {
             $firstIssue = $validation->issues()[0];
-            throw new \DomainException('发布前校验失败：' . $firstIssue['component_name'] . ' - ' . $firstIssue['message']);
+            throw DiyError::PUBLISH_VALIDATION_FAILED->exception([$firstIssue['component_name'], $firstIssue['message']]);
         }
     }
 
@@ -123,7 +124,7 @@ final class DomainDiyPageService extends IService
     {
         $page = $this->requirePage($id);
         if (empty($page->published_version_id)) {
-            throw new \DomainException('请先发布页面后再启用');
+            throw DiyError::PUBLISHED_PAGE_REQUIRED_FOR_ENABLE->exception();
         }
 
         $this->repository->disableSiblings($page->page_key, $page->page_type, $id);
@@ -177,7 +178,7 @@ final class DomainDiyPageService extends IService
     {
         $page = $this->repository->findById($id);
         if (! $page instanceof DiyPage) {
-            throw new \DomainException('DIY页面不存在');
+            throw DiyError::PAGE_NOT_FOUND->exception();
         }
 
         return $page;
@@ -186,7 +187,7 @@ final class DomainDiyPageService extends IService
     private function assertPageType(string $pageType): void
     {
         if (! \in_array($pageType, DiyPageStatus::pageTypes(), true)) {
-            throw new \DomainException('页面类型无效');
+            throw DiyError::PAGE_TYPE_INVALID->exception();
         }
     }
 

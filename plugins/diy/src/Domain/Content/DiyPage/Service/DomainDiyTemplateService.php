@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\Service;
 
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\DiyError;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPageDraftInput;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyTemplateApplyInput;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyTemplateInput;
 use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use Plugin\Diy\Domain\Content\DiyPage\Repository\DiyTemplateRepository;
 use Plugin\Diy\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
-use App\Infrastructure\Abstract\IService;
 use Plugin\Diy\Infrastructure\Model\Content\DiyPageVersion;
 use Plugin\Diy\Infrastructure\Model\Content\DiyTemplate;
 
@@ -84,7 +85,7 @@ final class DomainDiyTemplateService extends IService
     {
         $template = $this->requireTemplate($input->getTemplateId());
         if (! $template->is_enabled) {
-            throw new \DomainException('模板已禁用');
+            throw DiyError::TEMPLATE_DISABLED->exception();
         }
 
         return $this->pageService->saveDraft(
@@ -105,7 +106,7 @@ final class DomainDiyTemplateService extends IService
     {
         $page = $this->pageService->findDetail($pageId);
         if ($page === null || $page->publishedVersion === null) {
-            throw new \DomainException('请先发布页面后再保存为模板');
+            throw DiyError::PUBLISHED_PAGE_REQUIRED_FOR_TEMPLATE->exception();
         }
 
         $schema = DiyPageSchemaVo::fromArray($page->publishedVersion->schema, $page->page_key)->toArray();
@@ -127,7 +128,7 @@ final class DomainDiyTemplateService extends IService
     {
         $template = $this->repository->findDetail($id);
         if (! $template instanceof DiyTemplate) {
-            throw new \DomainException('装修模板不存在');
+            throw DiyError::TEMPLATE_NOT_FOUND->exception();
         }
 
         return $template;
@@ -136,7 +137,7 @@ final class DomainDiyTemplateService extends IService
     private function assertPageType(string $pageType): void
     {
         if (! \in_array($pageType, DiyPageStatus::pageTypes(), true)) {
-            throw new \DomainException('页面类型无效');
+            throw DiyError::PAGE_TYPE_INVALID->exception();
         }
     }
 }

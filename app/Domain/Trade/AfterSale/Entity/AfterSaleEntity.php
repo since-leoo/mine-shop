@@ -17,6 +17,7 @@ use App\Domain\Trade\AfterSale\Enum\AfterSaleRefundStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleReturnStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleType;
+use App\Infrastructure\Error\AfterSaleError;
 
 final class AfterSaleEntity
 {
@@ -65,13 +66,13 @@ final class AfterSaleEntity
         $entity = new self();
         $type = AfterSaleType::tryFrom($input->getType());
         if ($type === null) {
-            throw new \DomainException('售后类型不合法');
+            throw AfterSaleError::TYPE_INVALID->exception();
         }
         if ($input->getQuantity() < 1) {
-            throw new \DomainException('售后数量必须大于 0');
+            throw AfterSaleError::QUANTITY_INVALID->exception();
         }
         if ($input->getApplyAmount() < 0) {
-            throw new \DomainException('售后金额不能小于 0');
+            throw AfterSaleError::AMOUNT_INVALID->exception();
         }
 
         $entity->orderId = $input->getOrderId();
@@ -93,7 +94,7 @@ final class AfterSaleEntity
 
     public function approve(): self
     {
-        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], '只有待审核的售后单才能审核通过');
+        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], AfterSaleError::APPROVAL_STATUS_INVALID);
 
         if ($this->type === AfterSaleType::REFUND_ONLY->value) {
             $this->status = AfterSaleStatus::WAITING_REFUND->value;
@@ -108,14 +109,14 @@ final class AfterSaleEntity
 
     public function reject(): self
     {
-        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], '只有待审核的售后单才能审核拒绝');
+        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], AfterSaleError::REJECTION_STATUS_INVALID);
         $this->status = AfterSaleStatus::CLOSED->value;
         return $this;
     }
 
     public function cancel(): self
     {
-        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], '只有待审核的售后单才能撤销');
+        $this->assertStatus([AfterSaleStatus::PENDING_REVIEW], AfterSaleError::CANCELLATION_STATUS_INVALID);
         $this->status = AfterSaleStatus::CLOSED->value;
         return $this;
     }
@@ -123,10 +124,10 @@ final class AfterSaleEntity
     public function submitBuyerReturn(string $company, string $trackingNo): self
     {
         if ($this->type === AfterSaleType::REFUND_ONLY->value) {
-            throw new \DomainException('仅退款售后不支持买家退货');
+            throw AfterSaleError::REFUND_ONLY_RETURN_UNSUPPORTED->exception();
         }
 
-        $this->assertStatus([AfterSaleStatus::WAITING_BUYER_RETURN], '只有待买家退货状态才能提交退货物流');
+        $this->assertStatus([AfterSaleStatus::WAITING_BUYER_RETURN], AfterSaleError::BUYER_RETURN_STATUS_INVALID);
 
         $this->buyerReturnLogisticsCompany = trim($company);
         $this->buyerReturnLogisticsNo = trim($trackingNo);
@@ -137,7 +138,7 @@ final class AfterSaleEntity
 
     public function markRefunding(): self
     {
-        $this->assertStatus([AfterSaleStatus::WAITING_REFUND], '只有待退款状态才能发起退款');
+        $this->assertStatus([AfterSaleStatus::WAITING_REFUND], AfterSaleError::REFUND_START_STATUS_INVALID);
         $this->status = AfterSaleStatus::REFUNDING->value;
         $this->refundStatus = AfterSaleRefundStatus::PROCESSING->value;
         return $this;
@@ -145,7 +146,7 @@ final class AfterSaleEntity
 
     public function markRefunded(): self
     {
-        $this->assertStatus([AfterSaleStatus::REFUNDING], '只有退款处理中状态才能标记退款完成');
+        $this->assertStatus([AfterSaleStatus::REFUNDING], AfterSaleError::REFUND_COMPLETE_STATUS_INVALID);
         $this->status = AfterSaleStatus::COMPLETED->value;
         $this->refundStatus = AfterSaleRefundStatus::REFUNDED->value;
         return $this;
@@ -153,7 +154,7 @@ final class AfterSaleEntity
 
     public function markRefundFailed(): self
     {
-        $this->assertStatus([AfterSaleStatus::REFUNDING], '只有退款处理中状态才能标记退款失败');
+        $this->assertStatus([AfterSaleStatus::REFUNDING], AfterSaleError::REFUND_FAILURE_STATUS_INVALID);
         $this->status = AfterSaleStatus::WAITING_REFUND->value;
         $this->refundStatus = AfterSaleRefundStatus::FAILED->value;
         return $this;
@@ -161,7 +162,7 @@ final class AfterSaleEntity
 
     public function markSellerReceived(): self
     {
-        $this->assertStatus([AfterSaleStatus::WAITING_SELLER_RECEIVE], '只有待商家收货状态才能确认收货');
+        $this->assertStatus([AfterSaleStatus::WAITING_SELLER_RECEIVE], AfterSaleError::SELLER_RECEIPT_STATUS_INVALID);
         $this->returnStatus = AfterSaleReturnStatus::SELLER_RECEIVED->value;
         $this->status = $this->type === AfterSaleType::EXCHANGE->value
             ? AfterSaleStatus::WAITING_RESHIP->value
@@ -172,10 +173,10 @@ final class AfterSaleEntity
     public function markReshipped(string $company, string $trackingNo): self
     {
         if ($this->type !== AfterSaleType::EXCHANGE->value) {
-            throw new \DomainException('只有换货售后才能执行补发');
+            throw AfterSaleError::RESHIP_TYPE_INVALID->exception();
         }
 
-        $this->assertStatus([AfterSaleStatus::WAITING_RESHIP], '只有待补发状态才能执行补发');
+        $this->assertStatus([AfterSaleStatus::WAITING_RESHIP], AfterSaleError::RESHIP_STATUS_INVALID);
 
         $this->reshipLogisticsCompany = trim($company);
         $this->reshipLogisticsNo = trim($trackingNo);
@@ -187,10 +188,10 @@ final class AfterSaleEntity
     public function confirmExchangeReceived(): self
     {
         if ($this->type !== AfterSaleType::EXCHANGE->value) {
-            throw new \DomainException('只有换货售后才能确认收货');
+            throw AfterSaleError::EXCHANGE_RECEIPT_TYPE_INVALID->exception();
         }
 
-        $this->assertStatus([AfterSaleStatus::RESHIPPED], '只有已补发状态才能确认换货收货');
+        $this->assertStatus([AfterSaleStatus::RESHIPPED], AfterSaleError::EXCHANGE_RECEIPT_STATUS_INVALID);
 
         $this->returnStatus = AfterSaleReturnStatus::BUYER_RECEIVED->value;
         $this->status = AfterSaleStatus::COMPLETED->value;
@@ -455,7 +456,7 @@ final class AfterSaleEntity
     /**
      * @param array<int, AfterSaleStatus> $statuses
      */
-    private function assertStatus(array $statuses, string $message): void
+    private function assertStatus(array $statuses, AfterSaleError $error): void
     {
         foreach ($statuses as $status) {
             if ($this->status === $status->value) {
@@ -463,6 +464,6 @@ final class AfterSaleEntity
             }
         }
 
-        throw new \DomainException($message);
+        throw $error->exception();
     }
 }

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Common\Middleware;
 
+use App\Infrastructure\Error\AuthError;
+
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Mine\Jwt\JwtInterface;
@@ -29,7 +31,7 @@ final class AccessTokenMiddleware extends AbstractTokenMiddleware
     {
         $token = parent::getToken($request);
         if ($token === '') {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, trans('jwt.unauthorized'));
+            throw new BusinessException(AuthError::UNAUTHORIZED, resultCode: ResultCode::UNAUTHORIZED);
         }
         return $token;
     }

@@ -17,6 +17,7 @@ use App\Domain\Trade\Coupon\Mapper\CouponUserMapper;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
@@ -41,7 +42,7 @@ final class DomainCouponUserService extends IService
         /** @var null|CouponUser $couponUser */
         $couponUser = $this->findById($id);
         if (! $couponUser) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '用户优惠券不存在');
+            throw new BusinessException(CouponError::USER_COUPON_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return CouponUserMapper::fromModel($couponUser);
@@ -59,7 +60,7 @@ final class DomainCouponUserService extends IService
 
         $validMemberIds = Member::whereIn('id', $memberIds)->pluck('id')->all();
         if (empty($validMemberIds)) {
-            throw new \InvalidArgumentException('没有可用的会员ID');
+            throw CouponError::MEMBER_IDS_EMPTY->invalid();
         }
 
         $available = $coupon->getTotalQuantity() - $this->couponRepository->countIssued($couponId);

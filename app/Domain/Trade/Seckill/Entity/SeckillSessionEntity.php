@@ -17,6 +17,7 @@ use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\ValueObject\ProductStock;
 use App\Domain\Trade\Seckill\ValueObject\SessionPeriod;
 use App\Domain\Trade\Seckill\ValueObject\SessionRules;
+use App\Infrastructure\Error\SeckillError;
 use Carbon\Carbon;
 
 /**
@@ -251,10 +252,10 @@ final class SeckillSessionEntity
     public function start(): self
     {
         if ($this->status !== SeckillStatus::PENDING) {
-            throw new \DomainException('只有待开始的场次才能启动');
+            throw SeckillError::SESSION_START_STATUS_INVALID->exception();
         }
         if (! $this->isEnabled) {
-            throw new \DomainException('未启用的场次不能启动');
+            throw SeckillError::SESSION_DISABLED->exception();
         }
         $this->status = SeckillStatus::ACTIVE;
         return $this;
@@ -263,7 +264,7 @@ final class SeckillSessionEntity
     public function end(): self
     {
         if ($this->status === SeckillStatus::ENDED) {
-            throw new \DomainException('场次已经结束');
+            throw SeckillError::SESSION_ALREADY_ENDED->exception();
         }
         $this->status = SeckillStatus::ENDED;
         return $this;

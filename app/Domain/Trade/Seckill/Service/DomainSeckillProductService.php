@@ -17,6 +17,7 @@ use App\Domain\Trade\Seckill\Mapper\SeckillProductMapper;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 use Carbon\Carbon;
 
@@ -57,7 +58,7 @@ final class DomainSeckillProductService extends IService
         $this->ensureSessionNotInCacheWarmupPeriod($entity->getSessionId());
 
         if ($this->repository->existsInSession($entity->getSessionId(), $entity->getProductSkuId())) {
-            throw new \DomainException('该商品已在此场次中');
+            throw SeckillError::PRODUCT_ALREADY_IN_SESSION->exception();
         }
 
         $product = $this->repository->createFromEntity($entity);
@@ -94,7 +95,7 @@ final class DomainSeckillProductService extends IService
     {
         $product = $this->repository->findById($id);
         if (! $product) {
-            throw new \DomainException('商品不存在');
+            throw SeckillError::PRODUCT_NOT_FOUND->exception();
         }
 
         // 检查场次是否处于缓存预热期
@@ -147,7 +148,7 @@ final class DomainSeckillProductService extends IService
     {
         $product = $this->repository->findById($id);
         if (! $product) {
-            throw new \DomainException('商品不存在');
+            throw SeckillError::PRODUCT_NOT_FOUND->exception();
         }
 
         // 检查场次是否处于缓存预热期
@@ -184,7 +185,7 @@ final class DomainSeckillProductService extends IService
     {
         $session = $this->sessionRepository->findById($sessionId);
         if (! $session) {
-            throw new \DomainException('场次不存在或无权访问');
+            throw SeckillError::SESSION_INACCESSIBLE->exception();
         }
 
         $startTime = Carbon::parse($session->start_time);
@@ -193,14 +194,14 @@ final class DomainSeckillProductService extends IService
         // 如果开始时间已过，检查状态
         if ($startTime->lte($now)) {
             if ($session->status === 'active') {
-                throw new \DomainException('场次已开始，无法修改商品');
+                throw SeckillError::STARTED_SESSION_PRODUCT_IMMUTABLE->exception();
             }
             return;
         }
 
         // 开始前 30 分钟内禁止修改
         if ($startTime->diffInMinutes($now) <= 30) {
-            throw new \DomainException('场次即将开始（30分钟内），无法修改商品');
+            throw SeckillError::WARMUP_SESSION_PRODUCT_IMMUTABLE->exception();
         }
     }
 }

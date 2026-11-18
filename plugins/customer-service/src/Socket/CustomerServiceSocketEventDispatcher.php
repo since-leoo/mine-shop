@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Socket;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Plugin\CustomerService\Application\Admin\AppCustomerServiceCommandService;
 use Plugin\CustomerService\Application\Api\AppApiCustomerServiceCommandService;
 use Plugin\CustomerService\Domain\Contract\CustomerServiceAuthorizationInterface;
@@ -53,7 +54,7 @@ final class CustomerServiceSocketEventDispatcher
                 }
             }
             if ($principalType !== 'member' || $principalId <= 0) {
-                throw new \DomainException('客服连接身份无效');
+                throw CustomerServiceError::SOCKET_IDENTITY_INVALID->exception();
             }
             if ($event === 'conversation:open') {
                 $conversation = $this->command->open($principalId, 'miniapp', (string) ($payload['subject'] ?? ''), (int) ($payload['protocol_version'] ?? 1), isset($payload['category_id']) ? (int) $payload['category_id'] : null);
@@ -83,12 +84,12 @@ final class CustomerServiceSocketEventDispatcher
                     'image' => $this->command->sendImage($principalId, $no, $clientId, (string) ($payload['url'] ?? '')),
                     'product' => $this->command->sendProductCard($principalId, $no, $clientId, (int) ($payload['product_id'] ?? 0), isset($payload['sku_id']) ? (int) $payload['sku_id'] : null),
                     'faq' => $this->command->sendFaq($principalId, $no, $clientId, (int) ($payload['faq_id'] ?? 0)),
-                    default => throw new \InvalidArgumentException('不支持的消息类型'),
+                    default => throw CustomerServiceError::MESSAGE_TYPE_UNSUPPORTED->invalid(),
                 };
                 $this->responder->send($server, $fd, 'message:created', $data, $context);
                 return;
             }
-            throw new \InvalidArgumentException('不支持的客服操作');
+            throw CustomerServiceError::ACTION_UNSUPPORTED->invalid();
         } catch (\DomainException|\InvalidArgumentException $exception) {
             $this->responder->error($server, $fd, $exception->getMessage(), $context);
         } catch (\Throwable) {

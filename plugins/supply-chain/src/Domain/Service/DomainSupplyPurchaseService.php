@@ -14,6 +14,7 @@ namespace Plugin\SupplyChain\Domain\Service;
 
 use App\Domain\Infrastructure\Plugin\Contract\CommerceInventoryInterface;
 use App\Domain\Infrastructure\Plugin\Contract\CommerceOrderInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Entity\PurchaseEntity;
 use Plugin\SupplyChain\Domain\Mapper\PurchaseMapper;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
@@ -31,7 +32,7 @@ final class DomainSupplyPurchaseService
 
     public function ensure(int $orderId): array
     {
-        $order = $this->orders->find($orderId) ?? throw new \RuntimeException('销售订单不存在');
+        $order = $this->orders->find($orderId) ?? throw SupplyChainError::SALES_ORDER_NOT_FOUND->internal();
         if (($order['pay_status'] ?? '') !== 'paid') {
             return [];
         }
@@ -45,7 +46,7 @@ final class DomainSupplyPurchaseService
                 $snapshot = json_decode($snapshot, true, 512, \JSON_THROW_ON_ERROR);
             }
             if (empty($snapshot['connection_id']) || empty($snapshot['external_sku_id'])) {
-                throw new \DomainException('订单缺少冻结的供应链路由，请人工核对');
+                throw SupplyChainError::FROZEN_ROUTE_MISSING->exception();
             }
             $groups[(int) $snapshot['connection_id']][] = ['order_item_id' => (int) $item['id'], 'sku_id' => (int) $item['sku_id'], 'quantity' => (int) $item['quantity'], 'snapshot' => $snapshot];
         }
@@ -70,11 +71,11 @@ final class DomainSupplyPurchaseService
     public function submitting(int $purchaseId): array
     {
         $purchase = $this->repository->require('orders', $purchaseId, true);
-        $order = $this->orders->find((int) $purchase['order_id']) ?? throw new \RuntimeException('销售订单不存在');
+        $order = $this->orders->find((int) $purchase['order_id']) ?? throw SupplyChainError::SALES_ORDER_NOT_FOUND->internal();
         $entity = PurchaseMapper::fromModel($purchase);
         $entity->submit($order);
         if ($this->repository->query('after_sales')->where('supply_order_id', $purchaseId)->whereNotIn('status', ['closed', 'rejected'])->exists()) {
-            throw new \DomainException('订单正在售后，采购已暂停');
+            throw SupplyChainError::PURCHASE_PAUSED_FOR_AFTER_SALE->exception();
         }
         $this->repository->update('orders', $purchaseId, $entity->toArray());
         return $purchase;
@@ -98,9 +99,9 @@ final class DomainSupplyPurchaseService
     public function assertCompletable(int $purchaseId): void
     {
         $purchase = $this->repository->require('orders', $purchaseId);
-        $order = $this->orders->find((int) $purchase['order_id']) ?? throw new \DomainException('销售订单不存在');
+        $order = $this->orders->find((int) $purchase['order_id']) ?? throw SupplyChainError::SALES_ORDER_NOT_FOUND->exception();
         if (($order['status'] ?? '') !== 'completed') {
-            throw new \DomainException('销售订单尚未完成，不能确认采购收货');
+            throw SupplyChainError::SALES_ORDER_NOT_COMPLETED->exception();
         }
         $entity = PurchaseMapper::fromModel($purchase);
         $entity->complete();
@@ -139,7 +140,7 @@ final class DomainSupplyPurchaseService
         $sourceTaskId = (int) $sourceTask['id'];
         $sourceAttemptId = (int) $sourceTask['attempt_id'];
         if ($sourceTaskId < 1 || $sourceAttemptId < 1 || (int) $sourceTask['connection_id'] !== (int) $purchase['connection_id']) {
-            throw new \InvalidArgumentException('解除库存保护缺少有效采购执行标识');
+            throw SupplyChainError::STOCK_GUARD_ATTEMPT_ID_MISSING->invalid();
         }
         $cleanupId = $this->tasks->enqueue(new TaskSpecVo(
             (int) $purchase['connection_id'],
@@ -157,12 +158,12 @@ final class DomainSupplyPurchaseService
     {
         $task = $this->repository->require('tasks', $cleanupTaskId);
         if ($task['type'] !== 'order_release_protection') {
-            throw new \DomainException('任务类型不是库存保护清理');
+            throw SupplyChainError::STOCK_GUARD_TASK_TYPE_INVALID->exception();
         }
         $purchaseId = (int) ($task['payload']['purchase_id'] ?? 0);
         $purchase = $this->repository->require('orders', $purchaseId, true);
         if ((int) $purchase['connection_id'] !== (int) $task['connection_id']) {
-            throw new \DomainException('库存保护清理任务与采购连接不匹配');
+            throw SupplyChainError::STOCK_GUARD_CONNECTION_MISMATCH->exception();
         }
         // submitting() takes this same purchase lock before protecting a subsequent request.
         // Keep the lock until Lua finishes, so an old cleanup cannot remove a newer protection.
@@ -216,12 +217,12 @@ final class DomainSupplyPurchaseService
         foreach ($package['items'] as $line) {
             $matches = $bySku[$line['external_sku_id']] ?? [];
             if (\count($matches) !== 1 || (int) $line['quantity'] < 1) {
-                throw new \DomainException('物流明细无法唯一匹配销售订单项，请人工核对');
+                throw SupplyChainError::SHIPMENT_ORDER_ITEM_AMBIGUOUS->exception();
             }
             $items[] = ['order_item_id' => (int) $matches[0]->order_item_id, 'quantity' => (int) $line['quantity']];
         }
         if ($items === []) {
-            throw new \DomainException('上游包裹缺少发货明细数量，禁止整单猜测发货');
+            throw SupplyChainError::SHIPMENT_QUANTITY_MISSING->exception();
         }
         $key = hash('sha256', $purchaseId . ':' . $externalOrderNo . ':' . $package['company_code'] . ':' . $package['tracking_no']);
         $this->orders->ship((int) $purchase['order_id'], 'supply_chain', $key, ['shipping_company' => $package['company_code'] ?: $package['company_name'], 'shipping_no' => $package['tracking_no']], $items);

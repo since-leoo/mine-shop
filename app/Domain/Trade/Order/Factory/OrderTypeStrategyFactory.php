@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Order\Factory;
 
 use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
+use App\Infrastructure\Error\OrderError;
 
 final class OrderTypeStrategyFactory
 {
@@ -42,6 +43,6 @@ final class OrderTypeStrategyFactory
     public function make(string $type): OrderTypeStrategyInterface
     {
         return $this->strategies[$type]
-            ?? throw new \DomainException(\sprintf('不支持的订单类型：%s', $type));
+            ?? throw OrderError::TYPE_UNSUPPORTED->exception([$type]);
     }
 }

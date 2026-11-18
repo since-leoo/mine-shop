@@ -17,6 +17,7 @@ use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Trade\GroupBuy\Mapper\GroupBuyMapper;
 use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\GroupBuy\Service\GroupBuyCacheService;
+use App\Infrastructure\Error\GroupBuyError;
 use Carbon\Carbon;
 use Hyperf\DbConnection\Db;
 
@@ -85,7 +86,7 @@ final class AppGroupBuyCommandService
     public function delete(int $id): bool
     {
         $groupBuy = $this->queryService->find($id);
-        $groupBuy || throw new \InvalidArgumentException('团购活动不存在');
+        $groupBuy || throw GroupBuyError::NOT_FOUND->invalid();
         return Db::transaction(fn () => $this->groupBuyService->delete($id));
     }
 
@@ -98,7 +99,7 @@ final class AppGroupBuyCommandService
     public function toggleStatus(int $id): bool
     {
         $groupBuy = $this->queryService->find($id);
-        $groupBuy || throw new \InvalidArgumentException('团购活动不存在');
+        $groupBuy || throw GroupBuyError::NOT_FOUND->invalid();
         $result = Db::transaction(fn () => $this->groupBuyService->toggleStatus($id));
 
         // 启用时，如果活动开始时间已过且状态为 pending，立即激活

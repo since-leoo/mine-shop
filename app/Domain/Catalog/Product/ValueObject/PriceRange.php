@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalog\Product\ValueObject;
 
+use App\Infrastructure\Error\CatalogError;
+
 final class PriceRange
 {
     public function __construct(private float $min, private float $max)
     {
         if ($min > $max) {
-            throw new \InvalidArgumentException('最低价不能高于最高价');
+            throw CatalogError::PRICE_RANGE_INVALID->invalid();
         }
     }
 

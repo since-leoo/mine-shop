@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Application\Api;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Plugin\CustomerService\Domain\Contract\SupportConfigurationInterface;
 use Plugin\CustomerService\Domain\Repository\CustomerServiceConversationRepository;
 use Plugin\CustomerService\Domain\Service\DomainCategoryService;
@@ -30,12 +31,12 @@ final class AppApiCustomerServiceQueryService
 
     public function conversation(int $memberId, string $no): array
     {
-        return ($this->repository->findMemberConversation($memberId, $no) ?? throw new \RuntimeException('客服会话不存在'))->toArray();
+        return ($this->repository->findMemberConversation($memberId, $no) ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal())->toArray();
     }
 
     public function messages(int $memberId, string $conversationNo, ?int $beforeId, int $limit, ?int $afterSequence = null): array
     {
-        $conversation = $this->repository->findMemberConversation($memberId, $conversationNo) ?? throw new \RuntimeException('客服会话不存在');
+        $conversation = $this->repository->findMemberConversation($memberId, $conversationNo) ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal();
         return $this->repository->messages($conversation, $beforeId, max(1, min($limit, 100)), $afterSequence);
     }
 }

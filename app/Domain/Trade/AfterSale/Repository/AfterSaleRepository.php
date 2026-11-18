@@ -15,6 +15,7 @@ namespace App\Domain\Trade\AfterSale\Repository;
 use App\Domain\Trade\AfterSale\Entity\AfterSaleEntity;
 use App\Domain\Trade\AfterSale\Enum\AfterSaleStatus;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\AfterSaleError;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use Hyperf\Collection\Collection;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
@@ -92,7 +93,7 @@ final class AfterSaleRepository extends IRepository
             ->first();
 
         if ($record === null) {
-            throw new \DomainException('售后单不存在');
+            throw AfterSaleError::NOT_FOUND->exception();
         }
 
         return $record;

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\ValueObject;
 
+use App\Infrastructure\Error\SeckillError;
 use Carbon\Carbon;
 
 final class SessionPeriod
@@ -81,7 +82,7 @@ final class SessionPeriod
     private function validate(): void
     {
         if ($this->startTime->gte($this->endTime)) {
-            throw new \InvalidArgumentException('场次开始时间必须早于结束时间');
+            throw SeckillError::SESSION_PERIOD_INVALID->invalid();
         }
     }
 }

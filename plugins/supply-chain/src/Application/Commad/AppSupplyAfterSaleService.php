@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\SupplyChain\Application\Commad;
 
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyAfterSaleService;
 use Plugin\SupplyChain\Interfaces\SupplyChainManagerInterface;
 
@@ -58,7 +59,7 @@ final class AppSupplyAfterSaleService
                     $context['return_shipment']['company_code'],
                     $context['return_shipment']['tracking_no']
                 ),
-                default => throw new \DomainException('未知采购售后任务类型'),
+                default => throw SupplyChainError::UNKNOWN_AFTER_SALE_TASK->exception(),
             };
             return $this->transactions->run(fn () => $this->domain->finish($task, $result));
         } catch (\Throwable $error) {

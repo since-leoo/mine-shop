@@ -18,6 +18,7 @@ use App\Domain\Trade\Order\Mapper\OrderMapper;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\OrderError;
 use App\Infrastructure\Model\Order\Order;
 
 /**
@@ -60,7 +61,7 @@ final class DomainOrderService extends IService
         $order = $id ? $this->repository->findById($id) : $this->repository->findByOrderNo($orderNo);
 
         if (! $order) {
-            throw new \DomainException('订单不存在');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         return OrderMapper::fromModel($order);
@@ -85,7 +86,7 @@ final class DomainOrderService extends IService
     public function ship(OrderEntity $entity): OrderEntity
     {
         if ($entity->getOrderType() === 'group_buy' && $this->groupOrders->findByOrderId($entity->getId())?->status !== 'grouped') {
-            throw new \DomainException('拼团尚未成功，不能发货');
+            throw OrderError::GROUP_NOT_COMPLETED->exception();
         }
         $entity->ensureShippable($this->mallSettingService->shipping());
         $this->repository->ship($entity);
@@ -116,7 +117,7 @@ final class DomainOrderService extends IService
     {
         $model = $this->repository->findByOrderNoForUpdate($orderNo);
         if ($model === null) {
-            throw new \DomainException('订单不存在');
+            throw OrderError::NOT_FOUND->exception();
         }
         return OrderMapper::fromModel($model);
     }
@@ -125,7 +126,7 @@ final class DomainOrderService extends IService
     {
         $model = $this->repository->findByIdForLock($id);
         if ($model === null) {
-            throw new \DomainException('订单不存在');
+            throw OrderError::NOT_FOUND->exception();
         }
         return OrderMapper::fromModel($model);
     }

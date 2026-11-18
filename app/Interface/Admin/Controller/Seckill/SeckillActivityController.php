@@ -15,6 +15,7 @@ namespace App\Interface\Admin\Controller\Seckill;
 use App\Application\Admin\Seckill\AppSeckillActivityCommandService;
 use App\Application\Admin\Seckill\AppSeckillActivityQueryService;
 use App\Application\Admin\Seckill\Dto\SeckillActivityExportDto;
+use App\Infrastructure\Error\SeckillError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillActivityRequest;
@@ -62,7 +63,7 @@ final class SeckillActivityController extends AbstractController
     public function show(int $id): Result
     {
         $activity = $this->queryService->find($id);
-        return $activity ? $this->success($activity->toArray()) : $this->error('活动不存在', 404);
+        return $activity ? $this->success($activity->toArray()) : $this->error(SeckillError::ACTIVITY_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

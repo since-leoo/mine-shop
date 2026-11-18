@@ -8,6 +8,7 @@ use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
+use App\Infrastructure\Error\AfterSaleError;
 
 class DomainAfterSaleRefundCallbackService
 {
@@ -31,18 +32,18 @@ class DomainAfterSaleRefundCallbackService
         $refundNo = (string) ($payload['out_refund_no'] ?? '');
         $snapshot = $this->refunds->findByRefundNo($refundNo);
         if ($snapshot === null) {
-            throw new \RuntimeException('退款记录不存在');
+            throw AfterSaleError::REFUND_RECORD_NOT_FOUND->internal();
         }
         $this->orders->getLockedEntity($snapshot->order_no);
         $payment = $this->payments->findPaidByOrderIdForUpdate((int) $snapshot->order_id);
         $refund = $this->refunds->findForUpdate($refundNo);
         if ($refund === null || $payment === null || $payment->payment_method !== $method) {
-            throw new \DomainException('退款支付记录不匹配');
+            throw AfterSaleError::REFUND_PAYMENT_MISMATCH->exception();
         }
         if (($payload['out_trade_no'] ?? '') !== $refund->order_no
             || ($payload['amount']['refund'] ?? null) !== (int) $refund->refund_amount
             || ($payload['amount']['total'] ?? null) !== (int) $payment->paid_amount) {
-            throw new \DomainException('退款通知订单或金额不匹配');
+            throw AfterSaleError::REFUND_CALLBACK_MISMATCH->exception();
         }
         if ($refund->status === 'success') {
             return;
@@ -83,7 +84,7 @@ class DomainAfterSaleRefundCallbackService
         } elseif ($status === 'PROCESSING') {
             $this->refunds->updateByRefundNo($refundNo, ['status' => 'refunding', 'third_party_response' => $payload]);
         } else {
-            throw new \DomainException('未知退款状态，保留待确认');
+            throw AfterSaleError::REFUND_STATUS_UNKNOWN->exception();
         }
     }
 }

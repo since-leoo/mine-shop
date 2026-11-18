@@ -14,6 +14,7 @@ use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Order\Service\DomainOrderPaymentService;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Payment\ValueObject\PaymentPolicy;
+use App\Infrastructure\Error\PaymentError;
 
 /** 无请求级可变成员；所有命令由应用层包在事务中，统一先锁订单再锁钱包。 */
 class DomainPayService
@@ -49,10 +50,10 @@ class DomainPayService
         $this->assertFulfillmentAvailable($order);
         foreach ($records as $record) {
             if (in_array($record->status, ['paid', 'refunded'], true) || (int) $record->paid_amount > 0) {
-                throw new \DomainException('订单已有收款记录，请先核实支付情况');
+                throw PaymentError::RECEIPT_ALREADY_EXISTS->exception();
             }
             if ($record->status === 'pending') {
-                throw new \DomainException('订单存在待确认的支付流水，请先核实原支付渠道状态后再人工认款');
+                throw PaymentError::PENDING_RECEIPT_EXISTS->exception();
             }
         }
 
@@ -70,7 +71,7 @@ class DomainPayService
     public function prepareWechat(string $orderNo, MemberEntity $member, PaymentSetting $setting): array
     {
         if (! $setting->wechatEnabled()) {
-            throw new \DomainException('微信支付未启用');
+            throw PaymentError::WECHAT_DISABLED->exception();
         }
         $order = $this->orders->getLockedEntity($orderNo);
         $payload = $this->policy->wechatPayload($order, $member);
@@ -94,13 +95,13 @@ class DomainPayService
         $this->policy->assertPayable($order);
         $this->assertFulfillmentAvailable($order);
         if ($order->getPayMethod() === 'wechat') {
-            throw new \DomainException('已发起微信支付，请完成或取消原支付订单');
+            throw PaymentError::WECHAT_PAYMENT_PENDING->exception();
         }
         // 读取、余额计算、日限额查询和落账均发生在钱包行锁内。
         $wallet = $this->wallets->getEntityForUpdate($memberId, 'balance');
         $this->policy->assertBalance($setting, $order->getPayAmount(), $this->paymentRepository->sumBalancePaidToday($memberId));
         if ($wallet->getStatus() !== 'active' || $wallet->getBalance() - $wallet->getFrozenBalance() < $order->getPayAmount()) {
-            throw new \DomainException('钱包被冻结或可用余额不足');
+            throw PaymentError::WALLET_UNAVAILABLE->exception();
         }
         $wallet->setChangeBalance(-$order->getPayAmount());
         $wallet->changeBalance();
@@ -136,7 +137,7 @@ class DomainPayService
     {
         $orderNo = (string) ($payload['out_trade_no'] ?? '');
         if ($orderNo === '') {
-            throw new \InvalidArgumentException('支付通知缺少订单号');
+            throw PaymentError::CALLBACK_ORDER_MISSING->invalid();
         }
         if (($payload['trade_state'] ?? '') !== 'SUCCESS') {
             return null;
@@ -145,7 +146,7 @@ class DomainPayService
         $amount = $this->policy->validateWechatSuccess($order, $payload, $config);
         if ($order->getPayStatus() === 'paid' || $order->getPayStatus() === 'refunded') {
             if ($order->getPayNo() !== $payload['transaction_id']) {
-                throw new \DomainException('订单已由另一笔支付完成，需对账');
+                throw PaymentError::ANOTHER_PAYMENT_COMPLETED->exception();
             }
             return null;
         }
@@ -161,7 +162,7 @@ class DomainPayService
         }
         $payment = $this->paymentRepository->findForOrder($order->getId(), 'wechat');
         if ($payment === null || (int) $payment->payment_amount !== $amount) {
-            throw new \DomainException('支付记录不存在或金额不匹配');
+            throw PaymentError::RECORD_AMOUNT_MISMATCH->exception();
         }
         $this->payments->markPaid($payment->payment_no, $amount, $payload['transaction_id'], $payload);
         $this->orders->update($order);

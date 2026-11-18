@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interfaces\Data;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 /** Enum values must come from the provider's actual after-sales policy, never local enum guesses. */
 final readonly class AfterSaleCommand
 {
@@ -32,10 +34,10 @@ final readonly class AfterSaleCommand
     ) {
         if ($merchantOrderNo === '' || $externalOrderItemId === '' || $quantity < 1
             || min($amountCents, $freightCents, $technicalServiceFeeCents) < 0) {
-            throw new \InvalidArgumentException('供应链售后参数无效');
+            throw SupplyChainError::AFTER_SALE_PARAMETERS_INVALID->invalid();
         }
         if ($refundType === 2) {
-            throw new \DomainException('首期不开放换货，须先核实换货规格与数量协议');
+            throw SupplyChainError::EXCHANGE_UNSUPPORTED->exception();
         }
     }
 }

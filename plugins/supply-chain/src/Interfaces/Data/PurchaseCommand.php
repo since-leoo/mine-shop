@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interfaces\Data;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final readonly class PurchaseCommand extends CheckoutCommand
 {
     public function __construct(
@@ -22,7 +24,7 @@ final readonly class PurchaseCommand extends CheckoutCommand
     ) {
         parent::__construct($lines, $address);
         if ($merchantOrderNo === '' || mb_strlen($merchantOrderNo) > 128) {
-            throw new \InvalidArgumentException('商户采购单号无效');
+            throw SupplyChainError::PURCHASE_NUMBER_INVALID->invalid();
         }
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\SupplyChain\Domain\Service;
 
 use App\Domain\Infrastructure\Plugin\Contract\CommerceOrderInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
 use Plugin\SupplyChain\Domain\ValueObject\SafeLogVo;
 use Plugin\SupplyChain\Domain\ValueObject\SupplyAddressVo;
@@ -28,10 +29,10 @@ final class DomainSupplyWorkflowService
     {
         $row = $this->repository->require('connections', $id);
         if (! $row['enabled']) {
-            throw new \DomainException('供应链连接已停用');
+            throw SupplyChainError::CONNECTION_DISABLED->exception();
         }
         if ($type === 'import' && $row['mode'] !== 'active') {
-            throw new \DomainException('连接已暂停新选品');
+            throw SupplyChainError::SELECTION_PAUSED->exception();
         }
         return $row;
     }
@@ -45,7 +46,7 @@ final class DomainSupplyWorkflowService
     {
         $current = $this->repository->require('tasks', (int) $task['id'], true);
         if ($current['status'] !== 'running' || ! hash_equals((string) $current['lease_token'], (string) $task['lease_token']) || strtotime($current['lease_expires_at'] ?? '1970-01-01') <= time()) {
-            throw new \RuntimeException('任务租约已失效，禁止继续发送写请求', 10002);
+            throw new \RuntimeException(SupplyChainError::TASK_LEASE_EXPIRED->message(), 10002);
         }
     }
 
@@ -60,7 +61,7 @@ final class DomainSupplyWorkflowService
         $prices = [];
         foreach ($catalog as $product) {
             if (! $product['available']) {
-                throw new \DomainException('采购前上游商品已停供');
+                throw SupplyChainError::PRECHECK_PRODUCT_SUPPLY_STOPPED->exception();
             }
             foreach ($product['skus'] as $sku) {
                 $prices[$sku['external_sku_id']] = $sku;
@@ -71,15 +72,15 @@ final class DomainSupplyWorkflowService
             $snapshot = $line['snapshot'];
             $sku = $prices[$snapshot['external_sku_id']] ?? null;
             if ($sku === null || (int) $sku['stock'] < (int) $line['quantity']) {
-                throw new \DomainException('采购前校验上游库存不足');
+                throw SupplyChainError::PRECHECK_STOCK_INSUFFICIENT->exception();
             }
             if ((int) $sku['cost_price'] > (int) $snapshot['cost_price']) {
-                throw new \DomainException('采购成本高于下单快照，需人工处理差额');
+                throw SupplyChainError::PURCHASE_COST_INCREASED->exception();
             }
             $allowedFreight = max($allowedFreight, (int) ($snapshot['freight_cents'] ?? 0));
         }
         if ((int) $quote['freight_cents'] > $allowedFreight) {
-            throw new \DomainException('采购运费高于下单快照，需人工处理差额');
+            throw SupplyChainError::PURCHASE_FREIGHT_INCREASED->exception();
         }
     }
 

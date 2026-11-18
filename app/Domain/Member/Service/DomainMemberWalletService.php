@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Contract\MemberWalletInput;
+
 use App\Domain\Member\Entity\MemberWalletEntity;
 use App\Domain\Member\Mapper\MemberWalletMapper;
 use App\Domain\Member\Repository\MemberWalletRepository;
 use App\Domain\Member\ValueObject\BalanceChangeVo;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\MemberWallet;
 
@@ -86,7 +88,7 @@ final class DomainMemberWalletService extends IService
     {
         $model = $this->repository->findByMemberIdAndTypeForUpdate($memberId, $type);
         if ($model === null) {
-            throw new \DomainException('钱包不存在');
+            throw MemberError::WALLET_NOT_FOUND->exception();
         }
         return MemberWalletMapper::fromModel($model);
     }

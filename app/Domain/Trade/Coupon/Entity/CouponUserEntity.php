@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Coupon\Entity;
 
 use App\Domain\Trade\Coupon\Contract\CouponUserInput;
+use App\Infrastructure\Error\CouponError;
 
 /**
  * 用户优惠券实体.
@@ -192,7 +193,7 @@ final class CouponUserEntity
     public function markExpired(): self
     {
         if ($this->getStatus() !== 'unused') {
-            throw new \DomainException('仅未使用的优惠券可以置为过期');
+            throw CouponError::USED_COUPON_NOT_EXPIRABLE->exception();
         }
         return $this->setStatus('expired');
     }
@@ -200,7 +201,7 @@ final class CouponUserEntity
     public function markUsed(?string $usedAt = null, ?int $orderId = null): self
     {
         if ($this->getStatus() !== 'unused') {
-            throw new \DomainException('仅未使用的优惠券可以置为已使用');
+            throw CouponError::USED_COUPON_NOT_USABLE->exception();
         }
 
         $this->setStatus('used')

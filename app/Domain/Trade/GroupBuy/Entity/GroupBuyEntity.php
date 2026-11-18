@@ -17,6 +17,7 @@ use App\Domain\Trade\GroupBuy\Contract\GroupBuyUpdateInput;
 use App\Domain\Trade\GroupBuy\ValueObject\ActivityTimeVo;
 use App\Domain\Trade\GroupBuy\ValueObject\GroupPeopleVo;
 use App\Domain\Trade\GroupBuy\ValueObject\PriceVo;
+use App\Infrastructure\Error\GroupBuyError;
 use Carbon\Carbon;
 
 /**
@@ -131,7 +132,7 @@ final class GroupBuyEntity
     public function enable(): self
     {
         if (! $this->canEnable()) {
-            throw new \DomainException('活动不满足启用条件');
+            throw GroupBuyError::ENABLE_CONDITIONS_NOT_MET->exception();
         }
         $this->setIsEnabled(true);
         return $this;
@@ -146,7 +147,7 @@ final class GroupBuyEntity
     public function start(): self
     {
         if ($this->status !== 'pending') {
-            throw new \DomainException('只有待开始的活动才能启动');
+            throw GroupBuyError::START_STATUS_INVALID->exception();
         }
         $this->setStatus('active');
         return $this;
@@ -155,7 +156,7 @@ final class GroupBuyEntity
     public function end(): self
     {
         if ($this->status === 'ended') {
-            throw new \DomainException('活动已经结束');
+            throw GroupBuyError::ALREADY_ENDED->exception();
         }
         $this->setStatus('ended');
         return $this;
@@ -164,11 +165,11 @@ final class GroupBuyEntity
     public function increaseSoldQuantity(int $quantity): self
     {
         if ($quantity <= 0) {
-            throw new \DomainException('销量增加数量必须大于0');
+            throw GroupBuyError::SALES_INCREMENT_INVALID->exception();
         }
         $newSoldQuantity = $this->soldQuantity + $quantity;
         if ($newSoldQuantity > $this->totalQuantity) {
-            throw new \DomainException('库存不足');
+            throw GroupBuyError::STOCK_INSUFFICIENT->exception();
         }
         $this->setSoldQuantity($newSoldQuantity);
         if ($newSoldQuantity >= $this->totalQuantity) {
@@ -179,7 +180,7 @@ final class GroupBuyEntity
 
     public function releaseQuantity(int $quantity): self
     {
-        if ($quantity <= 0) { throw new \DomainException('释放数量必须大于0'); }
+        if ($quantity <= 0) { throw GroupBuyError::RELEASE_QUANTITY_INVALID->exception(); }
         $this->setSoldQuantity(max(0, $this->soldQuantity - $quantity));
         if ($this->status === 'sold_out' && $this->soldQuantity < $this->totalQuantity) {
             $this->setStatus((new ActivityTimeVo($this->startTime, $this->endTime))->isActive() ? 'active' : 'ended');
@@ -298,7 +299,7 @@ final class GroupBuyEntity
     {
         $title = trim($title);
         if ($title === '') {
-            throw new \DomainException('活动标题不能为空');
+            throw GroupBuyError::TITLE_REQUIRED->exception();
         } $this->title = $title;
         $this->markDirty('title');
         return $this;

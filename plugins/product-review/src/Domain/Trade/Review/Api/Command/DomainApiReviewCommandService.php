@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace Plugin\ProductReview\Domain\Trade\Review\Api\Command;
 
+use App\Domain\Infrastructure\Plugin\Contract\ReviewEligibilityInterface;
 use App\Domain\Trade\Review\Contract\ReviewInput;
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\ProductReviewError;
 use Plugin\ProductReview\Domain\Trade\Review\Mapper\ReviewMapper;
 use Plugin\ProductReview\Domain\Trade\Review\Repository\ReviewRepository;
-use App\Infrastructure\Abstract\IService;
-use App\Domain\Infrastructure\Plugin\Contract\ReviewEligibilityInterface;
 use Plugin\ProductReview\Infrastructure\Model\Review\Review;
 
 /**
@@ -37,7 +38,7 @@ final class DomainApiReviewCommandService extends IService
         $item = $this->eligibility->eligibleItem($memberId, (int) $dto->getOrderId(), (int) $dto->getOrderItemId());
 
         if ($this->repository->existsByOrderItemId((int) $dto->getOrderItemId())) {
-            throw new \RuntimeException('该订单商品已评价');
+            throw ProductReviewError::ORDER_ITEM_ALREADY_REVIEWED->internal();
         }
 
         $entity = ReviewMapper::getNewEntity()->create($dto);

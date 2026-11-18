@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace HyperfTests\Unit\Distribution;
 
+use App\Infrastructure\Error\DistributionError;
 use PHPUnit\Framework\TestCase;
 use Plugin\Distribution\Domain\Repository\DistributionRepository;
 use Plugin\Distribution\Domain\Service\DomainDistributionService;
@@ -13,6 +14,24 @@ use Psr\Container\ContainerInterface;
 
 final class WechatShareGatewayTest extends TestCase
 {
+    public function testProviderDiagnosticsStayInCauseWithSafeBusinessCodeAndMessage(): void
+    {
+        $wechat = $this->createMock(MiniAppInterface::class);
+        $wechat->method('getUrlLink')->willReturn(['errcode' => 40001, 'errmsg' => 'provider detail %s']);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('has')->willReturn(true);
+        $container->method('get')->willReturn($wechat);
+        try {
+            (new WechatShareGateway($container))->generate('url_link', 'pages/index', 'share_token=test');
+            self::fail('Expected provider rejection');
+        } catch (\DomainException $error) {
+            self::assertSame(DistributionError::WECHAT_SHARE_FAILED->value, $error->getCode());
+            self::assertSame('微信分享生成失败：请检查微信账号权限', $error->getMessage());
+            self::assertSame(40001, $error->getPrevious()?->getCode());
+            self::assertSame('provider detail %s', $error->getPrevious()?->getMessage());
+        }
+    }
+
     public function testUnlimitedCodeCarriesOnlyTheShortTokenEvenForLongProductParameters(): void
     {
         $token = str_repeat('a', 24);

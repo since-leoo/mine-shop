@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interfaces\Data;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final readonly class Address
 {
     public function __construct(
@@ -25,7 +27,7 @@ final readonly class Address
     ) {
         foreach ([$consignee, $phone, $province, $city, $area, $description] as $value) {
             if (trim($value) === '') {
-                throw new \InvalidArgumentException('供应链收货地址不完整');
+                throw SupplyChainError::SHIPPING_ADDRESS_INCOMPLETE->invalid();
             }
         }
     }

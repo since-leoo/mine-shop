@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Catalog\Product\Repository\ProductSkuRepository;
+
 use App\Domain\Member\Api\Query\DomainApiMemberCartQueryService;
 use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Error\CartError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Infrastructure\Model\Product\ProductSku;
@@ -70,7 +72,7 @@ final class DomainApiMemberCartCommandService
     {
         $items = $this->fetchItems($memberId);
         if (! isset($items[$skuId])) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '购物车条目不存在');
+            throw new BusinessException(CartError::ITEM_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $cartItem = $items[$skuId];
@@ -155,7 +157,7 @@ final class DomainApiMemberCartCommandService
     {
         $sku = $this->skuRepository->findSaleableWithProduct($skuId);
         if ($sku === null || $sku->product === null || ! $this->isSaleable($sku->product, $sku)) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '商品不存在或已下架');
+            throw new BusinessException(CartError::PRODUCT_UNAVAILABLE, resultCode: ResultCode::NOT_FOUND);
         }
         $provider = (string) ($sku->product->fulfillment_provider ?? 'merchant');
         if ($provider !== 'merchant') {

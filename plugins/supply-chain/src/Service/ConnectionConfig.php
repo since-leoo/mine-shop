@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Service;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final readonly class ConnectionConfig implements \JsonSerializable
 {
     public function __construct(
@@ -29,7 +31,7 @@ final readonly class ConnectionConfig implements \JsonSerializable
             || ! \is_array($url) || ($url['scheme'] ?? '') !== 'https' || empty($url['host'])
             || isset($url['user']) || isset($url['pass']) || isset($url['query']) || isset($url['fragment'])
             || $timeout <= 0 || $timeout > 30 || $connectTimeout <= 0 || $connectTimeout > $timeout) {
-            throw new \InvalidArgumentException('供应链连接参数无效，API 必须使用 HTTPS 且不得含账号、查询串或片段');
+            throw SupplyChainError::CONNECTION_PARAMETERS_INVALID->invalid();
         }
     }
 
@@ -40,7 +42,7 @@ final readonly class ConnectionConfig implements \JsonSerializable
 
     public function __serialize(): array
     {
-        throw new \LogicException('供应链凭证配置不可序列化，请在任务中仅保存连接 ID');
+        throw new \LogicException(SupplyChainError::CREDENTIAL_SERIALIZATION_FORBIDDEN->message(), SupplyChainError::CREDENTIAL_SERIALIZATION_FORBIDDEN->value);
     }
 
     public function tokenKey(): string

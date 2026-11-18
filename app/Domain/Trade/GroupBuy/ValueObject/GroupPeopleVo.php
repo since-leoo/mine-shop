@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\ValueObject;
 
+use App\Infrastructure\Error\GroupBuyError;
+
 final class GroupPeopleVo
 {
     public function __construct(
@@ -39,7 +41,7 @@ final class GroupPeopleVo
     private function validate(): void
     {
         if ($this->maxPeople < $this->minPeople) {
-            throw new \DomainException('最多成团人数不能小于最少成团人数');
+            throw GroupBuyError::PEOPLE_RANGE_INVALID->exception();
         }
     }
 }

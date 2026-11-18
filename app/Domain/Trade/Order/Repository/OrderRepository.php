@@ -17,6 +17,7 @@ use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Mapper\OrderExportMapper;
 use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\OrderError;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
 use App\Infrastructure\Model\Order\OrderLog;
@@ -99,7 +100,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         $order->ship($entity);
@@ -114,7 +115,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
         $order->cancel($entity);
     }
@@ -126,7 +127,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         $order->complete($entity);
@@ -139,7 +140,7 @@ final class OrderRepository extends IRepository
         $order = $this->findByIdForLock($entity->getId());
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         $order->paid($entity);
@@ -152,7 +153,7 @@ final class OrderRepository extends IRepository
         $order = parent::findById($id);
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         return $order;
@@ -165,7 +166,7 @@ final class OrderRepository extends IRepository
         $order = $this->model::where('order_no', $orderNo)->first();
 
         if (! $order) {
-            throw new \DomainException('Order not found.');
+            throw OrderError::NOT_FOUND->exception();
         }
 
         return $order;

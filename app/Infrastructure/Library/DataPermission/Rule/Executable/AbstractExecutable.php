@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule\Executable;
 
+use App\Infrastructure\Error\PermissionError;
+
 use App\Infrastructure\Library\DataPermission\Rule\CustomFuncFactory;
 use App\Infrastructure\Model\DataPermission\Policy;
 use App\Infrastructure\Model\Permission\Department;
@@ -61,6 +63,6 @@ abstract class AbstractExecutable
         if ($result instanceof Collection) {
             return $result;
         }
-        throw new \RuntimeException('Custom func must return Collection');
+        throw PermissionError::CUSTOM_FUNCTION_RETURN_INVALID->internal();
     }
 }

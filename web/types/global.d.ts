@@ -38,6 +38,7 @@ interface PageList<T> {
 }
 interface ResponseStruct<T> {
   code: ResultCode
+  error_code?: number
   message: string
   data: T
 }

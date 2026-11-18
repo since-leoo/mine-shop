@@ -7,10 +7,10 @@ namespace HyperfTests\Integration\DataPermission;
 use App\Infrastructure\Model\Permission\User;
 use Hyperf\Context\Context;
 use HyperfTests\Support\DatabaseTestCase;
-use Plugin\ExportCenter\Service\ExportService;
-use Plugin\ExportCenter\Service\ExportDtoResolver;
-use Plugin\ExportCenter\Service\DtoHydrator;
 use PHPUnit\Framework\Attributes\DataProvider;
+use Plugin\ExportCenter\Service\DtoHydrator;
+use Plugin\ExportCenter\Service\ExportDtoResolver;
+use Plugin\ExportCenter\Service\ExportService;
 
 final class ExportScopeTest extends DatabaseTestCase
 {
@@ -60,9 +60,10 @@ final class ExportScopeTest extends DatabaseTestCase
             self::fail('Rejected queue must fail the request');
         } catch (\DomainException $error) {
             self::assertSame('导出任务暂时无法提交，请稍后重试', $error->getMessage());
+            self::assertSame(\App\Infrastructure\Error\ExportError::QUEUE_SUBMISSION_FAILED->value, $error->getCode());
             $original = $error->getPrevious();
             self::assertInstanceOf(\RuntimeException::class, $original);
-            $throws ? self::assertSame($cause, $original) : self::assertSame('Export queue rejected the task', $original->getMessage());
+            $throws ? self::assertSame($cause, $original) : self::assertSame(\App\Infrastructure\Error\ExportError::QUEUE_REJECTED->message(), $original->getMessage());
             self::assertSame($original, $logged[0]['exception']);
             self::assertSame($original, $logged[1]['original_exception']);
             self::assertSame($notificationError, $logged[1]['exception']);
@@ -104,6 +105,7 @@ final class ExportScopeTest extends DatabaseTestCase
             self::fail('provider failure expected');
         } catch (\RuntimeException $error) {
             self::assertSame('provider fixture failure', $error->getMessage());
+            self::assertSame(\App\Infrastructure\Error\ExportError::PROCESSING_FAILED->message(), $this->connection->table('export_tasks')->value('error_message'));
             self::assertSame($previous, Context::get('current_user'));
             self::assertFalse(Context::get('data_permission_enabled'));
             self::assertSame('failed', $this->connection->table('export_tasks')->value('status'));

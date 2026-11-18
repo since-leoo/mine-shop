@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Service\Trade;
 
 use App\Domain\Trade\Order\Contract\StockReservationInterface;
+
+use App\Infrastructure\Error\InventoryError;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Redis\Redis;
 
@@ -70,7 +72,7 @@ LUA;
             $this->key($stockKey), '_reservation:' . $tradeNo, $digest, ...$args,
         ], 1);
         if ($result !== 1) {
-            throw new \DomainException($result === 0 ? '库存不足或商品已下架' : '库存预占已释放或请求不一致');
+            throw ($result === 0 ? InventoryError::STOCK_UNAVAILABLE : InventoryError::RESERVATION_MISMATCH)->exception();
         }
     }
 
@@ -82,10 +84,10 @@ LUA;
         ], 1);
         if ($result === 2) {
             // 保持 stock.release Outbox 待重试，待采购明确拒绝解除保护或受理确认后完成。
-            throw new \RuntimeException('外部采购结果未确认，受保护库存等待释放重试');
+            throw InventoryError::PROTECTED_RELEASE_PENDING->internal();
         }
         if ($result !== 1) {
-            throw new \DomainException('库存释放与原预占不一致');
+            throw InventoryError::RELEASE_MISMATCH->exception();
         }
     }
 
@@ -101,12 +103,12 @@ LUA;
             $id = (int) ($item['sku_id'] ?? 0);
             $quantity = (int) ($item['quantity'] ?? 0);
             if ($id <= 0 || $quantity <= 0) {
-                throw new \InvalidArgumentException('库存数量必须为正整数');
+                throw InventoryError::QUANTITY_INVALID->invalid();
             }
             $normalized[$id] = ($normalized[$id] ?? 0) + $quantity;
         }
         if ($normalized === []) {
-            throw new \InvalidArgumentException('商品不能为空');
+            throw InventoryError::ITEMS_REQUIRED->invalid();
         }
         ksort($normalized);
         $args = [];

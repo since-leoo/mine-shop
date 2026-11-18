@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Order\Repository;
 
 use App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface;
+use App\Infrastructure\Error\OrderError;
 use Hyperf\DbConnection\Db;
 
 class OrderSubmissionRepository implements OrderSubmissionStoreInterface
@@ -18,7 +19,7 @@ class OrderSubmissionRepository implements OrderSubmissionStoreInterface
         ]);
         $existing = $this->find($tradeNo);
         if ($existing === null || (int) $existing['member_id'] !== $memberId || $existing['payload'] != $payload) {
-            throw new \DomainException('订单提交标识冲突');
+            throw OrderError::SUBMISSION_CONFLICT->exception();
         }
     }
 

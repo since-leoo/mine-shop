@@ -16,6 +16,7 @@ use App\Application\Admin\Trade\AppOrderCommandService;
 use App\Application\Admin\Trade\AppOrderManualPaymentService;
 use App\Application\Admin\Trade\AppOrderQueryService;
 use App\Application\Admin\Trade\Dto\OrderExportDto;
+use App\Infrastructure\Error\OrderError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\OrderRequest;
@@ -67,7 +68,7 @@ final class OrderController extends AbstractController
     {
         $order = $this->queryService->detail($id);
         if (! $order) {
-            return $this->error('订单不存在', 404);
+            return $this->error(OrderError::NOT_FOUND, 404);
         }
         return $this->success($order);
     }

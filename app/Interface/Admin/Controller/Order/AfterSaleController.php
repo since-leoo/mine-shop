@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Order;
 
 use App\Application\Admin\Trade\AppAfterSaleCommandService;
 use App\Application\Admin\Trade\AppAfterSaleQueryService;
+use App\Infrastructure\Error\AfterSaleError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Order\AfterSaleReviewRequest;
@@ -56,7 +57,7 @@ final class AfterSaleController extends AbstractController
     {
         $afterSale = $this->queryService->detail($id);
         if ($afterSale === null) {
-            return $this->error('售后单不存在', 404);
+            return $this->error(AfterSaleError::NOT_FOUND, 404);
         }
 
         return $this->success($this->transformer->transformDetailResult($afterSale));

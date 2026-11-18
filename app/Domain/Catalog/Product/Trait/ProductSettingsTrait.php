@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Product\Trait;
 
 use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
+
 use App\Domain\Infrastructure\SystemSetting\ValueObject\ContentSetting;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\ProductSetting;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Model\Product\ProductSku;
 
 /**
@@ -39,7 +41,7 @@ trait ProductSettingsTrait
 
         $images = $this->getGalleryImages() ?? [];
         if (\count($images) > $max) {
-            throw new \DomainException(\sprintf('商品主图最多支持 %d 张，请删除多余图片。', $max));
+            throw CatalogError::IMAGE_LIMIT_EXCEEDED->exception([$max]);
         }
     }
 
@@ -83,7 +85,7 @@ trait ProductSettingsTrait
             }
 
             if (! $autoGenerate) {
-                throw new \DomainException('SKU 编码为必填项，请为每个规格设置唯一编码。');
+                throw CatalogError::SKU_CODE_REQUIRED->exception();
             }
 
             $sku->setSkuCode(ProductSku::generateSkuCode());
@@ -117,7 +119,7 @@ trait ProductSettingsTrait
                     continue;
                 }
                 if (mb_stripos($text, $keyword) !== false) {
-                    throw new \DomainException(\sprintf('%s包含敏感词"%s"，请调整后再提交。', $label, $keyword));
+                    throw CatalogError::SENSITIVE_WORD->exception([$label, $keyword]);
                 }
             }
         }

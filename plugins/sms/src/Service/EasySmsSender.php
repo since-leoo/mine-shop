@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace Plugin\Sms\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Infrastructure\Error\SmsError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
-use Hyperf\AsyncQueue\Annotation\AsyncQueueMessage;
 use Overtrue\EasySms\EasySms;
 use Overtrue\EasySms\Exceptions\InvalidArgumentException;
 use Overtrue\EasySms\Exceptions\NoGatewayAvailableException;
@@ -33,12 +33,12 @@ final class EasySmsSender implements SmsSenderInterface
     public function send(SmsMessage $message): void
     {
         if (! class_exists(EasySms::class)) {
-            throw new BusinessException(ResultCode::FAIL, '短信插件依赖 easy-sms 未安装');
+            throw new BusinessException(SmsError::DEPENDENCY_MISSING, resultCode: ResultCode::FAIL);
         }
 
         $integration = $this->mallSettingService->integration();
         if (! $integration->isChannelEnabled('sms') || $integration->smsProvider() === 'disabled') {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS service is disabled.');
+            throw new BusinessException(SmsError::SERVICE_DISABLED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
 
         $smsConfig = $integration->smsConfig();

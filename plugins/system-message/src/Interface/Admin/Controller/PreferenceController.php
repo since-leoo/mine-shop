@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Interface\Admin\Controller;
 
+use App\Infrastructure\Error\SystemMessageError;
+
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\Di\Annotation\Inject;
@@ -85,7 +87,7 @@ class PreferenceController extends SystemMessageAbstractController
         $userId = $this->currentUser->id();
         $channels = $this->request->input('channels', []);
         if (empty($channels) || ! \is_array($channels)) {
-            return $this->error('渠道设置不能为空');
+            return $this->error(SystemMessageError::CHANNEL_SETTINGS_REQUIRED);
         }
         try {
             return $this->success($this->notificationService->updateChannelPreferences($userId, $channels), '渠道偏好设置更新成功');
@@ -100,7 +102,7 @@ class PreferenceController extends SystemMessageAbstractController
         $userId = $this->currentUser->id();
         $types = $this->request->input('types', []);
         if (empty($types) || ! \is_array($types)) {
-            return $this->error('消息类型设置不能为空');
+            return $this->error(SystemMessageError::TYPE_SETTINGS_REQUIRED);
         }
         try {
             return $this->success($this->notificationService->updateTypePreferences($userId, $types), '消息类型偏好设置更新成功');
@@ -117,7 +119,7 @@ class PreferenceController extends SystemMessageAbstractController
         $endTime = $this->request->input('end_time');
         $enabled = (bool) $this->request->input('enabled', true);
         if (! $startTime || ! $endTime) {
-            return $this->error('开始时间和结束时间不能为空');
+            return $this->error(SystemMessageError::DO_NOT_DISTURB_PERIOD_REQUIRED);
         }
         try {
             return $this->success($this->notificationService->setDoNotDisturbTime($userId, $startTime, $endTime, $enabled), '免打扰时间设置成功');
@@ -144,7 +146,7 @@ class PreferenceController extends SystemMessageAbstractController
         $userId = $this->currentUser->id();
         $priority = (int) $this->request->input('priority');
         if ($priority < 1 || $priority > 5) {
-            return $this->error('优先级必须在1-5之间');
+            return $this->error(SystemMessageError::PRIORITY_INVALID);
         }
         try {
             return $this->success($this->notificationService->setMinPriority($userId, $priority), '最小优先级设置成功');

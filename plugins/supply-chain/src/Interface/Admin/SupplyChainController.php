@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interface\Admin;
 
+use App\Infrastructure\Error\SupplyChainError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -86,7 +87,7 @@ final class SupplyChainController extends AbstractController
     public function catalogDetail(string $externalId, SupplyQueryRequest $request): Result
     {
         if ($externalId === '' || mb_strlen($externalId) > 128) {
-            throw new \InvalidArgumentException('上游商品编号无效');
+            throw SupplyChainError::UPSTREAM_PRODUCT_ID_INVALID->invalid();
         }
         return $this->success($this->transformer->catalog($this->queries->catalogDetail((int) $request->validated()['connection_id'], $externalId)));
     }

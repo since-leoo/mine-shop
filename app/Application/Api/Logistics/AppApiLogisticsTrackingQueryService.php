@@ -13,7 +13,11 @@ declare(strict_types=1);
 namespace App\Application\Api\Logistics;
 
 use App\Application\Api\AfterSale\AppApiAfterSaleQueryService;
+
 use App\Application\Api\Order\AppApiOrderQueryService;
+
+use App\Infrastructure\Error\CommerceError;
+use App\Infrastructure\Error\LogisticsError;
 use Plugin\Express\Contract\LogisticsTrackingInterface;
 
 final class AppApiLogisticsTrackingQueryService
@@ -31,7 +35,7 @@ final class AppApiLogisticsTrackingQueryService
     {
         $order = $this->orderQueryService->getOrderDetail($memberId, $orderNo);
         if (! \is_object($order)) {
-            throw new \DomainException('订单不存在');
+            throw CommerceError::ORDER_NOT_FOUND->exception();
         }
 
         $packages = $order->packages ?? [];
@@ -40,7 +44,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = \is_object($package) ? trim((string) ($package->express_no ?? '')) : '';
 
         if ($company === '' || $trackingNo === '') {
-            throw new \DomainException('订单物流信息不存在');
+            throw LogisticsError::ORDER_TRACKING_NOT_FOUND->exception();
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();
@@ -56,7 +60,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = trim((string) ($afterSale->buyer_return_logistics_no ?? ''));
 
         if ($company === '' || $trackingNo === '') {
-            throw new \DomainException('售后退货物流信息不存在');
+            throw LogisticsError::RETURN_TRACKING_NOT_FOUND->exception();
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();
@@ -72,7 +76,7 @@ final class AppApiLogisticsTrackingQueryService
         $trackingNo = trim((string) ($afterSale->reship_logistics_no ?? ''));
 
         if ($company === '' || $trackingNo === '') {
-            throw new \DomainException('售后补发物流信息不存在');
+            throw LogisticsError::RESHIP_TRACKING_NOT_FOUND->exception();
         }
 
         return $this->trackingService->track($company, $trackingNo)->toArray();

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Interface\Admin\Controller;
 
+use App\Infrastructure\Error\SystemMessageError;
+
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
@@ -59,7 +61,7 @@ class MessageController extends SystemMessageAbstractController
     {
         $message = $this->messageService->getRepository()->findById($id);
         if (! $message) {
-            return $this->error('消息不存在', 404);
+            return $this->error(SystemMessageError::MESSAGE_RECORD_NOT_FOUND, 404);
         }
         return $this->success($message);
     }
@@ -89,7 +91,7 @@ class MessageController extends SystemMessageAbstractController
     {
         $ids = $this->request->input('ids', []);
         if (empty($ids)) {
-            return $this->error('请选择要删除的消息');
+            return $this->error(SystemMessageError::MESSAGE_DELETE_SELECTION_REQUIRED);
         }
         $deleted = 0;
         $failed = 0;
@@ -113,7 +115,7 @@ class MessageController extends SystemMessageAbstractController
     {
         $id = $this->request->input('id');
         if (! $id) {
-            return $this->error('消息ID不能为空');
+            return $this->error(SystemMessageError::MESSAGE_ID_REQUIRED);
         }
         try {
             $result = $this->messageService->send($id);
@@ -130,7 +132,7 @@ class MessageController extends SystemMessageAbstractController
         $id = $this->request->input('id');
         $scheduledAt = $this->request->input('scheduled_at');
         if (! $id || ! $scheduledAt) {
-            return $this->error('消息ID和调度时间不能为空');
+            return $this->error(SystemMessageError::MESSAGE_SCHEDULE_INPUT_REQUIRED);
         }
         try {
             $result = $this->messageService->schedule($id, Carbon::parse($scheduledAt));
@@ -146,7 +148,7 @@ class MessageController extends SystemMessageAbstractController
     {
         $ids = $this->request->input('ids', []);
         if (empty($ids) || ! \is_array($ids)) {
-            return $this->error('请选择要发送的消息');
+            return $this->error(SystemMessageError::MESSAGE_SEND_SELECTION_REQUIRED);
         }
         $sent = 0;
         $failed = 0;
@@ -170,7 +172,7 @@ class MessageController extends SystemMessageAbstractController
     {
         $keyword = $this->request->input('keyword', '');
         if (empty($keyword)) {
-            return $this->error('搜索关键词不能为空');
+            return $this->error(SystemMessageError::SEARCH_KEYWORD_REQUIRED);
         }
         $filters = ['type' => $this->request->input('type'), 'status' => $this->request->input('status')];
         $page = (int) $this->request->input('page', 1);

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\ValueObject;
 
+use App\Infrastructure\Error\SeckillError;
+
 final class ActivityRules
 {
     private readonly int $maxQuantityPerUser;
@@ -103,10 +105,10 @@ final class ActivityRules
     private function validate(): void
     {
         if ($this->minPurchaseQuantity > $this->maxQuantityPerUser) {
-            throw new \InvalidArgumentException('最小购买数量不能大于最大购买数量');
+            throw SeckillError::QUANTITY_RANGE_INVALID->invalid();
         }
         if ($this->requireMemberLevel && $this->requiredMemberLevelId === null) {
-            throw new \InvalidArgumentException('要求会员等级时必须指定等级ID');
+            throw SeckillError::MEMBER_LEVEL_REQUIRED->invalid();
         }
     }
 }

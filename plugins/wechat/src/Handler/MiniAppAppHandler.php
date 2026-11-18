@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Handler;
 
+use App\Infrastructure\Error\WechatError;
 use EasyWeChat\Kernel\Exceptions\BadResponseException;
 
 use EasyWeChat\MiniApp\Application;
@@ -103,7 +104,7 @@ class MiniAppAppHandler extends AbstractWechat implements MiniAppInterface
         $relativeDirectory = '/uploadfile/wechat/mini/qrcode/';
         $directory = BASE_PATH . '/public' . $relativeDirectory;
         if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
-            throw new \RuntimeException('无法创建小程序码目录');
+            throw WechatError::CODE_DIRECTORY_CREATE_FAILED->internal();
         }
         $filename = hash('sha256', json_encode($params, JSON_THROW_ON_ERROR)) . '.png';
         file_put_contents($directory . $filename, $response->getContent());

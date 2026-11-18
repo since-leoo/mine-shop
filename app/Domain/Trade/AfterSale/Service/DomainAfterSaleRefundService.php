@@ -7,6 +7,7 @@ namespace App\Domain\Trade\AfterSale\Service;
 use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
+use App\Infrastructure\Error\AfterSaleError;
 use App\Infrastructure\Model\Order\OrderPaymentRefund;
 
 /** 准备可重试的退款申请，不进行网络调用；应用层负责事务。 */
@@ -28,7 +29,7 @@ class DomainAfterSaleRefundService
         $afterSale = $this->afterSales->getLockedEntity($input->getId());
         if ($input->getApprovedRefundAmount() !== null) {
             if ($input->getApprovedRefundAmount() < 0 || $input->getApprovedRefundAmount() > $afterSale->getApplyAmount()) {
-                throw new \DomainException('审核退款金额不能超过本次申请的可退金额');
+                throw AfterSaleError::REVIEW_AMOUNT_EXCEEDED->exception();
             }
             $afterSale->setRefundAmount($input->getApprovedRefundAmount());
         }
@@ -52,16 +53,16 @@ class DomainAfterSaleRefundService
             return $existing;
         }
         if ($payment?->payment_method === 'manual') {
-            throw new \DomainException('线下支付订单不支持原路自动退款，请先联系财务处理线下退款');
+            throw AfterSaleError::OFFLINE_AUTO_REFUND_UNSUPPORTED->exception();
         }
         if ($payment === null || ! in_array($payment->payment_method, ['balance', 'wechat'], true)) {
-            throw new \DomainException('没有可退款的支付记录');
+            throw AfterSaleError::REFUNDABLE_PAYMENT_NOT_FOUND->exception();
         }
         $amount = $afterSale->getRefundAmount();
-        if ($amount > $afterSale->getApplyAmount()) { throw new \DomainException('退款金额超过本次售后申请上限'); }
+        if ($amount > $afterSale->getApplyAmount()) { throw AfterSaleError::REFUND_APPLICATION_AMOUNT_EXCEEDED->exception(); }
         $available = (int) $payment->paid_amount - (int) $payment->refund_amount - $this->refunds->outstandingAmount((int) $payment->id);
         if ($amount <= 0 || $amount > $available) {
-            throw new \DomainException('退款金额超过可退余额');
+            throw AfterSaleError::REFUND_BALANCE_EXCEEDED->exception();
         }
         $afterSale->markRefunding();
         $this->afterSales->saveEntity($afterSale);

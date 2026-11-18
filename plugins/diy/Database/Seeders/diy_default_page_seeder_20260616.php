@@ -10,6 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
+use App\Infrastructure\Error\DiyError;
 use Carbon\Carbon;
 use Hyperf\Database\Seeders\Seeder;
 use Hyperf\DbConnection\Db;
@@ -43,12 +44,7 @@ class DiyDefaultPageSeeder20260616 extends Seeder
 
         if (!$validation->passed()) {
             $firstIssue = $validation->issues()[0];
-            throw new RuntimeException(sprintf(
-                '默认DIY页面发布校验失败：%s/%s - %s',
-                $pageKey,
-                $pageType,
-                $firstIssue['message'] ?? '未知错误'
-            ));
+            throw DiyError::DEFAULT_PAGE_VALIDATION_FAILED->internal([$pageKey, $pageType, $firstIssue['message'] ?? '未知错误']);
         }
 
         $page = DiyPage::query()

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Sms\Model;
 
+use App\Infrastructure\Error\SmsError;
+
 /**
  * SMS message data accepted by the SMS plugin.
  */
@@ -27,7 +29,7 @@ final class SmsMessage
         private readonly ?string $content = null,
     ) {
         if (trim($this->phone) === '') {
-            throw new \InvalidArgumentException('SMS recipient phone is required.');
+            throw SmsError::RECIPIENT_PHONE_REQUIRED->invalid();
         }
     }
 

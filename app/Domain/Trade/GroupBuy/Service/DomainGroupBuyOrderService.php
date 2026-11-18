@@ -16,6 +16,7 @@ use App\Domain\Trade\GroupBuy\Entity\GroupBuyEntity;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\GroupBuyError;
 use Carbon\Carbon;
 
 final class DomainGroupBuyOrderService extends IService
@@ -33,11 +34,11 @@ final class DomainGroupBuyOrderService extends IService
         try {
             $entity = $this->groupBuyService->getEntity($groupBuyId);
         } catch (\DomainException) {
-            throw new \DomainException('Group buy activity not found');
+            throw GroupBuyError::NOT_FOUND->exception();
         }
 
         if ($entity->getSkuId() !== $skuId) {
-            throw new \DomainException('SKU does not belong to current group buy activity');
+            throw GroupBuyError::SKU_MISMATCH->exception();
         }
 
         if ($buyOriginal) {
@@ -45,16 +46,16 @@ final class DomainGroupBuyOrderService extends IService
         }
 
         if (! $entity->canJoin()) {
-            throw new \DomainException('Current group buy activity is unavailable');
+            throw GroupBuyError::ACTIVITY_UNAVAILABLE->exception();
         }
 
         $remainingStock = $entity->getTotalQuantity() - $entity->getSoldQuantity();
         if ($remainingStock < $quantity) {
-            throw new \DomainException('Insufficient group buy stock');
+            throw GroupBuyError::ACTIVITY_STOCK_INSUFFICIENT->exception();
         }
 
         if ($this->hasMemberJoined($groupBuyId, $memberId)) {
-            throw new \DomainException('Member has already joined this activity');
+            throw GroupBuyError::MEMBER_ALREADY_JOINED->exception();
         }
 
         if ($groupNo !== null) {
@@ -121,17 +122,17 @@ final class DomainGroupBuyOrderService extends IService
     {
         $groupOrders = $this->groupBuyOrderRepository->findActiveByGroupNo($groupNo);
         if ($groupOrders === []) {
-            throw new \DomainException('Unable to join this group');
+            throw GroupBuyError::GROUP_NOT_JOINABLE->exception();
         }
 
         if (\count($groupOrders) >= $maxPeople) {
-            throw new \DomainException('Unable to join this group');
+            throw GroupBuyError::GROUP_NOT_JOINABLE->exception();
         }
 
         $leaderOrder = null;
         foreach ($groupOrders as $groupOrder) {
             if ((int) $groupOrder->group_buy_id !== $groupBuyId || $groupOrder->status === 'grouped') {
-                throw new \DomainException('拼团不属于当前活动或已经成团');
+                throw GroupBuyError::GROUP_ACTIVITY_MISMATCH->exception();
             }
             if ($groupOrder->is_leader) {
                 $leaderOrder = $groupOrder;
@@ -139,7 +140,7 @@ final class DomainGroupBuyOrderService extends IService
         }
 
         if (! $leaderOrder || ($leaderOrder->expire_time && Carbon::now()->greaterThanOrEqualTo($leaderOrder->expire_time))) {
-            throw new \DomainException('Unable to join this group');
+            throw GroupBuyError::GROUP_NOT_JOINABLE->exception();
         }
     }
 

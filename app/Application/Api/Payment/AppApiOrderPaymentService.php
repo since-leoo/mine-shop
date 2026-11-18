@@ -10,6 +10,7 @@ use App\Domain\Trade\Payment\Contract\PaymentGatewayInterface;
 use App\Domain\Trade\Payment\DomainPayService;
 use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\PaymentError;
 use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 
 final class AppApiOrderPaymentService
@@ -41,7 +42,7 @@ final class AppApiOrderPaymentService
             return ['is_paid' => true];
         }
         if ($payload['pay_method'] !== 'wechat') {
-            throw new \InvalidArgumentException('不支持的支付方式');
+            throw PaymentError::METHOD_UNSUPPORTED->invalid();
         }
         $member = $this->members->getEntity($memberId);
         $params = $this->transactions->run(fn () => $this->payments->prepareWechat($orderNo, $member, $setting));

@@ -24,6 +24,7 @@ use App\Domain\Trade\Order\Service\DomainOrderStockService;
 use App\Domain\Trade\Order\Service\OrderPendingCacheService;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\OrderError;
 
 /**
  * 面向 API 场景的订单写领域服务.
@@ -79,7 +80,7 @@ final class DomainApiOrderCommandService extends IService
     {
         $entity = $this->buildOrder($input);
         if ($entity->getAddress() === null) {
-            throw new \DomainException('请提供收货地址');
+            throw OrderError::ADDRESS_REQUIRED->exception();
         }
         $activeId = $entity->getExtra('session_id') ?: $entity->getExtra('group_buy_id') ?: 0;
         return [

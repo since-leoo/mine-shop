@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\ValueObject;
 
+use App\Infrastructure\Error\GroupBuyError;
 use Carbon\Carbon;
 
 final class ActivityTimeVo
@@ -64,7 +65,7 @@ final class ActivityTimeVo
     private function validate(): void
     {
         if ($this->startTime->diffInDays($this->endTime) > 30) {
-            throw new \DomainException('活动时长不能超过30天');
+            throw GroupBuyError::DURATION_EXCEEDED->exception();
         }
     }
 }

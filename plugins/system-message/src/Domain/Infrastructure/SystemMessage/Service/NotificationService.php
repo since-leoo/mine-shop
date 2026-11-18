@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service;
 
+use App\Infrastructure\Error\SystemMessageError;
 use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Hyperf\Context\ApplicationContext;
-use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\NotificationTransportInterface;
 use Plugin\Sms\Model\SmsMessage;
 use Plugin\Sms\Service\SmsSenderInterface;
+use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\NotificationTransportInterface;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Event\NotificationFailed;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Event\NotificationSent;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Repository\UserPreferenceRepository;
@@ -58,7 +59,7 @@ class NotificationService
             }
             $result = $this->sendByChannel($message, $userId, $channel);
             if (! $result) {
-                throw new \RuntimeException('通知渠道未确认发送成功: ' . $channel);
+                throw SystemMessageError::CHANNEL_UNCONFIRMED->internal([$channel]);
             }
             $this->logDelivery($message, $userId, $channel, true);
             $this->getEventDispatcher()->dispatch(new NotificationSent($message, $userId, $channel));
@@ -178,7 +179,7 @@ class NotificationService
             'sms' => $this->sendSmsNotification($message, $userId),
             'push' => $this->sendPushNotification($message, $userId),
             'miniapp' => $this->sendMiniappNotification($message, $userId),
-            default => throw new \InvalidArgumentException("Unsupported notification channel: {$channel}"),
+            default => throw SystemMessageError::CHANNEL_UNSUPPORTED->invalid([$channel]),
         };
     }
 
@@ -249,7 +250,7 @@ class NotificationService
     protected function sendMiniappNotification(Message $message, int $userId): bool
     {
         if ($message->recipient_type !== 'user' || array_map('intval', $message->recipient_ids ?? []) !== [$userId]) {
-            throw new \DomainException('小程序通知必须明确指定单个收件人，不能复用 openid 群发');
+            throw SystemMessageError::MINIAPP_SINGLE_RECIPIENT_REQUIRED->exception();
         }
         $extra = \is_array($message->extra_data) ? $message->extra_data : [];
         $openid = (string) ($extra['openid'] ?? $extra['miniapp_openid'] ?? '');
@@ -270,7 +271,7 @@ class NotificationService
             (string) ($extra['miniapp_page'] ?? ''),
         );
         if (! in_array($receipt['errcode'] ?? null, [0, '0'], true)) {
-            throw new \RuntimeException('微信订阅消息未确认成功，错误码: ' . ($receipt['errcode'] ?? 'missing'));
+            throw SystemMessageError::MINIAPP_RECEIPT_FAILED->internal([$receipt['errcode'] ?? 'missing']);
         }
         return true;
     }

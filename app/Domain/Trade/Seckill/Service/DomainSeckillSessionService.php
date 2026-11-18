@@ -17,6 +17,7 @@ use App\Domain\Trade\Seckill\Mapper\SeckillSessionMapper;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillSession;
 use Hyperf\DbConnection\Db;
 
@@ -64,7 +65,7 @@ final class DomainSeckillSessionService extends IService
     public function update(SeckillSessionEntity $entity): bool
     {
         if (! $entity->canBeEdited()) {
-            throw new \DomainException('当前场次状态不允许编辑（场次已开始或即将开始）');
+            throw SeckillError::SESSION_NOT_EDITABLE->exception();
         }
         return $this->repository->updateFromEntity($entity);
     }
@@ -81,11 +82,11 @@ final class DomainSeckillSessionService extends IService
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \DomainException('场次不存在');
+            throw SeckillError::SESSION_NOT_FOUND->exception();
         }
         $entity = SeckillSessionMapper::fromModel($session);
         if (! $entity->canBeDeleted()) {
-            throw new \DomainException('当前场次状态不允许删除（场次已开始、有销量或即将开始）');
+            throw SeckillError::SESSION_NOT_DELETABLE->exception();
         }
         return (bool) Db::transaction(function () use ($id) {
             $this->productRepository->getQuery()->where('session_id', $id)->delete();
@@ -104,7 +105,7 @@ final class DomainSeckillSessionService extends IService
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \DomainException('场次不存在');
+            throw SeckillError::SESSION_NOT_FOUND->exception();
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->toggleEnabled();
@@ -130,7 +131,7 @@ final class DomainSeckillSessionService extends IService
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \DomainException("场次不存在: ID={$id}");
+            throw SeckillError::SESSION_NOT_FOUND_WITH_ID->exception([$id]);
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->start();
@@ -148,7 +149,7 @@ final class DomainSeckillSessionService extends IService
     {
         $session = $this->repository->findById($id);
         if (! $session) {
-            throw new \DomainException("场次不存在: ID={$id}");
+            throw SeckillError::SESSION_NOT_FOUND_WITH_ID->exception([$id]);
         }
         $entity = SeckillSessionMapper::fromModel($session);
         $entity->end();

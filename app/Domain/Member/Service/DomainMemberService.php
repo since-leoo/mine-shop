@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Entity\MemberEntity;
+
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Repository\MemberTagRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;
@@ -64,7 +66,7 @@ final class DomainMemberService extends IService
     {
         $model = $this->repository->findById($entity->getId());
         if (! $model) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $this->repository->updateEntity($entity);
@@ -113,7 +115,7 @@ final class DomainMemberService extends IService
         $model = $this->repository->findById($memberId);
 
         if (! $model) {
-            throw new BusinessException(ResultCode::NOT_FOUND, "会员不存在: ID={$memberId}");
+            throw new BusinessException(MemberError::ID_NOT_FOUND, parameters: [$memberId], resultCode: ResultCode::NOT_FOUND);
         }
 
         return MemberMapper::fromModel($model);
@@ -157,7 +159,7 @@ final class DomainMemberService extends IService
     private function ensureMemberExists(int $memberId): void
     {
         if (! $this->repository->existsById($memberId)) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Domain\Repository;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\DbConnection\Db;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceConversation;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceMessage;
@@ -13,7 +14,7 @@ final class CustomerServiceConversationRepository
     // 会员记录天然存在，用它串行化首次建会话，防止并发请求各自创建活动会话。
     public function lockMember(int $memberId): void
     {
-        if (!Db::table('members')->where('id', $memberId)->lockForUpdate()->first()) { throw new \RuntimeException('会员不存在'); }
+        if (!Db::table('members')->where('id', $memberId)->lockForUpdate()->first()) { throw CustomerServiceError::MEMBER_NOT_FOUND->internal(); }
     }
 
     public function findOpenByMember(int $memberId): ?CustomerServiceConversation
@@ -29,7 +30,7 @@ final class CustomerServiceConversationRepository
 
     public function lock(string $conversationNo): CustomerServiceConversation
     {
-        return CustomerServiceConversation::query()->where('conversation_no', $conversationNo)->lockForUpdate()->first() ?? throw new \RuntimeException('客服会话不存在');
+        return CustomerServiceConversation::query()->where('conversation_no', $conversationNo)->lockForUpdate()->first() ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal();
     }
 
     public function createConversation(int $memberId, string $source, ?string $subject, array $attributes = []): CustomerServiceConversation
@@ -55,7 +56,7 @@ final class CustomerServiceConversationRepository
     {
         $existing = CustomerServiceMessage::query()->where('conversation_id', $conversation->id)->where('sender_type', $senderType)->where('sender_id', $senderId)->where('client_message_id', $clientId)->first();
         if ($existing) {
-            if ($existing->message_type !== $type || $existing->content_json != $content) { throw new \DomainException('消息标识已用于不同内容'); }
+            if ($existing->message_type !== $type || $existing->content_json != $content) { throw CustomerServiceError::CLIENT_MESSAGE_CONFLICT->exception(); }
             return $existing;
         }
         $message = CustomerServiceMessage::query()->create([

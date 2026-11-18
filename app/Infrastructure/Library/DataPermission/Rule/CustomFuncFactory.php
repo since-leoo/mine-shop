@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule;
 
+use App\Infrastructure\Error\PermissionError;
+
 class CustomFuncFactory
 {
     /**
@@ -29,6 +31,6 @@ class CustomFuncFactory
         if (isset(self::$customFunc[$name])) {
             return self::$customFunc[$name];
         }
-        throw new \RuntimeException('Custom func not found');
+        throw PermissionError::CUSTOM_FUNCTION_NOT_FOUND->internal();
     }
 }

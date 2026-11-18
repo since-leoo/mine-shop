@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\GroupBuy;
 
 use App\Application\Api\GroupBuy\AppApiGroupBuyProductQueryService;
+use App\Infrastructure\Error\GroupBuyError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Transformer\GroupBuy\GroupBuyProductTransformer;
@@ -63,7 +64,7 @@ final class GroupBuyProductController extends AbstractController
     {
         $data = $this->queryService->getDetail($activityId, $spuId);
         if ($data === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '拼团商品不存在或活动已结束');
+            throw new BusinessException(GroupBuyError::PRODUCT_UNAVAILABLE, resultCode: ResultCode::NOT_FOUND);
         }
         $detail = $this->transformer->transformDetail($data);
         $detail['ongoingGroups'] = $this->queryService->getOngoingGroups($activityId);

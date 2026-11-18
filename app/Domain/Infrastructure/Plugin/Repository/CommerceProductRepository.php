@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Plugin\Repository;
 
+use App\Infrastructure\Error\CommerceError;
+
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\DbConnection\Db;
 
@@ -19,7 +21,7 @@ final class CommerceProductRepository
         ]);
         $row = Db::table('commerce_product_imports')->where('provider', $provider)->where('import_key', $key)->lockForUpdate()->first();
         if ($row === null) {
-            throw new \RuntimeException('无法领取商品导入记录');
+            throw CommerceError::IMPORT_CLAIM_FAILED->internal();
         }
         return $row->product_id === null ? null : (int) $row->product_id;
     }

@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Domain\Member\Repository;
 
 use App\Domain\Member\Entity\MemberEntity;
+
 use App\Domain\Member\Enum\MemberLevel as MemberLevelEnum;
 use App\Domain\Member\Enum\MemberSource;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Trade\Order\Enum\PaymentStatus;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Model\Member\Member;
 use App\Infrastructure\Model\Order\Order;
 use Carbon\Carbon;
@@ -209,7 +211,7 @@ final class MemberRepository extends IRepository
         /** @var null|Member $member */
         $member = $this->getQuery()->find($memberId);
         if (! $member) {
-            throw new \DomainException('会员不存在');
+            throw MemberError::NOT_FOUND->exception();
         }
 
         $member->tags()->sync($tagIds);

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Socket;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Swoole\Table;
 
 final class CustomerServiceConnectionTable
@@ -27,7 +28,7 @@ final class CustomerServiceConnectionTable
         $table->column('connected_at', Table::TYPE_INT, 8);
         $table->column('connection_id', Table::TYPE_STRING, 48);
         if (! $table->create()) {
-            throw new \RuntimeException('客服连接表创建失败');
+            throw CustomerServiceError::CONNECTION_TABLE_CREATE_FAILED->internal();
         }
         return $table;
     }
@@ -35,7 +36,7 @@ final class CustomerServiceConnectionTable
     public function set(string $fd, array $data): void
     {
         if (! $this->table->set($fd, $data)) {
-            throw new \RuntimeException('客服连接数已达上限');
+            throw CustomerServiceError::CONNECTION_LIMIT_REACHED->internal();
         }
     }
 

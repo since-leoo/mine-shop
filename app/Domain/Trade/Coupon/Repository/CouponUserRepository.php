@@ -14,6 +14,7 @@ namespace App\Domain\Trade\Coupon\Repository;
 
 use App\Domain\Trade\Coupon\Entity\CouponUserEntity;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
@@ -33,7 +34,7 @@ final class CouponUserRepository extends IRepository
     {
         $couponUser = $this->create($entity->toArray());
         if (! isset($couponUser->id)) {
-            throw new \RuntimeException('Failed to create coupon user');
+            throw CouponError::USER_COUPON_CREATE_FAILED->internal();
         }
         $entity->setId((int) $couponUser->id);
         return $couponUser;
@@ -170,7 +171,7 @@ final class CouponUserRepository extends IRepository
             return (int) $row->coupon_id;
         }
         if ($row === null || $row->status !== 'unused' || ($row->expire_at !== null && Carbon::parse($row->expire_at)->isPast())) {
-            throw new \DomainException('优惠券已使用或过期');
+            throw CouponError::USED_OR_EXPIRED->exception();
         }
         $row->update(['status' => 'used', 'order_id' => $orderId, 'used_at' => Carbon::now()]);
         return (int) $row->coupon_id;

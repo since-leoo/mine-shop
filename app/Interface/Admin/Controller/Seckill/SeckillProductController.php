@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Seckill;
 
 use App\Application\Admin\Seckill\AppSeckillProductCommandService;
 use App\Application\Admin\Seckill\AppSeckillProductQueryService;
+use App\Infrastructure\Error\SeckillError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillProductRequest;
@@ -59,7 +60,7 @@ final class SeckillProductController extends AbstractController
     public function show(int $id): Result
     {
         $product = $this->queryService->find($id);
-        return $product ? $this->success($product->toArray()) : $this->error('商品不存在', 404);
+        return $product ? $this->success($product->toArray()) : $this->error(SeckillError::PRODUCT_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

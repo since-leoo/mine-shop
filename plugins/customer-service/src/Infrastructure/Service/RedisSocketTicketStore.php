@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Infrastructure\Service;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\Redis\Redis;
 use Plugin\CustomerService\Domain\Contract\CustomerServiceTicketStoreInterface;
 
@@ -21,7 +22,7 @@ LUA;
     public function put(string $ticket, array $principal, int $expiresIn): void
     {
         if (! $this->redis->set('customer-service:socket-ticket:' . $ticket, json_encode($principal, JSON_THROW_ON_ERROR), ['EX' => $expiresIn])) {
-            throw new \RuntimeException('无法创建客服连接凭据');
+            throw CustomerServiceError::SOCKET_TICKET_CREATE_FAILED->internal();
         }
     }
 

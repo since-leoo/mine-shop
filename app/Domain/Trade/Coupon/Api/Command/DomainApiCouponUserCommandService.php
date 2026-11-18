@@ -17,6 +17,7 @@ use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
 use App\Domain\Trade\Coupon\Service\DomainCouponService;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use Carbon\Carbon;
 
@@ -49,7 +50,7 @@ final class DomainApiCouponUserCommandService extends IService
         // 4. 检查用户领取限制
         $memberCount = $this->couponRepository->countIssuedByMember($couponId, $memberId);
         if (! $coupon->canMemberReceive($memberCount)) {
-            throw new \DomainException('已达到领取上限');
+            throw CouponError::RECEIVE_LIMIT_REACHED->exception();
         }
 
         // 5. 计算过期时间

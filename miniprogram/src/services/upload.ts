@@ -40,7 +40,7 @@ export function uploadImage(filePath: string) {
             resolve(body.data.url);
             return;
           }
-          reject({ msg: body.message || 'Upload failed' });
+          reject({ code: body.code, errorCode: body.error_code, msg: body.message || 'Upload failed' });
         } catch (_error) {
           reject({ msg: 'Upload response parse failed' });
         }

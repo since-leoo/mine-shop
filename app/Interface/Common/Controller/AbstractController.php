@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Common\Controller;
 
+use App\Infrastructure\Error\CommonError;
+use App\Infrastructure\Error\ErrorCode;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\Contract\LengthAwarePaginatorInterface;
@@ -23,14 +25,17 @@ abstract class AbstractController
         return new Result(ResultCode::SUCCESS, $message, $data);
     }
 
-    protected function fail(?string $message = null, mixed $data = []): Result
+    protected function fail(string|ErrorCode|null $message = null, mixed $data = []): Result
     {
-        return new Result(ResultCode::FAIL, $message, $data);
+        $message ??= CommonError::BUSINESS_REJECTED;
+        return $message instanceof ErrorCode
+            ? new Result(ResultCode::FAIL, $message->message(), $data, (int) $message->value)
+            : new Result(ResultCode::FAIL, $message, $data);
     }
 
-    protected function error(?string $message = null, mixed $data = []): Result
+    protected function error(string|ErrorCode|null $message = null, mixed $data = []): Result
     {
-        return new Result(ResultCode::FAIL, $message, $data);
+        return $this->fail($message, $data);
     }
 
     protected function json(ResultCode $code, mixed $data = [], ?string $message = null): Result

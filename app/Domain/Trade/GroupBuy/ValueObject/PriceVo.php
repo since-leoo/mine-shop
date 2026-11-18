@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\ValueObject;
 
+use App\Infrastructure\Error\GroupBuyError;
+
 final class PriceVo
 {
     public function __construct(
@@ -44,7 +46,7 @@ final class PriceVo
     private function validate(): void
     {
         if ($this->groupPrice >= $this->originalPrice) {
-            throw new \DomainException('团购价必须小于原价');
+            throw GroupBuyError::PRICE_INVALID->exception();
         }
     }
 }

@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\ValueObject;
 
+use App\Infrastructure\Error\DistributionError;
+
 final class DistributionPolicyVo
 {
     public const DIRECT_LIMIT = 3;
@@ -39,24 +41,24 @@ final class DistributionPolicyVo
         }
         unset($rule);
         if ($s['commission_rate_bps'] < 0 || $s['commission_rate_bps'] > 10000 || $s['withdrawal_fee_bps'] < 0 || $s['withdrawal_fee_bps'] >= 10000 || $s['settlement_days'] < 0 || $s['settlement_days'] > 365 || $s['withdrawal_min_amount'] < 1) {
-            throw new \DomainException('佣金、提现或结算参数不合法');
+            throw DistributionError::POLICY_PARAMETERS_INVALID->exception();
         }
         if (! \in_array($s['commission_mode'], ['all_orders', 'first_order'], true)) {
-            throw new \DomainException('不支持的计佣模式');
+            throw DistributionError::COMMISSION_MODE_UNSUPPORTED->exception();
         }
         $seen = [];
         foreach ($s['product_rules'] as $r) {
             $key = (int) $r['product_id'] . ':' . (int) ($r['sku_id'] ?? 0);
             if (isset($seen[$key])) {
-                throw new \DomainException('同一商品规格不能重复配置佣金');
+                throw DistributionError::SKU_COMMISSION_DUPLICATED->exception();
             }
             $seen[$key] = true;
             if (! \in_array($r['mode'], ['rate', 'fixed'], true) || $r['value'] < 0 || ($r['mode'] === 'rate' && $r['value'] > 10000)) {
-                throw new \DomainException('商品佣金规则不合法');
+                throw DistributionError::PRODUCT_COMMISSION_INVALID->exception();
             }
         }
         if ($s['h5_base_url'] !== '' && (! filter_var($s['h5_base_url'], \FILTER_VALIDATE_URL) || ! \in_array(parse_url($s['h5_base_url'], \PHP_URL_SCHEME), ['http', 'https'], true) || parse_url($s['h5_base_url'], \PHP_URL_QUERY) || parse_url($s['h5_base_url'], \PHP_URL_FRAGMENT))) {
-            throw new \DomainException('H5地址应为不带参数和片段的完整站点地址');
+            throw DistributionError::H5_SITE_URL_INVALID->exception();
         }
         return $s;
     }
@@ -66,7 +68,7 @@ final class DistributionPolicyVo
     {
         $sum = array_sum($weights);
         if ($total < 0 || min($weights ?: [0]) < 0 || ($sum === 0 && $total > 0)) {
-            throw new \DomainException('商品金额分摊异常');
+            throw DistributionError::ITEM_AMOUNT_ALLOCATION_INVALID->exception();
         }
         if ($sum === 0) {
             return array_fill(0, \count($weights), 0);

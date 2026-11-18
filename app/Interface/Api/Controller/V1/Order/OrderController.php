@@ -16,6 +16,7 @@ use App\Application\Api\Logistics\AppApiLogisticsTrackingQueryService;
 use App\Application\Api\Order\AppApiOrderCommandService;
 use App\Application\Api\Order\AppApiOrderQueryService;
 use App\Application\Api\Payment\AppApiOrderPaymentService;
+use App\Infrastructure\Error\OrderError;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Api\Request\V1\OrderCancelRequest;
@@ -114,7 +115,7 @@ final class OrderController extends AbstractController
         $order = $this->orderQueryService->getOrderDetail($this->currentMember->id(), $orderNo);
 
         if (! $order) {
-            return $this->fail('订单不存在');
+            return $this->fail(OrderError::NOT_FOUND);
         }
 
         return $this->successWithTransform($order, fn ($order) => $this->orderTransformer->transformDetail($order));
@@ -148,11 +149,11 @@ final class OrderController extends AbstractController
         $order = $this->orderQueryService->getOrderDetail($this->currentMember->id(), $orderNo);
 
         if (! $order) {
-            return $this->fail('订单不存在');
+            return $this->fail(OrderError::NOT_FOUND);
         }
 
         if ($order->status !== 'pending') {
-            return $this->fail('订单状态不支持支付');
+            return $this->fail(OrderError::PAYMENT_STATUS_UNSUPPORTED);
         }
 
         return $this->success([

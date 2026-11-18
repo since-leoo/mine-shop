@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\Diy\Domain\Content\DiyPage\Service;
 
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\DiyError;
 use App\Infrastructure\Model\Permission\User;
 use Carbon\Carbon;
 use Plugin\Diy\Domain\Content\DiyPage\Contract\DiyPublishScheduleInput;
@@ -37,21 +38,21 @@ final class DomainDiyPublishService extends IService
     public function schedule(DiyPublishScheduleInput $input, ?int $operatorId = null): DiyPagePublishRecord
     {
         if ($input->getScheduledAt()->lessThanOrEqualTo(Carbon::now())) {
-            throw new \DomainException('定时发布时间必须晚于当前时间');
+            throw DiyError::SCHEDULE_TIME_INVALID->exception();
         }
 
         if ($operatorId === null || $operatorId <= 0) {
-            throw new \DomainException('定时发布需要有效的后台操作人');
+            throw DiyError::SCHEDULE_OPERATOR_REQUIRED->exception();
         }
         $page = $this->pageService->requireLockedPage($input->getPageId());
         $version = $this->pageService->repository->findVersion($page->id, $input->getVersionId());
         if ($version === null) {
-            throw new \DomainException('页面版本不存在');
+            throw DiyError::PAGE_VERSION_NOT_FOUND->exception();
         }
         $this->pageService->validateVersion($page, $version);
 
         if ($this->repository->hasPendingSchedule($input->getPageId())) {
-            throw new \DomainException('已有待执行的定时发布');
+            throw DiyError::SCHEDULE_ALREADY_PENDING->exception();
         }
 
         return $this->repository->createRecord([
@@ -69,11 +70,11 @@ final class DomainDiyPublishService extends IService
     {
         $record = $this->repository->lockRecord($recordId);
         if (! $record instanceof DiyPagePublishRecord || $record->page_id !== $pageId) {
-            throw new \DomainException('发布记录不存在');
+            throw DiyError::PUBLISH_RECORD_NOT_FOUND->exception();
         }
 
         if ($record->publish_status !== 'pending') {
-            throw new \DomainException('只能取消待发布记录');
+            throw DiyError::PENDING_SCHEDULE_REQUIRED_FOR_CANCEL->exception();
         }
 
         return $this->repository->cancelRecord($recordId);
@@ -100,7 +101,7 @@ final class DomainDiyPublishService extends IService
         $operator = $this->repository->findOperator((int) $record->operator_id);
         if ($operator === null || $operator->status->isDisable()
             || (! $operator->isSuperAdmin() && ! $operator->hasPermission('mall:diy:page:publish'))) {
-            throw new \DomainException('定时发布操作人已失效或没有发布权限');
+            throw DiyError::SCHEDULE_OPERATOR_UNAUTHORIZED->exception();
         }
         return $operator;
     }
@@ -110,7 +111,7 @@ final class DomainDiyPublishService extends IService
         $page = $this->pageService->requireLockedPage($record->page_id);
         $version = $this->pageService->repository->findVersion($page->id, (int) $record->version_id);
         if ($version === null) {
-            throw new \DomainException('定时发布版本不存在');
+            throw DiyError::SCHEDULE_VERSION_NOT_FOUND->exception();
         }
         if ($version->status !== DiyPageStatus::VERSION_PUBLISHED || $page->published_version_id !== $version->id) {
             $this->pageService->publishSelectedVersion($page, $version, $record->operator_id);
@@ -128,7 +129,7 @@ final class DomainDiyPublishService extends IService
         $page = $this->pageService->requireLockedPage($pageId);
         $version = $this->pageService->repository->findVersion($pageId, $versionId);
         if (! $version instanceof DiyPageVersion || $version->status !== DiyPageStatus::VERSION_PUBLISHED) {
-            throw new \DomainException('只能回滚到历史已发布版本');
+            throw DiyError::ROLLBACK_PUBLISHED_VERSION_REQUIRED->exception();
         }
 
         $published = $this->pageService->repository->publishVersion($page, $version, $operatorId);
@@ -159,11 +160,11 @@ final class DomainDiyPublishService extends IService
     {
         $model = $this->repository->findPreviewToken($token);
         if (! $model instanceof DiyPagePreviewToken) {
-            throw new \DomainException('预览令牌不存在');
+            throw DiyError::PREVIEW_TOKEN_NOT_FOUND->exception();
         }
 
         if ($model->expired_at->lessThanOrEqualTo(Carbon::now())) {
-            throw new \DomainException('预览令牌已过期');
+            throw DiyError::PREVIEW_TOKEN_EXPIRED->exception();
         }
 
         return $model;

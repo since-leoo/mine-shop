@@ -13,10 +13,11 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Seckill\Api\Query;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
-use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Contract\SeckillPromotionQueryInput;
+use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillProductRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 
 final class DomainApiSeckillQueryService
@@ -41,7 +42,7 @@ final class DomainApiSeckillQueryService
             return null;
         }
         if ($session && $activityId && (int) $session->activity_id !== $activityId) {
-            throw new \DomainException('秒杀场次不属于当前活动');
+            throw SeckillError::SESSION_ACTIVITY_MISMATCH->exception();
         }
         // 仅指定场次时，从真实归属解析活动，不回落到其他活动。
         $resolvedActivityId = $activityId ?? ($session ? (int) $session->activity_id : null);

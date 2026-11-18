@@ -25,7 +25,8 @@ class Result implements Arrayable
     public function __construct(
         public ResultCode $code = ResultCode::SUCCESS,
         public ?string $message = null,
-        public mixed $data = []
+        public mixed $data = [],
+        public ?int $errorCode = null,
     ) {
         if ($this->message === null) {
             $this->message = ResultCode::getMessage($this->code->value);
@@ -34,10 +35,14 @@ class Result implements Arrayable
 
     public function toArray(): array
     {
-        return [
+        $result = [
             'code' => $this->code->value,
             'message' => $this->message,
             'data' => $this->data,
         ];
+        if ($this->errorCode !== null) {
+            $result['error_code'] = $this->errorCode;
+        }
+        return $result;
     }
 }

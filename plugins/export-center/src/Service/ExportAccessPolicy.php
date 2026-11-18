@@ -1,10 +1,19 @@
 <?php
 
 declare(strict_types=1);
+/**
+ * This file is part of MineAdmin.
+ *
+ * @link     https://www.mineadmin.com
+ * @document https://doc.mineadmin.com
+ * @contact  root@imoi.cn
+ * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
+ */
 
 namespace Plugin\ExportCenter\Service;
 
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
+use App\Infrastructure\Error\ExportError;
 use App\Infrastructure\Library\DataPermission\Rule\Executable\CreatedByIdsExecute;
 use App\Infrastructure\Library\DataPermission\Rule\Executable\DeptExecute;
 use App\Infrastructure\Model\Permission\User;
@@ -14,12 +23,12 @@ final class ExportAccessPolicy
     public function fingerprint(User $user): string
     {
         if ($user->status->isDisable()) {
-            throw new \DomainException('导出任务操作者已停用');
+            throw ExportError::OPERATOR_DISABLED->exception();
         }
         $policy = $user->getPolicy();
         $superAdmin = $user->isSuperAdmin();
         if (! $superAdmin && $policy?->policy_type === PolicyType::CustomFunc) {
-            throw new \DomainException('动态自定义数据权限暂不支持持久化导出，请使用明确的数据范围策略');
+            throw ExportError::DYNAMIC_SCOPE_UNSUPPORTED->exception();
         }
         $creators = $superAdmin ? null : ($policy ? (new CreatedByIdsExecute($user, $policy))->execute() : [$user->id]);
         $departments = $superAdmin ? null : ($policy ? (new DeptExecute($user, $policy))->execute() : []);
@@ -39,6 +48,6 @@ final class ExportAccessPolicy
             'policy' => $policy ? [$policy->policy_type->value, $policy->value] : null,
             'creators' => $creators,
             'departments' => $departments,
-        ], JSON_THROW_ON_ERROR));
+        ], \JSON_THROW_ON_ERROR));
     }
 }

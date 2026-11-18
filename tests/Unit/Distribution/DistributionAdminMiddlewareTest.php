@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace HyperfTests\Unit\Distribution;
 
 use App\Domain\Auth\Enum\Status;
+use App\Infrastructure\Error\DistributionError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Permission\User;
 use App\Interface\Common\CurrentUser;
@@ -76,6 +77,10 @@ final class DistributionAdminMiddlewareTest extends TestCase
             self::fail('Unauthorized administrators must never reach financial endpoints');
         } catch (BusinessException $exception) {
             self::assertSame($code, $exception->getResponse()->code);
+            $error = $code === ResultCode::DISABLED ? DistributionError::ADMIN_DISABLED : DistributionError::SUPER_ADMIN_REQUIRED;
+            self::assertSame($error->value, $exception->getCode());
+            self::assertSame($error->value, $exception->getResponse()->errorCode);
+            self::assertSame($error->message(), $exception->getMessage());
         }
     }
 }

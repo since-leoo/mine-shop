@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Application\Api\Member;
 
 use App\Domain\Member\Api\Command\DomainApiMemberAddressCommandService;
+
 use App\Domain\Member\Api\Query\DomainApiMemberAddressQueryService;
 use App\Domain\Member\Contract\MemberAddressInput;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -40,7 +42,7 @@ final class AppApiMemberAddressQueryService
     {
         $address = $this->queryService->detail($memberId, $addressId);
         if ($address === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '地址不存在');
+            throw new BusinessException(MemberError::ADDRESS_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return $address;

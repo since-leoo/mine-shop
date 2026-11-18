@@ -16,6 +16,7 @@ use App\Application\Admin\Coupon\AppCouponCommandService;
 use App\Application\Admin\Coupon\AppCouponQueryService;
 use App\Application\Admin\Coupon\AppCouponUserCommandService;
 use App\Application\Admin\Coupon\Dto\CouponExportDto;
+use App\Infrastructure\Error\CouponError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Coupon\CouponIssueRequest;
@@ -66,7 +67,7 @@ final class CouponController extends AbstractController
     public function show(int $id): Result
     {
         $coupon = $this->queryService->find($id);
-        return $coupon ? $this->success($coupon) : $this->error('优惠券不存在', 404);
+        return $coupon ? $this->success($coupon) : $this->error(CouponError::NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

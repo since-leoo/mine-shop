@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Order\Entity;
 
+use App\Infrastructure\Error\OrderError;
+
 final class OrderItemEntity
 {
     private string $fulfillmentProvider = 'merchant';
@@ -25,7 +27,7 @@ final class OrderItemEntity
     public function freezeFulfillment(string $provider, array $snapshot): void
     {
         if ($provider === '' || ($provider !== 'merchant' && $snapshot === [])) {
-            throw new \DomainException('外部履约快照不完整');
+            throw OrderError::FULFILLMENT_SNAPSHOT_INCOMPLETE->exception();
         }
         $this->fulfillmentProvider = $provider;
         $this->fulfillmentSnapshot = $snapshot;

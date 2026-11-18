@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Application\Api\Order;
 
 use App\Domain\Trade\Order\Contract\OrderJobQueueInterface;
+
 use App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface;
 use App\Domain\Trade\Order\Contract\StockReservationInterface;
 use App\Domain\Trade\Order\Repository\OrderRepository;
 use App\Domain\Trade\Order\Service\DomainOrderCreationService;
 use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\OrderError;
 use Psr\Log\LoggerInterface;
 
 final class AppOrderSubmissionService
 {
     public const PUBLIC_ERROR_PREFIX = 'public:v1:';
-
-    public const GENERIC_FAILURE_MESSAGE = '订单创建失败，请稍后重试';
 
     public function __construct(
         private readonly OrderSubmissionStoreInterface $submissions,
@@ -95,7 +95,7 @@ final class AppOrderSubmissionService
         $this->logger->error('订单创建失败', ['trade_no' => $tradeNo, 'exception' => $exception]);
         $error = in_array($exception::class, [\DomainException::class, \InvalidArgumentException::class], true)
             ? $exception->getMessage()
-            : self::GENERIC_FAILURE_MESSAGE;
+            : OrderError::SUBMISSION_FAILED->message();
         $this->transactions->run(function () use ($tradeNo, $error): void {
             $row = $this->submissions->lock($tradeNo);
             if ($row === null || $row['status'] === 'created') {

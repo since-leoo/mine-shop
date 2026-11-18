@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Infrastructure\Service;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\Redis\Redis;
 use Plugin\CustomerService\Domain\Contract\CustomerServicePresenceInterface;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceAgent;
@@ -50,7 +51,7 @@ LUA;
     private function key(string $type, int $id): string
     {
         if (! in_array($type, ['member', 'agent'], true) || $id <= 0) {
-            throw new \InvalidArgumentException('无效的客服连接身份');
+            throw CustomerServiceError::CONNECTION_IDENTITY_INVALID->invalid();
         }
         return 'customer-service:presence:' . $type . ':' . $id;
     }

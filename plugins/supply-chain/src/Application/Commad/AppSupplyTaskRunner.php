@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\SupplyChain\Application\Commad;
 
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Context\Context;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyTaskService;
@@ -59,7 +60,7 @@ final class AppSupplyTaskRunner
             };
             try {
                 if (! $this->queues->get($queue)->push(new SupplyTaskJob((int) $task['id'], (int) $task['dispatch_version']))) {
-                    throw new \RuntimeException('Redis队列拒绝投递');
+                    throw SupplyChainError::QUEUE_DELIVERY_REJECTED->internal();
                 }
                 $this->transactions->run(fn () => $this->tasks->dispatched((int) $task['id'], (int) $task['dispatch_version']));
                 ++$sent;

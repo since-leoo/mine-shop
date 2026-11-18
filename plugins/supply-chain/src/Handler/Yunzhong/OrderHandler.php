@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Handler\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong\YunzhongClient;
 use Plugin\SupplyChain\Interfaces\Data\PurchaseCommand;
 use Plugin\SupplyChain\Interfaces\OrderInterface;
@@ -27,16 +28,16 @@ final class OrderHandler implements OrderInterface
         try {
             $orders = PayloadMapper::list($data, 'Orders');
         } catch (\Throwable) {
-            throw new \RuntimeException('采购返回格式异常，请按商户单号查单', YunzhongClient::OUTCOME_UNKNOWN);
+            throw new \RuntimeException(SupplyChainError::PURCHASE_RESPONSE_INVALID->message(), YunzhongClient::OUTCOME_UNKNOWN);
         }
         $numbers = array_map(static function (array $order): string {
             if (empty($order['order_sn'])) {
-                throw new \RuntimeException('采购返回缺少订单号，请按商户单号查单', YunzhongClient::OUTCOME_UNKNOWN);
+                throw new \RuntimeException(SupplyChainError::PURCHASE_RESPONSE_ORDER_ID_MISSING->message(), YunzhongClient::OUTCOME_UNKNOWN);
             }
             return (string) $order['order_sn'];
         }, $orders);
         if ($numbers === []) {
-            throw new \RuntimeException('采购返回订单列表为空，请按商户单号查单', YunzhongClient::OUTCOME_UNKNOWN);
+            throw new \RuntimeException(SupplyChainError::PURCHASE_RESPONSE_ORDERS_EMPTY->message(), YunzhongClient::OUTCOME_UNKNOWN);
         }
         return ['external_order_numbers' => array_values(array_unique($numbers))];
     }
@@ -56,7 +57,7 @@ final class OrderHandler implements OrderInterface
                     'technical_service_fee_cents' => PayloadMapper::integer($item['technical_services_fee'] ?? null, 'technical_services_fee')];
             }
             if (empty($order['order_sn'])) {
-                throw new \RuntimeException('供应链查单返回缺少订单号');
+                throw SupplyChainError::ORDER_QUERY_ID_MISSING->internal();
             }
             $orders[] = ['external_order_no' => (string) $order['order_sn'],
                 'external_order_id' => (string) PayloadMapper::id($order['id'] ?? ''),
@@ -71,7 +72,7 @@ final class OrderHandler implements OrderInterface
         $this->assertOrderNumber($merchantOrderNo);
         $data = $this->client->call('order.logistics', 'POST', '/app/order/Logistic', ['order_sn' => $merchantOrderNo]);
         if (! \is_array($data) || ! array_is_list($data)) {
-            throw new \RuntimeException('供应链物流响应不是包裹列表');
+            throw SupplyChainError::SHIPMENT_RESPONSE_INVALID->internal();
         }
         $packages = [];
         foreach ($data as $package) {
@@ -83,7 +84,7 @@ final class OrderHandler implements OrderInterface
                     'quantity' => PayloadMapper::integer($item['send_num'] ?? null, 'send_num')];
             }
             if (empty($package['express_no']) || empty($package['company_code']) || $items === []) {
-                throw new \RuntimeException('供应链包裹缺少物流编号、承运商或明细');
+                throw SupplyChainError::SHIPMENT_DETAILS_MISSING->internal();
             }
             $packages[] = ['tracking_no' => (string) $package['express_no'],
                 'company_code' => (string) $package['company_code'], 'company_name' => (string) ($package['company_name'] ?? ''), 'items' => $items];
@@ -99,13 +100,13 @@ final class OrderHandler implements OrderInterface
 
     public function cancel(string $merchantOrderNo): void
     {
-        throw new \DomainException('芸众采购订单直接取消能力尚未确认，请走采购售后；禁止套用云仓取消接口');
+        throw SupplyChainError::DIRECT_CANCELLATION_UNSUPPORTED->exception();
     }
 
     private function assertOrderNumber(string $number): void
     {
         if ($number === '') {
-            throw new \InvalidArgumentException('供应链订单号不能为空');
+            throw SupplyChainError::UPSTREAM_ORDER_ID_REQUIRED->invalid();
         }
     }
 }

@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Domain\Infrastructure\SystemSetting\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Contract\SystemSettingInput;
+
 use App\Domain\Infrastructure\SystemSetting\Entity\SystemSettingEntity;
 use App\Domain\Infrastructure\SystemSetting\Repository\SystemSettingRepository;
 use App\Infrastructure\Abstract\ICache;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\SystemSettingError;
 use Hamcrest\Description;
 use Hyperf\Codec\Json;
 
@@ -118,7 +120,7 @@ final class DomainSystemSettingService extends IService
     {
         $definition = $this->configGroups()[$group] ?? null;
         if (! $definition) {
-            throw new \DomainException(\sprintf('配置分组 %s 不存在', $group));
+            throw SystemSettingError::GROUP_NOT_FOUND->exception([$group]);
         }
 
         $items = $definition['settings'] ?? [];
@@ -161,7 +163,7 @@ final class DomainSystemSettingService extends IService
         if (! $entity) {
             [$group, $definition] = $this->definitionByKey($input->getKey());
             if (! $definition) {
-                throw new \DomainException(\sprintf('系统配置 %s 不存在', $input->getKey()));
+                throw SystemSettingError::KEY_NOT_FOUND->exception([$input->getKey()]);
             }
 
             $entity = SystemSettingEntity::fromDefinition($group, $input->getKey(), $definition);

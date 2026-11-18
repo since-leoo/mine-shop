@@ -12,10 +12,11 @@ declare(strict_types=1);
 
 namespace Plugin\Wechat\Handler;
 
-use InvalidArgumentException;
+use App\Infrastructure\Error\WechatError;
 use EasyWeChat\OfficialAccount\Application;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\HttpServer\Contract\RequestInterface;
+use InvalidArgumentException;
 use Plugin\Wechat\Construct\AbstractWechat;
 use Plugin\Wechat\Interfaces\OfficialAccountInterface;
 use Psr\Container\ContainerExceptionInterface;
@@ -41,7 +42,7 @@ class OfficialAccountHandler extends AbstractWechat implements OfficialAccountIn
     {
         $user = $this->app->getOAuth()->userFromCode($code);
         if (! $user instanceof \Overtrue\Socialite\User) {
-            throw new \UnexpectedValueException('微信授权用户响应类型无效');
+            throw new \UnexpectedValueException(WechatError::OAUTH_RESPONSE_INVALID->message(), WechatError::OAUTH_RESPONSE_INVALID->value);
         }
         return $user->toArray();
     }

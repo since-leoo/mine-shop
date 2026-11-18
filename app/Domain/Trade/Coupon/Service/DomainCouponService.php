@@ -17,6 +17,7 @@ use App\Domain\Trade\Coupon\Mapper\CouponMapper;
 use App\Domain\Trade\Coupon\Repository\CouponRepository;
 use App\Domain\Trade\Coupon\Repository\CouponUserRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Interface\Common\ResultCode;
@@ -48,7 +49,7 @@ final class DomainCouponService extends IService
         /** @var null|Coupon $coupon */
         $coupon = $this->findById($id);
         if (! $coupon) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');
+            throw new BusinessException(CouponError::NOT_FOUND, resultCode: ResultCode::FORBIDDEN);
         }
 
         return CouponMapper::fromModel($coupon);
@@ -59,7 +60,7 @@ final class DomainCouponService extends IService
     {
         $coupon = $this->repository->findByIdForLock($id);
         if ($coupon === null) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '优惠券不存在');
+            throw new BusinessException(CouponError::NOT_FOUND, resultCode: ResultCode::FORBIDDEN);
         }
         return CouponMapper::fromModel($coupon);
     }
@@ -108,7 +109,7 @@ final class DomainCouponService extends IService
         // 检查是否有发放记录，有则不允许删除
         $issued = $this->couponUserRepository->countByCouponId($id);
         if ($issued > 0) {
-            throw new \DomainException('已有发放记录，无法删除');
+            throw CouponError::ISSUED_COUPON_NOT_DELETABLE->exception();
         }
 
         return $this->repository->deleteById($id);

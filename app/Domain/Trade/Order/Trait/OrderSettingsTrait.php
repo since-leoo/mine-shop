@@ -16,6 +16,8 @@ use App\Domain\Infrastructure\SystemSetting\ValueObject\OrderSetting;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\ShippingSetting;
 use App\Domain\Trade\Order\Entity\OrderShipEntity;
 use App\Domain\Trade\Order\ValueObject\OrderPackageValue;
+use App\Infrastructure\Error\OrderError;
+use App\Infrastructure\Error\ShippingError;
 use Carbon\Carbon;
 
 /**
@@ -35,12 +37,12 @@ trait OrderSettingsTrait
     {
         $shipEntity = $this->getShipEntity();
         if (! $shipEntity instanceof OrderShipEntity) {
-            throw new \DomainException('发货信息缺失，请重新提交。');
+            throw ShippingError::SHIPMENT_INFO_MISSING->exception();
         }
 
         $packages = $shipEntity->getPackages();
         if ($packages === []) {
-            throw new \DomainException('请至少提供一个包裹信息');
+            throw OrderError::PACKAGE_REQUIRED->exception();
         }
 
         $allowed = $shippingSetting->supportedProviders();
@@ -52,10 +54,10 @@ trait OrderSettingsTrait
             \assert($package instanceof OrderPackageValue);
             $company = $package->getShippingCompany();
             if ($company === '') {
-                throw new \DomainException('快递公司不能为空');
+                throw ShippingError::CARRIER_REQUIRED->exception();
             }
             if (! $shippingSetting->isProviderSupported($company)) {
-                throw new \DomainException(\sprintf('快递公司 %s 未在商城配置的支持列表中', $company));
+                throw ShippingError::CARRIER_UNSUPPORTED->exception([$company]);
             }
         }
     }

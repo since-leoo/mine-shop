@@ -52,7 +52,7 @@ final class BrandController extends AbstractController
     public function show(int $id): Result
     {
         $brand = $this->queryService->find($id);
-        return $brand ? $this->success($brand->toArray()) : $this->error('品牌不存在', 404);
+        return $brand ? $this->success($brand->toArray()) : $this->error(\App\Infrastructure\Error\CatalogError::BRAND_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

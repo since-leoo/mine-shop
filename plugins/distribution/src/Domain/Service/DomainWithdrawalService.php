@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Service;
 
+use App\Infrastructure\Error\DistributionError;
 use Plugin\Distribution\Domain\Contract\WithdrawalInput;
 use Plugin\Distribution\Domain\Contract\WithdrawalReviewInput;
 use Plugin\Distribution\Domain\Entity\WithdrawalEntity;
@@ -27,18 +28,18 @@ final class DomainWithdrawalService
     {
         $member = $this->repository->member($memberId, true);
         if (! $member || $member['status'] !== 'active') {
-            throw new \DomainException('当前会员不可申请提现');
+            throw DistributionError::MEMBER_WITHDRAWAL_FORBIDDEN->exception();
         }
         $account = CommissionAccountMapper::fromModel($this->repository->account($memberId, true));
         $key = $input->toArray()['request_key'] ?? null;
         if ($key && ($existing = $this->repository->withdrawalByKey($memberId, $key))) {
             if ((int) $existing['amount'] !== (int) $input->toArray()['amount'] || $existing['account_no'] !== $input->toArray()['account_no']) {
-                throw new \DomainException('重复申请标识对应不同提现内容');
+                throw DistributionError::WITHDRAWAL_IDEMPOTENCY_CONFLICT->exception();
             }
             return $existing;
         }
         if ($this->repository->hasOpenWithdrawal($memberId)) {
-            throw new \DomainException('已有进行中的提现申请，请先等待处理');
+            throw DistributionError::WITHDRAWAL_IN_PROGRESS->exception();
         }
         $entity = WithdrawalMapper::getNewEntity();
         $entity->create($input, $memberId, $this->repository->settings()['settings']);
@@ -52,7 +53,7 @@ final class DomainWithdrawalService
     {
         $row = $this->repository->withdrawal($id);
         if (! $row) {
-            throw new \RuntimeException('提现申请不存在');
+            throw DistributionError::WITHDRAWAL_NOT_FOUND->internal();
         }
         return WithdrawalMapper::fromModel($row);
     }
@@ -61,7 +62,7 @@ final class DomainWithdrawalService
     {
         $snapshot = $this->repository->withdrawal($id);
         if (! $snapshot) {
-            throw new \RuntimeException('提现申请不存在');
+            throw DistributionError::WITHDRAWAL_NOT_FOUND->internal();
         }
         // All money paths serialize on account before a withdrawal lock.
         $account = CommissionAccountMapper::fromModel($this->repository->account((int) $snapshot['member_id'], true));

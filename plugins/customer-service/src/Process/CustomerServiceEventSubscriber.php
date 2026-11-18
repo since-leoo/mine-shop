@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Process;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\Process\AbstractProcess;
 use Hyperf\Redis\Redis;
 use Hyperf\Server\ServerFactory;
@@ -19,7 +20,7 @@ final class CustomerServiceEventSubscriber extends AbstractProcess
     {
         $server = $this->container->get(ServerFactory::class)->getServer()->getServer();
         if (! $server instanceof Server) {
-            throw new \RuntimeException('客服事件订阅需要 WebSocket 服务');
+            throw CustomerServiceError::WEBSOCKET_SERVER_REQUIRED->internal();
         }
         $realtime = $this->container->get(CustomerServiceRealtimeService::class);
         $this->container->get(Redis::class)->subscribe([$realtime->channel()], static function ($redis, string $channel, string $message) use ($server, $realtime): void {

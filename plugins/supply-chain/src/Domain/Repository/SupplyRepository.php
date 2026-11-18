@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Repository;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Hyperf\Database\Query\Builder;
 use Hyperf\DbConnection\Db;
 
@@ -25,7 +26,7 @@ class SupplyRepository
     public function query(string $table): Builder
     {
         if (! \in_array($table, self::TABLES, true)) {
-            throw new \InvalidArgumentException('供应链表不在白名单中');
+            throw SupplyChainError::TABLE_NOT_ALLOWED->invalid();
         }
         return Db::table('supply_' . $table);
     }
@@ -38,7 +39,7 @@ class SupplyRepository
 
     public function require(string $table, int $id, bool $lock = false): array
     {
-        return $this->find($table, $id, $lock) ?? throw new \RuntimeException('供应链记录不存在');
+        return $this->find($table, $id, $lock) ?? throw SupplyChainError::RECORD_NOT_FOUND->internal();
     }
 
     public function insert(string $table, array $data): int

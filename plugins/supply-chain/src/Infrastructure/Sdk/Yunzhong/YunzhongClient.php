@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use GuzzleHttp\ClientInterface;
 use Hyperf\Context\Context;
 use Plugin\SupplyChain\Infrastructure\Security\LogSanitizer;
@@ -65,7 +66,7 @@ final class YunzhongClient
         $owner = bin2hex(random_bytes(16));
         if (! $this->tokens->lock($key, $owner, (int) ceil($this->config->timeout) + 10)) {
             // Avoid a thundering herd; callers may reschedule. Do not hold a task's lease while waiting for another refresher.
-            throw new \RuntimeException('供应链 Token 正在刷新，请稍后重试', 429);
+            throw new \RuntimeException(SupplyChainError::TOKEN_REFRESH_IN_PROGRESS->message(), 429);
         }
         try {
             $cached = $this->tokens->get($key);
@@ -78,11 +79,11 @@ final class YunzhongClient
             $token = \is_array($data) ? ($data['token'] ?? null) : null;
             $expiresAt = \is_array($data) ? ($data['expiresAt'] ?? null) : null;
             if (! \is_string($token) || $token === '' || ! is_numeric($expiresAt)) {
-                throw new \RuntimeException('供应链 Token 响应缺少 token 或毫秒 expiresAt');
+                throw SupplyChainError::TOKEN_RESPONSE_INVALID->internal();
             }
             $ttl = (int) floor(((float) $expiresAt - microtime(true) * 1000) / 1000) - 30;
             if ($ttl <= 0) {
-                throw new \RuntimeException('供应链 Token 已过期或 expiresAt 不是毫秒时间戳');
+                throw SupplyChainError::TOKEN_EXPIRY_INVALID->internal();
             }
             $this->tokens->put($key, $token, $ttl);
             return $token;
@@ -94,7 +95,7 @@ final class YunzhongClient
     private function execute(string $operation, string $method, string $path, array $parameters, ?string $token): mixed
     {
         if (! \in_array($method, ['GET', 'POST'], true) || ! preg_match('#^/app/[a-zA-Z0-9/]+$#', $path)) {
-            throw new \InvalidArgumentException('供应链接口路径或方法无效');
+            throw SupplyChainError::API_ENDPOINT_INVALID->invalid();
         }
         $requestId = bin2hex(random_bytes(16));
         $timestamp = (string) (int) floor(microtime(true) * 1000);
@@ -136,7 +137,7 @@ final class YunzhongClient
         try {
             $logId = $this->logs->begin($intent);
         } catch (\Throwable) {
-            throw new \RuntimeException('供应链接口请求日志写入失败，已阻止发送', self::AUDIT_UNAVAILABLE);
+            throw new \RuntimeException(SupplyChainError::REQUEST_AUDIT_WRITE_FAILED->message(), self::AUDIT_UNAVAILABLE);
         }
         $started = microtime(true);
         $outcome = ['status' => 'unknown', 'http_status' => null, 'provider_code' => null,
@@ -162,20 +163,20 @@ final class YunzhongClient
                 $data = json_decode($raw, true);
                 $outcome['response_data'] = \is_array($data) ? $this->sanitizer->sanitize($data, $secrets)
                     : ['format' => 'non_json', 'bytes' => mb_strlen($raw, '8bit'), 'sha256' => hash('sha256', $raw)];
-                throw new \RuntimeException('供应链接口 HTTP 状态异常：' . $response->getStatusCode(), self::OUTCOME_UNKNOWN);
+                throw new \RuntimeException(SupplyChainError::HTTP_STATUS_INVALID->message([$response->getStatusCode()]), self::OUTCOME_UNKNOWN);
             }
             $decoded = json_decode($raw, true, 512, \JSON_THROW_ON_ERROR);
             if (! \is_array($decoded) || ! \array_key_exists('code', $decoded)
                 || (! \is_int($decoded['code']) && ! \is_string($decoded['code']))
                 || ! preg_match('/^-?[0-9]+$/', (string) $decoded['code'])) {
-                throw new \RuntimeException('供应链接口响应缺少有效业务状态码', self::OUTCOME_UNKNOWN);
+                throw new \RuntimeException(SupplyChainError::RESPONSE_STATUS_CODE_INVALID->message(), self::OUTCOME_UNKNOWN);
             }
             $outcome['response_data'] = $this->sanitizer->sanitize($decoded, $secrets);
             $outcome['provider_code'] = (int) $decoded['code'];
             if ((int) $decoded['code'] !== 0) {
                 $outcome['status'] = 'rejected';
-                $message = $this->sanitizer->sanitize((string) ($decoded['msg'] ?? '上游拒绝请求'), $secrets);
-                throw new \DomainException(\is_string($message) ? $message : '上游拒绝请求，详情见接口日志', (int) $decoded['code']);
+                $message = $this->sanitizer->sanitize((string) ($decoded['msg'] ?? SupplyChainError::UPSTREAM_REQUEST_REJECTED->message()), $secrets);
+                throw new \DomainException(\is_string($message) ? $message : SupplyChainError::UPSTREAM_REJECTION_DETAILS->message(), (int) $decoded['code']);
             }
             $outcome['status'] = 'success';
             return $decoded['data'] ?? [];
@@ -186,12 +187,12 @@ final class YunzhongClient
             // Guzzle exception text may contain credential-bearing GET URLs. Never chain or stringify it.
             $outcome['status'] = $lease === null ? 'rejected' : 'unknown';
             $outcome['error_message'] = match ($stage) {
-                'limiter' => '连接限流或锁服务不可用，未发送请求',
-                'transport' => 'HTTP 传输失败，结果待确认',
-                default => '响应解析或 HTTP 状态异常（HTTP ' . ($outcome['http_status'] ?? 'unknown') . '），结果待确认',
+                'limiter' => SupplyChainError::LIMITER_UNAVAILABLE->message(),
+                'transport' => SupplyChainError::TRANSPORT_OUTCOME_UNKNOWN->message(),
+                default => SupplyChainError::RESPONSE_OUTCOME_UNKNOWN->message([$outcome['http_status'] ?? 'unknown']),
             };
             throw new \RuntimeException(
-                $outcome['error_message'] . '；request_id=' . $requestId,
+                SupplyChainError::REQUEST_FAILURE_REFERENCE->message([$outcome['error_message'], $requestId]),
                 $lease === null ? 429 : self::OUTCOME_UNKNOWN
             );
         } finally {
@@ -200,7 +201,7 @@ final class YunzhongClient
                 $this->logs->finish($logId, $outcome);
             } catch (\Throwable) {
                 // The durable unfinished intent lets recovery classify an uncertain remote write.
-                throw new \RuntimeException('供应链接口结果日志保存失败，请先查询上游状态；request_id=' . $requestId, self::OUTCOME_UNKNOWN);
+                throw new \RuntimeException(SupplyChainError::RESULT_AUDIT_WRITE_FAILED->message([$requestId]), self::OUTCOME_UNKNOWN);
             } finally {
                 if ($lease !== null) {
                     try {

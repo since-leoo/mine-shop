@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Domain\Infrastructure\Plugin\Service;
 
 use App\Domain\Infrastructure\Plugin\Repository\CommerceOrderRepository;
+
 use App\Domain\Infrastructure\Plugin\ValueObject\ShipmentAllocationVo;
+use App\Infrastructure\Error\CommerceError;
 
 final class DomainCommerceOrderService
 {
@@ -18,10 +20,10 @@ final class DomainCommerceOrderService
     public function shipMerchantIfExternal(int $orderId, array $packages): ?array
     {
         $order = $this->repository->find($orderId, true);
-        if ($order === null) { throw new \DomainException('订单不存在'); }
+        if ($order === null) { throw CommerceError::ORDER_NOT_FOUND->exception(); }
         $hasExternal = array_filter($order['items'], static fn ($item) => ($item['fulfillment_provider'] ?? 'merchant') !== 'merchant');
         if ($hasExternal === []) { return null; }
-        if ($packages === []) { throw new \InvalidArgumentException('请提供自营商品包裹'); }
+        if ($packages === []) { throw CommerceError::MERCHANT_PACKAGE_REQUIRED->invalid(); }
         $shipped = $this->repository->shippedQuantities($orderId);
         $remaining = [];
         foreach ($order['items'] as $item) {
@@ -32,7 +34,7 @@ final class DomainCommerceOrderService
         }
         foreach ($packages as $package) {
             $items = $package['items'] ?? (count($packages) === 1 ? $remaining : []);
-            if ($items === []) { throw new \DomainException('没有待发自营商品，或多包裹缺少逐项数量'); }
+            if ($items === []) { throw CommerceError::PACKAGE_ALLOCATION_REQUIRED->exception(); }
             $key = 'merchant:' . (string) ($package['shipping_company'] ?? '') . ':' . (string) ($package['shipping_no'] ?? '');
             $this->ship($orderId, 'merchant', $key, $package, $items);
         }
@@ -42,9 +44,9 @@ final class DomainCommerceOrderService
     public function ship(int $orderId, string $provider, string $shipmentKey, array $package, array $items): array
     {
         if ($provider !== 'merchant') { DomainCommerceProductService::validateProvider($provider); }
-        if ($shipmentKey === '') { throw new \InvalidArgumentException('包裹幂等键不能为空'); }
+        if ($shipmentKey === '') { throw CommerceError::PACKAGE_KEY_REQUIRED->invalid(); }
         $order = $this->repository->find($orderId, true);
-        if ($order === null) { throw new \DomainException('订单不存在'); }
+        if ($order === null) { throw CommerceError::ORDER_NOT_FOUND->exception(); }
         $key = hash('sha256', $shipmentKey);
         $existing = $this->repository->package($orderId, $provider, $key);
         if ($existing !== null) {
@@ -54,16 +56,16 @@ final class DomainCommerceOrderService
                 $quantities[$id] = ($quantities[$id] ?? 0) + (int) ($item['quantity'] ?? 0);
             }
             if ($existing['integration_digest'] !== ShipmentAllocationVo::digest($package, $quantities)) {
-                throw new \DomainException('同一外部包裹不能改变发货明细或运单');
+                throw CommerceError::PACKAGE_IDEMPOTENCY_CONFLICT->exception();
             }
             return $existing + ['created' => false];
         }
         if (! in_array($order['status'], ['paid', 'partial_shipped'], true)) {
-            throw new \DomainException('当前订单状态不可发货');
+            throw CommerceError::ORDER_NOT_SHIPPABLE->exception();
         }
         $allocation = new ShipmentAllocationVo($order['items'], $this->repository->shippedQuantities($orderId), $provider, $package, $items);
         if ($this->repository->hasOpenAfterSales(array_keys($allocation->quantities))) {
-            throw new \DomainException('包裹商品存在售后，须核对后再同步履约');
+            throw CommerceError::SHIPMENT_AFTER_SALE_CONFLICT->exception();
         }
         return $this->repository->savePackage($orderId, [
             'fulfillment_provider' => $provider, 'integration_key' => $key, 'integration_digest' => $allocation->digest,

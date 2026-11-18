@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Interface\Admin\Controller;
 
 use App\Application\Admin\Permission\AppMenuQueryService;
+
 use App\Application\Admin\Permission\AppRoleQueryService;
 use App\Application\Admin\Permission\AppUserCommandService;
 use App\Domain\Auth\Enum\Status;
+use App\Infrastructure\Error\AuthError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Admin\Request\Permission\PermissionRequest;
 use App\Interface\Common\Controller\AbstractController;
@@ -71,7 +73,7 @@ final class PermissionController extends AbstractController
         $user = $this->currentUser->user();
         if (Arr::exists($data, 'new_password')) {
             if (! $user->verifyPassword(Arr::get($data, 'old_password'))) {
-                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, trans('user.old_password_error'));
+                throw new BusinessException(AuthError::OLD_PASSWORD_INCORRECT, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
             $data['password'] = $data['new_password'];
         }

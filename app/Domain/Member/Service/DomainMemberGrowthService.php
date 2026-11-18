@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+
 use App\Domain\Member\Event\MemberGrowthChanged;
 use App\Domain\Member\Repository\MemberGrowthLogRepository;
 use App\Domain\Member\Repository\MemberRepository;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -49,7 +51,7 @@ final class DomainMemberGrowthService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $beforeValue = (int) $member->growth_value;
@@ -93,7 +95,7 @@ final class DomainMemberGrowthService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $beforeValue = (int) $member->growth_value;
@@ -136,7 +138,7 @@ final class DomainMemberGrowthService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $matchedLevel = $this->levelService->matchLevelByGrowthValue((int) $member->growth_value);

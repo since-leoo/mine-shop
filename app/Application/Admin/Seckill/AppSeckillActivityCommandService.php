@@ -15,6 +15,7 @@ namespace App\Application\Admin\Seckill;
 use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Trade\Seckill\Mapper\SeckillActivityMapper;
 use App\Domain\Trade\Seckill\Service\DomainSeckillActivityService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 use Hyperf\DbConnection\Db;
 
@@ -46,7 +47,7 @@ final class AppSeckillActivityCommandService
     {
         $entity = $this->activityService->getEntity($dto->getId());
         if (! $entity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         $entity->update($dto);
         return Db::transaction(fn () => $this->activityService->update($entity));
@@ -58,7 +59,7 @@ final class AppSeckillActivityCommandService
     public function delete(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->activityService->delete($id));
     }
@@ -69,7 +70,7 @@ final class AppSeckillActivityCommandService
     public function toggleEnabled(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->activityService->toggleEnabled($id));
     }
@@ -80,7 +81,7 @@ final class AppSeckillActivityCommandService
     public function cancel(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->activityService->cancel($id));
     }
@@ -91,7 +92,7 @@ final class AppSeckillActivityCommandService
     public function start(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->activityService->start($id));
     }
@@ -102,7 +103,7 @@ final class AppSeckillActivityCommandService
     public function end(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->activityService->end($id));
     }

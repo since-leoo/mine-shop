@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+
 use App\Domain\Member\Event\MemberBalanceAdjusted;
 use App\Domain\Member\Repository\MemberLevelRepository;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Domain\Member\Repository\MemberWalletTransactionRepository;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -61,7 +63,7 @@ final class DomainMemberPointsService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         // 幂等性检查：同一会员仅赠送一次注册积分
@@ -100,7 +102,7 @@ final class DomainMemberPointsService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $dateId = (int) ($signedAt ?? new \DateTimeImmutable())->format('Ymd');
@@ -140,12 +142,12 @@ final class DomainMemberPointsService
 
         $referrer = $this->memberRepository->findById($referrerId);
         if (! $referrer) {
-            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $invitedMember = $this->memberRepository->findById($invitedMemberId);
         if (! $invitedMember) {
-            throw new BusinessException(ResultCode::NOT_FOUND, 'member not found');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         if ($this->transactionRepository->existsBySourceAndRelated('points', 'invite_reward', 'invited_member', $invitedMemberId)) {
@@ -174,7 +176,7 @@ final class DomainMemberPointsService
     {
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $pointRate = 1.0;
@@ -220,7 +222,7 @@ final class DomainMemberPointsService
 
         $member = $this->memberRepository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $walletEntity = $this->walletService->getEntity($memberId, 'points');

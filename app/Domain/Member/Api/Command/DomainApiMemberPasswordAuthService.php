@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Contract\ForgotPasswordInput;
+
 use App\Domain\Member\Contract\H5LoginInput;
 use App\Domain\Member\Contract\H5SmsLoginInput;
 use App\Domain\Member\Contract\RegisterInput;
@@ -22,6 +23,7 @@ use App\Domain\Member\Event\MemberRegistered;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\Member;
 use App\Interface\Common\ResultCode;
@@ -50,7 +52,7 @@ final class DomainApiMemberPasswordAuthService extends IService
         if ($model instanceof Member) {
             $member = MemberMapper::fromModel($model);
             if ($member->hasPassword()) {
-                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '该手机号已注册');
+                throw new BusinessException(MemberError::PHONE_ALREADY_REGISTERED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
 
             MemberMapper::fillRegisterInput($member, $input);
@@ -98,7 +100,7 @@ final class DomainApiMemberPasswordAuthService extends IService
     {
         $model = $this->memberRepository->findModelByPhone($phone);
         if (! $model instanceof Member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return MemberMapper::fromModel($model);
@@ -107,7 +109,7 @@ final class DomainApiMemberPasswordAuthService extends IService
     private function consumeCode(string $phone, string $scene, string $code): void
     {
         if (! $this->smsVerificationService->verifyCode($phone, $scene, $code)) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '验证码错误或已失效');
+            throw new BusinessException(MemberError::VERIFICATION_CODE_INVALID, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
     }
 }

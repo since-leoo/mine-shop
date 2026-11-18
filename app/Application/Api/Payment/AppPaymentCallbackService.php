@@ -9,6 +9,7 @@ use App\Domain\Trade\AfterSale\Service\DomainAfterSaleRefundCallbackService;
 use App\Domain\Trade\Payment\DomainPayService;
 use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\PaymentError;
 use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 
 final class AppPaymentCallbackService
@@ -40,7 +41,7 @@ final class AppPaymentCallbackService
     {
         $config = $this->configResolver->resolve($this->settings->payment()->wechatConfig());
         if (($payload['mchid'] ?? '') !== (string) $config['mch_id']) {
-            throw new \DomainException('退款通知商户不匹配');
+            throw PaymentError::REFUND_MERCHANT_MISMATCH->exception();
         }
         $this->transactions->run(fn () => $this->refunds->handleWechatRefundCallback($payload));
     }

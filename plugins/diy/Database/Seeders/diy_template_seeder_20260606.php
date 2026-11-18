@@ -10,6 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
+use App\Infrastructure\Error\DiyError;
 use Hyperf\Database\Seeders\Seeder;
 use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
 use Plugin\Diy\Domain\Content\DiyPage\ValueObject\DiyPageSchemaVo;
@@ -106,7 +107,7 @@ class DiyTemplateSeeder20260606 extends Seeder
                 return $definition['schema'];
             }
         }
-        throw new \LogicException('默认装修页面定义缺失');
+        throw new \LogicException(DiyError::DEFAULT_PAGE_DEFINITION_MISSING->message(), DiyError::DEFAULT_PAGE_DEFINITION_MISSING->value);
     }
 
     private function categorySchema(): array
@@ -117,7 +118,7 @@ class DiyTemplateSeeder20260606 extends Seeder
                 return $definition['schema'];
             }
         }
-        throw new \LogicException('默认装修页面定义缺失');
+        throw new \LogicException(DiyError::DEFAULT_PAGE_DEFINITION_MISSING->message(), DiyError::DEFAULT_PAGE_DEFINITION_MISSING->value);
     }
 
     private function memberSchema(): array
@@ -128,7 +129,7 @@ class DiyTemplateSeeder20260606 extends Seeder
                 return $definition['schema'];
             }
         }
-        throw new \LogicException('默认装修页面定义缺失');
+        throw new \LogicException(DiyError::DEFAULT_PAGE_DEFINITION_MISSING->message(), DiyError::DEFAULT_PAGE_DEFINITION_MISSING->value);
     }
 
     private function promotionSchema(): array

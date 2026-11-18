@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+
 use App\Domain\Member\Contract\MemberLevelInput;
 use App\Domain\Member\Repository\MemberLevelRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Member\MemberLevel;
 use App\Interface\Common\ResultCode;
@@ -44,7 +46,7 @@ final class DomainMemberLevelService extends IService
     {
         $level = $this->repository->findById($dto->getId());
         if (! $level) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员等级不存在');
+            throw new BusinessException(MemberError::LEVEL_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         // 使用 DTO 的 toArray() 方法获取数据
@@ -59,7 +61,7 @@ final class DomainMemberLevelService extends IService
     public function delete(int $id): bool
     {
         if (! $this->repository->existsById($id)) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员等级不存在');
+            throw new BusinessException(MemberError::LEVEL_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return $this->repository->deleteById($id) > 0;
@@ -122,7 +124,7 @@ final class DomainMemberLevelService extends IService
         // 校验序号唯一性
         $levelNumbers = array_column($levels, 'level');
         if (\count($levelNumbers) !== \count(array_unique($levelNumbers))) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '等级序号不能重复');
+            throw new BusinessException(MemberError::LEVEL_NUMBER_DUPLICATED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
 
         // 按序号升序排序后校验成长值门槛严格递增
@@ -130,14 +132,7 @@ final class DomainMemberLevelService extends IService
 
         for ($i = 1, $count = \count($levels); $i < $count; ++$i) {
             if ($levels[$i]['growth_value_min'] <= $levels[$i - 1]['growth_value_min']) {
-                throw new BusinessException(
-                    ResultCode::UNPROCESSABLE_ENTITY,
-                    \sprintf(
-                        '等级 %d 的成长值门槛必须大于等级 %d 的成长值门槛',
-                        $levels[$i]['level'],
-                        $levels[$i - 1]['level'],
-                    ),
-                );
+                throw new BusinessException(MemberError::LEVEL_THRESHOLD_INVALID, parameters: [$levels[$i]['level'], $levels[$i - 1]['level']], resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
         }
     }
@@ -193,7 +188,7 @@ final class DomainMemberLevelService extends IService
     {
         $names = array_map(static fn (array $level) => $level['name'], $levels);
         if (\count($names) !== \count(array_unique($names))) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级名称不能重复');
+            throw new BusinessException(MemberError::LEVEL_NAME_DUPLICATED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -208,18 +203,18 @@ final class DomainMemberLevelService extends IService
         foreach ($levels as $item) {
             $name = trim((string) ($item['name'] ?? ''));
             if ($name === '') {
-                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级名称不能为空');
+                throw new BusinessException(MemberError::LEVEL_NAME_REQUIRED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
 
             if (! isset($item['level']) || (! isset($item['growth']) && ! isset($item['growth_value_min']))) {
-                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级配置字段不完整');
+                throw new BusinessException(MemberError::LEVEL_CONFIG_INCOMPLETE, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
 
             $level = (int) $item['level'];
             $growthValueMin = (int) ($item['growth_value_min'] ?? $item['growth']);
 
             if ($level < 1 || $growthValueMin < 0) {
-                throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, '会员等级配置字段不合法');
+                throw new BusinessException(MemberError::LEVEL_CONFIG_INVALID, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
             }
 
             $payload = [

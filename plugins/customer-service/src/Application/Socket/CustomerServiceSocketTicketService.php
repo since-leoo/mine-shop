@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Application\Socket;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Plugin\CustomerService\Domain\Contract\CustomerServiceTicketStoreInterface;
 use Plugin\CustomerService\Service\CustomerServiceSettingsResolver;
 
@@ -53,10 +54,10 @@ final class CustomerServiceSocketTicketService
     private function issue(array $principal): array
     {
         if (! ($this->settings->toArray()['enabled'] ?? false)) {
-            throw new \DomainException('客服服务暂未开启');
+            throw CustomerServiceError::SERVICE_DISABLED->exception();
         }
         if ((int) $principal['principal_id'] <= 0) {
-            throw new \InvalidArgumentException('无效的客服身份');
+            throw CustomerServiceError::IDENTITY_INVALID->invalid();
         }
         $ticket = bin2hex(random_bytes(24));
         $expiresIn = 60;

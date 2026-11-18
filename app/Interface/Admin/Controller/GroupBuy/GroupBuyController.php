@@ -15,6 +15,7 @@ namespace App\Interface\Admin\Controller\GroupBuy;
 use App\Application\Admin\GroupBuy\AppGroupBuyCommandService;
 use App\Application\Admin\GroupBuy\AppGroupBuyQueryService;
 use App\Application\Admin\GroupBuy\Dto\GroupBuyExportDto;
+use App\Infrastructure\Error\GroupBuyError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\GroupBuy\GroupBuyRequest;
@@ -68,7 +69,7 @@ final class GroupBuyController extends AbstractController
         $groupBuy = $this->queryService->find($id);
         return $groupBuy
             ? $this->success($groupBuy->toArray())
-            : $this->error('团购活动不存在', 404);
+            : $this->error(GroupBuyError::NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]
@@ -76,7 +77,7 @@ final class GroupBuyController extends AbstractController
     public function store(GroupBuyRequest $request): Result
     {
         $act = $this->commandService->create($request->toDto(null));
-        return $act ? $this->success([], '创建团购活动成功', 201) : $this->error('创建团购活动失败');
+        return $act ? $this->success([], '创建团购活动成功', 201) : $this->error(GroupBuyError::CREATE_FAILED);
     }
 
     #[PutMapping(path: '{id:\d+}')]
@@ -84,7 +85,7 @@ final class GroupBuyController extends AbstractController
     public function update(int $id, GroupBuyRequest $request): Result
     {
         $act = $this->commandService->update($request->toDto($id));
-        return $act ? $this->success([], '更新团购活动成功') : $this->error('更新团购活动失败');
+        return $act ? $this->success([], '更新团购活动成功') : $this->error(GroupBuyError::UPDATE_FAILED);
     }
 
     #[DeleteMapping(path: '{id:\d+}')]
@@ -92,7 +93,7 @@ final class GroupBuyController extends AbstractController
     public function delete(int $id): Result
     {
         $act = $this->commandService->delete($id);
-        return $act ? $this->success(null, '删除团购活动成功') : $this->error('删除团购活动失败');
+        return $act ? $this->success(null, '删除团购活动成功') : $this->error(GroupBuyError::DELETE_FAILED);
     }
 
     #[PutMapping(path: '{id:\d+}/toggle-status')]
@@ -100,7 +101,7 @@ final class GroupBuyController extends AbstractController
     public function toggleStatus(int $id): Result
     {
         $act = $this->commandService->toggleStatus($id);
-        return $act ? $this->success(null, '切换状态成功') : $this->error('切换状态失败');
+        return $act ? $this->success(null, '切换状态成功') : $this->error(GroupBuyError::TOGGLE_FAILED);
     }
 
     #[PostMapping(path: 'export')]

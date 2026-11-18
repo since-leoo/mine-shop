@@ -20,6 +20,8 @@ use App\Domain\Trade\AfterSale\Mapper\AfterSaleMapper;
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 use App\Domain\Trade\Order\Enum\OrderStatus;
 use App\Domain\Trade\Order\Repository\OrderRepository;
+use App\Infrastructure\Error\AfterSaleError;
+use App\Infrastructure\Error\OrderError;
 use App\Infrastructure\Model\AfterSale\AfterSale;
 use App\Infrastructure\Model\Order\OrderItem;
 
@@ -52,7 +54,7 @@ final class DomainAfterSaleService
         $item = $this->resolveEligibleOrderItem($input->getMemberId(), $input->getOrderId(), $input->getOrderItemId());
         $this->allowance($item)->assertRequest($input->getQuantity(), $input->getApplyAmount());
         if (! in_array($input->getType(), $this->resolveAvailableTypes((string) $item->order->status), true)) {
-            throw new \DomainException('当前订单状态不支持该售后类型');
+            throw AfterSaleError::ORDER_TYPE_UNSUPPORTED->exception();
         }
         $entity = AfterSaleEntity::apply($input);
         $this->afterSaleRepository->createFromEntity($entity);
@@ -62,7 +64,7 @@ final class DomainAfterSaleService
 
     public function lockOrder(int $orderId): void
     {
-        if ($this->orderRepository->findByIdForLock($orderId) === null) { throw new \DomainException('订单不存在'); }
+        if ($this->orderRepository->findByIdForLock($orderId) === null) { throw OrderError::NOT_FOUND->exception(); }
     }
 
     public function cancelForMember(int $memberId, int $id): void
@@ -103,7 +105,7 @@ final class DomainAfterSaleService
         /** @var null|AfterSale $model */
         $model = $this->afterSaleRepository->findById($id);
         if ($model === null) {
-            throw new \DomainException('获取售后单失败');
+            throw AfterSaleError::LOAD_FAILED->exception();
         }
 
         return AfterSaleMapper::fromModel($model);
@@ -113,20 +115,20 @@ final class DomainAfterSaleService
     {
         $orderItem = $this->orderRepository->findOrderItemForAfterSale($memberId, $orderId, $orderItemId);
         if ($orderItem === null) {
-            throw new \DomainException('当前订单商品不可申请售后');
+            throw AfterSaleError::ORDER_ITEM_INELIGIBLE->exception();
         }
 
         if ($this->afterSaleRepository->findActiveByOrderItemId($orderItemId) !== null) {
-            throw new \DomainException('该订单商品已存在进行中的售后单');
+            throw AfterSaleError::ACTIVE_REQUEST_EXISTS->exception();
         }
 
         $status = (string) $orderItem->order->status;
         if (! \in_array($status, [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value, OrderStatus::SHIPPED->value, OrderStatus::COMPLETED->value], true)) {
-            throw new \DomainException('当前订单状态不支持申请售后');
+            throw AfterSaleError::ORDER_STATUS_UNSUPPORTED->exception();
         }
 
         if ($status === OrderStatus::COMPLETED->value && $this->isAfterSaleWindowExpired($orderItem)) {
-            throw new \DomainException('订单已超过售后申请期');
+            throw AfterSaleError::APPLICATION_PERIOD_EXPIRED->exception();
         }
 
         return $orderItem;
@@ -167,7 +169,7 @@ final class DomainAfterSaleService
     {
         $model = $this->afterSaleRepository->findByIdForLock($id);
         if ($model === null) {
-            throw new \DomainException('售后单不存在');
+            throw AfterSaleError::NOT_FOUND->exception();
         }
         return AfterSaleMapper::fromModel($model);
     }

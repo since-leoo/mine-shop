@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Facade;
 
+use App\Infrastructure\Error\SystemMessageError;
 use Carbon\Carbon;
 use Hyperf\Context\ApplicationContext;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\MessageTemplateInterface;
@@ -43,7 +44,7 @@ class SystemMessage
             return $service->{$method}(...$arguments);
         }
 
-        throw new \BadMethodCallException("Method {$method} does not exist");
+        throw new \BadMethodCallException(SystemMessageError::METHOD_NOT_FOUND->message([$method]), SystemMessageError::METHOD_NOT_FOUND->value);
     }
 
     /**
@@ -168,7 +169,7 @@ class SystemMessage
     ): Message {
         $template = static::getTemplateService()->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
 
         $rendered = $template->render($variables);

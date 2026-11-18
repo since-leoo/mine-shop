@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Entity;
 
+use App\Infrastructure\Error\DistributionError;
+
 final class CommissionAccountEntity
 {
     private array $dirty = [];
@@ -57,7 +59,7 @@ final class CommissionAccountEntity
     {
         $this->positive($amount);
         if ($this->state['debt_amount'] > 0) {
-            throw new \DomainException('存在待追回佣金，暂不能提现');
+            throw DistributionError::COMMISSION_RECOVERY_PENDING->exception();
         }
         $this->add('available_amount', -$amount);
         $this->add('frozen_amount', $amount);
@@ -73,7 +75,7 @@ final class CommissionAccountEntity
     public function pay(int $amount): void
     {
         if ($this->state['debt_amount'] > 0) {
-            throw new \DomainException('退款形成待追回金额，须先处理后再确认打款');
+            throw DistributionError::REFUND_RECOVERY_PENDING->exception();
         }
         $this->positive($amount);
         $this->add('frozen_amount', -$amount);
@@ -83,7 +85,7 @@ final class CommissionAccountEntity
     private function set(string $field, int $amount): void
     {
         if ($amount < 0) {
-            throw new \DomainException('佣金余额不足或账目不一致');
+            throw DistributionError::COMMISSION_BALANCE_INCONSISTENT->exception();
         }
         $this->state[$field] = $amount;
         $this->dirty[$field] = true;
@@ -104,7 +106,7 @@ final class CommissionAccountEntity
     private function positive(int $amount): void
     {
         if ($amount < 0) {
-            throw new \DomainException('金额不能为负');
+            throw DistributionError::AMOUNT_NEGATIVE->exception();
         }
     }
 }

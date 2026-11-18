@@ -14,6 +14,7 @@ namespace App\Domain\Trade\Coupon\Repository;
 
 use App\Domain\Trade\Coupon\Entity\CouponEntity;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Infrastructure\Model\Coupon\CouponUser;
 use Carbon\Carbon;
@@ -44,7 +45,7 @@ final class CouponRepository extends IRepository
     {
         $coupon = $this->create($entity->toArray());
         if (! isset($coupon->id)) {
-            throw new \RuntimeException('Failed to create coupon');
+            throw CouponError::CREATE_FAILED->internal();
         }
         $entity->setId((int) $coupon->id);
         return $coupon;

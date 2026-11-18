@@ -15,30 +15,32 @@ namespace App\Domain\Trade\Payment\ValueObject;
 use App\Domain\Infrastructure\SystemSetting\ValueObject\PaymentSetting;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Infrastructure\Error\OrderError;
+use App\Infrastructure\Error\PaymentError;
 
 final class PaymentPolicy
 {
     public function assertOwner(OrderEntity $order, int $memberId): void
     {
         if ($order->getMemberId() !== $memberId) {
-            throw new \DomainException('订单不存在');
+            throw OrderError::NOT_FOUND->exception();
         }
     }
 
     public function assertPayable(OrderEntity $order): void
     {
         if ($order->getStatus() !== 'pending' || $order->getPayStatus() !== 'pending') {
-            throw new \DomainException('当前订单状态不可支付');
+            throw OrderError::NOT_PAYABLE->exception();
         }
         if ($order->getExpireTime()?->isPast()) {
-            throw new \DomainException('订单已过期');
+            throw OrderError::EXPIRED->exception();
         }
     }
 
     public function assertBalance(PaymentSetting $setting, int $amount, int $spentToday): void
     {
         if (! $setting->balanceEnabled()) {
-            throw new \DomainException('余额支付未启用');
+            throw PaymentError::BALANCE_DISABLED->exception();
         }
         $config = $setting->balanceConfig();
         foreach (['min_amount', 'max_amount', 'daily_limit'] as $key) {
@@ -49,7 +51,7 @@ final class PaymentPolicy
             if (($key === 'min_amount' && $amount < $limit)
                 || ($key === 'max_amount' && $amount > $limit)
                 || ($key === 'daily_limit' && $spentToday + $amount > $limit)) {
-                throw new \DomainException('余额支付超过配置限额: ' . $key);
+                throw PaymentError::BALANCE_LIMIT_EXCEEDED->exception([$key]);
             }
         }
     }
@@ -58,7 +60,7 @@ final class PaymentPolicy
     {
         $this->assertPayable($order);
         if ($order->getPayAmount() <= 0) {
-            throw new \DomainException('人工认款金额必须大于零');
+            throw PaymentError::MANUAL_AMOUNT_INVALID->exception();
         }
     }
 
@@ -67,7 +69,7 @@ final class PaymentPolicy
         $this->assertOwner($order, $member->getId());
         $this->assertPayable($order);
         if (! $member->getOpenid() || $order->getPayAmount() <= 0) {
-            throw new \DomainException('微信支付需要有效的会员 openid 和正数金额');
+            throw PaymentError::WECHAT_REQUEST_INVALID->exception();
         }
         return [
             'out_trade_no' => $order->getOrderNo(),
@@ -83,11 +85,11 @@ final class PaymentPolicy
             || ($payload['mchid'] ?? '') !== (string) ($config['mch_id'] ?? $config['mchid'] ?? '')
             || ($payload['appid'] ?? '') !== (string) ($config['mini_app_id'] ?? $config['app_id'] ?? '')
             || empty($payload['transaction_id'])) {
-            throw new \DomainException('微信支付通知身份不匹配');
+            throw PaymentError::WECHAT_IDENTITY_MISMATCH->exception();
         }
         $amount = $payload['amount']['total'] ?? null;
         if ($amount !== $order->getPayAmount() || ($payload['amount']['currency'] ?? '') !== 'CNY') {
-            throw new \DomainException('微信支付通知金额或币种不匹配');
+            throw PaymentError::WECHAT_AMOUNT_MISMATCH->exception();
         }
         return $amount;
     }

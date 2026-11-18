@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\Wechat\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
+use App\Infrastructure\Error\WechatError;
 
 final class WechatSettingsResolver
 {
@@ -33,7 +34,7 @@ final class WechatSettingsResolver
         ]);
 
         if (trim((string) $config['app_id']) === '' || trim((string) $config['secret']) === '') {
-            throw new \RuntimeException('请先在后台“系统集成”中配置微信授权 AppID 和 AppSecret');
+            throw WechatError::OAUTH_CONFIGURATION_MISSING->internal();
         }
 
         return $config;

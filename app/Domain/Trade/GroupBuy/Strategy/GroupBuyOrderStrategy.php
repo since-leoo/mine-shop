@@ -19,6 +19,8 @@ use App\Domain\Trade\GroupBuy\Service\DomainGroupBuyService;
 use App\Domain\Trade\Order\Contract\OrderTypeStrategyInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
+use App\Infrastructure\Error\GroupBuyError;
+use App\Infrastructure\Error\OrderError;
 use Psr\Container\ContainerInterface;
 
 final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
@@ -36,14 +38,14 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
     public function validate(OrderEntity $orderEntity): OrderEntity
     {
         if ($orderEntity->getMemberId() <= 0) {
-            throw new \DomainException('请先登录后再下单');
+            throw OrderError::LOGIN_REQUIRED->exception();
         }
         $items = $orderEntity->getItems();
         if (empty($items)) {
-            throw new \DomainException('至少选择一件商品');
+            throw OrderError::ITEM_REQUIRED->exception();
         }
         if (\count($items) > 1) {
-            throw new \DomainException('拼团订单仅支持单个商品');
+            throw GroupBuyError::SINGLE_ITEM_REQUIRED->exception();
         }
         $item = $items[0];
 
@@ -73,7 +75,7 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
         $snapshots = $this->snapshotService->getSkuSnapshots([$item->getSkuId()]);
         $snapshot = $snapshots[$item->getSkuId()] ?? null;
         if (! $snapshot) {
-            throw new \DomainException(\sprintf('SKU %d 不存在或已下架', $item->getSkuId()));
+            throw OrderError::SKU_UNAVAILABLE->exception([$item->getSkuId()]);
         }
         $item->attachSnapshot($snapshot);
 
@@ -112,7 +114,7 @@ final class GroupBuyOrderStrategy implements OrderTypeStrategyInterface
     {
         // 拼团订单（含原价购买）均不允许使用优惠券
         if ($couponId !== null && $couponId > 0) {
-            throw new \DomainException('拼团订单不支持使用优惠券');
+            throw GroupBuyError::COUPON_UNSUPPORTED->exception();
         }
         $orderEntity->setCouponAmount(0);
     }

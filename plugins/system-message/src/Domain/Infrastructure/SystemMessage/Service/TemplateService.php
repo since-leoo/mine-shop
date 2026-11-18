@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service;
 
+use App\Infrastructure\Error\SystemMessageError;
 use Hyperf\Collection\Collection;
 use Hyperf\Context\ApplicationContext;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Event\TemplateCreated;
@@ -52,7 +53,7 @@ class TemplateService
         try {
             $template = $this->repository->findById($templateId);
             if (! $template) {
-                throw new \InvalidArgumentException("Template not found: {$templateId}");
+                throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
             }
             $this->validateTemplateData($data, $template);
             $changes = [];
@@ -81,7 +82,7 @@ class TemplateService
                 return false;
             }
             if ($template->messages()->exists()) {
-                throw new \InvalidArgumentException('Cannot delete template that is being used by messages');
+                throw SystemMessageError::TEMPLATE_IN_USE->invalid();
             }
             $result = $template->delete();
             $this->getEventDispatcher()->dispatch(new TemplateDeleted($template));
@@ -117,7 +118,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         return $template->render($variables);
     }
@@ -126,7 +127,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         $rendered = $template->render($variables);
         return ['template' => $template->toArray(), 'variables' => $variables, 'rendered' => $rendered, 'preview_html' => $this->generatePreviewHtml($rendered)];
@@ -136,7 +137,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         return $template->validateVariables($variables);
     }
@@ -145,7 +146,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         return $template->getRequiredVariables();
     }
@@ -154,7 +155,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         $data = $template->toArray();
         unset($data['id'], $data['created_at'], $data['updated_at']);
@@ -167,7 +168,7 @@ class TemplateService
     {
         $template = $this->getById($templateId);
         if (! $template) {
-            throw new \InvalidArgumentException("Template not found: {$templateId}");
+            throw SystemMessageError::TEMPLATE_NOT_FOUND->invalid([$templateId]);
         }
         $template->is_active = ! $template->is_active;
         return $template->save();
@@ -227,22 +228,22 @@ class TemplateService
         $required = ['name', 'title', 'content'];
         foreach ($required as $field) {
             if (empty($data[$field])) {
-                throw new \InvalidArgumentException("Field {$field} is required");
+                throw SystemMessageError::FIELD_REQUIRED->invalid([$field]);
             }
         }
         $maxNameLength = config('system_message.template.max_name_length', 100);
         if (mb_strlen($data['name']) > $maxNameLength) {
-            throw new \InvalidArgumentException("Name too long, max {$maxNameLength} characters");
+            throw SystemMessageError::TEMPLATE_NAME_TOO_LONG->invalid([$maxNameLength]);
         }
         $query = MessageTemplate::query()->where('name', $data['name']);
         if ($template) {
             $query->where('id', '!=', $template->id);
         }
         if ($query->exists()) {
-            throw new \InvalidArgumentException("Template name already exists: {$data['name']}");
+            throw SystemMessageError::TEMPLATE_NAME_DUPLICATE->invalid([$data['name']]);
         }
         if (isset($data['type']) && ! \in_array($data['type'], array_keys(MessageTemplate::getTypes()), true)) {
-            throw new \InvalidArgumentException("Invalid template type: {$data['type']}");
+            throw SystemMessageError::TEMPLATE_TYPE_INVALID->invalid([$data['type']]);
         }
         $this->validateTemplateSyntax($data['title'], 'title');
         $this->validateTemplateSyntax($data['content'], 'content');
@@ -256,11 +257,11 @@ class TemplateService
             foreach ($matches[1] as $variable) {
                 $variable = trim($variable);
                 if (! preg_match('/^[a-zA-Z_][a-zA-Z0-9_]*$/', $variable)) {
-                    throw new \InvalidArgumentException("Invalid variable name in {$field}: {$variable}");
+                    throw SystemMessageError::TEMPLATE_VARIABLE_INVALID->invalid([$field, $variable]);
                 }
             }
-        } catch (\Throwable $e) {
-            throw new \InvalidArgumentException("Invalid template syntax in {$field}: " . $e->getMessage());
+        } catch (\InvalidArgumentException $e) {
+            throw SystemMessageError::TEMPLATE_SYNTAX_INVALID->invalid([$field, $e->getMessage()], $e);
         }
     }
 

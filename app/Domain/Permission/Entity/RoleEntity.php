@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Entity;
 
 use App\Domain\Auth\Enum\Status;
+
 use App\Domain\Permission\ValueObject\GrantPermissionsVo;
+use App\Infrastructure\Error\PermissionError;
 
 /**
  * 角色实体.
@@ -66,7 +68,7 @@ final class RoleEntity
     {
         $name = trim($name);
         if ($name === '') {
-            throw new \DomainException('角色名称不能为空');
+            throw PermissionError::ROLE_NAME_REQUIRED->exception();
         }
         $this->name = $name;
         $this->markDirty('name');
@@ -87,7 +89,7 @@ final class RoleEntity
     {
         $code = trim($code);
         if ($code === '') {
-            throw new \DomainException('角色编码不能为空');
+            throw PermissionError::ROLE_CODE_REQUIRED->exception();
         }
         $this->code = $code;
         $this->markDirty('code');
@@ -203,16 +205,12 @@ final class RoleEntity
     {
         // 1. 前置条件检查
         if ($this->status !== Status::Normal) {
-            throw new \DomainException(
-                "角色状态为 {$this->status->name}，无法授予权限"
-            );
+            throw PermissionError::ROLE_GRANT_DISABLED->exception([$this->status->name]);
         }
 
         // 2. 业务规则：超级管理员角色不能修改权限
         if ($isSuperAdmin) {
-            throw new \DomainException(
-                '超级管理员角色的权限不能被修改'
-            );
+            throw PermissionError::SUPER_ADMIN_PERMISSION_IMMUTABLE->exception();
         }
 
         // 3. 空数组表示清空所有权限

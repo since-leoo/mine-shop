@@ -134,6 +134,7 @@ function ensureAuthToken(forceLogin = false): Promise<string> {
 
 function createRequestError(error: {
   code?: string | number;
+  errorCode?: number;
   msg?: string;
   data?: any;
   statusCode?: number;
@@ -142,6 +143,7 @@ function createRequestError(error: {
 }) {
   return {
     code: error.code ?? error.statusCode ?? -1,
+    errorCode: error.errorCode,
     msg: normalizeErrorMessage(error, '请求失败'),
     data: error.data,
     statusCode: error.statusCode,
@@ -204,6 +206,7 @@ export function request({ url, method = 'GET', data = {}, header = {}, needAuth 
           }
           reject(createRequestError({
             code: (body && (body.code ?? body.statusCode)) || statusCode,
+            errorCode: body && body.error_code,
             msg: (body && (body.message || body.msg)) || '',
             data: toCamelCase(body && body.data),
             statusCode,

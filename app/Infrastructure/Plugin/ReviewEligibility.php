@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Plugin;
 
 use App\Domain\Infrastructure\Plugin\Contract\ReviewEligibilityInterface;
+
 use App\Domain\Trade\Order\Enum\OrderStatus;
+
+use App\Infrastructure\Error\CommerceError;
+use App\Infrastructure\Error\ReviewAccessError;
 use App\Infrastructure\Model\Order\Order;
 use App\Infrastructure\Model\Order\OrderItem;
 
@@ -15,17 +19,17 @@ final class ReviewEligibility implements ReviewEligibilityInterface
     {
         $order = Order::query()->find($orderId);
         if ($order === null) {
-            throw new \RuntimeException('订单不存在');
+            throw CommerceError::ORDER_NOT_FOUND->internal();
         }
         if ((int) $order->member_id !== $memberId) {
-            throw new \DomainException('无权评价该订单');
+            throw ReviewAccessError::ORDER_FORBIDDEN->exception();
         }
         if ($order->status !== OrderStatus::COMPLETED->value) {
-            throw new \DomainException('只能对已完成的订单进行评价');
+            throw ReviewAccessError::ORDER_NOT_COMPLETED->exception();
         }
         $item = OrderItem::query()->where('order_id', $orderId)->find($orderItemId);
         if ($item === null) {
-            throw new \RuntimeException('订单商品不存在');
+            throw ReviewAccessError::ITEM_NOT_FOUND->internal();
         }
         return ['order_id' => $orderId, 'order_item_id' => $orderItemId, 'product_id' => (int) $item->product_id, 'sku_id' => (int) $item->sku_id];
     }

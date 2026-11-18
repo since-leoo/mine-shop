@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Handler\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong\YunzhongClient;
 use Plugin\SupplyChain\Interfaces\CatalogInterface;
 use Plugin\SupplyChain\Interfaces\Data\ProductQuery;
@@ -64,7 +65,7 @@ final class CatalogHandler implements CatalogInterface
     {
         $data = $this->client->call('catalog.suppliers', 'GET', '/app/supplier/getSuppliers');
         if (! \is_array($data)) {
-            throw new \RuntimeException('供应商列表结构无效');
+            throw SupplyChainError::SUPPLIER_LIST_INVALID->internal();
         }
         return $data;
     }
@@ -73,7 +74,7 @@ final class CatalogHandler implements CatalogInterface
     {
         $data = $this->client->call('catalog.categories', 'GET', '/app/category/tree');
         if (! \is_array($data)) {
-            throw new \RuntimeException('供应链分类结构无效');
+            throw SupplyChainError::CATEGORY_RESPONSE_INVALID->internal();
         }
         return $data;
     }
@@ -111,7 +112,7 @@ final class CatalogHandler implements CatalogInterface
             }
         }
         if ($detail && ($skus === [] || trim((string) ($item['title'] ?? '')) === '')) {
-            throw new \RuntimeException('供应链商品详情缺少标题或有效 SKU，禁止导入');
+            throw SupplyChainError::PRODUCT_DETAIL_INVALID->internal();
         }
         return ['external_product_id' => (string) PayloadMapper::id($item['id'] ?? ''),
             'name' => (string) ($item['title'] ?? ''), 'main_image' => (string) ($item['image_url'] ?? ''),

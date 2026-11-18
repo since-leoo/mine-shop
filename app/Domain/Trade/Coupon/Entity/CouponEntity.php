@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Coupon\Entity;
 
 use App\Domain\Trade\Coupon\Contract\CouponInput;
+use App\Infrastructure\Error\CouponError;
 use Carbon\Carbon;
 
 /**
@@ -196,7 +197,7 @@ final class CouponEntity
             $start = Carbon::parse($startTime);
             $end = Carbon::parse($endTime);
             if ($start->gte($end)) {
-                throw new \InvalidArgumentException('优惠券生效时间不合法');
+                throw CouponError::EFFECTIVE_TIME_INVALID->invalid();
             }
         }
 
@@ -231,7 +232,7 @@ final class CouponEntity
     public function assertActive(): self
     {
         if ($this->status !== 'active') {
-            throw new \DomainException('优惠券未启用');
+            throw CouponError::INACTIVE->exception();
         }
         return $this;
     }
@@ -242,11 +243,11 @@ final class CouponEntity
         $end = $this->getEndTimeCarbon();
 
         if ($start && $now->lt($start)) {
-            throw new \DomainException('优惠券未开始');
+            throw CouponError::NOT_STARTED->exception();
         }
 
         if ($end && $now->gt($end)) {
-            throw new \DomainException('优惠券已过期');
+            throw CouponError::EXPIRED->exception();
         }
 
         return $this;
@@ -255,7 +256,7 @@ final class CouponEntity
     public function assertAvailableStock(int $availableQuantity, int $requestQuantity): self
     {
         if ($availableQuantity < $requestQuantity) {
-            throw new \DomainException('优惠券库存不足');
+            throw CouponError::STOCK_INSUFFICIENT->exception();
         }
         return $this;
     }
@@ -282,7 +283,7 @@ final class CouponEntity
         };
 
         if ($deadline->lte($now)) {
-            throw new \InvalidArgumentException('过期时间无效');
+            throw CouponError::EXPIRY_INVALID->invalid();
         }
 
         return $deadline;

@@ -460,7 +460,7 @@ final class DomainUserService
         $model = $this->repository->findById($id);
         
         if (!$model) {
-            throw new \DomainException("用户不存在: ID={$id}");
+            throw \App\Infrastructure\Error\CommonError::NOT_FOUND->exception();
         }
         
         return UserMapper::fromModel($model);
@@ -534,9 +534,7 @@ final class UserEntity
     public function setUsername(string $username): self
     {
         $username = trim($username);
-        if ($username === '') {
-            throw new \DomainException('用户名不能为空');
-        }
+        // 用户名必填由 Request 校验。
         
         $this->username = $username;
         $this->markDirty('username');
@@ -811,7 +809,7 @@ class PriceVo
     {
         // 业务规则：团购价必须小于原价
         if ($this->groupPrice >= $this->originalPrice) {
-            throw new \DomainException('团购价必须小于原价');
+            throw \App\Infrastructure\Error\GroupBuyError::PRICE_INVALID->exception();
         }
     }
 }
@@ -847,7 +845,7 @@ public function increaseSoldQuantity(int $quantity): self
     
     // 业务规则：检查库存是否充足
     if ($newSoldQuantity > $this->totalQuantity) {
-        throw new \DomainException('库存不足');
+        throw \App\Infrastructure\Error\GroupBuyError::STOCK_INSUFFICIENT->exception();
     }
     
     $this->setSoldQuantity($newSoldQuantity);
@@ -1193,7 +1191,7 @@ public function getEntity(int $id): UserEntity
     $model = $this->repository->findById($id);
     
     if (!$model) {
-        throw new \DomainException("用户不存在: ID={$id}");
+        throw \App\Infrastructure\Error\CommonError::NOT_FOUND->exception();
     }
     
     return UserMapper::fromModel($model);
@@ -1298,19 +1296,24 @@ public function grantPermissions(RoleGrantPermissionsInput $input): void
 
 ## 异常处理
 
-### 使用标准 PHP 异常
+### 使用集中错误码，保留异常类型
 
-明确可向调用方展示的业务拒绝（含请求资源不存在）使用 `\DomainException`，输入校验使用 `\InvalidArgumentException`。生产响应只公开明确的业务提示；数据库、SDK、类型错误及普通 `\RuntimeException` 仅记录完整日志并返回通用错误。锁竞争、缓存故障、支付/退款回调中暂缺记录等可恢复的基础设施错误保留 `\RuntimeException`，避免被误判为永久业务失败。已有 `BusinessException`、验证及鉴权处理器继续负责各自的响应码。
+错误码与中文文案统一维护在 `app/Infrastructure/Error`，按业务分为 `CatalogError`、`OrderError`、`MemberError` 等枚举。业务代码引用枚举，动态内容通过模板参数传递，不再自行拼接错误文案。完整号段与响应协议见 [ERROR-CODES.md](ERROR-CODES.md)。
+
+`exception()`、`invalid()`、`internal()` 分别创建标准 `DomainException`、`InvalidArgumentException`、`RuntimeException`，保留业务拒绝、参数错误与可重试基础设施故障的区别；不要为每个错误新建异常子类。数据库、SDK 未知异常继续抛出原异常，不能包装成可公开的业务错误。
 
 ```php
-// ✅ 正确：使用标准异常
-throw new \DomainException('用户名不能为空');
-throw new \DomainException('用户不存在');
-throw new \InvalidArgumentException('无效的参数');
+use App\Infrastructure\Error\CatalogError;
+use App\Infrastructure\Exception\System\BusinessException;
+use App\Interface\Common\ResultCode;
 
-// ❌ 错误：不要创建自定义领域异常
-throw new UserNotFoundException();
+throw CatalogError::PRODUCT_NOT_FOUND->exception();
+throw CatalogError::IMAGE_LIMIT_EXCEEDED->invalid([$max]);
+throw CatalogError::STOCK_CACHE_MISSING->internal(previous: $cause);
+throw new BusinessException(CatalogError::PRODUCT_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
 ```
+
+接口保留已有 `code` 与 `data`，额外返回 `error_code`。内部异常对外使用 `CommonError::SYSTEM_BUSY`，日志保存完整异常；第三方协议码（如供应链 `6/429/10001/10002`）保留用于重试判断，不用本地业务码替换。
 
 ---
 

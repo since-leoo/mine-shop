@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Entity;
 
 use App\Domain\Auth\Enum\Status;
+
 use App\Domain\Permission\ValueObject\ButtonPermission;
+use App\Infrastructure\Error\PermissionError;
 
 /**
  * 菜单实体.
@@ -83,7 +85,7 @@ final class MenuEntity
     public function changeParent(int $parentId): self
     {
         if ($parentId < 0) {
-            throw new \DomainException('父级菜单无效');
+            throw PermissionError::MENU_PARENT_INVALID->exception();
         }
         $this->parentId = $parentId;
         $this->markDirty('parent_id');
@@ -104,7 +106,7 @@ final class MenuEntity
     {
         $name = trim($name);
         if ($name === '') {
-            throw new \DomainException('菜单名称不能为空');
+            throw PermissionError::MENU_NAME_REQUIRED->exception();
         }
         $this->name = $name;
         $this->markDirty('name');

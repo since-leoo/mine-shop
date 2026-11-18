@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Service;
 
+use App\Infrastructure\Error\DistributionError;
 use Plugin\Distribution\Domain\Contract\ShareInput;
 use Plugin\Distribution\Domain\Contract\ShareLinkGatewayInterface;
 use Plugin\Distribution\Domain\Repository\DistributionRepository;
@@ -26,14 +27,14 @@ final class DomainShareService
         $settings = $this->repository->settings()['settings'];
         $member = $this->repository->member($memberId);
         if (! $member || $member['status'] !== 'active') {
-            throw new \DomainException('当前会员不能生成推广分享');
+            throw DistributionError::MEMBER_SHARE_FORBIDDEN->exception();
         }
         $target = $data['target'];
         $page = $target === 'product' ? 'pages/goods/details/index' : 'pages/home/index';
         $query = [];
         if ($target === 'product') {
             if (empty($data['spu_id'])) {
-                throw new \DomainException('商品分享缺少商品ID');
+                throw DistributionError::SHARE_PRODUCT_REQUIRED->exception();
             }
             $query['spuId'] = (int) $data['spu_id'];
             foreach (['sku_id' => 'skuId', 'activity_id' => 'activityId', 'order_type' => 'orderType', 'session_id' => 'sessionId', 'group_no' => 'groupNo', 'group_buy_id' => 'groupBuyId'] as $key => $param) {

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Order\Repository;
 
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\PaymentError;
 use App\Infrastructure\Model\Order\OrderPayment;
 use Hyperf\Collection\Collection;
 
@@ -123,7 +124,7 @@ class OrderPaymentRepository extends IRepository
         $status = match ($state) {
             'CLOSED', 'REVOKED' => 'cancelled',
             'PAYERROR' => 'failed',
-            default => throw new \DomainException('支付渠道状态不是确定终态'),
+            default => throw PaymentError::CHANNEL_STATUS_UNCONFIRMED->exception(),
         };
         // 条件更新防止查单结果覆盖已提交的成功回调。
         $this->model::where('id', $id)->where('status', 'pending')->update([

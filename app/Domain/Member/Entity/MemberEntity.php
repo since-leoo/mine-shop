@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Member\Entity;
 
 use App\Domain\Member\Contract\MemberInput;
+
 use App\Domain\Member\Contract\ProfileAuthorizeInput;
 use App\Domain\Member\Contract\ProfileUpdateInput;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -133,7 +135,7 @@ final class MemberEntity
     public function updateStatus(string $status): self
     {
         if (! \in_array($status, ['active', 'inactive', 'banned'], true)) {
-            throw new BusinessException(ResultCode::FAIL, 'Invalid member status');
+            throw new BusinessException(MemberError::STATUS_INVALID, resultCode: ResultCode::FAIL);
         }
 
         $this->setStatus($status);
@@ -271,7 +273,7 @@ final class MemberEntity
     public function loginByPassword(string $password, ?string $ip = null): self
     {
         if (! $this->verifyPassword($password)) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'Invalid phone or password');
+            throw new BusinessException(MemberError::CREDENTIALS_INVALID, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
 
         $this->setLastLoginAt(Carbon::now());
@@ -286,7 +288,7 @@ final class MemberEntity
     public function loginBySms(?string $ip = null): self
     {
         if ($this->status !== 'active') {
-            throw new \DomainException('会员账号已停用');
+            throw MemberError::DISABLED->exception();
         }
         $this->setLastLoginAt(Carbon::now());
         if ($ip !== null && trim($ip) !== '') {
@@ -512,7 +514,7 @@ final class MemberEntity
     public function bindPhone(string $phone): self
     {
         if (trim($phone) === '') {
-            throw new \DomainException('Phone number is required');
+            throw MemberError::PHONE_REQUIRED->exception();
         }
 
         $this->setPhone($phone);

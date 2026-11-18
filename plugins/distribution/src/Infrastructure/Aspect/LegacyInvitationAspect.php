@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\Distribution\Infrastructure\Aspect;
 
 use App\Application\Api\Member\AppApiMemberReferralQueryService;
+use App\Infrastructure\Error\DistributionError;
 use Hyperf\Di\Annotation\Aspect;
 use Hyperf\Di\Aop\AbstractAspect;
 use Hyperf\Di\Aop\ProceedingJoinPoint;
@@ -30,7 +31,7 @@ final class LegacyInvitationAspect extends AbstractAspect
     {
         $status = $this->distribution->status((int) ($proceedingJoinPoint->arguments['keys']['memberId'] ?? 0));
         if (! ($status['enabled'] ?? false) || ! ($status['mini_program_enabled'] ?? false) || ! ($status['can_invite'] ?? false)) {
-            throw new \DomainException('当前不可生成邀请二维码');
+            throw DistributionError::INVITATION_QR_CODE_FORBIDDEN->exception();
         }
         return $proceedingJoinPoint->process();
     }

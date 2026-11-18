@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Entity;
 
+use App\Infrastructure\Error\DistributionError;
 use Plugin\Distribution\Domain\Contract\WithdrawalInput;
 use Plugin\Distribution\Domain\Contract\WithdrawalReviewInput;
 
@@ -26,7 +27,7 @@ final class WithdrawalEntity
         $data = $input->toArray();
         $amount = (int) $data['amount'];
         if ($amount < $policy['withdrawal_min_amount']) {
-            throw new \DomainException('未达到最低提现金额');
+            throw DistributionError::WITHDRAWAL_BELOW_MINIMUM->exception();
         }
         $fee = intdiv($amount * (int) $policy['withdrawal_fee_bps'], 10000);
         $this->state = ['withdrawal_no' => 'WD' . date('YmdHis') . bin2hex(random_bytes(8)), 'request_key' => $data['request_key'] ?? null, 'member_id' => $memberId, 'amount' => $amount, 'fee_amount' => $fee, 'net_amount' => $amount - $fee, 'channel' => 'manual', 'account_name' => $data['account_name'], 'account_no' => $data['account_no'], 'remark' => $data['remark'] ?? '', 'status' => 'pending'];
@@ -40,13 +41,13 @@ final class WithdrawalEntity
         $current = $this->state['status'];
         $allowed = ['approve' => ['pending'], 'reject' => ['pending', 'approved'], 'pay' => ['approved'], 'fail' => ['approved']];
         if (! \in_array($current, $allowed[$action] ?? [], true)) {
-            throw new \DomainException('提现状态已变化，请刷新后操作');
+            throw DistributionError::WITHDRAWAL_STATE_CHANGED->exception();
         }
         if ($action === 'pay' && trim($data['payment_no'] ?? '') === '') {
-            throw new \DomainException('确认打款须填写唯一付款流水号');
+            throw DistributionError::PAYMENT_REFERENCE_REQUIRED->exception();
         }
         if (\in_array($action, ['reject', 'fail'], true) && trim($data['remark'] ?? '') === '') {
-            throw new \DomainException('驳回或失败须填写原因');
+            throw DistributionError::WITHDRAWAL_REJECTION_REASON_REQUIRED->exception();
         }
         $changes = ['status' => ['approve' => 'approved', 'reject' => 'rejected', 'pay' => 'paid', 'fail' => 'failed'][$action], 'operator_id' => $operator, 'remark' => $data['remark'] ?? ''];
         if ($action === 'pay') {

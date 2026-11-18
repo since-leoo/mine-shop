@@ -13,9 +13,11 @@ declare(strict_types=1);
 namespace App\Infrastructure\Plugin;
 
 use App\Domain\Infrastructure\Plugin\Contract\ProductReviewCommandInterface;
+
 use App\Domain\Infrastructure\Plugin\Contract\ProductReviewQueryInterface;
 use App\Domain\Infrastructure\Plugin\Contract\ReviewStatisticsInterface;
 use App\Domain\Trade\Review\Contract\ReviewInput;
+use App\Infrastructure\Error\ReviewAccessError;
 
 final class NullProductReview implements ProductReviewQueryInterface, ProductReviewCommandInterface, ReviewStatisticsInterface
 {
@@ -26,7 +28,7 @@ final class NullProductReview implements ProductReviewQueryInterface, ProductRev
 
     public function create(int $memberId, ReviewInput $input): int
     {
-        throw new \DomainException('商品评价功能未启用');
+        throw ReviewAccessError::DISABLED->exception();
     }
 
     public function listByProduct(int $productId, array $filters, int $page, int $pageSize): array

@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace Plugin\ProductReview\Domain\Trade\Review\Service;
 
+use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\ProductReviewError;
+use Hyperf\Collection\Collection;
 use Plugin\ProductReview\Domain\Trade\Review\Entity\ReviewEntity;
 use Plugin\ProductReview\Domain\Trade\Review\Mapper\ReviewMapper;
 use Plugin\ProductReview\Domain\Trade\Review\Repository\ReviewRepository;
-use App\Infrastructure\Abstract\IService;
 use Plugin\ProductReview\Infrastructure\Model\Review\Review;
-use Hyperf\Collection\Collection;
 
 final class DomainReviewService extends IService
 {
@@ -33,7 +34,7 @@ final class DomainReviewService extends IService
         /** @var null|Review $model */
         $model = $this->repository->findById($id);
         if (! $model) {
-            throw new \RuntimeException('评价不存在');
+            throw ProductReviewError::REVIEW_NOT_FOUND->internal();
         }
         return ReviewMapper::fromModel($model);
     }

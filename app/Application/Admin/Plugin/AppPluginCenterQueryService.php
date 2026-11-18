@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Application\Admin\Plugin;
 
 use App\Application\Admin\Infrastructure\AppSystemSettingCommandService;
+
 use App\Domain\Infrastructure\SystemSetting\Service\DomainSystemSettingService;
+use App\Infrastructure\Error\PluginError;
 use SinceLeoo\Plugin\Contract\PluginDiscovererInterface;
 
 /**
@@ -136,7 +138,7 @@ final class AppPluginCenterQueryService
             }
             return $this->commandService->update($key, $value);
         }
-        throw new \DomainException('配置项不属于该插件');
+        throw PluginError::CONFIG_NOT_OWNED->exception();
     }
 
     /** @return array<string, mixed> */
@@ -147,7 +149,7 @@ final class AppPluginCenterQueryService
                 return $plugin;
             }
         }
-        throw new \DomainException('插件不存在');
+        throw PluginError::NOT_FOUND->exception();
     }
 
     private function maskSensitive(mixed $value): mixed

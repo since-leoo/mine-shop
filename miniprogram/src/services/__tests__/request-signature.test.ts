@@ -76,6 +76,19 @@ describe('request signing', () => {
     expect(options.header['X-Signature']).toBeTruthy();
   });
 
+  it('keeps business error codes separate from authentication status', async () => {
+    getEnvMock.mockReturnValue('WEB');
+    requestMock.mockImplementation(({ success }) => {
+      success({ statusCode: 200, data: { code: 422, error_code: 220001, message: '优惠券不可用', data: [] } });
+    });
+    const { request } = await import('../request');
+    await expect(request({ url: '/api/v1/coupons/receive', method: 'POST' })).rejects.toMatchObject({
+      code: 422, errorCode: 220001, msg: '优惠券不可用', __authError: false,
+    });
+    expect(clearAuthStorageMock).not.toHaveBeenCalled();
+    expect(redirectToLoginMock).not.toHaveBeenCalled();
+  });
+
   it('attaches signature headers for miniapp upload requests', async () => {
     getEnvMock.mockReturnValue('WEAPP');
     uploadFileMock.mockImplementation(({ success }) => {
@@ -93,6 +106,19 @@ describe('request signing', () => {
     expect(options.header['X-Nonce']).toBeTruthy();
     expect(options.header['X-Body-Sha256']).toBeTruthy();
     expect(options.header['X-Signature']).toBeTruthy();
+  });
+
+  it('preserves business error codes in upload failures', async () => {
+    getEnvMock.mockReturnValue('WEAPP');
+    uploadFileMock.mockImplementation(({ success }) => {
+      success({ data: JSON.stringify({ code: 500, error_code: 150001, message: '文件不存在' }) });
+    });
+
+    const { uploadImage } = await import('../upload');
+
+    await expect(uploadImage('/tmp/demo.png')).rejects.toMatchObject({
+      code: 500, errorCode: 150001, msg: '文件不存在',
+    });
   });
 
   it('swallows h5 auth failures after redirecting to login', async () => {

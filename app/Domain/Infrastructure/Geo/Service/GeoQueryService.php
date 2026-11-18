@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Geo\Service;
 
+use App\Infrastructure\Error\GeoError;
+
 use App\Infrastructure\Model\Geo\GeoRegion;
 use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Hyperf\DbConnection\Db;
@@ -29,7 +31,7 @@ class GeoQueryService
     {
         $version = $this->latestVersion();
         if (! $version) {
-            throw new \DomainException('尚未同步行政区划数据');
+            throw GeoError::NOT_SYNCHRONIZED->exception();
         }
 
         $cacheKey = \sprintf(self::CACHE_KEY, $version->id);

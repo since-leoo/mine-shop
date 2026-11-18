@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Application\Api\Order;
 
 use App\Application\Admin\Trade\AppAfterSaleRefundService;
+
 use App\Application\Api\Payment\AppPaymentReconciliationService;
 use App\Domain\Catalog\Product\Event\ProductCreated;
 use App\Domain\Catalog\Product\Event\ProductDeleted;
@@ -32,6 +33,7 @@ use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
 use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
 use App\Domain\Trade\Shared\Repository\TradeOutboxRepository;
+use App\Infrastructure\Error\OrderError;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerInterface;
 
@@ -115,7 +117,7 @@ final class AppTradeRecoveryService
             'order.created' => $this->events->dispatch(new OrderCreatedEvent($this->orders->getCreatedEventEntity($data['order_no'], (bool) $data['from_cart']))),
             'order.cancelled' => $this->dispatchOrderCancelled($data),
             'refund.succeeded' => $this->events->dispatch(new AfterSaleRefundSucceeded($data['after_sale_id'], $data['order_id'], $data['member_id'], $data['refund_amount'], $data['payment_id'], $data['payment_no'], $data['payment_method'], $data['refund_no'], $data['operator_id'], $data['operator_name'])),
-            default => throw new \DomainException('未知交易事件: ' . $type),
+            default => throw OrderError::UNKNOWN_TRADE_EVENT->exception([$type]),
         };
     }
 

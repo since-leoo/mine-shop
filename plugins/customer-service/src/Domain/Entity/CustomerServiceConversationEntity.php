@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Domain\Entity;
 
+use App\Infrastructure\Error\CustomerServiceError;
+
 final class CustomerServiceConversationEntity
 {
     private array $dirty = [];
@@ -16,7 +18,7 @@ final class CustomerServiceConversationEntity
     public function requestHuman(string $reason, string $now): void
     {
         if (in_array($this->state(), ['closed', 'human_active', 'human_assigned'], true)) {
-            throw new \DomainException('当前会话不能重新转人工');
+            throw CustomerServiceError::HANDOFF_STATE_INVALID->exception();
         }
         if ($this->state() === 'human_waiting') { return; }
         $this->change(['reception_state' => 'human_waiting', 'status' => 'waiting', 'generation' => $this->generation() + 1, 'queue_entered_at' => $now, 'handoff_reason' => $reason, 'assigned_agent_id' => null]);
@@ -24,14 +26,14 @@ final class CustomerServiceConversationEntity
 
     public function assign(int $agentId, string $expires): void
     {
-        if ($this->state() !== 'human_waiting' || $this->value('assigned_agent_id')) { throw new \DomainException('会话不可分配'); }
+        if ($this->state() !== 'human_waiting' || $this->value('assigned_agent_id')) { throw CustomerServiceError::ASSIGNMENT_STATE_INVALID->exception(); }
         $this->change(['reception_state' => 'human_assigned', 'status' => 'assigned', 'assigned_agent_id' => $agentId, 'assignment_expires_at' => $expires]);
     }
 
     public function accept(int $agentId): bool
     {
-        if (!in_array($this->state(), ['human_waiting', 'human_assigned'], true)) { throw new \DomainException('会话不可接待'); }
-        if ($this->value('assigned_agent_id') && (int) $this->value('assigned_agent_id') !== $agentId) { throw new \DomainException('会话已分配其他客服'); }
+        if (!in_array($this->state(), ['human_waiting', 'human_assigned'], true)) { throw CustomerServiceError::ACCEPTANCE_STATE_INVALID->exception(); }
+        if ($this->value('assigned_agent_id') && (int) $this->value('assigned_agent_id') !== $agentId) { throw CustomerServiceError::CONVERSATION_ASSIGNED_ELSEWHERE->exception(); }
         $reserve = $this->state() === 'human_waiting';
         $this->change(['reception_state' => 'human_active', 'status' => 'active', 'assigned_agent_id' => $agentId, 'assignment_expires_at' => null, 'generation' => $this->generation() + 1]);
         return $reserve;
@@ -39,7 +41,7 @@ final class CustomerServiceConversationEntity
 
     public function transfer(int $from, int $to): void
     {
-        if ($this->state() !== 'human_active' || (int) $this->value('assigned_agent_id') !== $from || $from === $to) { throw new \DomainException('无权转接或目标坐席无效'); }
+        if ($this->state() !== 'human_active' || (int) $this->value('assigned_agent_id') !== $from || $from === $to) { throw CustomerServiceError::TRANSFER_FORBIDDEN->exception(); }
         $this->change(['assigned_agent_id' => $to, 'generation' => $this->generation() + 1]);
     }
 
@@ -52,7 +54,7 @@ final class CustomerServiceConversationEntity
 
     public function defer(string $reason, string $now): void
     {
-        if (!in_array($this->state(), ['human_waiting', 'human_assigned'], true)) { throw new \DomainException('当前会话不可转留言'); }
+        if (!in_array($this->state(), ['human_waiting', 'human_assigned'], true)) { throw CustomerServiceError::DEFER_STATE_INVALID->exception(); }
         $this->change(['reception_state' => 'human_deferred', 'status' => 'waiting', 'assigned_agent_id' => null, 'assignment_expires_at' => null, 'deferred_at' => $now, 'handoff_reason' => $reason, 'generation' => $this->generation() + 1]);
     }
 
@@ -64,9 +66,9 @@ final class CustomerServiceConversationEntity
 
     public function assertCanSend(string $type, int $senderId): void
     {
-        if ($this->state() === 'closed') { throw new \DomainException('会话已关闭'); }
-        if ($type === 'member' && (int) $this->value('member_id') !== $senderId) { throw new \DomainException('无权访问会话'); }
-        if ($type === 'agent' && ($this->state() !== 'human_active' || (int) $this->value('assigned_agent_id') !== $senderId)) { throw new \DomainException('无权在该会话回复'); }
+        if ($this->state() === 'closed') { throw CustomerServiceError::CONVERSATION_CLOSED->exception(); }
+        if ($type === 'member' && (int) $this->value('member_id') !== $senderId) { throw CustomerServiceError::CONVERSATION_ACCESS_FORBIDDEN->exception(); }
+        if ($type === 'agent' && ($this->state() !== 'human_active' || (int) $this->value('assigned_agent_id') !== $senderId)) { throw CustomerServiceError::CONVERSATION_REPLY_FORBIDDEN->exception(); }
     }
 
     public function allowsAi(int $generation, int $turn, bool $enabled): bool

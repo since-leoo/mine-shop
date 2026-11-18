@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\System\Handler;
 
+use App\Infrastructure\Error\CommonError;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\Validation\UnauthorizedException;
@@ -23,6 +24,8 @@ final class UnauthorizedExceptionHandler extends AbstractHandler
         $this->stopPropagation();
         return new Result(
             ResultCode::FORBIDDEN,
+            CommonError::FORBIDDEN->message(),
+            errorCode: CommonError::FORBIDDEN->value,
         );
     }
 

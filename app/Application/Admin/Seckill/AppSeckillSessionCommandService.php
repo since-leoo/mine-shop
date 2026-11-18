@@ -15,6 +15,7 @@ namespace App\Application\Admin\Seckill;
 use App\Domain\Trade\Seckill\Contract\SeckillSessionInput;
 use App\Domain\Trade\Seckill\Mapper\SeckillSessionMapper;
 use App\Domain\Trade\Seckill\Service\DomainSeckillSessionService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillSession;
 use Hyperf\DbConnection\Db;
 
@@ -46,7 +47,7 @@ final class AppSeckillSessionCommandService
     {
         $entity = $this->sessionService->getEntity($dto->getId());
         if (! $entity) {
-            throw new \DomainException('场次不存在');
+            throw SeckillError::SESSION_NOT_FOUND->exception();
         }
         $entity->update($dto);
         return Db::transaction(fn () => $this->sessionService->update($entity));
@@ -58,7 +59,7 @@ final class AppSeckillSessionCommandService
     public function delete(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('场次不存在');
+            throw SeckillError::SESSION_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->sessionService->delete($id));
     }
@@ -69,7 +70,7 @@ final class AppSeckillSessionCommandService
     public function toggleStatus(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('场次不存在');
+            throw SeckillError::SESSION_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->sessionService->toggleStatus($id));
     }

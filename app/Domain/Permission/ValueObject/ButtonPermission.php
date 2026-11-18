@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Permission\ValueObject;
 
+use App\Infrastructure\Error\PermissionError;
+
 /**
  * 菜单按钮权限.
  */
@@ -24,10 +26,10 @@ final class ButtonPermission
         private readonly ?string $i18n = null
     ) {
         if (trim($code) === '') {
-            throw new \DomainException('按钮权限编码不能为空');
+            throw PermissionError::BUTTON_CODE_REQUIRED->exception();
         }
         if (trim($title) === '') {
-            throw new \DomainException('按钮权限名称不能为空');
+            throw PermissionError::BUTTON_NAME_REQUIRED->exception();
         }
     }
 

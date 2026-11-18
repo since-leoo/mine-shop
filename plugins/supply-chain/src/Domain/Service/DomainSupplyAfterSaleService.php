@@ -14,6 +14,7 @@ namespace Plugin\SupplyChain\Domain\Service;
 
 use App\Domain\Infrastructure\Plugin\Contract\CommerceAfterSaleInterface;
 use App\Domain\Infrastructure\Plugin\Contract\CommerceOrderInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Entity\SupplyAfterSaleEntity;
 use Plugin\SupplyChain\Domain\Mapper\SupplyAfterSaleMapper;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
@@ -45,14 +46,14 @@ final class DomainSupplyAfterSaleService
             if ($order === null || \in_array($order['status'] ?? '', ['cancelled', 'closed', 'refunded'], true)) {
                 return;
             }
-            throw new \RuntimeException('采购记录尚未落库，客户售后事件稍后重放');
+            throw SupplyChainError::PURCHASE_NOT_PERSISTED->internal();
         }
         if (\count($matches) !== 1) {
-            throw new \DomainException('客户售后对应多个采购明细，需人工分拆核对');
+            throw SupplyChainError::AFTER_SALE_MULTIPLE_PURCHASE_LINES->exception();
         }
         $purchase = $this->repository->require('orders', (int) $matches[0]->supply_order_id, true);
         if ((int) $purchase['order_id'] !== (int) $customer['order_id']) {
-            throw new \DomainException('采购与客户订单归属不一致');
+            throw SupplyChainError::PURCHASE_ORDER_OWNER_MISMATCH->exception();
         }
         $row = $this->repository->decode($this->repository->query('after_sales')->where('after_sale_id', $afterSaleId)
             ->where('supply_order_id', $purchase['id'])->lockForUpdate()->first());
@@ -96,7 +97,7 @@ final class DomainSupplyAfterSaleService
         $entity = $this->getEntity($id);
         $row = $entity->snapshot();
         if (empty($row['external_after_sale_id']) && empty($row['snapshot']['submission']['external_order_item_id'])) {
-            throw new \DomainException('采购售后尚未提交，无上游售后或已冻结采购行可查询');
+            throw SupplyChainError::AFTER_SALE_QUERY_TARGET_MISSING->exception();
         }
         return ['task_id' => $this->enqueue($id, $entity, 'after_sale_query', 'query:' . bin2hex(random_bytes(8)), $actor)];
     }
@@ -111,7 +112,7 @@ final class DomainSupplyAfterSaleService
         $entity = $this->getEntity($id, true);
         $row = $entity->snapshot();
         if ((int) $row['connection_id'] !== (int) $task['connection_id']) {
-            throw new \DomainException('采购售后任务与供货连接不匹配');
+            throw SupplyChainError::AFTER_SALE_CONNECTION_MISMATCH->exception();
         }
         $action = (string) $task['type'];
         $revision = (int) ($task['payload']['revision'] ?? -1);
@@ -127,13 +128,13 @@ final class DomainSupplyAfterSaleService
             $context['return_shipment'] = $this->returnShipment($row);
         } elseif ($action === 'after_sale_query') {
             if (empty($context['external_after_sale_id']) && empty($context['external_order_item_id'])) {
-                throw new \DomainException('缺少可回查的上游售后或采购行编号');
+                throw SupplyChainError::AFTER_SALE_LOOKUP_ID_MISSING->exception();
             }
         } elseif ($action !== 'after_sale_cancel') {
-            throw new \DomainException('未知采购售后任务类型');
+            throw SupplyChainError::UNKNOWN_AFTER_SALE_TASK->exception();
         }
         if (\in_array($action, ['after_sale_cancel', 'after_sale_return'], true) && empty($context['external_after_sale_id'])) {
-            throw new \DomainException('缺少已确认归属的上游售后编号');
+            throw SupplyChainError::AFTER_SALE_CONFIRMED_ID_MISSING->exception();
         }
         $entity->begin($action, $revision);
         $this->repository->update('after_sales', $id, $entity->toArray());
@@ -149,17 +150,17 @@ final class DomainSupplyAfterSaleService
         $entity = $this->getEntity($id, true);
         $row = $entity->snapshot();
         if ((int) ($row['snapshot']['revision'] ?? 0) !== (int) $task['payload']['revision']) {
-            throw new \RuntimeException('采购售后结果版本过期，必须人工核对', 10001);
+            throw new \RuntimeException(SupplyChainError::AFTER_SALE_RESULT_VERSION_EXPIRED->message(), 10001);
         }
         if ($task['type'] === 'after_sale_create' && \is_string($result) && $result !== '') {
             if ($this->repository->query('after_sales')->where('connection_id', $row['connection_id'])
                 ->where('external_after_sale_id', $result)->where('id', '!=', $id)->exists()) {
-                throw new \RuntimeException('供应商售后编号已绑定其他客户售后，需人工核对', 10001);
+                throw new \RuntimeException(SupplyChainError::AFTER_SALE_ID_ALREADY_BOUND->message(), 10001);
             }
         }
         if ($task['type'] === 'after_sale_query' && ! empty($row['external_after_sale_id'])
             && ! empty($result['external_after_sale_id']) && $row['external_after_sale_id'] !== (string) $result['external_after_sale_id']) {
-            throw new \DomainException('供应商返回的售后编号与查询目标不一致');
+            throw SupplyChainError::AFTER_SALE_QUERY_ID_MISMATCH->exception();
         }
         $entity->succeeded((string) $task['type'], $result);
         $this->repository->update('after_sales', $id, $entity->toArray());
@@ -200,20 +201,20 @@ final class DomainSupplyAfterSaleService
             $row = $this->repository->require('after_sales', $id, true);
         }
         if ($row['status'] !== 'pending_review' || ! empty($row['snapshot']['cancel_requested'])) {
-            throw new \DomainException('采购售后已处理或结果未知，不能重复提交');
+            throw SupplyChainError::AFTER_SALE_ALREADY_SUBMITTED->exception();
         }
         if (! \in_array($purchase['status'], ['accepted', 'completed'], true)) {
-            throw new \DomainException('采购尚未确认受理，请先查单确认采购明细');
+            throw SupplyChainError::PURCHASE_LINES_UNCONFIRMED->exception();
         }
         $customer = $this->requireCustomer($row, $purchase);
         $localLines = $this->repository->query('order_items')->where('supply_order_id', $purchase['id'])->get()->all();
         $local = array_values(array_filter($localLines, static fn ($line) => (int) $line->order_item_id === (int) $customer['order_item_id']));
         if (\count($local) !== 1) {
-            throw new \DomainException('本次客户售后无法唯一匹配采购行');
+            throw SupplyChainError::AFTER_SALE_PURCHASE_LINE_AMBIGUOUS->exception();
         }
         $sameSku = array_filter($localLines, static fn ($line) => (string) $line->external_sku_id === (string) $local[0]->external_sku_id);
         if (\count($sameSku) !== 1) {
-            throw new \DomainException('多个客户明细合并为同一上游SKU，需分拆售后并人工核对');
+            throw SupplyChainError::AFTER_SALE_MERGED_SKU_AMBIGUOUS->exception();
         }
         $orders = $purchase['external_orders']['orders'] ?? $purchase['external_orders'] ?? [];
         $matches = [];
@@ -225,16 +226,16 @@ final class DomainSupplyAfterSaleService
             }
         }
         if (\count($matches) !== 1) {
-            throw new \DomainException('上游拆单包含多条同SKU明细或缺少明细，需分拆售后并人工核对');
+            throw SupplyChainError::AFTER_SALE_SPLIT_SKU_AMBIGUOUS->exception();
         }
         $remote = $matches[0];
         if ((string) ($remote['external_order_item_id'] ?? '') !== (string) ($input['external_order_item_id'] ?? '')
             || (int) ($remote['quantity'] ?? 0) !== (int) $local[0]->quantity) {
-            throw new \DomainException('所选上游明细或数量与冻结采购行不匹配，禁止整行猜测退款');
+            throw SupplyChainError::AFTER_SALE_FROZEN_LINE_MISMATCH->exception();
         }
         foreach (['amount_cents', 'technical_service_fee_cents', 'freight_cents'] as $field) {
             if (! isset($remote[$field]) || ! is_numeric($remote[$field]) || $remote[$field] < 0) {
-                throw new \DomainException('上游采购明细缺少可校验金额');
+                throw SupplyChainError::PURCHASE_LINE_AMOUNT_MISSING->exception();
             }
         }
         $data = array_intersect_key($input, array_flip(['external_order_item_id', 'quantity', 'amount_cents', 'freight_cents', 'technical_service_fee_cents', 'reason_type', 'reason', 'description', 'received_status', 'refund_type', 'refund_way']));
@@ -248,12 +249,12 @@ final class DomainSupplyAfterSaleService
 
     private function requireCustomer(array $row, array $purchase): array
     {
-        $customer = $this->customerAfterSales->find((int) $row['after_sale_id']) ?? throw new \DomainException('客户售后不存在');
+        $customer = $this->customerAfterSales->find((int) $row['after_sale_id']) ?? throw SupplyChainError::CUSTOMER_AFTER_SALE_NOT_FOUND->exception();
         if ((int) $customer['order_id'] !== (int) $purchase['order_id'] || ($customer['order_item']['fulfillment_provider'] ?? '') !== 'supply_chain') {
-            throw new \DomainException('客户售后与采购归属不一致');
+            throw SupplyChainError::AFTER_SALE_PURCHASE_OWNER_MISMATCH->exception();
         }
         if (($customer['status'] ?? '') === 'closed') {
-            throw new \DomainException('客户售后已关闭，不能提交采购退款');
+            throw SupplyChainError::CUSTOMER_AFTER_SALE_CLOSED->exception();
         }
         return $customer;
     }
@@ -307,7 +308,7 @@ final class DomainSupplyAfterSaleService
         $connection = $this->repository->require('connections', (int) $row['connection_id']);
         $carrier = $connection['settings']['return_carriers'][$shipment['company'] ?? ''] ?? null;
         if (! \is_array($carrier) || empty($carrier['name']) || empty($carrier['code']) || empty($shipment['tracking_no'])) {
-            throw new \DomainException('退货物流缺少供应商公司编码映射，请配置连接 settings.return_carriers 后重试；不能从公司名称猜编码');
+            throw SupplyChainError::RETURN_CARRIER_MAPPING_MISSING->exception();
         }
         return ['company_name' => (string) $carrier['name'], 'company_code' => (string) $carrier['code'], 'tracking_no' => (string) $shipment['tracking_no']];
     }
@@ -317,7 +318,7 @@ final class DomainSupplyAfterSaleService
         $current = $this->repository->require('tasks', (int) $task['id'], true);
         if ($current['status'] !== 'running' || ! hash_equals((string) ($current['lease_token'] ?? ''), (string) ($task['lease_token'] ?? ''))
             || strtotime((string) ($current['lease_expires_at'] ?? '')) <= time()) {
-            throw new \RuntimeException('采购售后任务租约已失效，迟到结果必须查单核对', 10001);
+            throw new \RuntimeException(SupplyChainError::AFTER_SALE_LEASE_EXPIRED->message(), 10001);
         }
     }
 

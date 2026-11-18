@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Service\Pay;
 
+use App\Infrastructure\Error\PaymentAdapterError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -31,7 +32,7 @@ final class WechatPayConfigResolver
         $apiV3Key = (string) ($config['apiv3_key'] ?? $config['mch_secret_key'] ?? '');
 
         if ($mchid === '' || $appId === '' || $privateKey === '' || $apiV3Key === '') {
-            throw new BusinessException(ResultCode::FAIL, '微信支付配置不完整');
+            throw new BusinessException(PaymentAdapterError::WECHAT_CONFIG_INCOMPLETE, resultCode: ResultCode::FAIL);
         }
 
         return array_replace($config, [

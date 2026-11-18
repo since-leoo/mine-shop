@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Service;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Entity\TaskEntity;
 use Plugin\SupplyChain\Domain\Mapper\PurchaseMapper;
 use Plugin\SupplyChain\Domain\Mapper\SupplyAfterSaleMapper;
@@ -37,7 +38,7 @@ final class DomainSupplyTaskService
         $inserted = $this->repository->query('tasks')->insertOrIgnore($this->repository->encode($entity->toArray()));
         $id = (int) $this->repository->query('tasks')->where('business_key', $spec->businessKey)->value('id');
         if ($id < 1) {
-            throw new \RuntimeException('任务持久化失败');
+            throw SupplyChainError::TASK_PERSISTENCE_FAILED->internal();
         }
         if ($inserted) {
             $this->event($id, 'created', ['type' => $spec->type], $spec->operatorId);

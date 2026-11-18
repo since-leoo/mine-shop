@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Handler\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong\YunzhongClient;
 use Plugin\SupplyChain\Interfaces\AfterSaleInterface;
 use Plugin\SupplyChain\Interfaces\Data\AfterSaleCommand;
@@ -26,7 +27,7 @@ final class AfterSaleHandler implements AfterSaleInterface
             'order_item_id' => PayloadMapper::id($externalOrderItemId),
         ]);
         if (! \is_array($data)) {
-            throw new \RuntimeException('供应链售后类型响应无效');
+            throw SupplyChainError::AFTER_SALE_TYPES_RESPONSE_INVALID->internal();
         }
         return $data;
     }
@@ -42,12 +43,12 @@ final class AfterSaleHandler implements AfterSaleInterface
             'refund_way' => $command->refundWay, 'detail_images' => $command->images, 'barter_num' => 0,
         ], false);
         if (! \is_string($data) && ! \is_int($data)) {
-            throw new \RuntimeException('售后创建返回缺少售后编号，先按订单明细查询', YunzhongClient::OUTCOME_UNKNOWN);
+            throw new \RuntimeException(SupplyChainError::AFTER_SALE_CREATE_ID_MISSING->message(), YunzhongClient::OUTCOME_UNKNOWN);
         }
         try {
             return (string) PayloadMapper::id($data);
         } catch (\Throwable) {
-            throw new \RuntimeException('售后创建返回无效售后编号，先按订单明细查询', YunzhongClient::OUTCOME_UNKNOWN);
+            throw new \RuntimeException(SupplyChainError::AFTER_SALE_CREATE_ID_INVALID->message(), YunzhongClient::OUTCOME_UNKNOWN);
         }
     }
 
@@ -69,11 +70,11 @@ final class AfterSaleHandler implements AfterSaleInterface
     public function returnAddress(string $merchantOrderNo): array
     {
         if ($merchantOrderNo === '') {
-            throw new \InvalidArgumentException('商户采购单号不能为空');
+            throw SupplyChainError::PURCHASE_NUMBER_REQUIRED->invalid();
         }
         $data = $this->client->call('after_sale.return_address', 'GET', '/app/supplier/findShopAddressByOrderId', ['third_order_sn' => $merchantOrderNo]);
         if (! \is_array($data)) {
-            throw new \RuntimeException('供应链退货地址响应无效');
+            throw SupplyChainError::RETURN_ADDRESS_RESPONSE_INVALID->internal();
         }
         return $data;
     }
@@ -81,7 +82,7 @@ final class AfterSaleHandler implements AfterSaleInterface
     public function shipReturn(string $externalAfterSaleId, string $companyName, string $companyCode, string $trackingNo): void
     {
         if ($companyName === '' || $companyCode === '' || $trackingNo === '') {
-            throw new \InvalidArgumentException('退货物流信息不完整');
+            throw SupplyChainError::RETURN_SHIPPING_INCOMPLETE->invalid();
         }
         $this->client->call('after_sale.ship_return', 'POST', '/app/afterSales/send', [
             'after_sales_id' => PayloadMapper::id($externalAfterSaleId), 'company_name' => $companyName,
@@ -92,7 +93,7 @@ final class AfterSaleHandler implements AfterSaleInterface
     private function normalize(mixed $data): array
     {
         if (! \is_array($data) || ! \is_array($data['after_sales'] ?? null)) {
-            throw new \RuntimeException('供应链售后响应缺少 after_sales');
+            throw SupplyChainError::AFTER_SALE_RESPONSE_LIST_MISSING->internal();
         }
         $item = $data['after_sales'];
         return ['external_after_sale_id' => (string) PayloadMapper::id($item['id'] ?? ''),

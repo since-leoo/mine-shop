@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\System;
 
+use App\Infrastructure\Error\ErrorCode;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 
@@ -19,9 +20,18 @@ class BusinessException extends \RuntimeException
 {
     private Result $response;
 
-    public function __construct(ResultCode $code = ResultCode::FAIL, ?string $message = null, mixed $data = [])
-    {
-        $this->response = new Result($code, $message, $data);
+    public function __construct(
+        ErrorCode|ResultCode $code = ResultCode::FAIL,
+        ?string $message = null,
+        mixed $data = [],
+        array $parameters = [],
+        ResultCode $resultCode = ResultCode::FAIL,
+        ?int $errorCode = null,
+    ) {
+        $this->response = $code instanceof ErrorCode
+            ? new Result($resultCode, $code->message($parameters), $data, (int) $code->value)
+            : new Result($code, $message, $data, $errorCode);
+        parent::__construct($this->response->message ?? '', $this->response->errorCode ?? $this->response->code->value);
     }
 
     public function getResponse(): Result

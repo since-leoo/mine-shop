@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Infrastructure\Ai;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use GuzzleHttp\Client;
 use Plugin\CustomerService\Domain\Contract\AiProviderInterface;
 use Plugin\CustomerService\Domain\ValueObject\AiAnswerVo;
@@ -15,18 +16,18 @@ final class HttpCompatibleAiProvider implements AiProviderInterface
     {
         $host = strtolower((string) parse_url($connection['endpoint'], PHP_URL_HOST));
         $allowed = array_filter(array_map('trim', explode(',', (string) getenv('CUSTOMER_SERVICE_AI_ALLOWED_HOSTS'))));
-        if (!in_array($host, $allowed, true)) { throw new \DomainException('AI 服务地址未在服务端允许列表中'); }
+        if (!in_array($host, $allowed, true)) { throw CustomerServiceError::AI_HOST_NOT_ALLOWED->exception(); }
         $addresses = dns_get_record($host, DNS_A | DNS_AAAA) ?: [];
-        if (!$addresses) { throw new \DomainException('AI 服务地址无法解析'); }
+        if (!$addresses) { throw CustomerServiceError::AI_HOST_UNRESOLVABLE->exception(); }
         foreach ($addresses as $address) {
             $ip = $address['ip'] ?? $address['ipv6'] ?? '';
-            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) { throw new \DomainException('AI 服务地址不允许指向内网'); }
+            if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) { throw CustomerServiceError::AI_PRIVATE_ADDRESS_FORBIDDEN->exception(); }
         }
         $key = getenv((string) $connection['credential_env']);
-        if (!$key) { throw new \DomainException('AI 凭据未配置'); }
+        if (!$key) { throw CustomerServiceError::AI_CREDENTIAL_MISSING->exception(); }
         $chat = AiPromptVo::messages($agent, $messages, $evidence);
         $outputLimit = min(4096, max(128, (int) ($agent['max_output_tokens'] ?? 1024)));
-        if (!extension_loaded('curl')) { throw new \RuntimeException('AI HTTPS 适配器需要 cURL 扩展'); }
+        if (!extension_loaded('curl')) { throw CustomerServiceError::CURL_EXTENSION_REQUIRED->internal(); }
         $address = $addresses[0]['ip'] ?? $addresses[0]['ipv6'];
         // 固定刚刚检查过的公网地址，防止验证后再次解析时被改为内网地址。
         $resolved = str_contains($address, ':') ? '[' . $address . ']' : $address;
@@ -36,7 +37,7 @@ final class HttpCompatibleAiProvider implements AiProviderInterface
                 'headers' => ['Authorization' => 'Bearer ' . $key, 'Content-Type' => 'application/json'],
                 'json' => ['model' => $agent['model'], 'messages' => $chat, 'response_format' => ['type' => 'json_object'], 'max_tokens' => $outputLimit],
             ]);
-        } catch (\Throwable) { throw new \RuntimeException('AI 服务调用失败，请检查连接配置'); }
+        } catch (\Throwable) { throw CustomerServiceError::AI_REQUEST_FAILED->internal(); }
         return $this->parseResponse((string) $response->getBody(), array_slice($evidence, 0, 4), AiPromptVo::inputUpperBound($agent, $messages, $evidence) + $outputLimit);
     }
 

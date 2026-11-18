@@ -23,11 +23,11 @@ final class OptionalCapabilityFactory
         $bindings = $container->get(ConfigInterface::class)->get('plugin_capabilities', []);
         $implementation = $bindings[$contract] ?? $fallback;
         if (! \is_string($implementation) || ! is_a($implementation, $contract, true)) {
-            throw new \LogicException('Invalid capability binding: ' . $contract);
+            throw new \LogicException(\App\Infrastructure\Error\PluginError::CAPABILITY_BINDING_INVALID->message([$contract]), \App\Infrastructure\Error\PluginError::CAPABILITY_BINDING_INVALID->value);
         }
         $service = $container->get($implementation);
         if (! $service instanceof $contract) {
-            throw new \LogicException('Capability implementation does not implement ' . $contract);
+            throw new \LogicException(\App\Infrastructure\Error\PluginError::CAPABILITY_IMPLEMENTATION_INVALID->message([$contract]), \App\Infrastructure\Error\PluginError::CAPABILITY_IMPLEMENTATION_INVALID->value);
         }
         return $service;
     }

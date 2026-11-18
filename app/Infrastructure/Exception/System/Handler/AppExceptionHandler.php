@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\System\Handler;
 
+use App\Infrastructure\Error\CommonError;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 
@@ -20,11 +21,13 @@ final class AppExceptionHandler extends AbstractHandler
     public function handleResponse(\Throwable $throwable): Result
     {
         $this->stopPropagation();
+        $business = in_array($throwable::class, [\DomainException::class, \InvalidArgumentException::class], true);
         return new Result(
             code: ResultCode::FAIL,
-            message: $this->isDebug() || in_array($throwable::class, [\DomainException::class, \InvalidArgumentException::class], true)
+            message: $this->isDebug() || $business
                 ? $throwable->getMessage()
-                : '系统繁忙，请稍后重试'
+                : CommonError::SYSTEM_BUSY->message(),
+            errorCode: $business ? ($throwable->getCode() ?: CommonError::BUSINESS_REJECTED->value) : CommonError::SYSTEM_BUSY->value,
         );
     }
 

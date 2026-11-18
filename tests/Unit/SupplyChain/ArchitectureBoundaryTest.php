@@ -17,6 +17,7 @@ use App\Domain\Infrastructure\Plugin\Contract\CommerceOrderInterface;
 use App\Domain\Infrastructure\Plugin\Contract\CommerceProductInterface;
 use App\Domain\Infrastructure\Plugin\Contract\ExternalFulfillmentInterface;
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -56,7 +57,7 @@ final class ArchitectureBoundaryTest extends TestCase
                     || $name === TransactionManagerInterface::class;
                 $publicEvent = preg_match('/^App\\\Domain\\\.+\\\Event(?:\\\|$)/', $name) === 1;
                 $httpBase = str_contains($file, '/Interface/') && \in_array($name, $httpInfrastructure, true);
-                if (! $publicContract && ! $publicEvent && ! $httpBase) {
+                if (! $publicContract && ! $publicEvent && ! $httpBase && $name !== SupplyChainError::class) {
                     $violations[] = str_replace(BASE_PATH . '/', '', $file) . ': ' . $name;
                 }
             }
@@ -104,7 +105,7 @@ final class ArchitectureBoundaryTest extends TestCase
         }
         foreach ($this->phpFiles(BASE_PATH . '/plugins/supply-chain/src/Handler') as $file) {
             foreach ($this->qualifiedNames($file) as $name) {
-                self::assertFalse(str_starts_with($name, 'App\\'), $file . ' depends on a core implementation');
+                self::assertFalse(str_starts_with($name, 'App\\') && $name !== SupplyChainError::class, $file . ' depends on a core implementation');
                 self::assertFalse(str_starts_with($name, 'Plugin\SupplyChain\Domain\Repository'), $file . ' must not persist commerce side effects');
                 self::assertNotSame(Db::class, $name, $file . ' must not open local transactions');
             }

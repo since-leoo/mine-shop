@@ -35,6 +35,20 @@ final class ScheduledPublishTest extends DatabaseTestCase
         $this->connection->table('role_belongs_menu')->insert(['role_id' => 1, 'menu_id' => 1]);
     }
 
+    public function testUnexpectedScheduledPublishFailureStoresCatalogMessageAndLogsOriginalError(): void
+    {
+        $failure = new \RuntimeException('provider fixture secret');
+        $domain = $this->createMock(\Plugin\Diy\Domain\Content\DiyPage\Service\DomainDiyPublishService::class);
+        $domain->method('dueScheduleIds')->willReturn([99]);
+        $domain->method('lockDueSchedule')->with(99)->willReturn(new \Plugin\Diy\Infrastructure\Model\Content\DiyPagePublishRecord());
+        $domain->method('scheduleOperator')->willReturn(new \App\Infrastructure\Model\Permission\User(['id' => 1]));
+        $domain->method('publishScheduled')->willThrowException($failure);
+        $domain->expects(self::once())->method('failSchedule')->with(99, \App\Infrastructure\Error\DiyError::SCHEDULE_EXECUTION_FAILED->message());
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->expects(self::once())->method('error')->with('DIY 定时发布失败', ['record_id' => 99, 'exception' => $failure]);
+        self::assertSame(0, (new \Plugin\Diy\Application\Admin\Content\AppDiyScheduledPublishService($domain, $logger))->execute());
+    }
+
     public function testScheduledPublishingThroughRealAopRespectsRevocationAndPreservesScheduledDraft(): void
     {
         $process = proc_open([PHP_BINARY, __DIR__ . '/scheduled-publish-worker.php', (string) getenv('MINE_SHOP_TEST_MYSQL_SOCKET'), $this->connection->getDatabaseName()], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, BASE_PATH);

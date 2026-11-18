@@ -14,6 +14,7 @@ namespace App\Domain\Trade\GroupBuy\Repository;
 
 use App\Domain\Trade\GroupBuy\Enum\GroupBuyStatus;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\GroupBuyError;
 use App\Infrastructure\Model\GroupBuy\GroupBuy;
 use Carbon\Carbon;
 use Hyperf\Database\Model\Builder;
@@ -29,7 +30,7 @@ final class GroupBuyRepository extends IRepository
     public function lock(int $id): void
     {
         if ($this->getQuery()->whereKey($id)->lockForUpdate()->first() === null) {
-            throw new \DomainException('团购活动不存在');
+            throw GroupBuyError::NOT_FOUND->exception();
         }
     }
 

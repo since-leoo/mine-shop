@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Application\Api\Member;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+
 use App\Domain\Member\Api\Query\DomainApiMemberQueryService;
 use App\Domain\Member\Service\DomainMemberReferralService;
 use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponUserQueryService;
 use App\Domain\Trade\Order\Api\Query\DomainApiOrderQueryService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -37,7 +39,7 @@ final class AppApiMemberCenterQueryService
     {
         $member = $this->memberQueryService->detail($memberId);
         if ($member === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return $member;

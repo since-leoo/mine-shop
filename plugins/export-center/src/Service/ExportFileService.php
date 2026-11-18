@@ -12,22 +12,24 @@ declare(strict_types=1);
 
 namespace Plugin\ExportCenter\Service;
 
+use App\Infrastructure\Error\ExportError;
+
 final class ExportFileService
 {
     public function store(string $source, string $fingerprint): string
     {
         $directory = $this->directory();
-        if (! is_dir($directory) && ! mkdir($directory, 0700, true) && ! is_dir($directory)) {
-            throw new \RuntimeException('无法创建私有导出目录');
+        if (! is_dir($directory) && ! mkdir($directory, 0o700, true) && ! is_dir($directory)) {
+            throw ExportError::PRIVATE_DIRECTORY_CREATE_FAILED->internal();
         }
-        $key = 'private:' . $fingerprint . ':' . bin2hex(random_bytes(16)) . '.' . pathinfo($source, PATHINFO_EXTENSION);
+        $key = 'private:' . $fingerprint . ':' . bin2hex(random_bytes(16)) . '.' . pathinfo($source, \PATHINFO_EXTENSION);
         $path = $this->path($key);
         if (! rename($source, $path)) {
-            throw new \RuntimeException('无法保存私有导出文件');
+            throw ExportError::PRIVATE_FILE_SAVE_FAILED->internal();
         }
-        if (! chmod($path, 0600)) {
+        if (! chmod($path, 0o600)) {
             unlink($path);
-            throw new \RuntimeException('无法设置导出文件访问权限');
+            throw ExportError::FILE_PERMISSIONS_FAILED->internal();
         }
         return $key;
     }
@@ -35,14 +37,14 @@ final class ExportFileService
     public function path(string $key, ?string $fingerprint = null): string
     {
         if (! preg_match('/^private:([a-f0-9]{64}):([a-f0-9]{32}\.(?:xlsx|csv|zip))$/D', $key, $match)) {
-            throw new \DomainException('旧版导出文件已停用，请重新导出');
+            throw ExportError::LEGACY_FILE_DISABLED->exception();
         }
         if ($fingerprint !== null && ! hash_equals($match[1], $fingerprint)) {
-            throw new \DomainException('数据权限已变更，请重新导出');
+            throw ExportError::DATA_SCOPE_CHANGED->exception();
         }
         $path = $this->directory() . '/' . $match[2];
         if (is_link($path)) {
-            throw new \DomainException('导出文件不可用，请重新导出');
+            throw ExportError::FILE_UNAVAILABLE->exception();
         }
         return $path;
     }
@@ -81,13 +83,13 @@ final class ExportFileService
         $path = (string) config('export.private_path', BASE_PATH . '/storage/exports/private');
         // Resolve existing ancestors as well, so a symlink or ../ cannot place exports under public/.
         $ancestor = $path;
-        while (! file_exists($ancestor) && dirname($ancestor) !== $ancestor) {
-            $ancestor = dirname($ancestor);
+        while (! file_exists($ancestor) && \dirname($ancestor) !== $ancestor) {
+            $ancestor = \dirname($ancestor);
         }
         $resolved = realpath($ancestor);
         $public = realpath(BASE_PATH . '/public');
         if ($resolved === false || ($public !== false && ($resolved === $public || str_starts_with($resolved, $public . '/')))) {
-            throw new \RuntimeException('导出目录必须位于非公开存储路径');
+            throw ExportError::PRIVATE_DIRECTORY_REQUIRED->internal();
         }
         return rtrim($path, '/');
     }

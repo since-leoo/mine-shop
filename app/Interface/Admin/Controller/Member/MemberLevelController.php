@@ -54,7 +54,7 @@ final class MemberLevelController extends AbstractController
     public function show(int $id): Result
     {
         $level = $this->queryService->find($id);
-        return $level ? $this->success($level) : $this->error('会员等级不存在', 404);
+        return $level ? $this->success($level) : $this->error(\App\Infrastructure\Error\MemberError::LEVEL_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

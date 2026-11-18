@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Plugin;
 
+use App\Infrastructure\Error\PluginError;
+
 /** 插件安装/启停改变扫描范围；生产环境也必须重新生成注解与 AOP 缓存。 */
 final class PluginScanCache
 {
@@ -20,15 +22,15 @@ final class PluginScanCache
         $basePath = rtrim($basePath, '/');
         $directory = $basePath . '/runtime/container';
         if (! is_dir($directory) && ! mkdir($directory, 0o755, true) && ! is_dir($directory)) {
-            throw new \RuntimeException('无法创建插件扫描缓存目录');
+            throw PluginError::CACHE_DIRECTORY_FAILED->internal();
         }
         $lock = fopen($directory . '/plugin-scan.lock', 'c');
         if ($lock === false) {
-            throw new \RuntimeException('无法打开插件扫描缓存锁');
+            throw PluginError::CACHE_LOCK_OPEN_FAILED->internal();
         }
         try {
             if (! flock($lock, \LOCK_EX)) {
-                throw new \RuntimeException('无法锁定插件扫描缓存');
+                throw PluginError::CACHE_LOCK_FAILED->internal();
             }
             $fingerprint = self::fingerprint($basePath, $pluginsDirectory);
             $marker = $directory . '/plugin-scan.fingerprint';
@@ -43,12 +45,12 @@ final class PluginScanCache
             if (self::fingerprint($basePath, $pluginsDirectory) !== $fingerprint) {
                 // 安装/启停操作本身不持此启动锁，不能把变更中的扫描结果标记为有效。
                 if (is_file($marker) && ! unlink($marker)) {
-                    throw new \RuntimeException('无法撤销插件扫描指纹');
+                    throw PluginError::FINGERPRINT_REVOKE_FAILED->internal();
                 }
-                throw new \RuntimeException('插件状态在启动扫描期间发生变化，请重新启动');
+                throw PluginError::STATE_CHANGED_DURING_SCAN->internal();
             }
             if ($changed && file_put_contents($marker, $fingerprint) === false) {
-                throw new \RuntimeException('无法保存插件扫描指纹');
+                throw PluginError::FINGERPRINT_WRITE_FAILED->internal();
             }
         } finally {
             flock($lock, \LOCK_UN);
@@ -67,7 +69,7 @@ final class PluginScanCache
         $plugins = [];
         $names = is_dir($pluginsPath) ? scandir($pluginsPath) : [];
         if ($names === false) {
-            throw new \RuntimeException('无法读取插件目录');
+            throw PluginError::DIRECTORY_UNREADABLE->internal();
         }
         foreach ($names as $name) {
             if ($name === '.' || $name === '..') {
@@ -80,7 +82,7 @@ final class PluginScanCache
             }
             $raw = file_get_contents($manifest);
             if ($raw === false) {
-                throw new \RuntimeException('无法读取插件清单: ' . $name);
+                throw PluginError::MANIFEST_UNREADABLE->internal([$name]);
             }
             $definition = json_decode($raw, true);
             // 与 PluginBootstrap 的生效条件一致，未安装或已停用插件不参与扫描。
@@ -89,7 +91,7 @@ final class PluginScanCache
             }
             $installation = hash_file('sha256', $path . '/install.lock');
             if ($installation === false) {
-                throw new \RuntimeException('无法读取插件安装标记: ' . $name);
+                throw PluginError::INSTALL_MARKER_UNREADABLE->internal([$name]);
             }
             $plugins[$name] = ['manifest' => hash('sha256', $raw), 'installation' => $installation];
         }
@@ -104,7 +106,7 @@ final class PluginScanCache
         array_push($files, ...(glob($directory . '/proxy/*.proxy.php') ?: []));
         foreach ($files as $file) {
             if ((file_exists($file) || is_link($file)) && ! unlink($file)) {
-                throw new \RuntimeException('无法刷新插件扫描缓存: ' . basename($file));
+                throw PluginError::CACHE_REFRESH_FAILED->internal([basename($file)]);
             }
         }
     }

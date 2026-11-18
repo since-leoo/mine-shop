@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Application\Admin;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Plugin\CustomerService\Domain\Contract\SupportConfigurationInterface;
 use Plugin\CustomerService\Domain\Service\DomainConfigurationService;
 use Plugin\CustomerService\Domain\Service\DomainKeywordService;
@@ -42,7 +43,7 @@ final class AppCustomerServiceConfigurationService
 
     public function testAgent(int $agentId, string $question): array
     {
-        if ($question === '' || mb_strlen($question) > 2000) { throw new \InvalidArgumentException('试问内容长度无效'); }
+        if ($question === '' || mb_strlen($question) > 2000) { throw CustomerServiceError::QUESTION_TRIAL_LENGTH_INVALID->invalid(); }
         $snapshot = $this->domain->validate($this->repository->draft()['snapshot']);
         foreach ($snapshot['ai_agents'] as &$agent) { $agent['tool_allowlist'] = []; }
         unset($agent);

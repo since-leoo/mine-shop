@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Interface\Admin\Controller;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\CurrentUser;
@@ -48,7 +49,7 @@ final class ConfigurationController extends AbstractController
     public function simulate(): Result
     {
         $question = trim((string) $this->request->input('question'));
-        if ($question === '' || mb_strlen($question) > 4000) { throw new \InvalidArgumentException('测试问题长度无效'); }
+        if ($question === '' || mb_strlen($question) > 4000) { throw CustomerServiceError::TEST_QUESTION_LENGTH_INVALID->invalid(); }
         return $this->success($this->configuration->simulate($question, (int) $this->request->input('category_id') ?: null));
     }
 
@@ -79,14 +80,14 @@ final class ConfigurationController extends AbstractController
     private function expectedRevision(): int
     {
         $value = $this->request->input('expected_revision');
-        if (filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 0) { throw new \InvalidArgumentException('必须提供有效配置版本'); }
+        if (filter_var($value, FILTER_VALIDATE_INT) === false || (int) $value < 0) { throw CustomerServiceError::CONFIGURATION_REVISION_INVALID->invalid(); }
         return (int) $value;
     }
 
     private function data(): array
     {
         $data = $this->request->input('data');
-        if (!is_array($data)) { throw new \InvalidArgumentException('配置数据格式无效'); }
+        if (!is_array($data)) { throw CustomerServiceError::CONFIGURATION_PAYLOAD_INVALID->invalid(); }
         return $data;
     }
 }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Entity;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Contract\TaskInput;
 
 final class TaskEntity
@@ -24,7 +25,7 @@ final class TaskEntity
     {
         $data = $input->toArray();
         if ($data['connection_id'] < 1 || $data['business_key'] === '') {
-            throw new \InvalidArgumentException('任务参数无效');
+            throw SupplyChainError::TASK_PARAMETERS_INVALID->invalid();
         }
         $this->change($data + ['status' => 'pending', 'attempt_count' => 0, 'dispatch_version' => 0, 'max_attempts' => 6, 'trace_id' => bin2hex(random_bytes(16)), 'next_retry_at' => date('Y-m-d H:i:s'), 'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s')]);
     }
@@ -63,10 +64,10 @@ final class TaskEntity
     public function retry(): void
     {
         if ($this->state['status'] === 'unknown') {
-            throw new \DomainException('结果未知的写操作必须先查单，不能直接重放');
+            throw SupplyChainError::UNKNOWN_WRITE_REPLAY_FORBIDDEN->exception();
         }
         if (! \in_array($this->state['status'], ['failed', 'retry_wait'], true)) {
-            throw new \DomainException('当前任务状态不允许重试');
+            throw SupplyChainError::TASK_RETRY_FORBIDDEN->exception();
         }
         $this->change(['status' => 'pending', 'next_retry_at' => date('Y-m-d H:i:s'), 'last_dispatched_at' => null, 'dispatch_version' => (int) $this->state['dispatch_version'] + 1, 'max_attempts' => max((int) $this->state['max_attempts'], (int) $this->state['attempt_count'] + 3), 'updated_at' => date('Y-m-d H:i:s')]);
     }

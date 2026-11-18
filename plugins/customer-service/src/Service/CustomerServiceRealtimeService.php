@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Service;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Redis\Redis;
 use Plugin\CustomerService\Domain\Contract\CustomerServiceAuthorizationInterface;
@@ -35,14 +36,14 @@ final class CustomerServiceRealtimeService implements CustomerServiceEventPublis
     public function publish(string $event, array $payload, ?string $principalType = null, ?int $principalId = null, array $context = []): void
     {
         if (! in_array($principalType, ['member', 'agent'], true) || ($principalType === 'member' && ($principalId ?? 0) <= 0)) {
-            throw new \InvalidArgumentException('客服事件必须指定授权接收者');
+            throw CustomerServiceError::EVENT_RECIPIENT_REQUIRED->invalid();
         }
         if ($principalId !== null && $principalId <= 0) {
-            throw new \InvalidArgumentException('客服事件接收者无效');
+            throw CustomerServiceError::EVENT_RECIPIENT_INVALID->invalid();
         }
         if ($principalType === 'agent' && $principalId === null) {
             if ($event === 'message:created') {
-                throw new \InvalidArgumentException('消息不能广播给所有客服');
+                throw CustomerServiceError::AGENT_BROADCAST_FORBIDDEN->invalid();
             }
             // 广播只通知刷新；列表和私密消息由带权限校验的 HTTP 查询获取。
             $payload = ['refresh' => true];

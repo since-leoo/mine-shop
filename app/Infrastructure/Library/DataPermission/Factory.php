@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Infrastructure\Library\DataPermission;
 
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
+
+use App\Infrastructure\Error\PermissionError;
 use App\Infrastructure\Library\DataPermission\Rule\Rule;
 use App\Infrastructure\Model\DataPermission\Policy;
 use App\Infrastructure\Model\Permission\User;
@@ -45,7 +47,7 @@ class Factory
         if ($policy->policy_type === PolicyType::CustomFunc) {
             $customFunc = $policy->value[0] ?? null;
             if (! \is_string($customFunc)) {
-                throw new \RuntimeException(\sprintf('Invalid custom function: %s', $customFunc));
+                throw PermissionError::CUSTOM_FUNCTION_INVALID->internal([$customFunc]);
             }
             $this->rule->loadCustomFunc($customFunc, $builder, $user, $policy, $scopeType);
             return;

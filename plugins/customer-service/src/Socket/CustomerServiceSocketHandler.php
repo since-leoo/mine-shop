@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Socket;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\Contract\OnCloseInterface;
 use Hyperf\Contract\OnMessageInterface;
 use Hyperf\Contract\OnOpenInterface;
@@ -40,11 +41,11 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
             $connection = $this->connections->get((string) $frame->fd);
             if ($message['event'] === 'auth') {
                 if ($connection !== null) {
-                    throw new \DomainException('连接已认证，请重新建立连接后切换身份');
+                    throw CustomerServiceError::SOCKET_ALREADY_AUTHENTICATED->exception();
                 }
                 $principal = $this->tickets->consume((string) ($message['payload']['ticket'] ?? ''));
                 if ($principal === null) {
-                    throw new \DomainException('Socket 凭证无效或已过期');
+                    throw CustomerServiceError::SOCKET_TICKET_INVALID->exception();
                 }
                 if ($principal['principal_type'] === 'agent') {
                     $this->authorization->authorizeAgentAction((int) $principal['admin_user_id'], (int) $principal['principal_id'], 'auth');
@@ -56,7 +57,7 @@ final class CustomerServiceSocketHandler implements OnOpenInterface, OnMessageIn
                 return;
             }
             if ($connection === null) {
-                throw new \DomainException('请先认证 Socket 连接');
+                throw CustomerServiceError::SOCKET_AUTHENTICATION_REQUIRED->exception();
             }
             if ($message['event'] === 'ping') {
                 if ($connection['principal_type'] === 'agent') {

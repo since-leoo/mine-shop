@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\System\Handler;
 
+use App\Infrastructure\Error\CommonError;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\Validation\ValidationException;
@@ -26,7 +27,8 @@ final class ValidationExceptionHandler extends AbstractHandler
         $this->stopPropagation();
         return new Result(
             code: ResultCode::UNPROCESSABLE_ENTITY,
-            message: $throwable->validator->errors()->first()
+            message: $throwable->validator->errors()->first(),
+            errorCode: CommonError::VALIDATION_FAILED->value,
         );
     }
 

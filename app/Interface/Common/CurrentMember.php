@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Common;
 
+use App\Infrastructure\Error\AuthError;
+
 use App\Infrastructure\Exception\System\BusinessException;
 use Lcobucci\JWT\Token\RegisteredClaims;
 use Lcobucci\JWT\UnencryptedToken;
@@ -31,12 +33,12 @@ class CurrentMember
             $identifier = (string) $token->claims()->get(RegisteredClaims::ID);
 
             if (! str_starts_with($identifier, 'member:')) {
-                throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
+                throw new BusinessException(AuthError::INVALID_TOKEN, resultCode: ResultCode::FORBIDDEN);
             }
 
             $parts = explode(':', $identifier, 2);
             if (\count($parts) !== 2 || ! is_numeric($parts[1])) {
-                throw new BusinessException(ResultCode::FORBIDDEN, '令牌非法');
+                throw new BusinessException(AuthError::INVALID_TOKEN, resultCode: ResultCode::FORBIDDEN);
             }
 
             return (int) $parts[1];
@@ -49,7 +51,7 @@ class CurrentMember
     {
         $token = $this->getToken();
         if ($token === null) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, '请先登录');
+            throw new BusinessException(AuthError::LOGIN_REQUIRED, resultCode: ResultCode::UNAUTHORIZED);
         }
         return $token;
     }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Plugin\Repository;
 
+use App\Infrastructure\Error\PluginError;
+
 use App\Infrastructure\Model\Permission\Menu;
 
 final class PluginPermissionRepository
@@ -24,7 +26,7 @@ final class PluginPermissionRepository
             ]);
             $menu = Menu::query()->where('name', $code)->lockForUpdate()->firstOrFail();
             if ((int) $menu->parent_id !== (int) $parent->id) {
-                throw new \DomainException('插件权限码已被其他权限组占用');
+                throw PluginError::PERMISSION_CODE_CONFLICT->exception();
             }
             $meta = $menu->meta->toArray();
             $meta['title'] = $title;

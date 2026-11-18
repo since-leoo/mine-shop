@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Query;
 
 use App\Domain\Member\Repository\MemberRepository;
+
 use App\Domain\Member\Service\DomainMemberLevelService;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -51,7 +53,7 @@ final class DomainApiMemberQueryService extends IService
     {
         $member = $this->repository->findById($memberId);
         if (! $member) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '会员不存在');
+            throw new BusinessException(MemberError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $growthValue = (int) $member->growth_value;

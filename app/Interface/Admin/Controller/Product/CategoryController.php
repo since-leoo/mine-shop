@@ -63,7 +63,7 @@ final class CategoryController extends AbstractController
     public function show(int $id): Result
     {
         $category = $this->queryService->find($id);
-        return $category ? $this->success($category->toArray()) : $this->error('分类不存在', 404);
+        return $category ? $this->success($category->toArray()) : $this->error(\App\Infrastructure\Error\CatalogError::CATEGORY_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

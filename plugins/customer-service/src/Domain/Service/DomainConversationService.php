@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Domain\Service;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Plugin\CustomerService\Domain\Contract\SupportConfigurationInterface;
 use Plugin\CustomerService\Domain\Mapper\CustomerServiceConversationMapper;
 use Plugin\CustomerService\Domain\Repository\CustomerServiceConversationRepository;
@@ -19,8 +20,8 @@ final class DomainConversationService
     public function open(int $memberId, string $source, ?string $subject, int $protocolVersion, ?int $categoryId): CustomerServiceConversation
     {
         $settings = $this->settings->toArray();
-        if (!$settings['enabled']) { throw new \DomainException('客服服务暂未开启'); }
-        if (mb_strlen($subject ?? '') > 120) { throw new \InvalidArgumentException('会话主题过长'); }
+        if (!$settings['enabled']) { throw CustomerServiceError::SERVICE_DISABLED->exception(); }
+        if (mb_strlen($subject ?? '') > 120) { throw CustomerServiceError::CONVERSATION_SUBJECT_TOO_LONG->invalid(); }
         $this->repository->lockMember($memberId);
         $conversation = $this->repository->findOpenByMember($memberId);
         if ($conversation) {
@@ -31,7 +32,7 @@ final class DomainConversationService
         $published = $this->configuration->published();
         $snapshot = $published['snapshot'];
         $category = $categoryId ? $this->categories->effective($snapshot['categories'] ?? [], $categoryId) : null;
-        if ($categoryId && !$category) { throw new \InvalidArgumentException('问题类目不存在或已停用'); }
+        if ($categoryId && !$category) { throw CustomerServiceError::CATEGORY_UNAVAILABLE->invalid(); }
         $agentId = (int) ($category['default_ai_agent_id'] ?? $settings['default_ai_agent_id'] ?? 0);
         $agent = array_column($snapshot['ai_agents'] ?? [], null, 'id')[$agentId] ?? null;
         $useAi = $protocolVersion >= 2 && $settings['ai_enabled'] && $agent && ($agent['enabled'] ?? true) && !($category['force_human'] ?? false);
@@ -58,9 +59,9 @@ final class DomainConversationService
 
     public function classify(CustomerServiceConversation $conversation, int $categoryId, bool $human = false): void
     {
-        if ($conversation->reception_state === 'closed') { throw new \DomainException('已关闭会话不能修改类目'); }
+        if ($conversation->reception_state === 'closed') { throw CustomerServiceError::CLOSED_CONVERSATION_CATEGORY_IMMUTABLE->exception(); }
         $category = $this->categories->effective($this->configuration->published()['snapshot']['categories'] ?? [], $categoryId);
-        if (!$category) { throw new \InvalidArgumentException('问题类目不可用'); }
+        if (!$category) { throw CustomerServiceError::CATEGORY_SELECTION_INVALID->invalid(); }
         $previousCategory = $conversation->category_id;
         $conversation->update(['category_id' => $categoryId, 'priority' => (int) ($category['priority'] ?? 0), 'classification_json' => ['source' => $human ? 'human' : 'user', 'path' => $category['path_names']]]);
         if (($category['force_human'] ?? false) && $conversation->reception_state === 'ai_active') { $this->requestHuman($conversation, 'category_requires_human'); }
@@ -70,9 +71,9 @@ final class DomainConversationService
     public function appendMember(int $memberId, string $no, string $clientId, string $type, array $content): CustomerServiceMessage
     {
         $settings = $this->settings->toArray();
-        if (!$settings['enabled']) { throw new \DomainException('客服服务暂未开启'); }
-        if ($clientId === '' || strlen($clientId) > 64) { throw new \InvalidArgumentException('客户端消息标识无效'); }
-        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw new \RuntimeException('客服会话不存在');
+        if (!$settings['enabled']) { throw CustomerServiceError::SERVICE_DISABLED->exception(); }
+        if ($clientId === '' || strlen($clientId) > 64) { throw CustomerServiceError::CLIENT_MESSAGE_ID_INVALID->invalid(); }
+        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal();
         $entity = $this->mapper->fromModel($conversation);
         $entity->assertCanSend('member', $memberId);
         $message = $this->repository->append($conversation, 'member', $memberId, $clientId, $type, $content);
@@ -126,15 +127,15 @@ final class DomainConversationService
 
     public function rate(int $memberId, string $no, int $score, string $comment): void
     {
-        if ($score < 1 || $score > 5 || mb_strlen($comment) > 500) { throw new \InvalidArgumentException('评分或评价内容无效'); }
-        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw new \RuntimeException('会话不存在');
-        if ($conversation->reception_state !== 'closed') { throw new \DomainException('请在结束会话后评价'); }
+        if ($score < 1 || $score > 5 || mb_strlen($comment) > 500) { throw CustomerServiceError::RATING_INVALID->invalid(); }
+        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw CustomerServiceError::CONVERSATION_NOT_FOUND->internal();
+        if ($conversation->reception_state !== 'closed') { throw CustomerServiceError::RATING_REQUIRES_CLOSED_CONVERSATION->exception(); }
         $this->repository->rate($conversation, $memberId, $score, $comment);
     }
 
     public function closeMember(int $memberId, string $no): CustomerServiceConversation
     {
-        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw new \RuntimeException('客服会话不存在');
+        $conversation = $this->repository->findMemberConversation($memberId, $no, true) ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal();
         $entity = $this->mapper->fromModel($conversation);
         if ($entity->close($memberId, 'member_closed', date('Y-m-d H:i:s'))) {
             $this->assignment->release($conversation);
@@ -205,7 +206,7 @@ final class DomainConversationService
 
     public function prepareTakeover(CustomerServiceConversation $conversation): void
     {
-        if (!in_array($conversation->reception_state, ['ai_active', 'human_deferred', 'human_waiting'], true)) { throw new \DomainException('会话当前不可接管'); }
+        if (!in_array($conversation->reception_state, ['ai_active', 'human_deferred', 'human_waiting'], true)) { throw CustomerServiceError::TAKEOVER_STATE_INVALID->exception(); }
         if ($conversation->reception_state !== 'human_waiting') {
             $entity = $this->mapper->fromModel($conversation);
             $entity->requestHuman('agent_takeover', date('Y-m-d H:i:s'));

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Express\Provider;
 
+use App\Infrastructure\Error\ExpressError;
 use Hyperf\Guzzle\ClientFactory;
 use Plugin\Express\Contract\LogisticsTrackingInterface;
 use Plugin\Express\Exception\TrackingException;
@@ -32,7 +33,7 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
     public function track(string $companyCode, string $trackingNo): TrackingResult
     {
         if (trim((string) ($this->config['customer'] ?? '')) === '' || trim((string) ($this->config['key'] ?? '')) === '') {
-            throw new TrackingException('快递100配置不完整');
+            throw new TrackingException(ExpressError::PROVIDER_CONFIGURATION_MISSING->message(), ExpressError::PROVIDER_CONFIGURATION_MISSING->value);
         }
 
         $payload = [
@@ -65,11 +66,11 @@ final class Kuaidi100Provider implements LogisticsTrackingInterface
     {
         $decoded = json_decode((string) $response->getBody(), true);
         if (! \is_array($decoded)) {
-            throw new TrackingException('快递100返回了无效响应');
+            throw new TrackingException(ExpressError::PROVIDER_RESPONSE_INVALID->message(), ExpressError::PROVIDER_RESPONSE_INVALID->value);
         }
 
         if (isset($decoded['returnCode']) && (string) $decoded['returnCode'] !== '200') {
-            throw new TrackingException((string) ($decoded['message'] ?? '物流查询失败'));
+            throw new TrackingException(ExpressError::PROVIDER_REJECTED->message([(string) $decoded['returnCode'], (string) ($decoded['message'] ?? '')]), ExpressError::PROVIDER_REJECTED->value);
         }
 
         $traces = [];

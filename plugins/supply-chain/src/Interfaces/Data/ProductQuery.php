@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interfaces\Data;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final readonly class ProductQuery
 {
     public function __construct(
@@ -23,7 +25,7 @@ final readonly class ProductQuery
         public ?int $source = null,
     ) {
         if ($page < 1 || $pageSize < 1 || $pageSize > 100) {
-            throw new \InvalidArgumentException('商品分页范围无效');
+            throw SupplyChainError::PRODUCT_PAGINATION_INVALID->invalid();
         }
     }
 }

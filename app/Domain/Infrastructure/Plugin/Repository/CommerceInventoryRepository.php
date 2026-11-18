@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Plugin\Repository;
 
+use App\Infrastructure\Error\InventoryError;
+
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Infrastructure\Service\Trade\ExternalInventoryProjection;
 use Hyperf\DbConnection\Db;
@@ -16,17 +18,17 @@ final class CommerceInventoryRepository
     {
         $sku = ProductSku::query()->with('product')->whereKey($skuId)->first();
         if ($sku === null || ($sku->product?->fulfillment_provider ?? 'merchant') !== $provider) {
-            throw new \DomainException('库存SKU不属于当前履约能力');
+            throw InventoryError::SKU_PROVIDER_MISMATCH->exception();
         }
         Db::table('commerce_stock_projections')->insertOrIgnore([
             'sku_id' => $skuId, 'provider' => $provider, 'version' => 0, 'upstream_stock' => 0,
             'created_at' => date('Y-m-d H:i:s'), 'updated_at' => date('Y-m-d H:i:s'),
         ]);
         $row = Db::table('commerce_stock_projections')->where('sku_id', $skuId)->lockForUpdate()->first();
-        if ($row === null || $row->provider !== $provider) { throw new \DomainException('库存投影归属不一致'); }
+        if ($row === null || $row->provider !== $provider) { throw InventoryError::PROJECTION_OWNER_MISMATCH->exception(); }
         // DB 版本与 Redis 版本都检查；跨存储失败后可按相同版本安全重试。
         if ($version < (int) $row->version) { return (int) $sku->stock; }
-        if ($version === (int) $row->version && $stock !== (int) $row->upstream_stock) { throw new \DomainException('同一库存快照版本的数量不一致'); }
+        if ($version === (int) $row->version && $stock !== (int) $row->upstream_stock) { throw InventoryError::SNAPSHOT_VERSION_CONFLICT->exception(); }
         $available = $this->projection->project($provider, $skuId, $stock, $version, (int) $row->version === 0, $trades);
         Db::table('commerce_stock_projections')->where('sku_id', $skuId)->update([
             'version' => $version, 'upstream_stock' => $stock, 'updated_at' => date('Y-m-d H:i:s'),

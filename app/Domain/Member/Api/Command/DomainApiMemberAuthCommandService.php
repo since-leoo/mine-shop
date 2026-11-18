@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Domain\Member\Api\Command;
 
 use App\Domain\Member\Contract\ProfileAuthorizeInput;
+
 use App\Domain\Member\Contract\ProfileUpdateInput;
 use App\Domain\Member\Entity\MemberEntity;
 use App\Domain\Member\Event\MemberRegistered;
 use App\Domain\Member\Mapper\MemberMapper;
 use App\Domain\Member\Repository\MemberRepository;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -55,7 +57,7 @@ final class DomainApiMemberAuthCommandService
         $openid = (string) ($payload['openid'] ?? '');
 
         if (empty($openid)) {
-            throw new \InvalidArgumentException('授权失败');
+            throw MemberError::AUTHORIZATION_FAILED->invalid();
         }
 
         $memberEntity = $this->memberRepository->findByOpenid($openid);
@@ -105,7 +107,7 @@ final class DomainApiMemberAuthCommandService
         $phoneNumber = (string) ($phoneInfo['phoneNumber'] ?? $phoneInfo['purePhoneNumber'] ?? '');
 
         if (trim($phoneNumber) === '') {
-            throw new \InvalidArgumentException('获取手机号失败');
+            throw MemberError::PHONE_FETCH_FAILED->invalid();
         }
 
         $memberEntity->bindPhone($phoneNumber);
@@ -146,7 +148,7 @@ final class DomainApiMemberAuthCommandService
         $model = $this->memberRepository->findById($memberId);
 
         if (! $model) {
-            throw new BusinessException(ResultCode::NOT_FOUND, "会员不存在: ID={$memberId}");
+            throw new BusinessException(MemberError::ID_NOT_FOUND, parameters: [$memberId], resultCode: ResultCode::NOT_FOUND);
         }
 
         return MemberMapper::fromModel($model);

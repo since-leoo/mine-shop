@@ -2,6 +2,8 @@
 
 从主应用迁出的现有功能，保留数据库表名、权限码与接口：`/admin/review/*`、`/api/v1/review/*`。
 
+异常中文文案与业务码集中维护在 `app/Infrastructure/Error/ProductReviewError.php`（`420xxx`），覆盖重复评价、评分、内容、审核状态与评价不存在；保留原有 `DomainException` / `RuntimeException` 类型和状态转换约束。
+
 ## 目录与边界
 
 - `src/`：插件自己的领域、应用、后台接口和持久化实现。

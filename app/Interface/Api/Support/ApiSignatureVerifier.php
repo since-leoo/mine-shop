@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Api\Support;
 
+use App\Infrastructure\Error\AuthError;
+
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Psr\Http\Message\ServerRequestInterface;
@@ -32,23 +34,23 @@ final class ApiSignatureVerifier
         $signature = trim($request->getHeaderLine('X-Signature'));
 
         if ($clientId === '' || $timestamp === '' || $nonce === '' || $bodySha256 === '' || $signature === '') {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'Invalid API signature headers.');
+            throw new BusinessException(AuthError::SIGNATURE_HEADERS_INVALID, resultCode: ResultCode::UNAUTHORIZED);
         }
 
         $timestampValue = (int) $timestamp;
         if ($timestampValue <= 0 || abs(time() - $timestampValue) > $this->config->ttl()) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'API signature timestamp expired.');
+            throw new BusinessException(AuthError::SIGNATURE_EXPIRED, resultCode: ResultCode::UNAUTHORIZED);
         }
 
         $secret = $this->config->clientSecret($clientId);
         if ($secret === null) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'Unsupported API client.');
+            throw new BusinessException(AuthError::CLIENT_UNSUPPORTED, resultCode: ResultCode::UNAUTHORIZED);
         }
 
         $rawBody = $this->bodyForHash($request);
         $actualBodySha256 = hash('sha256', $rawBody);
         if (! hash_equals($actualBodySha256, $bodySha256)) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'API request body hash mismatch.');
+            throw new BusinessException(AuthError::BODY_HASH_MISMATCH, resultCode: ResultCode::UNAUTHORIZED);
         }
 
         $payload = implode("\n", [
@@ -63,11 +65,11 @@ final class ApiSignatureVerifier
 
         $expectedSignature = hash_hmac('sha256', $payload, $secret);
         if (! hash_equals($expectedSignature, $signature)) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'Invalid API signature.');
+            throw new BusinessException(AuthError::SIGNATURE_INVALID, resultCode: ResultCode::UNAUTHORIZED);
         }
 
         if (! $this->nonceGuard->consume($clientId, $nonce, $this->config->ttl())) {
-            throw new BusinessException(ResultCode::UNAUTHORIZED, 'Duplicated API request nonce.');
+            throw new BusinessException(AuthError::NONCE_REUSED, resultCode: ResultCode::UNAUTHORIZED);
         }
     }
 

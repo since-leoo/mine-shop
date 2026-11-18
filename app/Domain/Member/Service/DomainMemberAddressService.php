@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Member\Service;
 
 use App\Domain\Member\Repository\MemberAddressRepository;
+
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -38,7 +40,7 @@ final class DomainMemberAddressService extends IService
     {
         $address = $this->repository->findForMember($memberId, $addressId);
         if ($address === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '地址不存在');
+            throw new BusinessException(MemberError::ADDRESS_NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         return $address->toArray();

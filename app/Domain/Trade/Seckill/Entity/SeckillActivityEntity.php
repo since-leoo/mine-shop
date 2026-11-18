@@ -15,6 +15,7 @@ namespace App\Domain\Trade\Seckill\Entity;
 use App\Domain\Trade\Seckill\Contract\SeckillActivityInput;
 use App\Domain\Trade\Seckill\Enum\SeckillStatus;
 use App\Domain\Trade\Seckill\ValueObject\ActivityRules;
+use App\Infrastructure\Error\SeckillError;
 use Carbon\Carbon;
 
 /**
@@ -186,7 +187,7 @@ final class SeckillActivityEntity
     public function cancel(): self
     {
         if (! $this->canBeCancelled()) {
-            throw new \DomainException('当前活动状态不允许取消');
+            throw SeckillError::ACTIVITY_NOT_CANCELLABLE->exception();
         }
         $this->status = SeckillStatus::CANCELLED;
         $this->isEnabled = false;
@@ -196,10 +197,10 @@ final class SeckillActivityEntity
     public function start(): self
     {
         if ($this->status !== SeckillStatus::PENDING) {
-            throw new \DomainException('只有待开始的活动才能启动');
+            throw SeckillError::ACTIVITY_START_STATUS_INVALID->exception();
         }
         if (! $this->isEnabled) {
-            throw new \DomainException('未启用的活动不能启动');
+            throw SeckillError::ACTIVITY_DISABLED->exception();
         }
         $this->status = SeckillStatus::ACTIVE;
         return $this;
@@ -208,7 +209,7 @@ final class SeckillActivityEntity
     public function end(): self
     {
         if ($this->status === SeckillStatus::ENDED) {
-            throw new \DomainException('活动已经结束');
+            throw SeckillError::ACTIVITY_ALREADY_ENDED->exception();
         }
         $this->status = SeckillStatus::ENDED;
         return $this;

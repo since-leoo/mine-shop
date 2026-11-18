@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Job;
 
+use App\Infrastructure\Error\SystemMessageError;
 use Hyperf\AsyncQueue\Job;
 use Hyperf\Context\ApplicationContext;
 use Hyperf\DbConnection\Db;
@@ -49,7 +50,7 @@ class SendMessageJob extends Job
                     'channel' => $this->channel,
                 ]);
                 // 外层业务事务可能尚未提交；重试而不是永久丢弃已入队的通知。
-                throw new \RuntimeException('通知消息尚不可见或已删除');
+                throw SystemMessageError::MESSAGE_NOT_VISIBLE->internal();
             }
 
             $failure = null;
@@ -58,7 +59,7 @@ class SendMessageJob extends Job
                 $receipt = UserMessage::query()->where('message_id', $this->messageId)
                     ->where('user_id', $this->userId)->lockForUpdate()->first();
                 if ($receipt === null) {
-                    throw new \RuntimeException('通知收件记录尚不可见');
+                    throw SystemMessageError::RECEIPT_NOT_VISIBLE->internal();
                 }
                 if ($receipt->is_deleted) {
                     return false;

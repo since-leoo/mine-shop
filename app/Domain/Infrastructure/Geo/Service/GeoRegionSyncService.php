@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Infrastructure\Geo\Service;
 
+use App\Infrastructure\Error\GeoError;
+
 use App\Infrastructure\Model\Geo\GeoRegion;
 use App\Infrastructure\Model\Geo\GeoRegionVersion;
 use Carbon\Carbon;
@@ -48,7 +50,7 @@ class GeoRegionSyncService
         $dryRun = (bool) ($options['dry_run'] ?? false);
 
         if ($url === null || $url === '') {
-            throw new \RuntimeException('No available data source URL found');
+            throw GeoError::SOURCE_URL_MISSING->internal();
         }
 
         $payload = $this->fetchPayload($url, $source);
@@ -104,7 +106,7 @@ class GeoRegionSyncService
         ]);
 
         if ($response->getStatusCode() !== 200) {
-            throw new \RuntimeException('Request failed, HTTP ' . $response->getStatusCode());
+            throw GeoError::SOURCE_REQUEST_FAILED->internal([$response->getStatusCode()]);
         }
 
         $body = (string) $response->getBody();
@@ -114,7 +116,7 @@ class GeoRegionSyncService
 
         $decoded = json_decode($body, true, 512, \JSON_THROW_ON_ERROR);
         if (! \is_array($decoded)) {
-            throw new \RuntimeException('Unsupported payload format, expected JSON array');
+            throw GeoError::PAYLOAD_FORMAT_INVALID->internal();
         }
 
         return $decoded;
@@ -124,7 +126,7 @@ class GeoRegionSyncService
     {
         $lines = preg_split('/\r\n|\r|\n/', trim($csv));
         if (! \is_array($lines) || $lines === []) {
-            throw new \RuntimeException('AreaCity CSV payload is empty');
+            throw GeoError::CSV_EMPTY->internal();
         }
 
         $header = str_getcsv((string) array_shift($lines));
@@ -132,7 +134,7 @@ class GeoRegionSyncService
             $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', (string) $header[0]) ?? $header[0];
         }
         if ($header !== ['id', 'pid', 'deep', 'name', 'pinyin_prefix', 'pinyin', 'ext_id', 'ext_name']) {
-            throw new \RuntimeException('AreaCity CSV header format is invalid');
+            throw GeoError::CSV_HEADER_INVALID->internal();
         }
 
         $nodesById = [];
@@ -216,7 +218,7 @@ class GeoRegionSyncService
         return Db::transaction(static function () use ($payload, $source, $url, $versionValue, $releasedAt, $force) {
             $existing = GeoRegionVersion::query()->where('version', $versionValue)->first();
             if ($existing !== null && ! $force) {
-                throw new \RuntimeException(\sprintf('Version %s already exists, use --force to overwrite', $versionValue));
+                throw GeoError::VERSION_EXISTS->internal([$versionValue]);
             }
 
             if ($existing !== null) {

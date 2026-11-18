@@ -102,7 +102,7 @@ final class RoleController extends AbstractController
     public function batchGrantPermissionsForRole(int $id, BatchGrantPermissionsForRoleRequest $request): Result
     {
         if (! $this->queryService->find($id)) {
-            throw new BusinessException(code: ResultCode::NOT_FOUND);
+            throw new BusinessException(\App\Infrastructure\Error\CommonError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
         $this->commandService->grantPermissions($request->toDto($id, $this->currentUser->id()));
         return $this->success();

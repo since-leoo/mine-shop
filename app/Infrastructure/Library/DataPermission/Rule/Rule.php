@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Library\DataPermission\Rule;
 
+use App\Infrastructure\Error\PermissionError;
+
 use App\Infrastructure\Library\DataPermission\Rule\Executable\CreatedByIdsExecute;
 use App\Infrastructure\Library\DataPermission\Rule\Executable\DeptExecute;
 use App\Infrastructure\Library\DataPermission\ScopeType;
@@ -38,7 +40,7 @@ class Rule
     {
         $func = $this->config->get('department.custom.' . $customFunc);
         if ($func === null) {
-            throw new \RuntimeException(\sprintf('Custom function %s not found', $customFunc));
+            throw PermissionError::NAMED_FUNCTION_NOT_FOUND->internal([$customFunc]);
         }
         $func($builder, $scopeType, $policy, $user);
     }

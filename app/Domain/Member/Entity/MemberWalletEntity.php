@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Domain\Member\Entity;
 
 use App\Domain\Member\Contract\MemberWalletInput;
+
 use App\Domain\Member\ValueObject\BalanceChangeVo;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 
@@ -262,7 +264,7 @@ final class MemberWalletEntity
     public function refundConsumption(int $amount): void
     {
         if ($amount <= 0) {
-            throw new \DomainException('退款金额必须大于 0');
+            throw MemberError::REFUND_AMOUNT_INVALID->exception();
         }
         $this->changeBalance = $amount;
         $this->beforeBalance = $this->balance;
@@ -275,7 +277,7 @@ final class MemberWalletEntity
     public function changeBalance(): void
     {
         if ($this->changeBalance === 0) {
-            throw new BusinessException(ResultCode::FAIL, '变动值不能为 0');
+            throw new BusinessException(MemberError::BALANCE_CHANGE_ZERO, resultCode: ResultCode::FAIL);
         }
 
         $this->setBeforeBalance($this->balance);
@@ -283,10 +285,7 @@ final class MemberWalletEntity
 
         // 领域不变量：余额不能为负数
         if ($after < 0) {
-            throw new BusinessException(
-                ResultCode::FAIL,
-                \sprintf('余额不足，当前余额：%d', $this->balance)
-            );
+            throw new BusinessException(MemberError::BALANCE_INSUFFICIENT, parameters: [$this->balance], resultCode: ResultCode::FAIL);
         }
 
         $this->setAfterBalance($after);

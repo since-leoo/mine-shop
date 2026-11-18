@@ -15,6 +15,7 @@ namespace App\Domain\Trade\Order\Service;
 use App\Domain\Trade\Order\Entity\OrderPaymentEntity;
 use App\Domain\Trade\Order\Mapper\OrderPaymentMapper;
 use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
+use App\Infrastructure\Error\PaymentError;
 use App\Infrastructure\Model\Order\OrderPayment;
 
 final class DomainOrderPaymentService
@@ -162,7 +163,7 @@ final class DomainOrderPaymentService
         $model = $this->repository->findByPaymentNo($paymentNo);
 
         if (! $model) {
-            throw new \RuntimeException("支付记录不存在: payment_no={$paymentNo}");
+            throw PaymentError::RECORD_NOT_FOUND_BY_PAYMENT_NO->internal([$paymentNo]);
         }
 
         return OrderPaymentMapper::fromModel($model);
@@ -176,7 +177,7 @@ final class DomainOrderPaymentService
         $model = $this->repository->findByOrderNo($orderNo);
 
         if (! $model) {
-            throw new \RuntimeException("支付记录不存在: order_no={$orderNo}");
+            throw PaymentError::RECORD_NOT_FOUND_BY_ORDER_NO->internal([$orderNo]);
         }
 
         return OrderPaymentMapper::fromModel($model);
@@ -190,7 +191,7 @@ final class DomainOrderPaymentService
         $model = $this->repository->findByOrderId($orderId);
 
         if (! $model) {
-            throw new \RuntimeException("支付记录不存在: order_id={$orderId}");
+            throw PaymentError::RECORD_NOT_FOUND_BY_ORDER_ID->internal([$orderId]);
         }
 
         return OrderPaymentMapper::fromModel($model);
@@ -204,7 +205,7 @@ final class DomainOrderPaymentService
         $model = $this->repository->findByThirdPartyNo($thirdPartyNo);
 
         if (! $model) {
-            throw new \RuntimeException("支付记录不存在: third_party_no={$thirdPartyNo}");
+            throw PaymentError::RECORD_NOT_FOUND_BY_THIRD_PARTY_NO->internal([$thirdPartyNo]);
         }
 
         return OrderPaymentMapper::fromModel($model);

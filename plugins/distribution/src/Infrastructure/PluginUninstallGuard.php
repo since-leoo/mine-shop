@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Infrastructure;
 
+use App\Infrastructure\Error\DistributionError;
 use Hyperf\Database\Schema\Schema;
 use Hyperf\DbConnection\Db;
 
@@ -26,12 +27,12 @@ final class PluginUninstallGuard
             }
             // Outbox retries and in-flight submissions still require the financial handler.
             if (Db::table($table)->where('settings->enabled', true)->exists()) {
-                throw new \DomainException('该插件曾启用财务业务，不支持物理卸载；请在插件设置中关闭新增业务，保留历史结算与退款处理');
+                throw DistributionError::FINANCIAL_PLUGIN_UNINSTALL_FORBIDDEN->exception();
             }
         }
         foreach ($definition['uninstall_retained_history_guards'] ?? [] as $table) {
             if ($this->hasTable($table) && Db::table($table)->exists()) {
-                throw new \DomainException('插件已有业务记录，不支持物理卸载；请在插件设置中关闭新增业务');
+                throw DistributionError::PLUGIN_HISTORY_UNINSTALL_FORBIDDEN->exception();
             }
         }
         foreach ($definition['uninstall_balance_guards'] ?? [] as $guard) {
@@ -49,7 +50,7 @@ final class PluginUninstallGuard
                 }
             });
             if ($query->exists()) {
-                throw new \DomainException('插件存在未结清资金，无法卸载；请先关闭新增业务并完成结算');
+                throw DistributionError::UNSETTLED_FUNDS_UNINSTALL_FORBIDDEN->exception();
             }
         }
         foreach ($definition['uninstall_submission_guards'] ?? [] as $guard) {
@@ -60,7 +61,7 @@ final class PluginUninstallGuard
             }
             if (Db::table($table)->whereIn('status', ['pending', 'reserved'])
                 ->whereRaw("JSON_LENGTH(JSON_EXTRACT(payload, '$.{$key}')) > 0")->exists()) {
-                throw new \DomainException('插件仍有待处理的归因订单，无法卸载');
+                throw DistributionError::PENDING_ATTRIBUTION_UNINSTALL_FORBIDDEN->exception();
             }
         }
     }

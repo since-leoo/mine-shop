@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Service;
 
+use App\Infrastructure\Error\SystemMessageError;
 use Carbon\Carbon;
 use Hyperf\AsyncQueue\Driver\DriverFactory;
 use Hyperf\Collection\Collection;
@@ -78,14 +79,14 @@ class MessageService
             [$message, $recipients] = Db::transaction(function () use ($messageId) {
                 $message = $this->repository->findForUpdate($messageId);
                 if (! $message) {
-                    throw new \InvalidArgumentException("Message not found: {$messageId}");
+                    throw SystemMessageError::MESSAGE_NOT_FOUND->invalid([$messageId]);
                 }
                 if (! $message->canSend()) {
-                    throw new \InvalidArgumentException("Message cannot be sent: {$messageId}");
+                    throw SystemMessageError::MESSAGE_NOT_SENDABLE->invalid([$messageId]);
                 }
                 $recipients = $message->getRecipients();
                 if ($recipients->isEmpty()) {
-                    throw new \InvalidArgumentException("No recipients found for message: {$messageId}");
+                    throw SystemMessageError::RECIPIENTS_NOT_FOUND->invalid([$messageId]);
                 }
                 $message->markAsSending();
                 $this->createUserMessages($message, $recipients);
@@ -112,7 +113,7 @@ class MessageService
     {
         $message = $this->repository->findById($messageId);
         if (! $message) {
-            throw new \InvalidArgumentException("Message not found: {$messageId}");
+            throw SystemMessageError::MESSAGE_NOT_FOUND->invalid([$messageId]);
         }
         return $message->update(['scheduled_at' => $scheduledAt, 'status' => MessageStatus::SCHEDULED->value]);
     }
@@ -186,7 +187,7 @@ class MessageService
         try {
             $message = $this->repository->findById($messageId);
             if (! $message) {
-                throw new \InvalidArgumentException("Message not found: {$messageId}");
+                throw SystemMessageError::MESSAGE_NOT_FOUND->invalid([$messageId]);
             }
             $changes = [];
             foreach ($data as $key => $value) {
@@ -261,25 +262,25 @@ class MessageService
         $required = ['title', 'content'];
         foreach ($required as $field) {
             if (empty($data[$field])) {
-                throw new \InvalidArgumentException("Field {$field} is required");
+                throw SystemMessageError::FIELD_REQUIRED->invalid([$field]);
             }
         }
         $maxTitleLength = $this->config('system_message.message.max_title_length', 255);
         if (mb_strlen($data['title']) > $maxTitleLength) {
-            throw new \InvalidArgumentException("Title too long, max {$maxTitleLength} characters");
+            throw SystemMessageError::TITLE_TOO_LONG->invalid([$maxTitleLength]);
         }
         $maxContentLength = $this->config('system_message.message.max_content_length', 10000);
         if (mb_strlen($data['content']) > $maxContentLength) {
-            throw new \InvalidArgumentException("Content too long, max {$maxContentLength} characters");
+            throw SystemMessageError::CONTENT_TOO_LONG->invalid([$maxContentLength]);
         }
         if (isset($data['type']) && ! \in_array($data['type'], MessageType::values(), true)) {
-            throw new \InvalidArgumentException("Invalid message type: {$data['type']}");
+            throw SystemMessageError::MESSAGE_TYPE_INVALID->invalid([$data['type']]);
         }
         if (isset($data['recipient_type']) && ! \in_array($data['recipient_type'], RecipientType::values(), true)) {
-            throw new \InvalidArgumentException("Invalid recipient type: {$data['recipient_type']}");
+            throw SystemMessageError::RECIPIENT_TYPE_INVALID->invalid([$data['recipient_type']]);
         }
         if (isset($data['priority']) && ($data['priority'] < 1 || $data['priority'] > 5)) {
-            throw new \InvalidArgumentException('Priority must be between 1 and 5');
+            throw SystemMessageError::PRIORITY_INVALID->invalid();
         }
     }
 
@@ -323,7 +324,7 @@ class MessageService
                 }
                 $job = new SendMessageJob($message->id, $user->id, $channel);
                 if (! $driver->push($job)) {
-                    throw new \RuntimeException('通知队列拒绝接收任务: ' . $job->getJobId());
+                    throw SystemMessageError::QUEUE_REJECTED->internal([$job->getJobId()]);
                 }
             }
         }

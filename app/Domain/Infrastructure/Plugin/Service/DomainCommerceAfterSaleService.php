@@ -6,6 +6,8 @@ namespace App\Domain\Infrastructure\Plugin\Service;
 
 use App\Domain\Trade\AfterSale\Repository\AfterSaleRepository;
 
+use App\Infrastructure\Error\CommerceError;
+
 final class DomainCommerceAfterSaleService
 {
     public function __construct(private readonly AfterSaleRepository $repository) {}
@@ -14,9 +16,9 @@ final class DomainCommerceAfterSaleService
     {
         DomainCommerceProductService::validateProvider($provider);
         $sale = $this->find($id);
-        if ($sale === null) { throw new \DomainException('售后单不存在'); }
+        if ($sale === null) { throw CommerceError::AFTER_SALE_NOT_FOUND->exception(); }
         if (($sale['order_item']['fulfillment_provider'] ?? 'merchant') !== $provider) {
-            throw new \DomainException('售后单不属于当前履约能力');
+            throw CommerceError::AFTER_SALE_PROVIDER_MISMATCH->exception();
         }
     }
 }

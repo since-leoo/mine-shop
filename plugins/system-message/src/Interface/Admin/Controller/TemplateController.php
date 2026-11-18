@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Interface\Admin\Controller;
 
+use App\Infrastructure\Error\SystemMessageError;
+
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
@@ -56,7 +58,7 @@ class TemplateController extends SystemMessageAbstractController
     {
         $template = $this->templateService->getById($id);
         if (! $template) {
-            return $this->error('模板不存在', 404);
+            return $this->error(SystemMessageError::TEMPLATE_RECORD_NOT_FOUND, 404);
         }
         return $this->success($template);
     }
@@ -87,7 +89,7 @@ class TemplateController extends SystemMessageAbstractController
     {
         $ids = $this->request->input('ids', []);
         if (empty($ids)) {
-            return $this->error('请选择要删除的模板');
+            return $this->error(SystemMessageError::TEMPLATE_DELETE_SELECTION_REQUIRED);
         }
         try {
             $deleted = $this->templateService->batchDelete((array) $ids);
@@ -104,7 +106,7 @@ class TemplateController extends SystemMessageAbstractController
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
         if (! $id) {
-            return $this->error('模板ID不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_ID_REQUIRED);
         }
         try {
             return $this->success($this->templateService->preview($id, $variables));
@@ -120,7 +122,7 @@ class TemplateController extends SystemMessageAbstractController
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
         if (! $id) {
-            return $this->error('模板ID不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_ID_REQUIRED);
         }
         try {
             return $this->success($this->templateService->render($id, $variables));
@@ -136,7 +138,7 @@ class TemplateController extends SystemMessageAbstractController
         $id = $this->request->input('id');
         $variables = $this->request->input('variables', []);
         if (! $id) {
-            return $this->error('模板ID不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_ID_REQUIRED);
         }
         try {
             return $this->success($this->templateService->validateVariables($id, $variables));
@@ -163,7 +165,7 @@ class TemplateController extends SystemMessageAbstractController
         $id = $this->request->input('id');
         $newName = $this->request->input('name');
         if (! $id) {
-            return $this->error('模板ID不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_ID_REQUIRED);
         }
         try {
             return $this->success($this->templateService->duplicate($id, $newName), '模板复制成功');
@@ -178,7 +180,7 @@ class TemplateController extends SystemMessageAbstractController
     {
         $id = $this->request->input('id');
         if (! $id) {
-            return $this->error('模板ID不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_ID_REQUIRED);
         }
         try {
             return $this->success(['result' => $this->templateService->toggleActive($id)], '状态更新成功');
@@ -193,7 +195,7 @@ class TemplateController extends SystemMessageAbstractController
     {
         $keyword = $this->request->input('keyword', '');
         if (empty($keyword)) {
-            return $this->error('搜索关键词不能为空');
+            return $this->error(SystemMessageError::SEARCH_KEYWORD_REQUIRED);
         }
         $filters = array_filter(['type' => $this->request->input('type'), 'category' => $this->request->input('category'), 'is_active' => $this->request->input('is_active')], static fn ($v) => $v !== null && $v !== '');
         return $this->success($this->templateService->search($keyword, $filters, (int) $this->request->input('page', 1), (int) $this->request->input('page_size', 20)));
@@ -219,7 +221,7 @@ class TemplateController extends SystemMessageAbstractController
     {
         $templates = $this->request->input('templates', []);
         if (empty($templates) || ! \is_array($templates)) {
-            return $this->error('模板数据不能为空');
+            return $this->error(SystemMessageError::TEMPLATE_DATA_REQUIRED);
         }
         return $this->success($this->templateService->import($templates), '导入完成');
     }

@@ -12,12 +12,14 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interfaces\Data;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 final readonly class PurchaseLine
 {
     public function __construct(public string $externalSkuId, public int $quantity)
     {
         if ($externalSkuId === '' || $quantity < 1) {
-            throw new \InvalidArgumentException('供应链采购明细无效');
+            throw SupplyChainError::PURCHASE_LINE_INVALID->invalid();
         }
     }
 }

@@ -14,6 +14,7 @@ namespace Plugin\SupplyChain\Domain\Service;
 
 use App\Domain\Infrastructure\Plugin\Contract\CommerceInventoryInterface;
 use App\Domain\Infrastructure\Plugin\Contract\CommerceProductInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Contract\ImportInput;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
 use Plugin\SupplyChain\Domain\ValueObject\TaskSpecVo;
@@ -27,7 +28,7 @@ final class DomainSupplyProductService
         $data = $input->toArray();
         $connection = $this->repository->require('connections', (int) $data['connection_id']);
         if (! $connection['enabled'] || $connection['mode'] !== 'active') {
-            throw new \DomainException('该连接已暂停新增选品');
+            throw SupplyChainError::PRODUCT_IMPORT_PAUSED->exception();
         }
         $ids = [];
         foreach ($data['external_product_ids'] as $externalId) {
@@ -49,7 +50,7 @@ final class DomainSupplyProductService
         $external = (string) $product['external_product_id'];
         $now = date('Y-m-d H:i:s');
         if (empty($product['skus'])) {
-            throw new \DomainException('上游商品没有有效SKU');
+            throw SupplyChainError::PRODUCT_VALID_SKU_MISSING->exception();
         }
         $this->repository->query('products')->insertOrIgnore($this->repository->encode(['connection_id' => $connectionId, 'external_product_id' => $external, 'name' => $product['name'], 'snapshot' => $product, 'snapshot_hash' => hash('sha256', json_encode($product, \JSON_THROW_ON_ERROR)), 'status' => $product['available'] ? 'available' : 'unavailable', 'fetched_at' => $now, 'created_at' => $now, 'updated_at' => $now]));
         $remote = $this->repository->decode($this->repository->query('products')->where('connection_id', $connectionId)->where('external_product_id', $external)->lockForUpdate()->first());
@@ -58,14 +59,14 @@ final class DomainSupplyProductService
             return ['link_id' => (int) $link['id'], 'product_id' => (int) $link['product_id'], 'projections' => [], 'skipped' => 'stale_snapshot'];
         }
         if ((int) $remote['snapshot_version'] === $version && ! hash_equals((string) $remote['snapshot_hash'], hash('sha256', json_encode($product, \JSON_THROW_ON_ERROR)))) {
-            throw new \DomainException('相同同步版本的商品内容不一致，拒绝覆盖');
+            throw SupplyChainError::PRODUCT_SNAPSHOT_CONFLICT->exception();
         }
         $skus = [];
         $multiplier = (int) ($options['price_multiplier_bps'] ?? $link['sync_policy']['price_multiplier_bps'] ?? 10000);
         foreach ($product['skus'] as $sku) {
             $key = (string) $sku['external_sku_id'];
             if ($key === '' || $sku['cost_price'] < 0 || $sku['stock'] < 0) {
-                throw new \DomainException('上游规格、价格或库存无效');
+                throw SupplyChainError::PRODUCT_SKU_DATA_INVALID->exception();
             }
             $skuName = (string) ($sku['title'] ?? '');
             if (trim($skuName) === '') {
@@ -75,13 +76,13 @@ final class DomainSupplyProductService
         }
         if ($link === null) {
             if (empty($options['category_id'])) {
-                throw new \DomainException('未导入商品需要选择本地分类');
+                throw SupplyChainError::LOCAL_CATEGORY_REQUIRED->exception();
             }
             $local = $this->catalog->import('supply_chain', 'supply:' . $connectionId . ':' . $external, ['name' => $product['name'], 'category_id' => (int) $options['category_id'], 'main_image' => $product['main_image'] ?? '', 'gallery_images' => $product['images'] ?? [], 'description' => mb_substr(strip_tags($product['description'] ?? ''), 0, 1000), 'detail_content' => $product['description'] ?? '', 'status' => 'draft', 'skus' => $skus]);
             $linkId = $this->repository->insert('product_links', ['connection_id' => $connectionId, 'supply_product_id' => $remote['id'], 'product_id' => $local['product_id'], 'binding_version' => 1, 'sync_policy' => ['fields' => [], 'price_multiplier_bps' => $multiplier], 'status' => 'active', 'created_at' => $now, 'updated_at' => $now]);
             $link = $this->repository->require('product_links', $linkId);
         } else {
-            $local = $this->catalog->find((int) $link['product_id']) ?? throw new \DomainException('本地商品已不存在，无法继续同步');
+            $local = $this->catalog->find((int) $link['product_id']) ?? throw SupplyChainError::LOCAL_PRODUCT_NOT_FOUND->exception();
             $knownCodes = array_column($local['skus'] ?? [], 'sku_code');
             $added = array_values(array_filter($skus, static fn ($sku) => ! \in_array($sku['sku_code'], $knownCodes, true)));
             if ($added !== []) {
@@ -104,7 +105,7 @@ final class DomainSupplyProductService
             $this->repository->query('skus')->insertOrIgnore($this->repository->encode(['connection_id' => $connectionId, 'supply_product_id' => $remote['id'], 'external_sku_id' => $externalSku, 'cost_price' => $sku['cost_price'], 'upstream_stock' => $sku['stock'], 'stock_version' => 0, 'snapshot' => $sku, 'created_at' => $now, 'updated_at' => $now]));
             $stored = $this->repository->decode($this->repository->query('skus')->where('connection_id', $connectionId)->where('external_sku_id', $externalSku)->lockForUpdate()->first());
             if ((int) $stored['supply_product_id'] !== (int) $remote['id']) {
-                throw new \DomainException('上游SKU已属于另一个商品，禁止自动换绑');
+                throw SupplyChainError::UPSTREAM_SKU_ALREADY_BOUND->exception();
             }
             if ((int) $stored['stock_version'] > $version) {
                 continue;
@@ -113,7 +114,7 @@ final class DomainSupplyProductService
             if ($skuLink === null) {
                 $localId = $localByCode[$skus[$i]['sku_code']] ?? null;
                 if ($localId === null) {
-                    throw new \DomainException('上游新增了规格，请通过受控商品更新补充规格后再同步');
+                    throw SupplyChainError::NEW_SKU_REQUIRES_MANUAL_UPDATE->exception();
                 }
                 $this->repository->insert('sku_links', ['connection_id' => $connectionId, 'product_link_id' => $link['id'], 'supply_sku_id' => $stored['id'], 'sku_id' => $localId, 'binding_version' => 1, 'status' => 'active', 'created_at' => $now, 'updated_at' => $now]);
                 $skuLink = ['sku_id' => $localId];

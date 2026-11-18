@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\ProductReview\Domain\Trade\Review\Entity;
 
 use App\Domain\Trade\Review\Contract\ReviewInput;
+use App\Infrastructure\Error\ProductReviewError;
 
 /**
  * 评价实体.
@@ -52,12 +53,12 @@ final class ReviewEntity
     {
         $rating = $dto->getRating();
         if ($rating === null || $rating < 1 || $rating > 5) {
-            throw new \DomainException('评分必须在1到5之间');
+            throw ProductReviewError::RATING_OUT_OF_RANGE->exception();
         }
 
         $content = $dto->getContent();
         if ($content === null || trim($content) === '') {
-            throw new \DomainException('评价内容不能为空');
+            throw ProductReviewError::CONTENT_REQUIRED->exception();
         }
 
         $this->orderId = $dto->getOrderId() ?? 0;
@@ -80,7 +81,7 @@ final class ReviewEntity
     public function approve(): self
     {
         if ($this->status !== 'pending') {
-            throw new \DomainException('只能审核待审核状态的评价');
+            throw ProductReviewError::REVIEW_NOT_PENDING->exception();
         }
         $this->status = 'approved';
         return $this;
@@ -92,7 +93,7 @@ final class ReviewEntity
     public function reject(): self
     {
         if ($this->status !== 'pending') {
-            throw new \DomainException('只能审核待审核状态的评价');
+            throw ProductReviewError::REVIEW_NOT_PENDING->exception();
         }
         $this->status = 'rejected';
         return $this;

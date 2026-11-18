@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Application\Admin\Catalog;
 
 use App\Domain\Catalog\Product\Contract\ProductInput;
+
 use App\Domain\Catalog\Product\Event\ProductCreated;
 use App\Domain\Catalog\Product\Event\ProductDeleted;
 use App\Domain\Catalog\Product\Event\ProductUpdated;
 use App\Domain\Catalog\Product\Service\DomainProductService;
 use App\Domain\Trade\Shared\Contract\TradeOutboxInterface;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
@@ -46,7 +48,7 @@ final class AppProductCommandService
             $entity = $this->productService->create($input);
             $model = $this->queryService->find($entity->getId());
             if ($model === null) {
-                throw new BusinessException(ResultCode::FAIL, '创建商品失败');
+                throw new BusinessException(CatalogError::PRODUCT_CREATE_FAILED, resultCode: ResultCode::FAIL);
             }
             $event = new ProductCreated(
                 productId: $entity->getId(),

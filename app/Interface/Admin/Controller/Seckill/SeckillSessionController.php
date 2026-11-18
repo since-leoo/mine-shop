@@ -14,6 +14,7 @@ namespace App\Interface\Admin\Controller\Seckill;
 
 use App\Application\Admin\Seckill\AppSeckillSessionCommandService;
 use App\Application\Admin\Seckill\AppSeckillSessionQueryService;
+use App\Infrastructure\Error\SeckillError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
 use App\Interface\Admin\Request\Seckill\SeckillSessionRequest;
@@ -59,7 +60,7 @@ final class SeckillSessionController extends AbstractController
     public function show(int $id): Result
     {
         $session = $this->queryService->find($id);
-        return $session ? $this->success($session->toArray()) : $this->error('场次不存在', 404);
+        return $session ? $this->success($session->toArray()) : $this->error(SeckillError::SESSION_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Product\Service;
 
 use App\Domain\Catalog\Product\Contract\ProductInput;
+
 use App\Domain\Catalog\Product\Entity\ProductEntity;
 use App\Domain\Catalog\Product\Mapper\ProductMapper;
 use App\Domain\Catalog\Product\Repository\ProductRepository;
 use App\Domain\Catalog\Product\ValueObject\ProductChangeVo;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
@@ -67,7 +69,7 @@ final class DomainProductService extends IService
         // 1. 获取实体
         $model = $this->repository->findByIdForUpdate($input->getId());
         if ($model === null) {
-            throw new \DomainException('商品不存在');
+            throw CatalogError::PRODUCT_NOT_FOUND->exception();
         }
         $entity = ProductMapper::fromModel($model);
         $previousStocks = array_column($entity->getStockData(), 'stock', 'sku_id');
@@ -113,7 +115,7 @@ final class DomainProductService extends IService
     {
         $product = $this->repository->findByIdForUpdate($id);
         if (! $product) {
-            throw new BusinessException(ResultCode::FAIL, '商品不存在');
+            throw new BusinessException(CatalogError::PRODUCT_NOT_FOUND, resultCode: ResultCode::FAIL);
         }
 
         $entity = new ProductEntity();
@@ -148,7 +150,7 @@ final class DomainProductService extends IService
         /** @var null|Product $product */
         $product = $this->repository->findById($id);
         if (! $product) {
-            throw new BusinessException(ResultCode::FAIL, '商品不存在');
+            throw new BusinessException(CatalogError::PRODUCT_NOT_FOUND, resultCode: ResultCode::FAIL);
         }
 
         return ProductMapper::fromModel($product);

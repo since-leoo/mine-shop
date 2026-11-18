@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Catalog\Product\Entity;
 
+use App\Infrastructure\Error\CatalogError;
+
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\ProductSku;
 use App\Interface\Common\ResultCode;
@@ -204,10 +206,10 @@ final class ProductSkuEntity
     public function ensureStockAvailable(int $quantity): void
     {
         if ($quantity <= 0) {
-            throw new BusinessException(ResultCode::FAIL, '扣减库存数量必须大于0');
+            throw new BusinessException(CatalogError::STOCK_DECREMENT_INVALID, resultCode: ResultCode::FAIL);
         }
         if ($this->stock < $quantity) {
-            throw new BusinessException(ResultCode::FAIL, 'SKU库存不足');
+            throw new BusinessException(CatalogError::SKU_STOCK_INSUFFICIENT, resultCode: ResultCode::FAIL);
         }
     }
 
@@ -246,7 +248,7 @@ final class ProductSkuEntity
 
         $newStock = $this->stock + $delta;
         if ($newStock < 0) {
-            throw new BusinessException(ResultCode::FAIL, 'SKU库存不允许为负数');
+            throw new BusinessException(CatalogError::SKU_STOCK_NEGATIVE, resultCode: ResultCode::FAIL);
         }
 
         $this->stock = $newStock;

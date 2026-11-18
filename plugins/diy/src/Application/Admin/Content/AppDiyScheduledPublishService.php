@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Application\Admin\Content;
 
+use App\Infrastructure\Error\DiyError;
+
 use Hyperf\Context\Context;
 use Hyperf\DbConnection\Db;
 use Plugin\Diy\Domain\Content\DiyPage\Service\DomainDiyPublishService;
@@ -38,7 +40,7 @@ final class AppDiyScheduledPublishService
                     Context::set('data_permission_enabled', false);
                     $this->logger->error('DIY 定时发布失败', ['record_id' => $id, 'exception' => $error]);
                     $reason = $error instanceof \DomainException || $error instanceof \InvalidArgumentException
-                        ? $error->getMessage() : '定时发布失败，请查看服务日志后重新预约';
+                        ? $error->getMessage() : DiyError::SCHEDULE_EXECUTION_FAILED->message();
                     $this->publishService->failSchedule($id, $reason);
                 } finally {
                     Context::destroy('current_user');

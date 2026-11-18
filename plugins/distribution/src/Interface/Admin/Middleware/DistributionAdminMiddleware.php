@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Interface\Admin\Middleware;
 
+use App\Infrastructure\Error\DistributionError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\ResultCode;
@@ -29,10 +30,10 @@ final class DistributionAdminMiddleware implements MiddlewareInterface
     {
         $user = $this->currentUser->user();
         if ($user === null || ! $user->isSuperAdmin()) {
-            throw new BusinessException(ResultCode::FORBIDDEN, '分销管理仅限超级管理员');
+            throw new BusinessException(DistributionError::SUPER_ADMIN_REQUIRED, resultCode: ResultCode::FORBIDDEN);
         }
         if ($user->status->isDisable()) {
-            throw new BusinessException(ResultCode::DISABLED, '当前管理员已停用');
+            throw new BusinessException(DistributionError::ADMIN_DISABLED, resultCode: ResultCode::DISABLED);
         }
         return $handler->handle($request);
     }

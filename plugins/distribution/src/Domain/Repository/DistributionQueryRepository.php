@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Repository;
 
+use App\Infrastructure\Error\DistributionError;
 use Hyperf\DbConnection\Db;
 
 class DistributionQueryRepository
@@ -52,11 +53,11 @@ class DistributionQueryRepository
         $query = Db::table('members as m')->select(['m.id', 'm.nickname', 'm.avatar', 'm.invite_code', 'm.referrer_id', 'm.created_at', 'm.status']);
         $root = (int) ($filters['member_id'] ?? $viewer ?? 0);
         if ($viewer !== null && ($viewer <= 0 || $root <= 0)) {
-            throw new \DomainException('无权查看该团队');
+            throw DistributionError::TEAM_ACCESS_DENIED->exception();
         }
         if ($root > 0) {
             if ($viewer !== null && $root !== $viewer && ! Db::table('distribution_paths')->where('ancestor_id', $viewer)->where('descendant_id', $root)->exists()) {
-                throw new \DomainException('无权查看该团队');
+                throw DistributionError::TEAM_ACCESS_DENIED->exception();
             }
             $query->join('distribution_paths as p', 'p.descendant_id', '=', 'm.id')->where('p.ancestor_id', $root)->addSelect('p.depth');
             if (($filters['scope'] ?? 'all') === 'direct') {
@@ -171,15 +172,15 @@ class DistributionQueryRepository
     {
         $root = (int) ($filters['member_id'] ?? $viewer ?? 0);
         if ($viewer !== null && ($viewer <= 0 || $root <= 0)) {
-            throw new \DomainException('无权查看该团队');
+            throw DistributionError::TEAM_ACCESS_DENIED->exception();
         }
         if ($viewer !== null && $root !== $viewer && ! Db::table('distribution_paths')->where('ancestor_id', $viewer)->where('descendant_id', $root)->exists()) {
-            throw new \DomainException('无权查看该成员的数据');
+            throw DistributionError::MEMBER_DATA_ACCESS_DENIED->exception();
         }
         if ($root > 0) {
             if (($filters['scope'] ?? 'all') === 'self') {
                 if ($viewer !== null && $root === $viewer) {
-                    throw new \DomainException('团队数据不包含本人');
+                    throw DistributionError::TEAM_SELF_EXCLUDED->exception();
                 }
                 $query->where($column, $root);
             } else {

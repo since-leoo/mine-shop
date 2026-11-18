@@ -22,6 +22,7 @@ use App\Domain\Trade\Seckill\Mapper\SeckillActivityMapper;
 use App\Domain\Trade\Seckill\Repository\SeckillActivityRepository;
 use App\Domain\Trade\Seckill\Repository\SeckillSessionRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillActivity;
 use Carbon\Carbon;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -59,12 +60,12 @@ final class DomainSeckillActivityService extends IService
     public function update(SeckillActivityEntity $entity): bool
     {
         if (! $entity->canBeEdited()) {
-            throw new \DomainException('当前活动状态不允许编辑');
+            throw SeckillError::ACTIVITY_NOT_EDITABLE->exception();
         }
 
         // 检查是否有场次即将开始（30 分钟内）
         if ($this->hasSessionWithinCacheWarmupPeriod($entity->getId())) {
-            throw new \DomainException('活动下有场次即将开始（30分钟内），无法编辑');
+            throw SeckillError::ACTIVITY_WARMUP_NOT_EDITABLE->exception();
         }
 
         $result = $this->repository->updateFromEntity($entity);
@@ -81,19 +82,19 @@ final class DomainSeckillActivityService extends IService
     {
         $activity = $this->repository->findById($id);
         if (! $activity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         $entity = SeckillActivityMapper::fromModel($activity);
         if (! $entity->canBeDeleted()) {
-            throw new \DomainException('当前活动状态不允许删除');
+            throw SeckillError::ACTIVITY_NOT_DELETABLE->exception();
         }
         if ($this->sessionRepository->countByActivityId($id) > 0) {
-            throw new \DomainException('该活动下还有场次，无法删除');
+            throw SeckillError::ACTIVITY_HAS_SESSIONS->exception();
         }
 
         // 检查是否有场次即将开始（30 分钟内）
         if ($this->hasSessionWithinCacheWarmupPeriod($id)) {
-            throw new \DomainException('活动下有场次即将开始（30分钟内），无法删除');
+            throw SeckillError::ACTIVITY_WARMUP_NOT_DELETABLE->exception();
         }
 
         $result = $this->repository->deleteById($id) > 0;
@@ -122,10 +123,10 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         if (! $entity->isEnabled() && ! $entity->canBeEnabled()) {
-            throw new \DomainException('当前活动状态不允许启用');
+            throw SeckillError::ACTIVITY_NOT_ENABLEABLE->exception();
         }
         $entity->toggleEnabled();
         $result = $this->repository->updateFromEntity($entity);
@@ -142,7 +143,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         $oldStatus = $entity->getStatus();
         $entity->cancel();
@@ -161,7 +162,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         $oldStatus = $entity->getStatus();
         $entity->start();
@@ -179,7 +180,7 @@ final class DomainSeckillActivityService extends IService
     {
         $entity = $this->getEntity($id);
         if (! $entity) {
-            throw new \DomainException('活动不存在');
+            throw SeckillError::ACTIVITY_NOT_FOUND->exception();
         }
         $oldStatus = $entity->getStatus();
         $entity->end();

@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Application\Admin\Infrastructure;
 
 use App\Domain\Infrastructure\Attachment\Entity\AttachmentEntity;
+
 use App\Domain\Infrastructure\Attachment\Service\DomainAttachmentService;
+use App\Infrastructure\Error\AttachmentError;
 use Mine\Upload\UploadInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Symfony\Component\Finder\SplFileInfo;
@@ -58,7 +60,7 @@ final class AppAttachmentCommandService
     public function delete(int $id): bool
     {
         $attachment = $this->queryService->find($id);
-        $attachment || throw new \InvalidArgumentException(trans('attachment.attachment_not_exist'));
+        $attachment || throw AttachmentError::NOT_FOUND->invalid();
         return $this->attachmentService->deleteByIds([$id]) > 0;
     }
 }

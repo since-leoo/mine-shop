@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Domain\Trade\Order\Entity;
 
 use App\Domain\Trade\Order\Enum\PaymentStatus;
+use App\Infrastructure\Error\PaymentError;
 
 /**
  * 订单支付实体.
@@ -91,7 +92,7 @@ final class OrderPaymentEntity
     public function markPaid(int $paidAmount, ?string $thirdPartyNo = null, ?array $callbackData = null): self
     {
         if ($this->status === PaymentStatus::PAID->value) {
-            throw new \DomainException('支付记录已支付，不能重复支付');
+            throw PaymentError::ALREADY_PAID->exception();
         }
 
         $this->setStatus(PaymentStatus::PAID->value);
@@ -129,7 +130,7 @@ final class OrderPaymentEntity
     public function markCancelled(?string $remark = null): self
     {
         if ($this->status === PaymentStatus::PAID->value) {
-            throw new \DomainException('已支付的记录不能取消');
+            throw PaymentError::PAID_RECORD_NOT_CANCELLABLE->exception();
         }
 
         $this->setStatus(PaymentStatus::CANCELLED->value);
@@ -156,13 +157,13 @@ final class OrderPaymentEntity
     public function addRefundAmount(int $amount): self
     {
         if ($this->status !== PaymentStatus::PAID->value) {
-            throw new \DomainException('只有已支付的记录才能退款');
+            throw PaymentError::UNPAID_RECORD_NOT_REFUNDABLE->exception();
         }
 
         $newRefundAmount = $this->refundAmount + $amount;
 
         if ($newRefundAmount > $this->paidAmount) {
-            throw new \DomainException('退款金额不能超过实付金额');
+            throw PaymentError::REFUND_EXCEEDS_PAID_AMOUNT->exception();
         }
 
         $this->setRefundAmount($newRefundAmount);

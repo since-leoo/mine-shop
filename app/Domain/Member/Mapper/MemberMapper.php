@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Member\Mapper;
 
 use App\Domain\Member\Contract\MemberInput;
+
 use App\Domain\Member\Contract\RegisterInput;
 use App\Domain\Member\Entity\MemberEntity;
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 
@@ -124,7 +126,7 @@ final class MemberMapper
     {
         $openid = (string) ($profile['openid'] ?? '');
         if (trim($openid) === '') {
-            throw new \InvalidArgumentException('微信登录返回的 openid 为空');
+            throw MemberError::WECHAT_OPENID_MISSING->invalid();
         }
 
         $entity = new MemberEntity();

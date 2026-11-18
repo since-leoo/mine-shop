@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Service;
 
 use App\Domain\Permission\Contract\Role\RoleGrantPermissionsInput;
+
 use App\Domain\Permission\Entity\RoleEntity;
 use App\Domain\Permission\Mapper\RoleMapper;
 use App\Domain\Permission\Repository\MenuRepository;
 use App\Domain\Permission\Repository\RoleRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\PermissionError;
 use App\Infrastructure\Model\Permission\Role;
 
 /**
@@ -80,7 +82,7 @@ final class DomainRoleService extends IService
         /** @var null|Role $model */
         $model = $this->repository->findById($id);
         if (! $model) {
-            throw new \DomainException("角色不存在: ID={$id}");
+            throw PermissionError::ROLE_NOT_FOUND->exception([$id]);
         }
         return RoleMapper::fromModel($model);
     }
@@ -97,7 +99,7 @@ final class DomainRoleService extends IService
         /** @var null|Role $roleModel */
         $roleModel = $this->repository->findById($roleId);
         if (! $roleModel) {
-            throw new \DomainException("角色不存在: ID={$roleId}");
+            throw PermissionError::ROLE_NOT_FOUND->exception([$roleId]);
         }
 
         $roleEntity = RoleMapper::fromModel($roleModel);

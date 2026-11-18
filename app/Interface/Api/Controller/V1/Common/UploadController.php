@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Common;
 
 use App\Application\Admin\Infrastructure\AppAttachmentCommandService;
+
+use App\Infrastructure\Error\AttachmentError;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
 use App\Interface\Api\Middleware\TokenMiddleware;
 use App\Interface\Common\Controller\AbstractController;
@@ -42,17 +44,17 @@ final class UploadController extends AbstractController
     {
         $uploadFile = $request->file('file');
         if (! $uploadFile || ! $uploadFile->isValid()) {
-            throw new \InvalidArgumentException('请选择要上传的文件');
+            throw AttachmentError::FILE_REQUIRED->invalid();
         }
 
         $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (! \in_array($uploadFile->getMimeType(), $allowedMimes, true)) {
-            throw new \InvalidArgumentException('仅支持 jpg/png/gif/webp 格式图片');
+            throw AttachmentError::IMAGE_FORMAT_UNSUPPORTED->invalid();
         }
 
         $maxSize = 5 * 1024 * 1024;
         if ($uploadFile->getSize() > $maxSize) {
-            throw new \InvalidArgumentException('图片大小不能超过 5MB');
+            throw AttachmentError::IMAGE_TOO_LARGE->invalid();
         }
 
         $newTmpPath = sys_get_temp_dir() . '/' . uniqid() . '.' . $uploadFile->getExtension();

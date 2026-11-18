@@ -8,6 +8,8 @@ use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Domain\Trade\Order\Contract\CouponServiceInterface;
 use App\Domain\Trade\Order\Entity\OrderEntity;
 use App\Domain\Trade\Payment\Contract\PaymentGatewayInterface;
+use App\Infrastructure\Error\OrderError;
+use App\Infrastructure\Error\PaymentError;
 use App\Infrastructure\Service\Pay\WechatPayConfigResolver;
 
 class DomainOrderCancellationService
@@ -25,7 +27,7 @@ class DomainOrderCancellationService
     {
         $order = $this->orders->getLockedEntity($orderNo);
         if ($memberId !== null && $order->getMemberId() !== $memberId) {
-            throw new \DomainException('订单不存在');
+            throw OrderError::NOT_FOUND->exception();
         }
         if ($order->getStatus() === 'cancelled') {
             return null;
@@ -38,7 +40,7 @@ class DomainOrderCancellationService
             $config = $this->configResolver->resolve($this->settings->payment()->wechatConfig());
             $state = $this->gateway->query($orderNo, $config);
             if (($state['trade_state'] ?? '') === 'SUCCESS') {
-                throw new \DomainException('渠道已支付，等待支付通知或对账');
+                throw PaymentError::CHANNEL_PAID_AWAITING_RECONCILIATION->exception();
             }
             if (! in_array($state['trade_state'] ?? '', ['CLOSED', 'REVOKED', 'PAYERROR'], true)) {
                 // 不确定或关单失败时保留 pending，不先放回库存。

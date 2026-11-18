@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Infrastructure\Adapter;
 
+use App\Infrastructure\Error\SystemMessageError;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Guzzle\ClientFactory;
 use Plugin\SystemMessage\Domain\Infrastructure\SystemMessage\Contract\NotificationTransportInterface;
@@ -16,26 +17,26 @@ class NotificationTransport implements NotificationTransportInterface
     {
         $from = (string) $this->config->get('system_message.email.from', '');
         if (! filter_var($recipient, FILTER_VALIDATE_EMAIL) || ! filter_var($from, FILTER_VALIDATE_EMAIL)) {
-            throw new \RuntimeException('邮件收件人或发件人配置无效');
+            throw SystemMessageError::EMAIL_ADDRESS_INVALID->internal();
         }
         if (strpbrk($title, "\r\n") !== false) {
-            throw new \InvalidArgumentException('邮件标题不能包含换行');
+            throw SystemMessageError::EMAIL_SUBJECT_INVALID->invalid();
         }
         $headers = ['MIME-Version' => '1.0', 'Content-Type' => 'text/html; charset=UTF-8', 'From' => $from];
         if (! $this->mail($recipient, mb_encode_mimeheader($title, 'UTF-8'), $html, $headers)) {
-            throw new \RuntimeException('邮件传输服务拒绝发送');
+            throw SystemMessageError::EMAIL_TRANSPORT_REJECTED->internal();
         }
     }
 
     public function gateway(string $channel, int $userId, array $payload): void
     {
         if (! in_array($channel, ['socketio', 'websocket', 'push'], true)) {
-            throw new \InvalidArgumentException('未知通知网关渠道');
+            throw SystemMessageError::GATEWAY_CHANNEL_UNKNOWN->invalid();
         }
         $url = (string) $this->config->get('system_message.gateways.' . $channel . '.url', '');
         $token = (string) $this->config->get('system_message.gateways.' . $channel . '.token', '');
         if (! filter_var($url, FILTER_VALIDATE_URL) || parse_url($url, PHP_URL_SCHEME) !== 'https' || $token === '' || strpbrk($token, "\r\n") !== false) {
-            throw new \RuntimeException('通知网关未配置有效 HTTPS 地址和认证令牌: ' . $channel);
+            throw SystemMessageError::GATEWAY_CONFIGURATION_INVALID->internal([$channel]);
         }
         $response = $this->clients->create()->post($url, [
             'headers' => ['Authorization' => 'Bearer ' . $token, 'Idempotency-Key' => $channel . ':' . $payload['message_id'] . ':' . $userId],
@@ -48,7 +49,7 @@ class NotificationTransport implements NotificationTransportInterface
         $status = $response->getStatusCode();
         $receipt = json_decode((string) $response->getBody(), true);
         if ($status < 200 || $status >= 300 || ! is_array($receipt) || ($receipt['success'] ?? null) !== true) {
-            throw new \RuntimeException('通知网关未确认接收: ' . $channel . ' HTTP ' . $status);
+            throw SystemMessageError::GATEWAY_RECEIPT_FAILED->internal([$channel, $status]);
         }
     }
 

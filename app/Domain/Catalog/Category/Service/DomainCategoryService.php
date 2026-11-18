@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Category\Service;
 
 use App\Domain\Catalog\Category\Contract\CategoryInput;
+
 use App\Domain\Catalog\Category\Repository\CategoryRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Model\Product\Category;
 use Hyperf\Database\Model\Collection;
 
@@ -71,7 +73,7 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($id);
 
         if (! $category) {
-            throw new \DomainException('分类不存在');
+            throw CatalogError::CATEGORY_NOT_FOUND->exception();
         }
 
         $data = $input->toArray();
@@ -93,11 +95,11 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($id);
 
         if (! $category) {
-            throw new \DomainException('分类不存在');
+            throw CatalogError::CATEGORY_NOT_FOUND->exception();
         }
 
         if (! $category->canDelete()) {
-            throw new \DomainException('该分类下还有子分类，无法删除');
+            throw CatalogError::CATEGORY_HAS_CHILDREN->exception();
         }
 
         return $this->repository->deleteById($id) > 0;
@@ -111,17 +113,17 @@ final class DomainCategoryService extends IService
         $category = $this->repository->findById($categoryId);
 
         if (! $category) {
-            throw new \DomainException('分类不存在');
+            throw CatalogError::CATEGORY_NOT_FOUND->exception();
         }
 
         if ($newParentId > 0) {
             $newParent = $this->repository->findById($newParentId);
             if (! $newParent) {
-                throw new \DomainException('父级分类不存在');
+                throw CatalogError::CATEGORY_PARENT_NOT_FOUND->exception();
             }
 
             if ($this->isDescendant($categoryId, $newParentId)) {
-                throw new \DomainException('不能移动到子分类下');
+                throw CatalogError::CATEGORY_MOVE_TO_DESCENDANT->exception();
             }
         }
 

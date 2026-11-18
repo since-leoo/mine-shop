@@ -14,6 +14,8 @@ namespace App\Domain\Catalog\Product\ValueObject;
 
 use App\Domain\Catalog\Product\Entity\ProductSkuEntity;
 
+use App\Infrastructure\Error\CatalogError;
+
 /**
  * 价格范围值对象.
  */
@@ -24,15 +26,15 @@ final class PriceRangeVo
         public readonly int $maxPrice
     ) {
         if ($minPrice < 0) {
-            throw new \DomainException('最低价不能小于0');
+            throw CatalogError::MIN_PRICE_NEGATIVE->exception();
         }
 
         if ($maxPrice < 0) {
-            throw new \DomainException('最高价不能小于0');
+            throw CatalogError::MAX_PRICE_NEGATIVE->exception();
         }
 
         if ($minPrice > $maxPrice) {
-            throw new \DomainException('最低价不能高于最高价');
+            throw CatalogError::PRICE_RANGE_INVALID->exception();
         }
     }
 

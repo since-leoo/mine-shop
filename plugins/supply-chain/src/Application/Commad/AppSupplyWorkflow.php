@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\SupplyChain\Application\Commad;
 
 use App\Domain\Trade\Shared\Contract\TransactionManagerInterface;
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyProductService;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyPurchaseService;
 use Plugin\SupplyChain\Domain\Service\DomainSupplyWorkflowService;
@@ -47,13 +48,13 @@ final class AppSupplyWorkflow
         } catch (\DomainException|\InvalidArgumentException $error) {
             throw $error;
         } catch (\Throwable $error) {
-            throw new \RuntimeException('供应链接口尚未发送：' . SafeLogVo::error($error), 10002, $error);
+            throw new \RuntimeException(SupplyChainError::REQUEST_NOT_SENT->message([SafeLogVo::error($error)]), 10002, $error);
         }
         if (\in_array($type, ['import', 'sync'], true)) {
             // A durable attempt sequence is shared by every worker, unlike machine wall clocks.
             $version = (int) ($task['attempt_id'] ?? 0);
             if ($version < 1) {
-                throw new \DomainException('同步任务缺少持久化执行序号');
+                throw SupplyChainError::SYNC_SEQUENCE_MISSING->exception();
             }
             try {
                 if ($type === 'import') {
@@ -68,7 +69,7 @@ final class AppSupplyWorkflow
                     }
                 }
                 if ($product === null) {
-                    throw new \DomainException('上游未返回所选商品');
+                    throw SupplyChainError::SELECTED_PRODUCT_NOT_RETURNED->exception();
                 }
                 $result = $this->transactions->run(fn () => $this->products->persist($connectionId, $product, $payload, $version));
                 $this->products->project($result);
@@ -97,7 +98,7 @@ final class AppSupplyWorkflow
             }
             if (\in_array($purchase['status'], ['submitting', 'unknown'], true)) {
                 $this->transactions->run(fn () => $this->purchases->queryTask($purchaseId));
-                throw new \RuntimeException('采购结果需查单确认，禁止重复提交', 10001);
+                throw new \RuntimeException(SupplyChainError::PURCHASE_RESULT_UNCONFIRMED->message(), 10001);
             }
             // Reads and quote checks happen before acquiring the local submission state.
             try {
@@ -114,26 +115,26 @@ final class AppSupplyWorkflow
             } catch (\DomainException|\InvalidArgumentException $error) {
                 throw $error;
             } catch (\Throwable $error) {
-                throw new \RuntimeException('采购尚未发送：前置校验失败，' . SafeLogVo::error($error), 10002, $error);
+                throw new \RuntimeException(SupplyChainError::PURCHASE_PRECHECK_FAILED->message([SafeLogVo::error($error)]), 10002, $error);
             }
             try {
                 // If a refund won the race and released this reservation, protect rejects before HTTP.
                 try {
                     $this->purchases->protect($purchaseId);
                 } catch (\Throwable $protectionError) {
-                    throw new \RuntimeException('采购尚未发送：库存提交保护失败，' . SafeLogVo::error($protectionError), 10002, $protectionError);
+                    throw new \RuntimeException(SupplyChainError::PURCHASE_STOCK_GUARD_FAILED->message([SafeLogVo::error($protectionError)]), 10002, $protectionError);
                 }
                 try {
                     $this->transactions->run(fn () => $this->workflow->assertTaskOwner($task));
                 } catch (\Throwable $leaseError) {
-                    throw new \RuntimeException('采购尚未发送：任务执行租约已失效', 10002, $leaseError);
+                    throw new \RuntimeException(SupplyChainError::PURCHASE_LEASE_EXPIRED_BEFORE_SEND->message(), 10002, $leaseError);
                 }
                 $result = $client->orders()->submit($command);
                 $this->transactions->run(function () use ($task, $purchaseId, $result): void {
                     try {
                         $this->workflow->assertTaskOwner($task);
                     } catch (\Throwable $leaseError) {
-                        throw new \RuntimeException('采购已发送但返回时租约失效，必须查单确认', 10001, $leaseError);
+                        throw new \RuntimeException(SupplyChainError::PURCHASE_LEASE_EXPIRED_AFTER_SEND->message(), 10001, $leaseError);
                     }
                     $this->purchases->accept($purchaseId, array_map(static fn ($number) => ['external_order_no' => $number, 'items' => []], $result['external_order_numbers']));
                 });
@@ -160,7 +161,7 @@ final class AppSupplyWorkflow
         if ($type === 'order_query') {
             $result = $client->orders()->findByMerchantOrderNo($purchase['merchant_order_no']);
             if (empty($result['orders'])) {
-                throw new \RuntimeException('上游暂未查到采购单，继续查询，不重新采购');
+                throw SupplyChainError::PURCHASE_NOT_YET_FOUND->internal();
             }
             $this->transactions->run(function () use ($purchaseId, $result): void {
                 $this->purchases->accept($purchaseId, $result['orders']);
@@ -188,6 +189,6 @@ final class AppSupplyWorkflow
             $this->transactions->run(fn () => $this->purchases->complete($purchaseId));
             return ['purchase_id' => $purchaseId];
         }
-        throw new \DomainException('未知供应链任务类型');
+        throw SupplyChainError::UNKNOWN_TASK_TYPE->exception();
     }
 }

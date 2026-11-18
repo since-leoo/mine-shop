@@ -14,6 +14,8 @@ namespace App\Domain\Catalog\Category\Entity;
 
 use App\Domain\Catalog\Category\Enum\CategoryStatus;
 
+use App\Infrastructure\Error\CatalogError;
+
 /**
  * 分类实体.
  */
@@ -61,7 +63,7 @@ final class CategoryEntity
     public function moveToParent(int $parentId, ?int $level = null): self
     {
         if ($parentId < 0) {
-            throw new \DomainException('父级分类无效');
+            throw CatalogError::CATEGORY_PARENT_INVALID->exception();
         }
         $this->parentId = $parentId;
         if ($level !== null) {
@@ -84,7 +86,7 @@ final class CategoryEntity
     {
         $name = trim($name);
         if ($name === '') {
-            throw new \DomainException('分类名称不能为空');
+            throw CatalogError::CATEGORY_NAME_REQUIRED->exception();
         }
         $this->name = $name;
         return $this;
@@ -157,7 +159,7 @@ final class CategoryEntity
     public function assignLevel(int $level): self
     {
         if ($level <= 0) {
-            throw new \DomainException('分类层级必须大于0');
+            throw CatalogError::CATEGORY_LEVEL_INVALID->exception();
         }
         $this->level = $level;
         return $this;
@@ -177,7 +179,7 @@ final class CategoryEntity
     {
         $values = array_map(static fn (CategoryStatus $case) => $case->value, CategoryStatus::cases());
         if (! \in_array($status, $values, true)) {
-            throw new \DomainException('分类状态值无效');
+            throw CatalogError::CATEGORY_STATUS_INVALID->exception();
         }
         $this->status = $status;
         return $this;

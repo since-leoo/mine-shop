@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Plugin\Distribution\Domain\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+use App\Infrastructure\Error\DistributionError;
 use Plugin\Distribution\Domain\Mapper\CommissionAccountMapper;
 use Plugin\Distribution\Domain\Repository\DistributionRepository;
 use Plugin\Distribution\Domain\ValueObject\DistributionPolicyVo;
@@ -57,7 +58,7 @@ final class DomainCommissionService
         }
         $order = $this->repository->orderByNo($orderNo);
         if (! $order || (int) $order['member_id'] !== (int) $snapshot['buyer_id']) {
-            throw new \DomainException('分销订单归因不匹配');
+            throw DistributionError::ORDER_ATTRIBUTION_MISMATCH->exception();
         }
         $this->repository->createSnapshot((int) $order['id'], $snapshot);
     }
@@ -85,13 +86,13 @@ final class DomainCommissionService
         $items = $this->repository->items($orderId);
         $lines = $snapshot['lines'];
         if (\count($items) !== \count($lines)) {
-            throw new \DomainException('订单商品与佣金快照不一致');
+            throw DistributionError::COMMISSION_SNAPSHOT_MISMATCH->exception();
         }
         $account = CommissionAccountMapper::fromModel($this->repository->account((int) $record['member_id'], true));
         foreach ($items as $index => $item) {
             $line = $lines[$index];
             if ((int) $item['product_id'] !== $line['product_id'] || (int) $item['sku_id'] !== $line['sku_id']) {
-                throw new \DomainException('商品归因快照顺序不一致');
+                throw DistributionError::ITEM_ATTRIBUTION_ORDER_MISMATCH->exception();
             }
             if ($line['amount'] <= 0) {
                 continue;

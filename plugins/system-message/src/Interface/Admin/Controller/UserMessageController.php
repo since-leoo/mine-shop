@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SystemMessage\Interface\Admin\Controller;
 
+use App\Infrastructure\Error\SystemMessageError;
+
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Result;
 use Hyperf\Di\Annotation\Inject;
@@ -51,7 +53,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             $message = $this->messageService->getUserMessage($userId, $messageId);
             if (! $message) {
-                return $this->error('消息不存在', 404);
+                return $this->error(SystemMessageError::MESSAGE_RECORD_NOT_FOUND, 404);
             }
             return $this->success($message);
         } catch (\Throwable $e) {
@@ -66,7 +68,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             $result = $this->messageService->markAsRead($userId, $messageId);
             if (! $result) {
-                return $this->error('消息不存在或已读', 404);
+                return $this->error(SystemMessageError::MESSAGE_NOT_FOUND_OR_READ, 404);
             }
             return $this->success(null, '消息已标记为已读');
         } catch (\Throwable $e) {
@@ -80,7 +82,7 @@ class UserMessageController extends SystemMessageAbstractController
         $messageIds = $this->request->input('message_ids', []);
         $userId = $this->currentUser->id();
         if (empty($messageIds) || ! \is_array($messageIds)) {
-            return $this->error('请选择要标记的消息');
+            return $this->error(SystemMessageError::MESSAGE_MARK_SELECTION_REQUIRED);
         }
         try {
             $result = $this->messageService->batchMarkAsRead($userId, $messageIds);
@@ -108,7 +110,7 @@ class UserMessageController extends SystemMessageAbstractController
         try {
             $result = $this->messageService->deleteUserMessage(messageId: $messageId, userId: $userId);
             if (! $result) {
-                return $this->error('消息不存在', 404);
+                return $this->error(SystemMessageError::MESSAGE_RECORD_NOT_FOUND, 404);
             }
             return $this->success(null, '消息删除成功');
         } catch (\Throwable $e) {
@@ -122,7 +124,7 @@ class UserMessageController extends SystemMessageAbstractController
         $messageIds = $this->request->input('message_ids', []);
         $userId = $this->currentUser->id();
         if (empty($messageIds) || ! \is_array($messageIds)) {
-            return $this->error('请选择要删除的消息');
+            return $this->error(SystemMessageError::MESSAGE_DELETE_SELECTION_REQUIRED);
         }
         try {
             $result = $this->messageService->batchDeleteUserMessages(messageIds: $messageIds, userId: $userId);
@@ -160,7 +162,7 @@ class UserMessageController extends SystemMessageAbstractController
         $keyword = $this->request->input('keyword', '');
         $userId = $this->currentUser->id();
         if (empty($keyword)) {
-            return $this->error('搜索关键词不能为空');
+            return $this->error(SystemMessageError::SEARCH_KEYWORD_REQUIRED);
         }
         $filters = ['is_read' => $this->request->input('is_read'), 'type' => $this->request->input('type'), 'priority' => $this->request->input('priority')];
         $page = (int) $this->request->input('page', 1);

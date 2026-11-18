@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Listener;
 
+use App\Infrastructure\Error\PermissionError;
+
 use Hyperf\Context\Context;
 use Hyperf\Database\Model\Events\Creating;
 use Hyperf\Database\Model\Events\Updating;
@@ -65,7 +67,7 @@ class ModelAuthorListener implements ListenerInterface
             && isset(\App\Infrastructure\Library\DataPermission\OwnedTables::CHILDREN[$table])) {
             [$parent, $foreignKey] = \App\Infrastructure\Library\DataPermission\OwnedTables::CHILDREN[$table];
             if (! \Hyperf\DbConnection\Db::table($parent)->where('id', $model->getAttribute($foreignKey))->exists()) {
-                throw new \DomainException('所属记录不存在或不在当前数据权限范围内');
+                throw PermissionError::OWNER_OUT_OF_SCOPE->exception();
             }
         }
 

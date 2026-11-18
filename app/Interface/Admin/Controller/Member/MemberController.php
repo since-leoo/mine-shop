@@ -81,7 +81,7 @@ final class MemberController extends AbstractController
     {
         $member = $this->queryService->detail($id);
         if (! $member) {
-            return $this->error('会员不存在', 404);
+            return $this->error(\App\Infrastructure\Error\MemberError::NOT_FOUND, 404);
         }
 
         return $this->success($member);

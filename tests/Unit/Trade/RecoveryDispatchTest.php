@@ -42,7 +42,7 @@ final class RecoveryDispatchTest extends TestCase
         $outbox->method('lock')->willReturnCallback(static fn (int $id) => $rows[$id]);
         $completed = [];
         $outbox->expects(self::exactly(3))->method('complete')->willReturnCallback(static function (int $id) use (&$completed): void { $completed[] = $id; });
-        $outbox->expects(self::once())->method('recordFailure')->with(4, '未知交易事件: unknown.event');
+        $outbox->expects(self::once())->method('recordFailure')->with(4, '未知交易事件：unknown.event');
         $seen = [];
         $events = $this->createMock(EventDispatcherInterface::class);
         $events->expects(self::exactly(4))->method('dispatch')->willReturnCallback(static function (object $event) use (&$seen): object {

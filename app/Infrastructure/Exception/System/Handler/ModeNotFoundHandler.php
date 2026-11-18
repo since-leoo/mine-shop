@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\System\Handler;
 
+use App\Infrastructure\Error\CommonError;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
 use Hyperf\Database\Model\ModelNotFoundException;
@@ -22,7 +23,9 @@ final class ModeNotFoundHandler extends AbstractHandler
     {
         $this->stopPropagation();
         return new Result(
-            code: ResultCode::NOT_FOUND
+            code: ResultCode::NOT_FOUND,
+            message: CommonError::NOT_FOUND->message(),
+            errorCode: CommonError::NOT_FOUND->value,
         );
     }
 

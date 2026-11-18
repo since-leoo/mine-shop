@@ -15,6 +15,7 @@ namespace App\Domain\Trade\Order\Service;
 use App\Domain\Catalog\Product\Event\ProductStockWarningEvent;
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Error\OrderError;
 use Hyperf\Stringable\Str;
 
 /**
@@ -110,7 +111,7 @@ final class DomainOrderStockService
             }
             if (! $acquired) {
                 $this->releaseLocks($locks);
-                throw new \RuntimeException('库存繁忙，请稍后重试');
+                throw OrderError::STOCK_BUSY->internal();
             }
             $locks[$lockKey] = $token;
         }
@@ -157,7 +158,7 @@ final class DomainOrderStockService
     {
         $normalized = $this->normalizeItems($items);
         if ($normalized === []) {
-            throw new \DomainException('没有可扣减的商品');
+            throw OrderError::STOCK_ITEMS_EMPTY->exception();
         }
 
         $args = [];
@@ -171,7 +172,7 @@ final class DomainOrderStockService
 
         $result = $this->redis()->eval(self::DEDUCT_SCRIPT, $payload, 1);
         if ((int) $result !== 1) {
-            throw new \DomainException('库存不足或商品已下架');
+            throw OrderError::STOCK_UNAVAILABLE->exception();
         }
 
         $this->triggerStockWarnings($normalized, $stockHashKey);

@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Application\Api\Order;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
+
 use App\Domain\Trade\Order\Api\Command\DomainApiOrderCommandService;
 use App\Domain\Trade\Order\Contract\OrderPreviewInput;
 use App\Domain\Trade\Order\Contract\OrderSubmitInput;
 use App\Domain\Trade\Order\Entity\OrderEntity;
+use App\Infrastructure\Error\OrderError;
 use Hyperf\DbConnection\Db;
 
 final class AppApiOrderCommandService
@@ -63,7 +65,7 @@ final class AppApiOrderCommandService
     {
         $row = $this->submissionStore->find($tradeNo);
         if ($row === null || (int) $row['member_id'] !== $memberId) {
-            throw new \DomainException('订单提交不存在');
+            throw OrderError::SUBMISSION_NOT_FOUND->exception();
         }
         $status = in_array($row['status'], ['pending', 'reserved'], true) ? 'processing' : $row['status'];
         $error = '';
@@ -72,7 +74,7 @@ final class AppApiOrderCommandService
             // 只有新版失败处理明确标记的文案可公开；历史诊断保留在内部。
             $error = str_starts_with($storedError, AppOrderSubmissionService::PUBLIC_ERROR_PREFIX)
                 ? substr($storedError, strlen(AppOrderSubmissionService::PUBLIC_ERROR_PREFIX))
-                : AppOrderSubmissionService::GENERIC_FAILURE_MESSAGE;
+                : OrderError::SUBMISSION_FAILED->message();
         }
 
         return [
@@ -120,7 +122,7 @@ final class AppApiOrderCommandService
         Db::transaction(function () use ($memberId, $orderNo): void {
             $entity = $this->orderCommandService->getLockedEntity($orderNo);
             if ($entity->getMemberId() !== $memberId) {
-                throw new \DomainException('订单不存在');
+                throw OrderError::NOT_FOUND->exception();
             }
             $this->orderCommandService->confirmReceipt($entity);
             $this->outbox->append('completed:' . $orderNo, 'order.completed', [

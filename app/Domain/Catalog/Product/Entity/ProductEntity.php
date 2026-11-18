@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Product\Entity;
 
 use App\Domain\Catalog\Product\Contract\ProductInput;
+
 use App\Domain\Catalog\Product\Enum\ProductStatus;
 use App\Domain\Catalog\Product\Trait\ProductEntityTrait;
 use App\Domain\Catalog\Product\Trait\ProductSettingsTrait;
 use App\Domain\Catalog\Product\ValueObject\PriceRangeVo;
 use App\Domain\Catalog\Product\ValueObject\ProductChangeVo;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Product\Product;
 use App\Interface\Common\ResultCode;
@@ -104,7 +106,6 @@ final class ProductEntity
 
     /** @var array<int, mixed> */
     private array $gallery = [];
-
 
     /**
      * 创建行为方法：接收 DTO，内部组装设置值.
@@ -574,7 +575,7 @@ final class ProductEntity
 
         foreach ($skus as $index => $sku) {
             if (! $sku instanceof ProductSkuEntity) {
-                throw new \DomainException('SKU 数据必须通过实体传递');
+                throw CatalogError::SKU_ENTITY_REQUIRED->exception();
             }
             $skus[$index] = $sku;
         }
@@ -602,7 +603,7 @@ final class ProductEntity
 
         foreach ($attributes as $index => $attribute) {
             if (! $attribute instanceof ProductAttributeEntity) {
-                throw new \DomainException('商品属性必须通过实体传递');
+                throw CatalogError::ATTRIBUTE_ENTITY_REQUIRED->exception();
             }
             $attributes[$index] = $attribute;
         }
@@ -654,7 +655,7 @@ final class ProductEntity
         }
 
         if (! \in_array($targetStatus, ProductStatus::values(), true)) {
-            throw new BusinessException(ResultCode::FAIL, '无效的商品状态');
+            throw new BusinessException(CatalogError::PRODUCT_STATUS_INVALID, resultCode: ResultCode::FAIL);
         }
 
         $current = $this->status ?? ProductStatus::DRAFT->value;
@@ -665,10 +666,7 @@ final class ProductEntity
 
         $allowed = self::STATUS_TRANSITIONS[$current] ?? [];
         if (! \in_array($targetStatus, $allowed, true)) {
-            throw new BusinessException(
-                ResultCode::FAIL,
-                \sprintf('商品状态不允许从 %s 变更为 %s', $current, $targetStatus)
-            );
+            throw new BusinessException(CatalogError::PRODUCT_TRANSITION_INVALID, parameters: [$current, $targetStatus], resultCode: ResultCode::FAIL);
         }
 
         $this->status = $targetStatus;
@@ -785,7 +783,7 @@ final class ProductEntity
 
         $skus = $this->getSkus();
         if ($skus === null || $skus === []) {
-            throw new BusinessException(ResultCode::FAIL, '请至少添加一个SKU');
+            throw new BusinessException(CatalogError::SKU_REQUIRED, resultCode: ResultCode::FAIL);
         }
 
         $this->assertSkuIntegrity($skus);
@@ -801,7 +799,7 @@ final class ProductEntity
         }
 
         if ($skus === []) {
-            throw new BusinessException(ResultCode::FAIL, 'SKU 列表不能为空');
+            throw new BusinessException(CatalogError::SKU_LIST_EMPTY, resultCode: ResultCode::FAIL);
         }
 
         $this->assertSkuIntegrity($skus);
@@ -814,7 +812,7 @@ final class ProductEntity
     {
         foreach ($skus as $sku) {
             if (! $sku instanceof ProductSkuEntity) {
-                throw new BusinessException(ResultCode::FAIL, 'SKU 数据必须通过实体传递');
+                throw new BusinessException(CatalogError::SKU_ENTITY_REQUIRED, resultCode: ResultCode::FAIL);
             }
             $sku->assertIntegrity();
         }
@@ -827,7 +825,7 @@ final class ProductEntity
         }
 
         if ($this->minPrice > $this->maxPrice) {
-            throw new BusinessException(ResultCode::FAIL, '最低价不能高于最高价');
+            throw new BusinessException(CatalogError::PRICE_RANGE_INVALID, resultCode: ResultCode::FAIL);
         }
     }
 }

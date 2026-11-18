@@ -15,6 +15,7 @@ namespace App\Interface\Admin\Controller\Product;
 use App\Application\Admin\Catalog\AppProductCommandService;
 use App\Application\Admin\Catalog\AppProductQueryService;
 use App\Application\Admin\Catalog\Dto\ProductExportDto;
+use App\Infrastructure\Error\CatalogError;
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Dto\Product\ProductDto;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
@@ -69,7 +70,7 @@ final class ProductController extends AbstractController
         $product = $this->queryService->find($id);
         return $product
             ? $this->success($product->toArray())
-            : $this->error('商品不存在', 404);
+            : $this->error(CatalogError::PRODUCT_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]
@@ -116,7 +117,7 @@ final class ProductController extends AbstractController
     {
         $sortData = $request->input('sort_data', []);
         if (empty($sortData)) {
-            return $this->error('排序数据不能为空', 400);
+            return $this->error(CatalogError::SORT_DATA_REQUIRED, 400);
         }
 
         $this->commandService->updateSort($sortData);

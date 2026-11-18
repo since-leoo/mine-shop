@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Product\Listener;
 
 use App\Domain\Catalog\Product\Event\ProductCreated;
+
 use App\Domain\Catalog\Product\Event\ProductDeleted;
 use App\Domain\Catalog\Product\Event\ProductUpdated;
+use App\Infrastructure\Error\CatalogError;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Event\Contract\ListenerInterface;
 use Hyperf\Redis\Redis;
@@ -72,7 +74,7 @@ LUA;
             json_encode($deleted, JSON_THROW_ON_ERROR),
         ], 1);
         if ((int) $result !== 1) {
-            throw new \RuntimeException('商品库存缺失，保留库存调整事件等待恢复');
+            throw CatalogError::STOCK_CACHE_MISSING->internal();
         }
     }
 }

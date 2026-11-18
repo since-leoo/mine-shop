@@ -14,6 +14,7 @@ namespace App\Application\Api\Coupon;
 
 use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponQueryService;
 use App\Domain\Trade\Coupon\Api\Query\DomainApiCouponUserQueryService;
+use App\Infrastructure\Error\CouponError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Infrastructure\Model\Coupon\Coupon;
 use App\Interface\Common\ResultCode;
@@ -57,7 +58,7 @@ final class AppApiCouponQueryService
     {
         $coupon = $this->couponQueryService->findOne($id);
         if ($coupon === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '优惠券不存在');
+            throw new BusinessException(CouponError::NOT_FOUND, resultCode: ResultCode::NOT_FOUND);
         }
 
         $received = $memberId !== null

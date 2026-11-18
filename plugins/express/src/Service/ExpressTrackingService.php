@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Express\Service;
 
+use App\Infrastructure\Error\ExpressError;
 use Hyperf\Guzzle\ClientFactory;
 use Plugin\Express\Contract\LogisticsTrackingInterface;
 use Plugin\Express\Exception\TrackingException;
@@ -29,12 +30,12 @@ final class ExpressTrackingService implements LogisticsTrackingInterface
     {
         $config = $this->settingsResolver->toArray();
         if (! $config['enabled']) {
-            throw new TrackingException('物流查询插件未启用');
+            throw new TrackingException(ExpressError::PLUGIN_DISABLED->message(), ExpressError::PLUGIN_DISABLED->value);
         }
 
         return match ($config['default_provider']) {
             'kuaidi100' => (new Kuaidi100Provider($this->clientFactory, $config))->track($companyCode, $trackingNo),
-            default => throw new TrackingException('未支持的物流 provider'),
+            default => throw new TrackingException(ExpressError::PROVIDER_UNSUPPORTED->message(), ExpressError::PROVIDER_UNSUPPORTED->value),
         };
     }
 }

@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Domain\Auth\Service;
 
 use App\Domain\Auth\Contract\LoginInput;
+
 use App\Domain\Auth\ValueObject\TokenPair;
 use App\Domain\Permission\Mapper\UserMapper;
 use App\Domain\Permission\Repository\UserRepository;
 use App\Infrastructure\Abstract\IService;
+use App\Infrastructure\Error\AuthError;
 use App\Infrastructure\Exception\Auth\JwtInBlackException;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
@@ -54,16 +56,16 @@ final class DomainAuthService extends IService
         $user = $this->repository->findByUnameType($input->getUsername(), $input->getUserType());
 
         if (! $user) {
-            throw new BusinessException(ResultCode::NOT_FOUND, trans('auth.password_error'));
+            throw new BusinessException(AuthError::PASSWORD_INCORRECT, resultCode: ResultCode::NOT_FOUND);
         }
         $userEntity = UserMapper::fromModel($user);
 
         if (! $userEntity->verifyPassword($input->getPassword())) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, trans('auth.password_error'));
+            throw new BusinessException(AuthError::PASSWORD_INCORRECT, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
 
         if ($userEntity->getStatus()->isDisable()) {
-            throw new BusinessException(ResultCode::DISABLED);
+            throw new BusinessException(AuthError::ACCOUNT_DISABLED, resultCode: ResultCode::DISABLED);
         }
 
         event(new UserLoginEvent($user, $input->getClientInfo()->getIp(), $input->getClientInfo()->getOs(), $input->getClientInfo()->getBrowser()));

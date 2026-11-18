@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Exception\Auth\Handler;
 
+use App\Infrastructure\Error\CommonError;
 use App\Infrastructure\Exception\System\Handler\AbstractHandler;
 use App\Interface\Common\Result;
 use App\Interface\Common\ResultCode;
@@ -25,11 +26,13 @@ final class JwtExceptionHandler extends AbstractHandler
         return match (true) {
             $throwable->getMessage() === 'The token is expired' => new Result(
                 code: ResultCode::UNAUTHORIZED,
-                message: trans('jwt.expired'),
+                message: CommonError::TOKEN_EXPIRED->message(),
+                errorCode: CommonError::TOKEN_EXPIRED->value,
             ),
             default => new Result(
                 code: ResultCode::UNAUTHORIZED,
-                message: trans('jwt.unauthorized'),
+                message: CommonError::UNAUTHORIZED->message(),
+                errorCode: CommonError::UNAUTHORIZED->value,
                 data: $this->isDebug() ? [
                     'error' => $throwable->getMessage(),
                 ] : []

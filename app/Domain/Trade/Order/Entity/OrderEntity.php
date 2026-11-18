@@ -21,6 +21,7 @@ use App\Domain\Trade\Order\Trait\OrderSettingsTrait;
 use App\Domain\Trade\Order\ValueObject\OrderAddressValue;
 use App\Domain\Trade\Order\ValueObject\OrderLogValue;
 use App\Domain\Trade\Order\ValueObject\OrderPriceValue;
+use App\Infrastructure\Error\OrderError;
 use Carbon\Carbon;
 
 final class OrderEntity
@@ -413,16 +414,16 @@ final class OrderEntity
     {
         foreach ($this->getItems() as $item) {
             if ($item->getFulfillmentProvider() !== 'merchant') {
-                throw new \DomainException('外部履约订单须按包裹明细登记发货');
+                throw OrderError::EXTERNAL_PACKAGE_REQUIRED->exception();
             }
         }
         if (! \in_array($this->getStatus(), [OrderStatus::PAID->value, OrderStatus::PARTIAL_SHIPPED->value], true)) {
-            throw new \DomainException('当前订单状态不可发货');
+            throw OrderError::NOT_SHIPPABLE->exception();
         }
 
         $packages = $this->getShipEntity()->getPackages();
         if (empty($packages)) {
-            throw new \DomainException('请至少提供一个包裹信息');
+            throw OrderError::PACKAGE_REQUIRED->exception();
         }
 
         $this->setStatus(OrderStatus::SHIPPED->value);
@@ -435,7 +436,7 @@ final class OrderEntity
     public function complete(): void
     {
         if (! \in_array($this->getStatus(), [OrderStatus::SHIPPED->value], true)) {
-            throw new \DomainException('当前订单状态不可完成');
+            throw OrderError::NOT_COMPLETABLE->exception();
         }
 
         $this->setStatus(OrderStatus::COMPLETED->value);
@@ -445,7 +446,7 @@ final class OrderEntity
     public function cancel(): void
     {
         if ($this->getStatus() !== OrderStatus::PENDING->value || $this->getPayStatus() === PaymentStatus::PAID->value) {
-            throw new \DomainException('已支付订单请申请退款，当前状态不可取消');
+            throw OrderError::NOT_CANCELLABLE->exception();
         }
 
         $this->setStatus(OrderStatus::CANCELLED->value);
@@ -460,7 +461,7 @@ final class OrderEntity
     public function markPaid(): void
     {
         if ($this->getStatus() !== OrderStatus::PENDING->value) {
-            throw new \DomainException('当前订单状态不可支付');
+            throw OrderError::NOT_PAYABLE->exception();
         }
 
         $this->setPayStatus(PaymentStatus::PAID->value);
@@ -471,7 +472,7 @@ final class OrderEntity
     public function confirmManualPayment(OrderManualPayInput $input, string $paymentNo): OrderLogValue
     {
         if ($this->getStatus() !== OrderStatus::PENDING->value || $this->getPayStatus() !== PaymentStatus::PENDING->value) {
-            throw new \DomainException('只有未支付且未取消的订单可以人工认款');
+            throw OrderError::NOT_MANUALLY_PAYABLE->exception();
         }
         $oldStatus = $this->getStatus();
         $this->markPaid();
@@ -535,7 +536,7 @@ final class OrderEntity
     public function verifyPrice(int $frontendAmountCent): void
     {
         if ($frontendAmountCent !== $this->getPayAmount()) {
-            throw new \DomainException('商品价格已变动，请重新下单');
+            throw OrderError::PRICE_CHANGED->exception();
         }
     }
 

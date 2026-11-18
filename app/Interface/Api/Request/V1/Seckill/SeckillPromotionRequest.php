@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Interface\Api\Request\V1\Seckill;
 
 use App\Domain\Trade\Seckill\Contract\SeckillPromotionQueryInput;
-use App\Interface\Api\Dto\Seckill\SeckillPromotionQueryDto;
+use App\Interface\Api\DTO\Seckill\SeckillPromotionQueryDto;
 use App\Interface\Common\Request\BaseRequest;
 
 final class SeckillPromotionRequest extends BaseRequest

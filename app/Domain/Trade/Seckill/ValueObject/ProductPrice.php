@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\ValueObject;
 
+use App\Infrastructure\Error\SeckillError;
+
 final class ProductPrice
 {
     private readonly int $originalPrice;
@@ -59,7 +61,7 @@ final class ProductPrice
     private function validate(): void
     {
         if ($this->seckillPrice > $this->originalPrice) {
-            throw new \InvalidArgumentException('秒杀价不能高于原价');
+            throw SeckillError::PRICE_INVALID->invalid();
         }
     }
 }

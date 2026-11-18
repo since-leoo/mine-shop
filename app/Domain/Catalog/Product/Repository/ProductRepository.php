@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Domain\Catalog\Product\Repository;
 
 use App\Domain\Catalog\Product\Entity\ProductEntity;
+
 use App\Domain\Catalog\Product\Mapper\ProductMapper;
 use App\Infrastructure\Abstract\IRepository;
+use App\Infrastructure\Error\CatalogError;
 use App\Infrastructure\Model\Product\Product;
 use Hyperf\Database\Model\Builder;
 
@@ -123,7 +125,7 @@ final class ProductRepository extends IRepository
         // 删除不在新列表中的 SKU
         if (! empty($data['delete_sku_ids'])) {
             if (($model->fulfillment_provider ?? 'merchant') !== 'merchant') {
-                throw new \DomainException('外部履约SKU不可删除，请停用规格以保留历史映射');
+                throw CatalogError::EXTERNAL_SKU_DELETE_FORBIDDEN->exception();
             }
             $model->skus()->whereIn('id', $data['delete_sku_ids'])->delete();
         }
@@ -158,7 +160,7 @@ final class ProductRepository extends IRepository
         }
 
         if (($model->fulfillment_provider ?? 'merchant') !== 'merchant') {
-            throw new \DomainException('外部履约商品不可直接删除，请下架商品');
+            throw CatalogError::EXTERNAL_PRODUCT_DELETE_FORBIDDEN->exception();
         }
         $model->skus()->delete();
         $model->attributes()->delete();

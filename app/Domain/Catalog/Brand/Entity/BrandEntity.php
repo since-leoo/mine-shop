@@ -14,6 +14,8 @@ namespace App\Domain\Catalog\Brand\Entity;
 
 use App\Domain\Catalog\Brand\Enum\BrandStatus;
 
+use App\Infrastructure\Error\CatalogError;
+
 /**
  * 品牌实体.
  */
@@ -58,7 +60,7 @@ final class BrandEntity
     {
         $name = trim($name);
         if ($name === '') {
-            throw new \DomainException('品牌名称不能为空');
+            throw CatalogError::BRAND_NAME_REQUIRED->exception();
         }
         $this->name = $name;
         return $this;
@@ -148,7 +150,7 @@ final class BrandEntity
     {
         $values = array_map(static fn (BrandStatus $case) => $case->value, BrandStatus::cases());
         if (! \in_array($status, $values, true)) {
-            throw new \DomainException('品牌状态值无效');
+            throw CatalogError::BRAND_STATUS_INVALID->exception();
         }
         $this->status = $status;
         return $this;

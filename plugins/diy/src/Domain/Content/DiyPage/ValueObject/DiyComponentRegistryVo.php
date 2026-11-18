@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\ValueObject;
 
+use App\Infrastructure\Error\DiyError;
+
 final class DiyComponentRegistryVo
 {
     public const CURRENT_SCHEMA_VERSION = 1;
@@ -140,7 +142,7 @@ final class DiyComponentRegistryVo
     public static function assertSupportedComponent(string $type): void
     {
         if (! \in_array($type, self::COMPONENT_TYPES, true)) {
-            throw new \DomainException('不支持的装修组件');
+            throw DiyError::COMPONENT_UNSUPPORTED->exception();
         }
     }
 
@@ -151,21 +153,21 @@ final class DiyComponentRegistryVo
 
         match ($type) {
             'banner' => self::assertBanner($props, $data),
-            'quick-nav' => self::assertItemsLimit($data, self::MAX_QUICK_NAV_ITEMS, '金刚区最多20个入口'),
-            'category-panel' => self::assertItemsLimit($data, self::MAX_CATEGORY_PANEL_ITEMS, '商品分类最多20个一级分类'),
+            'quick-nav' => self::assertItemsLimit($data, self::MAX_QUICK_NAV_ITEMS, DiyError::QUICK_NAV_LIMIT_EXCEEDED),
+            'category-panel' => self::assertItemsLimit($data, self::MAX_CATEGORY_PANEL_ITEMS, DiyError::CATEGORY_PANEL_LIMIT_EXCEEDED),
             'image-ad' => self::assertImageAd($props, $data),
             'product-group' => self::assertProductGroup($props, $data),
-            'notice-bar' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, '公告栏最多10条'),
+            'notice-bar' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, DiyError::NOTICE_LIMIT_EXCEEDED),
             'coupon-group' => self::assertCouponGroup($props, $data),
-            'marketing-entry' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, '营销入口最多10个'),
-            'seckill-group' => self::assertMarketingGroup($props, $data, '秒杀组件必须选择活动'),
-            'group-buy-group' => self::assertMarketingGroup($props, $data + ['activityId' => ($data['groupBuyIds'][0] ?? $data['activities'][0]['id'] ?? 0)], '拼团组件必须选择活动'),
+            'marketing-entry' => self::assertItemsLimit($data, self::MAX_NOTICE_BAR_ITEMS, DiyError::MARKETING_ENTRY_LIMIT_EXCEEDED),
+            'seckill-group' => self::assertMarketingGroup($props, $data, DiyError::SECKILL_ACTIVITY_REQUIRED),
+            'group-buy-group' => self::assertMarketingGroup($props, $data + ['activityId' => ($data['groupBuyIds'][0] ?? $data['activities'][0]['id'] ?? 0)], DiyError::GROUP_BUY_ACTIVITY_REQUIRED),
             'product-rank' => self::assertProductRank($props, $data),
             'search-bar' => self::assertSearchBar($props),
             'image-cube' => self::assertImageCube($props, $data),
-            'user-stats' => self::assertItemsLimit($data, 8, '用户统计最多8项'),
-            'user-order-panel' => self::assertItemsLimit($data, 10, '订单入口最多10项'),
-            'user-menu-list' => self::assertItemsLimit($data, 10, '用户菜单最多10项'),
+            'user-stats' => self::assertItemsLimit($data, 8, DiyError::USER_STATS_LIMIT_EXCEEDED),
+            'user-order-panel' => self::assertItemsLimit($data, 10, DiyError::ORDER_ENTRY_LIMIT_EXCEEDED),
+            'user-menu-list' => self::assertItemsLimit($data, 10, DiyError::USER_MENU_LIMIT_EXCEEDED),
             'distribution-center' => self::assertDistributionCenter($props, $data),
             'user-profile-header' => self::assertUserProfileHeader($props),
             default => null,
@@ -200,11 +202,11 @@ final class DiyComponentRegistryVo
 
     private static function assertCouponGroup(array $props, array $data): void
     {
-        self::assertLimit($props, $data, self::MAX_COUPON_GROUP_LIMIT, '优惠券组最多10张');
+        self::assertLimit($props, $data, self::MAX_COUPON_GROUP_LIMIT, DiyError::COUPON_LIMIT_EXCEEDED);
 
         $couponIds = $data['couponIds'] ?? [];
         if (\is_array($couponIds) && \count($couponIds) > self::MAX_COUPON_GROUP_LIMIT) {
-            throw new \DomainException('优惠券组最多10张');
+            throw DiyError::COUPON_LIMIT_EXCEEDED->exception();
         }
     }
 
@@ -212,11 +214,11 @@ final class DiyComponentRegistryVo
     {
         $allowed = ['title', 'showInvite', 'showTeam', 'showOrders', 'showCommission'];
         if (array_diff(array_keys($props), $allowed) !== [] || $data !== []) {
-            throw new \DomainException('分销组件仅允许展示配置，会员与佣金数据由服务端实时提供');
+            throw DiyError::DISTRIBUTION_RUNTIME_DATA_FORBIDDEN->exception();
         }
         self::assertDisplaySwitches($props, ['showInvite', 'showTeam', 'showOrders', 'showCommission']);
         if (isset($props['title']) && (! \is_string($props['title']) || mb_strlen($props['title']) > 50)) {
-            throw new \DomainException('分销模块标题不能超过50个字');
+            throw DiyError::DISTRIBUTION_TITLE_TOO_LONG->exception();
         }
     }
 
@@ -224,7 +226,7 @@ final class DiyComponentRegistryVo
     {
         // Runtime eligibility is supplied by the distribution API, never by published DIY content.
         if (array_key_exists('showInviteEntry', $props) || array_key_exists('phoneNumber', $props)) {
-            throw new \DomainException('用户头部不能配置运行时会员数据或分销资格');
+            throw DiyError::PROFILE_RUNTIME_DATA_FORBIDDEN->exception();
         }
         self::assertDisplaySwitches($props, ['showInvite', 'showQrcode']);
     }
@@ -233,7 +235,7 @@ final class DiyComponentRegistryVo
     {
         foreach ($keys as $key) {
             if (array_key_exists($key, $props) && ! \is_bool($props[$key])) {
-                throw new \DomainException('展示开关必须为布尔值');
+                throw DiyError::DISPLAY_SWITCH_INVALID->exception();
             }
         }
     }
@@ -241,7 +243,7 @@ final class DiyComponentRegistryVo
     private static function assertBanner(array $props, array $data): void
     {
         self::assertImageProps($props);
-        self::assertItemsLimit($data, self::MAX_BANNER_ITEMS, '轮播图最多10张');
+        self::assertItemsLimit($data, self::MAX_BANNER_ITEMS, DiyError::BANNER_LIMIT_EXCEEDED);
     }
 
     private static function assertImageAd(array $props, array $data): void
@@ -250,44 +252,44 @@ final class DiyComponentRegistryVo
 
         $layout = (string) ($props['layout'] ?? $data['layout'] ?? 'single');
         if (! \in_array($layout, self::IMAGE_AD_LAYOUTS, true)) {
-            throw new \DomainException('图片广告布局无效');
+            throw DiyError::IMAGE_AD_LAYOUT_INVALID->exception();
         }
 
-        self::assertItemsLimit($data, self::MAX_IMAGE_AD_ITEMS, '图片广告最多10张');
+        self::assertItemsLimit($data, self::MAX_IMAGE_AD_ITEMS, DiyError::IMAGE_AD_LIMIT_EXCEEDED);
     }
 
-    private static function assertMarketingGroup(array $props, array $data, string $missingMessage): void
+    private static function assertMarketingGroup(array $props, array $data, DiyError $missingMessage): void
     {
-        self::assertLimit($props, $data, self::MAX_MARKETING_GROUP_LIMIT, '营销组件商品最多20个');
+        self::assertLimit($props, $data, self::MAX_MARKETING_GROUP_LIMIT, DiyError::MARKETING_PRODUCT_LIMIT_EXCEEDED);
 
         $activityId = (int) ($data['activityId'] ?? $data['activity_id'] ?? $props['activityId'] ?? $props['activity_id'] ?? 0);
         if ($activityId <= 0) {
-            throw new \DomainException($missingMessage);
+            throw $missingMessage->exception();
         }
     }
 
     private static function assertProductRank(array $props, array $data): void
     {
-        self::assertLimit($props, $data, self::MAX_PRODUCT_GROUP_LIMIT, '商品榜单数量最多50个');
+        self::assertLimit($props, $data, self::MAX_PRODUCT_GROUP_LIMIT, DiyError::PRODUCT_RANK_LIMIT_EXCEEDED);
 
         $rankType = (string) ($props['rankType'] ?? $data['rankType'] ?? 'sales');
         if (! \in_array($rankType, self::PRODUCT_RANK_TYPES, true)) {
-            throw new \DomainException('商品榜单类型无效');
+            throw DiyError::PRODUCT_RANK_TYPE_INVALID->exception();
         }
     }
 
     private static function assertProductGroup(array $props, array $data): void
     {
-        self::assertLimit($props, $data, self::MAX_PRODUCT_GROUP_LIMIT, '商品组数量最多50个');
+        self::assertLimit($props, $data, self::MAX_PRODUCT_GROUP_LIMIT, DiyError::PRODUCT_GROUP_LIMIT_EXCEEDED);
 
         $source = (string) ($props['source'] ?? $data['source'] ?? $data['mode'] ?? 'recommend');
         if (! \in_array($source, self::PRODUCT_GROUP_SOURCES, true)) {
-            throw new \DomainException('商品组来源无效');
+            throw DiyError::PRODUCT_SOURCE_INVALID->exception();
         }
 
         $sort = (string) ($props['sort'] ?? $data['sort'] ?? 'default');
         if (! \in_array($sort, self::PRODUCT_GROUP_SORTS, true)) {
-            throw new \DomainException('商品组排序无效');
+            throw DiyError::PRODUCT_SORT_INVALID->exception();
         }
     }
 
@@ -295,7 +297,7 @@ final class DiyComponentRegistryVo
     {
         $placeholder = (string) ($props['placeholder'] ?? '');
         if (mb_strlen($placeholder) > 30) {
-            throw new \DomainException('搜索框占位文案最多30个字');
+            throw DiyError::SEARCH_PLACEHOLDER_TOO_LONG->exception();
         }
     }
 
@@ -305,63 +307,63 @@ final class DiyComponentRegistryVo
 
         $layout = (string) ($props['layout'] ?? $data['layout'] ?? 'one');
         if (! \in_array($layout, self::IMAGE_CUBE_LAYOUTS, true)) {
-            throw new \DomainException('图片魔方布局无效');
+            throw DiyError::IMAGE_CUBE_LAYOUT_INVALID->exception();
         }
 
-        self::assertItemsLimit($data, self::MAX_IMAGE_CUBE_ITEMS, '图片魔方最多10张');
+        self::assertItemsLimit($data, self::MAX_IMAGE_CUBE_ITEMS, DiyError::IMAGE_CUBE_LIMIT_EXCEEDED);
     }
 
     private static function assertImageProps(array $props): void
     {
         $widthMode = (string) ($props['widthMode'] ?? 'full');
         if (! \in_array($widthMode, self::IMAGE_WIDTH_MODES, true)) {
-            throw new \DomainException('图片组件宽度模式无效');
+            throw DiyError::IMAGE_WIDTH_MODE_INVALID->exception();
         }
 
         $widthUnit = (string) ($props['widthUnit'] ?? 'percent');
         if (! \in_array($widthUnit, self::IMAGE_WIDTH_UNITS, true)) {
-            throw new \DomainException('图片组件宽度单位无效');
+            throw DiyError::IMAGE_WIDTH_UNIT_INVALID->exception();
         }
 
         if ($widthMode === 'custom') {
             $width = (int) ($props['width'] ?? 100);
             if ($widthUnit === 'percent' && ($width < 1 || $width > 100)) {
-                throw new \DomainException('图片组件百分比宽度需在1-100之间');
+                throw DiyError::IMAGE_PERCENT_WIDTH_INVALID->exception();
             }
             if ($widthUnit !== 'percent' && ($width < 1 || $width > 750)) {
-                throw new \DomainException('图片组件宽度需在1-750之间');
+                throw DiyError::IMAGE_WIDTH_INVALID->exception();
             }
         }
 
         $height = (int) ($props['height'] ?? 0);
         if ($height < 0 || $height > 1000) {
-            throw new \DomainException('图片组件高度需在0-1000之间');
+            throw DiyError::IMAGE_HEIGHT_INVALID->exception();
         }
 
         $radius = (int) ($props['radius'] ?? 0);
         if ($radius < 0 || $radius > 100) {
-            throw new \DomainException('图片组件圆角需在0-100之间');
+            throw DiyError::IMAGE_RADIUS_INVALID->exception();
         }
 
         $objectFit = (string) ($props['objectFit'] ?? 'cover');
         if (! \in_array($objectFit, self::IMAGE_OBJECT_FITS, true)) {
-            throw new \DomainException('图片组件填充方式无效');
+            throw DiyError::IMAGE_FIT_INVALID->exception();
         }
     }
 
-    private static function assertLimit(array $props, array $data, int $max, string $message): void
+    private static function assertLimit(array $props, array $data, int $max, DiyError $message): void
     {
         $limit = (int) ($props['limit'] ?? $data['limit'] ?? 10);
         if ($limit > $max) {
-            throw new \DomainException($message);
+            throw $message->exception();
         }
     }
 
-    private static function assertItemsLimit(array $data, int $limit, string $message): void
+    private static function assertItemsLimit(array $data, int $limit, DiyError $message): void
     {
         $items = $data['items'] ?? [];
         if (\is_array($items) && \count($items) > $limit) {
-            throw new \DomainException($message);
+            throw $message->exception();
         }
     }
 
@@ -387,7 +389,7 @@ final class DiyComponentRegistryVo
 
             $linkType = (string) ($item['link']['type'] ?? '');
             if ($linkType !== '' && ! \in_array($linkType, self::LINK_TYPES, true)) {
-                throw new \DomainException('不支持的跳转类型');
+                throw DiyError::LINK_TYPE_UNSUPPORTED->exception();
             }
         }
     }

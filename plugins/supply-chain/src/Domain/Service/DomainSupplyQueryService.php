@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Domain\Service;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\Repository\SupplyRepository;
 use Plugin\SupplyChain\Interfaces\Data\ProductQuery;
 use Plugin\SupplyChain\Interfaces\SupplyChainManagerInterface;
@@ -29,7 +30,7 @@ final class DomainSupplyQueryService
     {
         $id = (int) ($filters['connection_id'] ?? 0);
         if ($id < 1) {
-            throw new \InvalidArgumentException('请先选择供应链连接');
+            throw SupplyChainError::CONNECTION_REQUIRED->invalid();
         }
         $page = $this->clients->forConnection($id)->catalog()->search(new ProductQuery((int) ($filters['page'] ?? 1), (int) ($filters['page_size'] ?? 20), (string) ($filters['q'] ?? '')));
         return ['list' => array_map(fn ($product) => $this->withImport($id, $product), $page['items']), 'total' => $page['total']];
@@ -43,7 +44,7 @@ final class DomainSupplyQueryService
                 return $this->withImport($connectionId, $product);
             }
         }
-        throw new \RuntimeException('上游未返回该商品详情');
+        throw SupplyChainError::PRODUCT_DETAIL_NOT_RETURNED->internal();
     }
 
     public function products(array $filters): array

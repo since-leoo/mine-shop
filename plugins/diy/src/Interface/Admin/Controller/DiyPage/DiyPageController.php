@@ -12,13 +12,10 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Interface\Admin\Controller\DiyPage;
 
-use Plugin\Diy\Application\Admin\Content\AppDiyPageCommandService;
-use Plugin\Diy\Application\Admin\Content\AppDiyPageQueryService;
-use Plugin\Diy\Application\Admin\Content\AppDiyTemplateCommandService;
+use App\Infrastructure\Error\DiyError;
+
 use App\Interface\Admin\Controller\AbstractController;
 use App\Interface\Admin\Middleware\PermissionMiddleware;
-use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyPageRequest;
-use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyTemplateRequest;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\Middleware\AccessTokenMiddleware;
 use App\Interface\Common\Middleware\OperationMiddleware;
@@ -29,6 +26,11 @@ use Hyperf\HttpServer\Annotation\Middleware;
 use Hyperf\HttpServer\Annotation\PostMapping;
 use Hyperf\HttpServer\Annotation\PutMapping;
 use Mine\Access\Attribute\Permission;
+use Plugin\Diy\Application\Admin\Content\AppDiyPageCommandService;
+use Plugin\Diy\Application\Admin\Content\AppDiyPageQueryService;
+use Plugin\Diy\Application\Admin\Content\AppDiyTemplateCommandService;
+use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyPageRequest;
+use Plugin\Diy\Interface\Admin\Request\DiyPage\DiyTemplateRequest;
 
 #[Controller(prefix: '/admin/diy/pages')]
 #[Middleware(middleware: AccessTokenMiddleware::class, priority: 100)]
@@ -61,7 +63,7 @@ final class DiyPageController extends AbstractController
     {
         $page = $this->queryService->find($id);
 
-        return $page ? $this->success($page->toArray()) : $this->error('DIY页面不存在', 404);
+        return $page ? $this->success($page->toArray()) : $this->error(DiyError::PAGE_NOT_FOUND, 404);
     }
 
     #[PostMapping(path: '')]

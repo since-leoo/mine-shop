@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Domain\Service;
 
+use App\Infrastructure\Error\CustomerServiceError;
+
 final class DomainCategoryService
 {
     /** Validate the entire candidate tree, including descendants of a moved node. */
@@ -17,10 +19,10 @@ final class DomainCategoryService
             $name = trim((string) ($category['name'] ?? ''));
             $code = trim((string) ($category['code'] ?? ''));
             if ($id <= 0 || isset($byId[$id]) || $name === '' || mb_strlen($name) > 60 || !preg_match('/^[a-zA-Z0-9_-]{1,60}$/D', $code)) {
-                throw new \DomainException('类目编号、名称或编码无效');
+                throw CustomerServiceError::CATEGORY_IDENTITY_INVALID->exception();
             }
             if (isset($names[$parent . ':' . $name]) || isset($codes[$code])) {
-                throw new \DomainException('同级类目名称及类目编码不能重复');
+                throw CustomerServiceError::CATEGORY_DUPLICATE->exception();
             }
             $names[$parent . ':' . $name] = $codes[$code] = true;
             $byId[$id] = $category + ['parent_id' => 0, 'enabled' => true, 'sort' => 0];
@@ -30,11 +32,11 @@ final class DomainCategoryService
             $cursor = (int) $category['parent_id'];
             while ($cursor !== 0) {
                 if (!isset($byId[$cursor]) || in_array($cursor, $path, true)) {
-                    throw new \DomainException('类目父级不存在或形成循环');
+                    throw CustomerServiceError::CATEGORY_PARENT_INVALID->exception();
                 }
                 $path[] = $cursor;
                 if (count($path) > 3) {
-                    throw new \DomainException('问题类目最多三级');
+                    throw CustomerServiceError::CATEGORY_DEPTH_EXCEEDED->exception();
                 }
                 $cursor = (int) $byId[$cursor]['parent_id'];
             }

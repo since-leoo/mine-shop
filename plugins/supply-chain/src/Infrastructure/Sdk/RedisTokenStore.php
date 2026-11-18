@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Infrastructure\Sdk;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Hyperf\Redis\Redis;
 use Plugin\SupplyChain\Interfaces\TokenStoreInterface;
 
@@ -28,7 +29,7 @@ final class RedisTokenStore implements TokenStoreInterface
     public function put(string $key, string $token, int $ttl): void
     {
         if (! $this->redis->setex($key, $ttl, $token)) {
-            throw new \RuntimeException('供应链 Token 缓存写入失败');
+            throw SupplyChainError::TOKEN_CACHE_WRITE_FAILED->internal();
         }
     }
 

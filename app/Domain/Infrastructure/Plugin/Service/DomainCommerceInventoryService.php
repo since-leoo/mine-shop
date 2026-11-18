@@ -6,6 +6,8 @@ namespace App\Domain\Infrastructure\Plugin\Service;
 
 use App\Domain\Infrastructure\Plugin\Repository\CommerceInventoryRepository;
 
+use App\Infrastructure\Error\InventoryError;
+
 final class DomainCommerceInventoryService
 {
     public function __construct(private readonly CommerceInventoryRepository $repository) {}
@@ -13,11 +15,11 @@ final class DomainCommerceInventoryService
     {
         DomainCommerceProductService::validateProvider($provider);
         if ($skuId <= 0 || $stock < 0 || $version <= 0 || $version > 9007199254740991) {
-            throw new \InvalidArgumentException('库存SKU、数量或版本无效');
+            throw InventoryError::SNAPSHOT_INVALID->invalid();
         }
         $trades = array_values(array_unique($trades));
         foreach ($trades as $trade) {
-            if (! is_string($trade) || $trade === '') { throw new \InvalidArgumentException('对账订单号无效'); }
+            if (! is_string($trade) || $trade === '') { throw InventoryError::RECONCILIATION_ORDER_INVALID->invalid(); }
         }
         return $this->repository->project($provider, $skuId, $stock, $version, $trades);
     }
@@ -25,7 +27,7 @@ final class DomainCommerceInventoryService
     {
         DomainCommerceProductService::validateProvider($provider);
         $order = $this->repository->procurementState($tradeNo);
-        if ($order === null) { throw new \DomainException('采购对应的销售订单不存在'); }
+        if ($order === null) { throw InventoryError::PROCUREMENT_ORDER_NOT_FOUND->exception(); }
         \App\Domain\Infrastructure\Plugin\ValueObject\ProcurementEligibilityVo::assertCanProtect($order, $provider, $items);
         $this->repository->protect($provider, $tradeNo, $items);
     }

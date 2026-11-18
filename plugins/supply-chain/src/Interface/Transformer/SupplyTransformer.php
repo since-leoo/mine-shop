@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Interface\Transformer;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Domain\ValueObject\SafeLogVo;
 
 /** Explicit response allowlists keep credentials, execution leases and live order snapshots private. */
@@ -20,7 +21,7 @@ final class SupplyTransformer
     public function page(array $page, string $kind): array
     {
         if (! \in_array($kind, ['connection', 'catalog', 'product', 'purchase', 'task', 'log', 'afterSale'], true)) {
-            throw new \InvalidArgumentException('供应链响应类型无效');
+            throw SupplyChainError::RESPONSE_TYPE_INVALID->invalid();
         }
         return [
             'list' => array_map(fn (array $row): array => $this->{$kind}($row), $page['list'] ?? []),

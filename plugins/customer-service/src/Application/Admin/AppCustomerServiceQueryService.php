@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Application\Admin;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use App\Infrastructure\Model\Member\Member;
 use Carbon\Carbon;
 use Plugin\CustomerService\Infrastructure\Model\CustomerServiceAgent;
@@ -25,12 +26,12 @@ final class AppCustomerServiceQueryService
 
     public function assertAccessible(string $no): CustomerServiceConversation
     {
-        $conversation = CustomerServiceConversation::query()->where('conversation_no', $no)->first() ?? throw new \RuntimeException('客服会话不存在');
+        $conversation = CustomerServiceConversation::query()->where('conversation_no', $no)->first() ?? throw CustomerServiceError::SUPPORT_CONVERSATION_NOT_FOUND->internal();
         $agent = CustomerServiceAgent::query()->where('admin_user_id', $this->currentUser->id())->first();
-        if ($agent && !$agent->enabled) { throw new \DomainException('坐席已停用'); }
+        if ($agent && !$agent->enabled) { throw CustomerServiceError::AGENT_DISABLED->exception(); }
         $user = $this->currentUser->user();
         $supervisor = $user && ($user->isSuperAdmin() || $user->hasPermission('customer-service:conversation:manage'));
-        if (!$this->access->canRead($conversation->toArray(), (int) ($agent?->id ?? 0), $this->configuration->published()['snapshot'], (bool) $supervisor)) { throw new \DomainException('无权访问此客服会话'); }
+        if (!$this->access->canRead($conversation->toArray(), (int) ($agent?->id ?? 0), $this->configuration->published()['snapshot'], (bool) $supervisor)) { throw CustomerServiceError::CONVERSATION_READ_FORBIDDEN->exception(); }
         return $conversation;
     }
 
@@ -40,7 +41,7 @@ final class AppCustomerServiceQueryService
         $user = $this->currentUser->user();
         if ($user && ($user->isSuperAdmin() || $user->hasPermission('customer-service:conversation:manage'))) { return $query; }
         $agent = CustomerServiceAgent::query()->where('admin_user_id', $this->currentUser->id())->first();
-        if ($agent && !$agent->enabled) { throw new \DomainException('坐席已停用'); }
+        if ($agent && !$agent->enabled) { throw CustomerServiceError::AGENT_DISABLED->exception(); }
         $agentId = (int) ($agent?->id ?? 0);
         $snapshot = $this->configuration->published()['snapshot'];
         $scopes = [['ai_agent_id' => null, 'categories' => $this->access->allowedCategories($agentId, $snapshot)]];

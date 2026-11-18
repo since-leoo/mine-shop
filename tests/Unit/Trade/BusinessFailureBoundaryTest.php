@@ -25,7 +25,7 @@ final class BusinessFailureBoundaryTest extends TestCase
             $service->validateActivity(1, 1, 1, 7, null);
             self::fail('Missing activity must reject the order.');
         } catch (\DomainException $error) {
-            self::assertSame('Group buy activity not found', $error->getMessage());
+            self::assertSame('团购活动不存在', $error->getMessage());
         }
 
         $failure = new \PDOException('database unavailable');

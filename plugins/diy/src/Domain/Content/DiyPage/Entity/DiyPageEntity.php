@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\Entity;
 
+use App\Infrastructure\Error\DiyError;
 use Plugin\Diy\Domain\Content\DiyPage\Enum\DiyPageStatus;
 
 final class DiyPageEntity
@@ -49,15 +50,15 @@ final class DiyPageEntity
         $title = trim($title);
 
         if ($pageKey === '') {
-            throw new \DomainException('页面键不能为空');
+            throw DiyError::PAGE_KEY_REQUIRED->exception();
         }
 
         if ($title === '') {
-            throw new \DomainException('页面名称不能为空');
+            throw DiyError::PAGE_NAME_REQUIRED->exception();
         }
 
         if (! \in_array($pageType, DiyPageStatus::pageTypes(), true)) {
-            throw new \DomainException('页面类型无效');
+            throw DiyError::PAGE_TYPE_INVALID->exception();
         }
 
         $this->pageKey = $pageKey;
@@ -87,7 +88,7 @@ final class DiyPageEntity
     public function enable(): self
     {
         if ($this->publishedVersionId === null) {
-            throw new \DomainException('请先发布页面后再启用');
+            throw DiyError::PUBLISHED_PAGE_REQUIRED_FOR_ENABLE->exception();
         }
 
         $this->enabled = true;

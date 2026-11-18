@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\Diy\Domain\Content\DiyPage\ValueObject;
 
+use App\Infrastructure\Error\DiyError;
+
 final class DiyPageSchemaVo
 {
     private const MAX_COMPONENTS = 50;
@@ -58,19 +60,19 @@ final class DiyPageSchemaVo
     private static function assertPage(array $schema, string $pageKey): void
     {
         if (($schema['version'] ?? null) !== DiyComponentRegistryVo::CURRENT_SCHEMA_VERSION) {
-            throw new \DomainException('装修页面结构版本无效');
+            throw DiyError::SCHEMA_VERSION_INVALID->exception();
         }
 
         if (! isset($schema['page']) || ! \is_array($schema['page'])) {
-            throw new \DomainException('装修页面信息不能为空');
+            throw DiyError::PAGE_INFORMATION_REQUIRED->exception();
         }
 
         if (($schema['page']['key'] ?? '') !== $pageKey) {
-            throw new \DomainException('装修页面键不一致');
+            throw DiyError::PAGE_KEY_MISMATCH->exception();
         }
 
         if (! isset($schema['components']) || ! \is_array($schema['components'])) {
-            throw new \DomainException('装修组件不能为空');
+            throw DiyError::COMPONENTS_REQUIRED->exception();
         }
 
         self::assertPageTheme($schema['page']);
@@ -84,7 +86,7 @@ final class DiyPageSchemaVo
         }
 
         if (! \is_array($theme)) {
-            throw new \DomainException('装修主题格式无效');
+            throw DiyError::THEME_FORMAT_INVALID->exception();
         }
 
         foreach (self::THEME_COLOR_KEYS as $key) {
@@ -93,41 +95,41 @@ final class DiyPageSchemaVo
             }
 
             if (! \is_string($theme[$key]) || ! preg_match('/^#[0-9a-fA-F]{6}$/', $theme[$key])) {
-                throw new \DomainException('装修主题颜色无效');
+                throw DiyError::THEME_COLOR_INVALID->exception();
             }
         }
 
         if (isset($theme['cardRadius'])) {
             $cardRadius = (int) $theme['cardRadius'];
             if ($cardRadius < 0 || $cardRadius > 64) {
-                throw new \DomainException('装修卡片圆角需在0-64之间');
+                throw DiyError::CARD_RADIUS_INVALID->exception();
             }
         }
 
         $buttonShape = (string) ($theme['buttonShape'] ?? 'round');
         if (! \in_array($buttonShape, self::BUTTON_SHAPES, true)) {
-            throw new \DomainException('装修按钮样式无效');
+            throw DiyError::BUTTON_STYLE_INVALID->exception();
         }
     }
 
     private static function assertComponents(array $components): void
     {
         if (\count($components) > self::MAX_COMPONENTS) {
-            throw new \DomainException('装修组件最多50个');
+            throw DiyError::COMPONENT_LIMIT_EXCEEDED->exception();
         }
 
         $ids = [];
         foreach ($components as $component) {
             if (! \is_array($component)) {
-                throw new \DomainException('装修组件格式无效');
+                throw DiyError::COMPONENT_FORMAT_INVALID->exception();
             }
 
             $id = (string) ($component['id'] ?? '');
             if ($id === '') {
-                throw new \DomainException('组件ID不能为空');
+                throw DiyError::COMPONENT_ID_REQUIRED->exception();
             }
             if (isset($ids[$id])) {
-                throw new \DomainException('组件ID重复');
+                throw DiyError::COMPONENT_ID_DUPLICATE->exception();
             }
             $ids[$id] = true;
 

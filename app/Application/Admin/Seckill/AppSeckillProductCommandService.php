@@ -15,6 +15,7 @@ namespace App\Application\Admin\Seckill;
 use App\Domain\Trade\Seckill\Contract\SeckillProductInput;
 use App\Domain\Trade\Seckill\Mapper\SeckillProductMapper;
 use App\Domain\Trade\Seckill\Service\DomainSeckillProductService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Model\Seckill\SeckillProduct;
 use App\Interface\Admin\Dto\Seckill\SeckillProductDto;
 use Hyperf\DbConnection\Db;
@@ -48,7 +49,7 @@ final class AppSeckillProductCommandService
     {
         $entity = $this->productService->getEntity($dto->getId());
         if (! $entity) {
-            throw new \DomainException('商品不存在');
+            throw SeckillError::PRODUCT_NOT_FOUND->exception();
         }
         $entity->update($dto);
         return Db::transaction(fn () => $this->productService->update($entity));
@@ -60,7 +61,7 @@ final class AppSeckillProductCommandService
     public function delete(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('商品不存在');
+            throw SeckillError::PRODUCT_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->productService->delete($id));
     }
@@ -84,7 +85,7 @@ final class AppSeckillProductCommandService
     public function toggleStatus(int $id): bool
     {
         if (! $this->queryService->find($id)) {
-            throw new \DomainException('商品不存在');
+            throw SeckillError::PRODUCT_NOT_FOUND->exception();
         }
         return Db::transaction(fn () => $this->productService->toggleStatus($id));
     }

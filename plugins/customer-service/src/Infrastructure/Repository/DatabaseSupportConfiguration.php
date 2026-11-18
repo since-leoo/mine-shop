@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Plugin\CustomerService\Infrastructure\Repository;
 
+use App\Infrastructure\Error\CustomerServiceError;
 use Hyperf\DbConnection\Db;
 use Plugin\CustomerService\Domain\Contract\SupportConfigurationInterface;
 
@@ -27,15 +28,15 @@ final class DatabaseSupportConfiguration implements SupportConfigurationInterfac
             // 版本指针加锁后再比较期望版本，拒绝覆盖其他管理员刚保存的配置。
             $state = Db::table('customer_service_config_state')->where('id', 1)->lockForUpdate()->first();
             if (!$state || (int) $state->draft_revision !== $expectedRevision) {
-                throw new \DomainException('配置已被其他管理员更新，请刷新');
+                throw CustomerServiceError::CONFIGURATION_REVISION_CONFLICT->exception();
             }
             $categoryIds = array_column($snapshot['categories'] ?? [], 'id');
             if (Db::table('customer_service_faqs')->whereNotNull('category_id')->whereNotIn('category_id', $categoryIds)->exists()) {
-                throw new \DomainException('类目仍被知识引用，请先迁移知识');
+                throw CustomerServiceError::CATEGORY_REFERENCED_BY_KNOWLEDGE->exception();
             }
             $agentIds = array_unique(array_column($snapshot['agent_skills'] ?? [], 'agent_id'));
             if ($agentIds && Db::table('customer_service_agents')->whereIn('id', $agentIds)->count() !== count($agentIds)) {
-                throw new \DomainException('技能绑定引用了不存在的人工坐席');
+                throw CustomerServiceError::SKILL_AGENT_NOT_FOUND->exception();
             }
             $previous = $state->draft_revision ? $this->revision((int) $state->draft_revision)['snapshot'] : [];
             foreach (\Plugin\CustomerService\Domain\Service\DomainConfigurationService::RESOURCES as $resource) {
@@ -61,7 +62,7 @@ final class DatabaseSupportConfiguration implements SupportConfigurationInterfac
 
     public function revision(int $revision): array
     {
-        $row = Db::table('customer_service_config_revisions')->where('id', $revision)->first() ?? throw new \RuntimeException('配置版本不存在');
+        $row = Db::table('customer_service_config_revisions')->where('id', $revision)->first() ?? throw CustomerServiceError::CONFIGURATION_REVISION_NOT_FOUND->internal();
         return ['revision' => (int) $row->id, 'snapshot' => json_decode($row->snapshot_json, true, 512, JSON_THROW_ON_ERROR), 'published' => (bool) $row->published];
     }
 }

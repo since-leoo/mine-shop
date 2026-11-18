@@ -13,8 +13,10 @@ declare(strict_types=1);
 namespace App\Interface\Api\Controller\V1\Seckill;
 
 use App\Application\Api\Seckill\AppApiSeckillProductQueryService;
+use App\Infrastructure\Error\SeckillError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Api\Middleware\ApiSignatureMiddleware;
+use App\Interface\Api\Request\V1\Seckill\SeckillPromotionRequest;
 use App\Interface\Api\Transformer\Seckill\SeckillProductTransformer;
 use App\Interface\Common\Controller\AbstractController;
 use App\Interface\Common\Result;
@@ -22,7 +24,6 @@ use App\Interface\Common\ResultCode;
 use Hyperf\HttpServer\Annotation\Controller;
 use Hyperf\HttpServer\Annotation\GetMapping;
 use Hyperf\HttpServer\Annotation\Middleware;
-use App\Interface\Api\Request\V1\Seckill\SeckillPromotionRequest;
 
 #[Controller(prefix: '/api/v1/seckill/products')]
 #[Middleware(ApiSignatureMiddleware::class)]
@@ -42,7 +43,7 @@ final class SeckillProductController extends AbstractController
         try {
             $data = $this->queryService->getPromotionList($request->toDto());
         } catch (\DomainException $exception) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, $exception->getMessage());
+            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, $exception->getMessage(), errorCode: $exception->getCode() ?: null);
         }
         return $this->success($this->transformer->transformPromotionList($data));
     }
@@ -52,7 +53,7 @@ final class SeckillProductController extends AbstractController
     {
         $data = $this->queryService->getDetail($sessionId, $spuId);
         if ($data === null) {
-            throw new BusinessException(ResultCode::NOT_FOUND, '秒杀商品不存在或活动已结束');
+            throw new BusinessException(SeckillError::PRODUCT_OR_ACTIVITY_UNAVAILABLE, resultCode: ResultCode::NOT_FOUND);
         }
         return $this->successWithTransform($data, fn (array $d) => $this->transformer->transformDetail($d));
     }

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Service;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Infrastructure\Security\CredentialCipher;
 use Plugin\SupplyChain\Interfaces\ConnectionRepositoryInterface;
 
@@ -23,10 +24,10 @@ final class SupplyChainSettingsResolver
     {
         $row = $this->connections->get($connectionId);
         if ((int) ($row['id'] ?? 0) !== $connectionId || ! ($row['enabled'] ?? false)) {
-            throw new \DomainException('供应链连接不存在或已停用');
+            throw SupplyChainError::CONNECTION_UNAVAILABLE->exception();
         }
         if (($row['driver'] ?? 'yunzhong') !== 'yunzhong') {
-            throw new \DomainException('尚未支持此供应链驱动');
+            throw SupplyChainError::DRIVER_UNSUPPORTED->exception();
         }
         $secret = $this->cipher->decrypt((string) ($row['app_secret_ciphertext'] ?? ''), 'supply-connection:' . $connectionId);
         return new ConnectionConfig(

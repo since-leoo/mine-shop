@@ -14,6 +14,7 @@ namespace Plugin\Sms\Service;
 
 use App\Domain\Infrastructure\SystemSetting\Service\DomainMallSettingService;
 use App\Infrastructure\Abstract\ICache;
+use App\Infrastructure\Error\SmsError;
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\ResultCode;
 use Carbon\Carbon;
@@ -108,7 +109,7 @@ LUA;
     private function assertInput(string $phone, string $scene): void
     {
         if (! preg_match('/^1[3-9]\d{9}$/D', $phone) || ! in_array($scene, ['register', 'forgot_password', 'login'], true)) {
-            throw new \InvalidArgumentException('短信手机号或场景无效');
+            throw SmsError::PHONE_OR_SCENE_INVALID->invalid();
         }
     }
 
@@ -130,7 +131,7 @@ LUA;
             $token, self::RESEND_INTERVAL, self::DAILY_LIMIT, $this->secondsUntilDayEnd(), self::CODE_TTL,
         ], 4);
         if (! $reserved) {
-            throw new \DomainException('验证码发送过于频繁或已达每日上限，请稍后再试');
+            throw SmsError::VERIFICATION_RATE_LIMITED->exception();
         }
     }
 
@@ -165,7 +166,7 @@ LUA;
 
         $integration = $this->mallSettingService->integration();
         if ($integration->smsProvider() === 'disabled' || ! $integration->isChannelEnabled('sms')) {
-            throw new BusinessException(ResultCode::UNPROCESSABLE_ENTITY, 'SMS service is disabled.');
+            throw new BusinessException(SmsError::SERVICE_DISABLED, resultCode: ResultCode::UNPROCESSABLE_ENTITY);
         }
     }
 
@@ -185,7 +186,7 @@ LUA;
             $this->fullKey($this->attemptKey($phone, $scene)), $this->fullKey('reservation:' . $token),
             $token, $code, self::CODE_TTL,
         ], 4);
-        if (! $stored) throw new \DomainException('验证码已更新，请使用最新验证码');
+        if (! $stored) throw SmsError::VERIFICATION_SUPERSEDED->exception();
     }
 
     /**

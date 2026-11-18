@@ -2,6 +2,8 @@
 
 插件包：`since/distribution`。后台入口：插件中心 → 分销推广 → 管理 / 佣金设置。
 
+异常中文文案与业务码集中维护在 `app/Infrastructure/Error/DistributionError.php`（`410xxx`），保留领域、参数和内部异常类型。后台拒绝访问仍返回原 `FORBIDDEN` / `DISABLED` 状态，独立 `error_code` 标识具体原因。微信分享失败返回集中中文提示和本地业务码，微信原始 `errcode` / `errmsg` 仅保存在 previous 异常链中用于日志诊断；框架 `ValidationException` 继续使用验证器消息。
+
 ## 启用与部署
 
 插件随代码安装，**业务默认关闭、默认佣金比例为 0**。先在目标环境完成迁移和微信配置，再在后台保存规则并开启分销。`install.lock` 仅代表插件代码已安装，不能替代数据库迁移。

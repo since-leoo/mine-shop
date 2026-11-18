@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Domain\Permission\Entity;
 
 use App\Domain\Auth\Enum\Status;
+
 use App\Domain\Auth\Enum\Type;
 use App\Domain\Permission\Contract\User\UserInput;
 use App\Domain\Permission\Enum\DataPermission\PolicyType;
 use App\Domain\Permission\ValueObject\DataPolicy;
 use App\Domain\Permission\ValueObject\GrantRolesVo;
 use App\Domain\Permission\ValueObject\ResetPasswordVo;
+use App\Infrastructure\Error\PermissionError;
 
 /**
  * 用户实体.
@@ -444,9 +446,7 @@ final class UserEntity
     {
         // 1. 前置条件检查：用户状态必须正常
         if ($this->status !== Status::Normal) {
-            throw new \DomainException(
-                "用户状态为 {$this->status->name}，无法授予角色"
-            );
+            throw PermissionError::USER_ROLE_GRANT_DISABLED->exception([$this->status->name]);
         }
 
         // 3. 空数组表示清空所有角色（合法操作）
@@ -477,9 +477,7 @@ final class UserEntity
     {
         // 1. 前置条件检查
         if ($this->status !== Status::Normal) {
-            throw new \DomainException(
-                "用户状态为 {$this->status->name}，无法重置密码"
-            );
+            throw PermissionError::USER_PASSWORD_RESET_DISABLED->exception([$this->status->name]);
         }
 
         // 3. 修改密码（会自动标记 dirty）

@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\GroupBuy\Service;
 
-use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
-use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
-use App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface;
-use App\Domain\Trade\Order\Service\DomainOrderService;
 use App\Domain\Trade\GroupBuy\Repository\GroupBuyOrderRepository;
+use App\Domain\Trade\Order\Contract\OrderSubmissionStoreInterface;
+use App\Domain\Trade\Order\Repository\OrderPaymentRefundRepository;
+use App\Domain\Trade\Order\Repository\OrderPaymentRepository;
+use App\Domain\Trade\Order\Service\DomainOrderService;
+use App\Infrastructure\Error\GroupBuyError;
 
 final class DomainGroupBuyRefundService
 {
@@ -36,11 +37,11 @@ final class DomainGroupBuyRefundService
             return null;
         }
         if ($payment === null || ! in_array($payment->payment_method, ['balance', 'wechat'], true)) {
-            throw new \DomainException('未成团订单需人工核实线下退款: ' . $order->getOrderNo());
+            throw GroupBuyError::OFFLINE_REFUND_REQUIRES_REVIEW->exception([$order->getOrderNo()]);
         }
         $amount = (int) $payment->paid_amount - (int) $payment->refund_amount;
         if ($amount <= 0 || $this->refunds->outstandingAmount((int) $payment->id) > 0) {
-            throw new \DomainException('订单已有其他退款申请，等待退款完成后重试');
+            throw GroupBuyError::REFUND_PENDING->exception();
         }
         $group = $this->groups->findByOrderId($orderId);
         $submission = $this->submissions->find($order->getOrderNo());

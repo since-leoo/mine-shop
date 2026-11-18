@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Infrastructure\Sdk;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Hyperf\Redis\Redis;
 use Plugin\SupplyChain\Interfaces\RequestLimiterInterface;
 
@@ -39,7 +40,7 @@ final class RedisRequestLimiter implements RequestLimiterInterface
         $accepted = $this->redis->eval($script, [$key . ':active', $key . ':rate', $lease,
             max(1, $this->concurrency), max(1, $this->requestsPerSecond), $leaseSeconds], 2);
         if ((int) $accepted !== 1) {
-            throw new \RuntimeException('供应链接口达到连接并发或速率限制，请稍后重试', 429);
+            throw new \RuntimeException(SupplyChainError::REQUEST_RATE_LIMITED->message(), 429);
         }
         return $lease;
     }

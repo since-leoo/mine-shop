@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Interface\Admin\Middleware;
 
+use App\Infrastructure\Error\AuthError;
+
 use App\Infrastructure\Exception\System\BusinessException;
 use App\Interface\Common\CurrentUser;
 use App\Interface\Common\ResultCode;
@@ -37,7 +39,7 @@ final class PermissionMiddleware implements MiddlewareInterface
     {
         $user = $this->currentUser->user();
         if ($user->status->isDisable()) {
-            throw new BusinessException(code: ResultCode::DISABLED, message: trans('user.disable'));
+            throw new BusinessException(AuthError::ACCOUNT_DISABLED, resultCode: ResultCode::DISABLED);
         }
         if (! $user->isSuperAdmin()) {
             $this->check($request->getAttribute(Dispatched::class));
@@ -80,14 +82,14 @@ final class PermissionMiddleware implements MiddlewareInterface
         foreach ($codes as $code) {
             $isMenu = $this->currentUser->user()->hasPermission($code);
             if ($operation === Permission::OPERATION_AND && ! $isMenu) {
-                throw new BusinessException(code: ResultCode::FORBIDDEN);
+                throw new BusinessException(\App\Infrastructure\Error\CommonError::FORBIDDEN, resultCode: ResultCode::FORBIDDEN);
             }
             if ($operation === Permission::OPERATION_OR && $isMenu) {
                 return;
             }
         }
         if ($operation === Permission::OPERATION_OR) {
-            throw new BusinessException(code: ResultCode::FORBIDDEN);
+            throw new BusinessException(\App\Infrastructure\Error\CommonError::FORBIDDEN, resultCode: ResultCode::FORBIDDEN);
         }
     }
 }

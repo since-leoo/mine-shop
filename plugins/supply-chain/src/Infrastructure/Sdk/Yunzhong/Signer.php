@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Infrastructure\Sdk\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
+
 /** Matches the active legacy client, while avoiding PHP 8's nonnumeric-string addition error. */
 final class Signer
 {
@@ -21,7 +23,7 @@ final class Signer
         $canonical = '';
         foreach ($parameters as $key => $value) {
             if (! \is_scalar($value) && $value !== null) {
-                throw new \InvalidArgumentException('芸众签名查询参数必须为标量');
+                throw SupplyChainError::SIGNATURE_PARAMETER_INVALID->invalid();
             }
             $canonical .= $key . (string) $value;
         }

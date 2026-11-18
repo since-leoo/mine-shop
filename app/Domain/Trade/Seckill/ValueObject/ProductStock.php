@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Domain\Trade\Seckill\ValueObject;
 
+use App\Infrastructure\Error\SeckillError;
+
 final class ProductStock
 {
     private readonly int $quantity;
@@ -67,7 +69,7 @@ final class ProductStock
     {
         $newSoldQuantity = $this->soldQuantity + $quantity;
         if ($newSoldQuantity > $this->quantity) {
-            throw new \DomainException('库存不足');
+            throw SeckillError::STOCK_INSUFFICIENT->exception();
         }
         return new self($this->quantity, $newSoldQuantity);
     }
@@ -84,7 +86,7 @@ final class ProductStock
     private function validate(): void
     {
         if ($this->soldQuantity > $this->quantity) {
-            throw new \InvalidArgumentException('已售数量不能大于总库存');
+            throw SeckillError::SOLD_QUANTITY_EXCEEDS_STOCK->invalid();
         }
     }
 }

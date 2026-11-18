@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\SupplyChain\Handler\Yunzhong;
 
+use App\Infrastructure\Error\SupplyChainError;
 use Plugin\SupplyChain\Interfaces\Data\CheckoutCommand;
 use Plugin\SupplyChain\Interfaces\Data\PurchaseLine;
 
@@ -33,7 +34,7 @@ final class PayloadMapper
     {
         if (! preg_match('/^[1-9][0-9]*$/', (string) $value) || mb_strlen((string) $value) > mb_strlen((string) \PHP_INT_MAX)
             || (mb_strlen((string) $value) === mb_strlen((string) \PHP_INT_MAX) && strcmp((string) $value, (string) \PHP_INT_MAX) > 0)) {
-            throw new \InvalidArgumentException('芸众外部 ID 必须为有效正整数');
+            throw SupplyChainError::EXTERNAL_ID_INVALID->invalid();
         }
         return (int) $value;
     }
@@ -41,7 +42,7 @@ final class PayloadMapper
     public static function ids(array $ids, int $max = 50): array
     {
         if ($ids === [] || \count($ids) > $max) {
-            throw new \InvalidArgumentException('供应链批次大小必须为 1 至 ' . $max);
+            throw SupplyChainError::BATCH_SIZE_INVALID->invalid([$max]);
         }
         return array_values(array_unique(array_map(self::id(...), $ids)));
     }
@@ -51,7 +52,7 @@ final class PayloadMapper
         if ((! \is_int($value) && ! \is_string($value)) || ! preg_match('/^[0-9]+$/', (string) $value)
             || mb_strlen((string) $value) > mb_strlen((string) \PHP_INT_MAX)
             || (mb_strlen((string) $value) === mb_strlen((string) \PHP_INT_MAX) && strcmp((string) $value, (string) \PHP_INT_MAX) > 0)) {
-            throw new \RuntimeException('供应链响应字段不是非负整数：' . $field);
+            throw SupplyChainError::RESPONSE_INTEGER_INVALID->internal([$field]);
         }
         return (int) $value;
     }
@@ -59,7 +60,7 @@ final class PayloadMapper
     public static function list(mixed $data, string $key = 'list'): array
     {
         if (! \is_array($data) || ! isset($data[$key]) || ! \is_array($data[$key]) || ! array_is_list($data[$key])) {
-            throw new \RuntimeException('供应链响应缺少列表字段：' . $key);
+            throw SupplyChainError::RESPONSE_LIST_MISSING->internal([$key]);
         }
         return $data[$key];
     }

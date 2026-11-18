@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Domain\Member\Repository;
 
 use App\Domain\Member\Entity\MemberWalletEntity;
+
+use App\Infrastructure\Error\MemberError;
 use App\Infrastructure\Model\Member\MemberWallet;
 use Hyperf\Database\Model\Model;
 
@@ -34,10 +36,10 @@ final class MemberWalletRepository
             ->first();
 
         if ($info === null) {
-            throw new \DomainException('钱包不存在');
+            throw MemberError::WALLET_NOT_FOUND->exception();
         }
         if ($wallet->getChangeBalance() !== 0 && (int) $info->balance !== $wallet->getBeforeBalance()) {
-            throw new \DomainException('钱包余额已变化，请重试');
+            throw MemberError::BALANCE_CHANGED->exception();
         }
         $info->fill($wallet->toArray())->save();
     }

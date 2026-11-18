@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace Plugin\Distribution\Domain\Service;
 
+use App\Infrastructure\Error\DistributionError;
 use Plugin\Distribution\Domain\Contract\DistributionSettingsInput;
 use Plugin\Distribution\Domain\Repository\DistributionRepository;
 use Plugin\Distribution\Domain\ValueObject\DistributionPolicyVo;
@@ -79,7 +80,7 @@ final class DomainDistributionService
         }
         $member = $this->repository->member($id, true);
         if (! $member) {
-            throw new \RuntimeException('会员不存在');
+            throw DistributionError::MEMBER_NOT_FOUND->internal();
         }
         if ($existing = $this->repository->binding($id)) {
             return $existing;
